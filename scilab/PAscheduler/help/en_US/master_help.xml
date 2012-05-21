@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book [
+<!--Begin Entities-->
+<!ENTITY aa1c9664c4fb5cfa24682b19b8b81e95c SYSTEM "/home/fviale/eclipse_workspace/matlab_scilab_connector/scilab/PAscheduler/help/en_US/Installation.xml">
+<!ENTITY aa8f5fd6155c7f0483c2aa5d3855db46a SYSTEM "/home/fviale/eclipse_workspace/matlab_scilab_connector/scilab/PAscheduler/help/en_US/Introduction.xml">
+<!ENTITY a2591a9f88aa29e808e221aeb890fc811 SYSTEM "/home/fviale/eclipse_workspace/matlab_scilab_connector/scilab/PAscheduler/help/en_US/PAResult.xml">
+<!ENTITY a81a08bdba3557231b4d474dd974dec91 SYSTEM "/home/fviale/eclipse_workspace/matlab_scilab_connector/scilab/PAscheduler/help/en_US/PATask.xml">
+<!ENTITY a66f3ba4206115677661c950129d9d538 SYSTEM "/home/fviale/eclipse_workspace/matlab_scilab_connector/scilab/PAscheduler/help/en_US/PAclearResults.xml">
+<!ENTITY ad61d53139e3fa0f955bb2c6f466a6d8e SYSTEM "/home/fviale/eclipse_workspace/matlab_scilab_connector/scilab/PAscheduler/help/en_US/PAconnect.xml">
+<!ENTITY a2aa0280277903c58f103c24edfc31e9b SYSTEM "/home/fviale/eclipse_workspace/matlab_scilab_connector/scilab/PAscheduler/help/en_US/PAdisconnect.xml">
+<!ENTITY a647594abf2334a1abf1024cd1b93b531 SYSTEM "/home/fviale/eclipse_workspace/matlab_scilab_connector/scilab/PAscheduler/help/en_US/PAgetLogs.xml">
+<!ENTITY a74ab2542ae333272d02a9806413f51f1 SYSTEM "/home/fviale/eclipse_workspace/matlab_scilab_connector/scilab/PAscheduler/help/en_US/PAisAwaited.xml">
+<!ENTITY aad1feb5449ec09c83a88db0ff0283443 SYSTEM "/home/fviale/eclipse_workspace/matlab_scilab_connector/scilab/PAscheduler/help/en_US/PAisConnected.xml">
+<!ENTITY a9eaa58d2bf6bd737433db0aa3696e488 SYSTEM "/home/fviale/eclipse_workspace/matlab_scilab_connector/scilab/PAscheduler/help/en_US/PAjobOutput.xml">
+<!ENTITY aba736f00978a85b183954460aaf50c58 SYSTEM "/home/fviale/eclipse_workspace/matlab_scilab_connector/scilab/PAscheduler/help/en_US/PAjobRemove.xml">
+<!ENTITY ae7d144c4e88acc4168c042cfedb090d8 SYSTEM "/home/fviale/eclipse_workspace/matlab_scilab_connector/scilab/PAscheduler/help/en_US/PAjobResult.xml">
+<!ENTITY aeac10663e11d36d31371f5ca5ba64943 SYSTEM "/home/fviale/eclipse_workspace/matlab_scilab_connector/scilab/PAscheduler/help/en_US/PAjobState.xml">
+<!ENTITY a09a244f3c8c801b32a65b185efadf8a4 SYSTEM "/home/fviale/eclipse_workspace/matlab_scilab_connector/scilab/PAscheduler/help/en_US/PAkillJob.xml">
+<!ENTITY a10ada37531fff9648436a44c7b74badf SYSTEM "/home/fviale/eclipse_workspace/matlab_scilab_connector/scilab/PAscheduler/help/en_US/PAkillTask.xml">
+<!ENTITY aaebec52c063cab0e3252b444e66ec8f8 SYSTEM "/home/fviale/eclipse_workspace/matlab_scilab_connector/scilab/PAscheduler/help/en_US/PAoptions.xml">
+<!ENTITY a4a98f728e0346e0b4e1f8509f3d349d7 SYSTEM "/home/fviale/eclipse_workspace/matlab_scilab_connector/scilab/PAscheduler/help/en_US/PApauseJob.xml">
+<!ENTITY a68f8e13ca2aeddf9ed0f532ea09f79b2 SYSTEM "/home/fviale/eclipse_workspace/matlab_scilab_connector/scilab/PAscheduler/help/en_US/PAresumeJob.xml">
+<!ENTITY a0dd814231e186486e017f866e3b88435 SYSTEM "/home/fviale/eclipse_workspace/matlab_scilab_connector/scilab/PAscheduler/help/en_US/PAsolve.xml">
+<!ENTITY a036f6b7a9eeb1bcb5554b8e03b730a5e SYSTEM "/home/fviale/eclipse_workspace/matlab_scilab_connector/scilab/PAscheduler/help/en_US/PAstate.xml">
+<!ENTITY a497025686b9546c2137f7046764b64a6 SYSTEM "/home/fviale/eclipse_workspace/matlab_scilab_connector/scilab/PAscheduler/help/en_US/PAtaskOutput.xml">
+<!ENTITY a3636b93035ca979b4d0a024c2e06550c SYSTEM "/home/fviale/eclipse_workspace/matlab_scilab_connector/scilab/PAscheduler/help/en_US/PAtaskResult.xml">
+<!ENTITY a955e2f249b418d27e14f2af34480002e SYSTEM "/home/fviale/eclipse_workspace/matlab_scilab_connector/scilab/PAscheduler/help/en_US/PAwaitAny.xml">
+<!ENTITY aaf7188be3e65ac780fd739e2b1d82d85 SYSTEM "/home/fviale/eclipse_workspace/matlab_scilab_connector/scilab/PAscheduler/help/en_US/PAwaitFor.xml">
+<!--End Entities-->
+]>
+<book version="5.0-subset Scilab" xml:lang="fr_FR"
+      xmlns="http://docbook.org/ns/docbook"
+      xmlns:xlink="http://www.w3.org/1999/xlink"
+      xmlns:xi="http://www.w3.org/2001/XInclude"
+      xmlns:svg="http://www.w3.org/2000/svg"
+      xmlns:mml="http://www.w3.org/1998/Math/MathML"
+      xmlns:html="http://www.w3.org/1999/xhtml"
+      xmlns:db="http://docbook.org/ns/docbook">
+  <info xml:id='pascheduler_manual'>
+    <title>PAscheduler</title>
+  </info>
+
+<part xml:id='section_803522316d18499f6c7c4be2d42b0e6f'>
+<title>PAscheduler</title>
+&aa1c9664c4fb5cfa24682b19b8b81e95c;
+&aa8f5fd6155c7f0483c2aa5d3855db46a;
+&a2591a9f88aa29e808e221aeb890fc811;
+&a81a08bdba3557231b4d474dd974dec91;
+&a66f3ba4206115677661c950129d9d538;
+&ad61d53139e3fa0f955bb2c6f466a6d8e;
+&a2aa0280277903c58f103c24edfc31e9b;
+&a647594abf2334a1abf1024cd1b93b531;
+&a74ab2542ae333272d02a9806413f51f1;
+&aad1feb5449ec09c83a88db0ff0283443;
+&a9eaa58d2bf6bd737433db0aa3696e488;
+&aba736f00978a85b183954460aaf50c58;
+&ae7d144c4e88acc4168c042cfedb090d8;
+&aeac10663e11d36d31371f5ca5ba64943;
+&a09a244f3c8c801b32a65b185efadf8a4;
+&a10ada37531fff9648436a44c7b74badf;
+&aaebec52c063cab0e3252b444e66ec8f8;
+&a4a98f728e0346e0b4e1f8509f3d349d7;
+&a68f8e13ca2aeddf9ed0f532ea09f79b2;
+&a0dd814231e186486e017f866e3b88435;
+&a036f6b7a9eeb1bcb5554b8e03b730a5e;
+&a497025686b9546c2137f7046764b64a6;
+&a3636b93035ca979b4d0a024c2e06550c;
+&a955e2f249b418d27e14f2af34480002e;
+&aaf7188be3e65ac780fd739e2b1d82d85;
+</part>
+</book>

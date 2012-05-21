@@ -1,0 +1,14 @@
+
+For a major or minor release (aka x.y.0):
+	- Create a dedicated branch
+		- Set serialVersionUid to xy for all serializable class
+		- Check copyrights
+		- Check version in LICENSE_EXCEPTION.txt
+		
+Then, for a major, minor or maintenance release (aka x.y.z):
+
+	- Build the release
+		- cd MATSCI_HOME
+		- dev/release/releaseit.sh . /path/to/generated/RCP x.y.z path/to/store/final/release/archives [$JAVA_HOME]
+		- complete release can now be found in path/to/store/final/release/archives
+
