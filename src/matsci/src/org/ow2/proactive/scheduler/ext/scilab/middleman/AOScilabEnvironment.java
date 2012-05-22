@@ -36,8 +36,6 @@
  */
 package org.ow2.proactive.scheduler.ext.scilab.middleman;
 
-import org.apache.log4j.Logger;
-import org.objectweb.proactive.core.util.log.ProActiveLogger;
 import org.ow2.proactive.scheduler.common.exception.SchedulerException;
 import org.ow2.proactive.scheduler.common.exception.UserException;
 import org.ow2.proactive.scheduler.common.job.JobPriority;
@@ -47,7 +45,6 @@ import org.ow2.proactive.scheduler.common.task.JavaTask;
 import org.ow2.proactive.scheduler.common.task.ParallelEnvironment;
 import org.ow2.proactive.scheduler.common.task.dataspaces.InputAccessMode;
 import org.ow2.proactive.scheduler.common.task.dataspaces.OutputAccessMode;
-import org.ow2.proactive.scheduler.common.util.SchedulerLoggers;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.data.*;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.exception.PASchedulerException;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.exception.PASolveException;
@@ -77,11 +74,6 @@ import java.util.TreeSet;
  * @author The ProActive Team
  */
 public class AOScilabEnvironment extends AOMatSciEnvironment<ScilabType, ScilabResultsAndLogs> {
-
-    /**
-     * log4j logger
-     */
-    protected static Logger logger = ProActiveLogger.getLogger(SchedulerLoggers.SCILAB);
 
     public AOScilabEnvironment() {
         super();

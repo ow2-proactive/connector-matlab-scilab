@@ -106,7 +106,7 @@
                 source="${source}"
                 debug="${debug}"  >
 
-            <classpath refid="matsci.libs"/>
+            <classpath refid="all.libs"/>
             <include name="**/*.java"/>
         </javac>
 
