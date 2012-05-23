@@ -135,16 +135,9 @@ sched = PAScheduler;
 % Get the solver from memory
 solver = sched.PAgetsolver();
 if strcmp(class(solver),'double')
-    error('This Matlab session is not connected to a Scheduler.');
+    error('A connection to the ProActive scheduler must be established in order to use PAsolve, see PAconnect.');
 end
-try
-    tst = solver.isConnected();
-catch ME
-    error('This Matlab session is not connected to a Scheduler.');
-end
-if ~tst
-    error('This Matlab session is not connected to a Scheduler.');
-end
+
 
 opt = PAoptions;
 solve_config = org.ow2.proactive.scheduler.ext.matlab.common.data.PASolveMatlabGlobalConfig();
@@ -265,6 +258,11 @@ initOtherTCAttributes(NN,MM, task_config, Tasks);
 initSolveConfig(solve_config,opt,sched);
 
 % Send the task list to the scheduler
+
+ if ~PAisConnected()
+     schedUrl = solver.getSchedulerURL();
+     error(['This Scilab session was disconnected from the scheduler at ' char(schedUrl) ', please contact the scheduler administrators and reconnect using PAconnect']);
+ end
 
 jobinfo = solver.solve(solve_config, task_config);
 

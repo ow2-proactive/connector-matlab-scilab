@@ -73,6 +73,11 @@ function outputs = PAsolve(varargin)
        
     //addJavaObj(ScilabSolver);
     //addJavaObj(PAFuture);
+    
+    if ~PAisConnected() then
+        schedUrl = jinvoke(PA_solver,'getSchedulerURL');
+        error('This Scilab session was disconnected from the scheduler at ' +schedUrl +', please contact the scheduler administrators and reconnect using PAconnect');
+    end
         
     jobinfo = PA_solver.solve(solve_config, task_configs);    
     addJavaObj(jobinfo);    

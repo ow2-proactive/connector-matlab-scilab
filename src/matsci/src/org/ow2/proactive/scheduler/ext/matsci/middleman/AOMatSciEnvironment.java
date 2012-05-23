@@ -167,6 +167,11 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
      */
     protected SchedulerAuthenticationInterface auth;
 
+    /**
+     * URL of the scheduler
+     */
+    protected String schedulerURL = null;
+
     /**********************************************************************************************************
      ************************************** LOGIN AND CONNECTION *********************************************/
 
@@ -333,6 +338,11 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         }
     }
 
+    /** {@inheritDoc} */
+    public String getLogFilePath() {
+        return MatSciJVMProcessInterfaceImpl.getLogFilePath();
+    }
+
     /*
      * (non-Javadoc)
      *
@@ -359,11 +369,17 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         try {
             auth = SchedulerConnection.join(url);
         } catch (ConnectionException e) {
+            printLog(e, false, true);
             return false;
         }
+        schedulerURL = url;
         this.loggedin = false;
         joined = true;
         return true;
+    }
+
+    public String getSchedulerURL() {
+        return schedulerURL;
     }
 
     /** {@inheritDoc} */
@@ -378,25 +394,34 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
     }
 
     protected void printLog(final String message) {
-        printLog(message, false);
+        printLog(message, false, false);
     }
 
-    protected void printLog(final String message, boolean force) {
-        if (!debug && !force) {
+    protected void printLog(final String message, boolean forceOut, boolean forceFile) {
+        if (!debug && !forceOut && !forceFile) {
             return;
         }
-        MatSciJVMProcessInterfaceImpl.printLog(this, message);
+        if (debug) {
+            MatSciJVMProcessInterfaceImpl.printLog(this, message, true, true);
+        } else {
+            MatSciJVMProcessInterfaceImpl.printLog(this, message, forceOut, forceFile);
+        }
     }
 
     protected void printLog(final Throwable ex) {
-        printLog(ex, false);
+        printLog(ex, false, false);
     }
 
-    protected void printLog(final Throwable ex, boolean force) {
-        if (!debug && !force) {
+    protected void printLog(final Throwable ex, boolean forceOut, boolean forceFile) {
+        if (!debug && !forceOut && !forceFile) {
             return;
         }
-        MatSciJVMProcessInterfaceImpl.printLog(this, ex);
+        if (debug) {
+            MatSciJVMProcessInterfaceImpl.printLog(this, ex, true, true);
+        } else {
+            MatSciJVMProcessInterfaceImpl.printLog(this, ex, forceOut, forceFile);
+        }
+
     }
 
     /**********************************************************************************************************

@@ -94,7 +94,7 @@ public class AODataspaceRegistry implements DataspaceRegistry {
         if (!debug) {
             return;
         }
-        MatSciJVMProcessInterfaceImpl.printLog(this, message);
+        MatSciJVMProcessInterfaceImpl.printLog(this, message, true, true);
     }
 
     /** {@inheritDoc} */

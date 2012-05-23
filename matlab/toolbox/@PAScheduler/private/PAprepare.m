@@ -65,7 +65,7 @@ proactiveset = 0;
 jcp = javaclasspath();
 for i=1:length(jcp)
     line = jcp{i};
-    if findstr(line,'ProActive_Scheduler-matsciemb.jar')
+    if findstr(line,opt.EmbeddedJars{1})
         proactiveset = 1;
     end
 end

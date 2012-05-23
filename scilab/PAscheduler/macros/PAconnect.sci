@@ -35,7 +35,8 @@ function [] = PAconnect(uri,credpath)
     if ~isConnected then
         ok = jinvoke(PA_solver,'join', uri);
         if ~ok then
-            error('PAConnect::Error wile connecting to ' + uri);
+            logPath = jinvoke(PA_solver,'getLogFilePath');
+            error('PAConnect::Error wile connecting to ' + uri +', detailed error message has been logged to ' + logPath);
         end
         dataspaces(opt);
         disp(strcat(['Connection successful to ', uri]));

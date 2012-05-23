@@ -19,11 +19,13 @@ function [] = PAinit()
     else
         dist_lib_dir = fullfile(PA_matsci_dir,'dist','lib');
     end   
-    schedjar=fullfile(dist_lib_dir,'ProActive_Scheduler-matsciemb.jar'); 
+    opt=PAoptions();
+    
+    schedjar=fullfile(dist_lib_dir,opt.EmbeddedJars(1).entries); 
     if length(fileinfo(schedjar)) == 0 
         error('Can''t locate the scheduler jar at '''+schedjar);
     end    
-    opt=PAoptions();
+    
 
     jimport java.io.File;
             

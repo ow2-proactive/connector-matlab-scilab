@@ -90,6 +90,18 @@ public interface MatSciEnvironment extends Remote {
     public boolean isJoined() throws RemoteException;
 
     /**
+     * Returns the url of the scheduler currently connected to
+     * @return scheduler url
+     */
+    public String getSchedulerURL() throws RemoteException;
+
+    /**
+     * Returns the path to the log file
+     * @return path to log file
+     */
+    public String getLogFilePath() throws RemoteException;
+
+    /**
      * Ensures that the current environment is connected to the scheduler, reconnect if not.
      * @throws org.ow2.proactive.scheduler.ext.matsci.client.common.exception.PASchedulerException if an exception occurs during reconnection
      * @throws java.rmi.RemoteException

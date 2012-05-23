@@ -121,7 +121,8 @@ if ~isConnected
     solver = sched.PAgetsolver();    
     ok = solver.join(url);
     if ~ok
-        error(['PAconnect::Error ProActive Scheduler cannot be contacted at URL ' url ]);
+        logPath = solver.getLogFilePath();
+        error(['PAconnect::Error ProActive Scheduler cannot be contacted at URL ' url ', detailed error message has been logged to ' char(logPath)]);
     end
     dataspaces(sched, opt);
 else
