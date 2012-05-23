@@ -42,11 +42,6 @@ try
     solver = sched.PAgetsolver();
     if strcmp(class(solver),'double')
         return;
-    end
-    if ~PAisConnected()
-        warning('The matlab session is not connected to the scheduler, complete cleaning cannot be done');
-        pause(1);
-        return;
     end    
     jobs = sched.PATaskRepository('uncomplete');
 
