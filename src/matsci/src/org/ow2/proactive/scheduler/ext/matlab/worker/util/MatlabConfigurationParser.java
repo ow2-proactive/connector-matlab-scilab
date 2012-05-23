@@ -39,8 +39,7 @@ package org.ow2.proactive.scheduler.ext.matlab.worker.util;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
-import org.objectweb.proactive.core.runtime.ProActiveRuntimeImpl;
-import org.ow2.proactive.scheduler.core.properties.PASchedulerProperties;
+import org.ow2.proactive.scheduler.ext.matsci.common.properties.MatSciProperties;
 import org.ow2.proactive.scheduler.ext.matsci.worker.util.MatSciConfigurationParser;
 import org.ow2.proactive.scheduler.ext.matsci.worker.util.MatSciEngineConfig;
 
@@ -59,40 +58,14 @@ import java.util.regex.Matcher;
  */
 public class MatlabConfigurationParser extends MatSciConfigurationParser {
 
-    static final String DEFAULT_CONFIG_PATH = "extensions/matlab/config/worker/MatlabConfiguration.xml";
+    static final String DEFAULT_CONFIG_PATH = "addons/MatlabConfiguration.xml";
 
     static Document document;
     static Element racine;
 
     public static ArrayList<MatSciEngineConfig> getConfigs(boolean debug) throws Exception {
-        String homestr = null;
 
-        try {
-            homestr = ProActiveRuntimeImpl.getProActiveRuntime().getProActiveHome();
-        } catch (Exception e) {
-            // Try to locate dynamically for the location of the current class file
-            final String path = MatlabConfigurationParser.class.getProtectionDomain().getCodeSource()
-                    .getLocation().getPath();
-            final File f = new File(path);
-            File schedulerHome = null;
-
-            // If the path contains 'classes' the scheduler home 2 parent dirs
-            if (path.contains("classes")) {
-                schedulerHome = f.getParentFile().getParentFile();
-            } else { // means its in dist
-                schedulerHome = f.getParentFile();
-            }
-
-            homestr = schedulerHome.getAbsolutePath();
-
-            // Unable to locate dynamically the location of the scheduler home throw
-            // exception to inform about the initial problem
-            if (!(new File(homestr)).exists()) {
-                throw e;
-            }
-        }
-
-        File homesched = new File(homestr);
+        File schedHome = MatSciProperties.findSchedulerHome();
 
         // To find the config file path :
         // 1 - Check the scheduler config
@@ -100,14 +73,14 @@ public class MatlabConfigurationParser extends MatSciConfigurationParser {
         // 3 - If not found use default config path
 
         // 1 - Check the scheduler config
-        String configFilePath = PASchedulerProperties.MATLAB_WORKER_CONFIGURATION_FILE.getValueAsString();
+        String configFilePath = MatSciProperties.MATLAB_WORKER_LOCAL_CONFIGURATION_FILE.getValueAsString();
         if (configFilePath == null || "".equals(configFilePath)) {
             // 2 - If not found check for property
-            configFilePath = System.getProperty(PASchedulerProperties.MATLAB_WORKER_CONFIGURATION_FILE
+            configFilePath = System.getProperty(MatSciProperties.MATLAB_WORKER_LOCAL_CONFIGURATION_FILE
                     .getKey());
             if (configFilePath == null || "".equals(configFilePath)) {
                 // 3 - If not defined use default config path relative to scheduler home
-                configFilePath = homestr + File.separator + DEFAULT_CONFIG_PATH;
+                configFilePath = DEFAULT_CONFIG_PATH;
             }
         }
         File configFile = null;
@@ -118,6 +91,11 @@ public class MatlabConfigurationParser extends MatSciConfigurationParser {
             System.out.println("MatlabConfigurationParser.getConfigs() --> path " + configFilePath);
             e.printStackTrace();
         }
+
+        if (!configFile.isAbsolute()) {
+            configFile = new File(schedHome + File.separator + configFilePath);
+        }
+
         if (!configFile.exists() || !configFile.canRead()) {
             throw new FileNotFoundException(configFile + " not found, aborting...");
         }

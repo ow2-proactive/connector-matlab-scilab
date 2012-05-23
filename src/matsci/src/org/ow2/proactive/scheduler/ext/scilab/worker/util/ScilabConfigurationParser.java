@@ -39,9 +39,8 @@ package org.ow2.proactive.scheduler.ext.scilab.worker.util;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
-import org.objectweb.proactive.core.runtime.ProActiveRuntimeImpl;
 import org.objectweb.proactive.utils.OperatingSystem;
-import org.ow2.proactive.scheduler.core.properties.PASchedulerProperties;
+import org.ow2.proactive.scheduler.ext.matsci.common.properties.MatSciProperties;
 import org.ow2.proactive.scheduler.ext.matsci.worker.util.MatSciConfigurationParser;
 import org.ow2.proactive.scheduler.ext.matsci.worker.util.MatSciEngineConfig;
 
@@ -60,7 +59,7 @@ import java.util.regex.Matcher;
  */
 public class ScilabConfigurationParser extends MatSciConfigurationParser {
 
-    static final String configPath = "extensions/scilab/config/worker/ScilabConfiguration.xml";
+    static final String DEFAULT_CONFIG_PATH = "addons/ScilabConfiguration.xml";
 
     protected static OperatingSystem os = OperatingSystem.getOperatingSystem();
 
@@ -68,25 +67,36 @@ public class ScilabConfigurationParser extends MatSciConfigurationParser {
     static Element racine;
 
     public static ArrayList<MatSciEngineConfig> getConfigs(boolean debug) throws Exception {
-        File configFile = null;
+
         ArrayList<MatSciEngineConfig> configs = new ArrayList<MatSciEngineConfig>();
 
-        String homestr = ProActiveRuntimeImpl.getProActiveRuntime().getProActiveHome();
-        File homesched = new File(homestr);
-        if (PASchedulerProperties.SCILAB_WORKER_CONFIGURATION_FILE.getValueAsString() != null &&
-            !"".equals(PASchedulerProperties.SCILAB_WORKER_CONFIGURATION_FILE.getValueAsString())) {
+        File schedHome = MatSciProperties.findSchedulerHome();
 
-            configFile = new File(PASchedulerProperties.SCILAB_WORKER_CONFIGURATION_FILE.getValueAsString());
+        String configFilePath = MatSciProperties.SCILAB_WORKER_LOCAL_CONFIGURATION_FILE.getValueAsString();
+        if (configFilePath == null || "".equals(configFilePath)) {
+            // 2 - If not found check for property
+            configFilePath = System.getProperty(MatSciProperties.SCILAB_WORKER_LOCAL_CONFIGURATION_FILE
+                    .getKey());
 
-        } else if (System.getProperty(PASchedulerProperties.SCILAB_WORKER_CONFIGURATION_FILE.getKey()) != null) {
-
-            configFile = new File(System.getProperty(PASchedulerProperties.SCILAB_WORKER_CONFIGURATION_FILE
-                    .getKey()));
-
+            if (configFilePath == null || "".equals(configFilePath)) {
+                // 3 - If not defined use default config path relative to scheduler home
+                configFilePath = DEFAULT_CONFIG_PATH;
+            }
         }
-        if (configFile == null) {
-            configFile = new File(homesched, configPath);
+
+        File configFile = null;
+        try {
+            // Check if the config file exists at the specified path
+            configFile = new File(configFilePath);
+        } catch (Exception e) {
+            System.out.println("ScilabConfigurationParser.getConfigs() --> path " + configFilePath);
+            e.printStackTrace();
         }
+
+        if (!configFile.isAbsolute()) {
+            configFile = new File(schedHome + File.separator + configFilePath);
+        }
+
         if (!configFile.exists() || !configFile.canRead()) {
             throw new FileNotFoundException(configFile + " not found, aborting...");
         }

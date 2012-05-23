@@ -37,11 +37,6 @@
 package org.ow2.proactive.scheduler.ext.matsci.worker.util;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.JarURLConnection;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLConnection;
 
 
 /**
@@ -50,25 +45,6 @@ import java.net.URLConnection;
  * @author The ProActive Team
  */
 public class MatSciConfigurationParser {
-
-    protected static File findSchedulerHome() throws IOException, URISyntaxException {
-        File home = null;
-        Class cz = MatSciConfigurationParser.class;
-        URL res = cz.getResource("/org/ow2/proactive/scheduler");
-        if (res == null)
-            throw new IllegalStateException("Can't find resource /org/ow2/proactive/scheduler");
-        URLConnection conn = res.openConnection();
-        if (conn instanceof JarURLConnection) {
-            URL jarFileURL = ((JarURLConnection) conn).getJarFileURL();
-            File jarFile = new File(jarFileURL.toURI());
-            home = jarFile.getParentFile().getParentFile().getParentFile();
-        } else {
-            File ext = new File(res.toURI());
-            home = ext.getParentFile().getParentFile().getParentFile().getParentFile().getParentFile()
-                    .getParentFile();
-        }
-        return home;
-    }
 
     protected static void checkDir(File dir, File conf) {
         if (!dir.exists()) {

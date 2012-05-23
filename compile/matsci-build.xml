@@ -165,6 +165,18 @@
                  <include name="matsci/**/*.jar" />
             </fileset>
         </copy>
+        <copy todir="${scheduling.project.dir}/addons" flatten="yes"  >
+              <fileset dir="${base.dir}/matlab/config/worker">
+                         <include name="*.xml" />
+              </fileset>
+        </copy>
+        <copy todir="${scheduling.project.dir}/addons" flatten="yes" >
+                      <fileset dir="${base.dir}/scilab/config/worker">
+                                 <include name="*.xml" />
+                      </fileset>
+        </copy>
+        <copy todir="${scheduling.project.dir}/addons" flatten="yes"  file="${base.dir}/config/matlab_scilab_connector.ini"/>
+
     </target>
 
     <!-- ************
