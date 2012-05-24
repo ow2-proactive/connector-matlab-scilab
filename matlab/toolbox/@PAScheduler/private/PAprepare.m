@@ -84,6 +84,8 @@ if ~proactiveset
     for i=1:length(jars)
         javaaddpath(jarsFullPath{i},'-END');
     end
+
+    java.lang.System.setProperty('java.rmi.server.RMIClassLoaderSpi','default');
         
     warning('on')
     

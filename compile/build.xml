@@ -8,7 +8,7 @@
 	<import file="../doc/src/build.xml" optional="true"/>
 	
     <target name="copy.dependencies" description="Copy dependencies from the compiled Scheduling project">
-        <copy todir="${lib.dir}/scheduling" overwrite="true">
+        <copy todir="${lib.dir}/scheduling" overwrite="false">
             <fileset dir="${scheduling.project.dir}/dist/lib" includes="*/**" />
         </copy>
     </target>
