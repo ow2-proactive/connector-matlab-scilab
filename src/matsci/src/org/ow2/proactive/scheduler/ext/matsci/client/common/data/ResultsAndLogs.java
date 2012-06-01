@@ -87,9 +87,9 @@ public class ResultsAndLogs<R> implements Serializable {
 
     public void setLogs(String logs) {
         if (logs == null) {
-            this.logs = this.jobId + ": " + this.taskName;
+            this.logs = "Job " + this.jobId + ": " + "Task " + this.taskName;
         } else {
-            this.logs = this.jobId + ": " + this.taskName + nl + logs;
+            this.logs = "Job " + this.jobId + ": " + "Task " + this.taskName + nl + logs;
         }
         compressLogs();
     }

@@ -21,7 +21,7 @@ end;
 
 // JIMS install check
 if ~atomsIsInstalled('JIMS')
-    //error('JIMS Atoms Module must be installed in order to use ProActive Scheduler Module');
+    error('JIMS Atoms Module must be installed in order to use ProActive Scheduler Module');
 end
 
 disp('Start ProActive');

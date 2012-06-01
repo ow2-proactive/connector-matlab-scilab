@@ -1,10 +1,14 @@
-function [ok, msg]=TestBasic(timeout)
+function [ok, msg]=TestBasic(nbiter,timeout)
     if ~exists('timeout')
         if (getos() == "Windows")
             timeout = 200000;
         else
             timeout = 80000;
         end
+    end
+    
+    if ~exists('nbiter')
+        nbiter = 1;
     end
 
     function [out]=funcSquare(in)
@@ -27,51 +31,58 @@ function [ok, msg]=TestBasic(timeout)
     function [ok,msg]=checkValuesSquare2(val)
         [ok,msg]=checkValues(val,list([],1,4,9,25), 'funcSquare');
     endfunction
+    
+    function [ok,msg]=checkValuesSquare4(val)
+        [ok,msg]=checkValues(val,list(0,1,4,9,25), 'funcSquare');
+    endfunction
 
     function [ok,msg]=checkValuesSquare3(val)
         [ok,msg]=checkValues(val,list(1,4,9), 'funcSquare');
     endfunction
 
     function [ok,msg]=checkValues(val,right,name)
-        if length(right) ~= length(val)
-            ok = %f;
-            msg = 'Wrong number of outputs';
-        else
-            for i=1:length(right)
-                if typeof(val) == 'list'
-                    if val(i) ~= right(i)
-                        ok = %f;
-                        msg = 'TestBasic::Wrong value of '+ name+ '(' + string(i) +'), received '+ string(val(i))+ ', expected ' + string(right(i));                
-                    else
-                        ok = %t;
-                        msg = [];
-                    end
+    if length(right) ~= length(val)
+        ok = %f;
+        msg = 'Wrong number of outputs';
+    else
+        for i=1:length(right)
+            if typeof(val) == 'list'
+                if val(i) ~= right(i)
+                    ok = %f;
+                    msg = 'TestBasic::Wrong value of '+ name+ '(' + string(i) +'), received '+ string(val(i))+ ', expected ' + string(right(i));                
                 else
-                    if val(i) ~= right(i)
-                        ok = %f;
-                        msg = 'TestBasic::Wrong value of '+ name +'(' + string(i)+ '), received '+ string(val(i))+ ', expected ' + string(right(i));
+                    ok = %t;
+                    msg = [];
+                end
+            else
+                if val(i) ~= right(i)
+                    ok = %f;
+                    msg = 'TestBasic::Wrong value of '+ name +'(' + string(i)+ '), received '+ string(val(i))+ ', expected ' + string(right(i));
 
-                    else 
-                        ok = %t;
-                        msg = [];
-                    end
+                else 
+                    ok = %t;
+                    msg = [];
                 end
             end
-            if ~ok then
-                disp('Received:');
-                disp(val)
-            end
-
         end
-    endfunction
+        if ~ok then
+            disp('Received:');
+            disp(val)
+        end
 
+    end
+    endfunction
+for kk=1:nbiter 
+    disp('-------------------------------------');  
+    disp('------------------------Iteration ' + string(kk));     
+    disp('-------------------------------------');
     disp('...... Testing PAsolve with factorial');
     disp('..........................1 PAwaitFor');
     resl = PAsolve('factorial',1,2,3,4,5);
     val=PAwaitFor(resl,timeout)
-    disp(val);
-    PAclearResults(resl);
+    disp(val);    
     [ok,msg]=checkValuesFact(val);
+    PAclearResults(resl);
     if ~ok error(msg); end
     disp('..........................1 ......OK');
     clear val;
@@ -80,11 +91,11 @@ function [ok, msg]=TestBasic(timeout)
     resl = PAsolve('factorial',1,2,3,4,5);
     for i=1:5
         val(i)=PAwaitAny(resl,timeout)
-    end
-    PAclearResults(resl);
+    end    
     disp(val);
     val=gsort(val,"g","i");
     [ok,msg]=checkValuesFact(val);
+    PAclearResults(resl);
     if ~ok error(msg); end
     disp('..........................2 ......OK');
     clear val;
@@ -93,33 +104,36 @@ function [ok, msg]=TestBasic(timeout)
     disp('...... Testing PAsolve with funcSquare and an error');
     disp('..........................3 PAwaitFor');
     resl = PAsolve('funcSquare',1,2,3,'a',5);
-    val=PAwaitFor(resl(1:5),timeout)
-        
-    PAclearResults(resl);
+    val=PAwaitFor(resl(1:5),timeout)            
     disp(val)
     [ok,msg]=checkValuesSquare(val);
+    PAclearResults(resl);
     if ~ok error(msg); end
     disp('..........................3 ......OK');
     clear val;
 
     disp('..........................4 PAwaitAny');
     resl = PAsolve('funcSquare',1,2,3,'a',5);
-    k=1;
     val=[];
     for i=1:5
-        
-        //printf('k=%d\n',k)
-        vl=PAwaitAny(resl,timeout);
-            //disp(vl)
-        val(k) = vl;
-        k=k+1;                
+        //printf('k=%d\n',k)        
+        vl=PAwaitAny(resl,timeout);        
+        //disp(vl)
+        if isempty(vl) then
+            val(i) = 0; 
+        else
+            val(i) = vl;
+        end                              
     end
-    PAclearResults(resl);
+    disp(val)
     val=gsort(val,"g","i");
-    [ok,msg]=checkValuesSquare2(val);
+
+    [ok,msg]=checkValuesSquare4(val);
+    PAclearResults(resl);
     if ~ok error(msg); end
     disp('..........................4 ......OK');
     clear val;
+end
 
 endfunction
 

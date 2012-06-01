@@ -11,6 +11,14 @@
         <copy todir="${lib.dir}/scheduling" overwrite="false">
             <fileset dir="${scheduling.project.dir}/dist/lib" includes="*/**" />
         </copy>
+
+        <copy todir="${dev.dir}/scheduling/bin" overwrite="false">
+            <fileset dir="${scheduling.project.dir}/bin" includes="*/**" />
+         </copy>
+        <copy todir="${dev.dir}/scheduling/config" overwrite="false">
+              <fileset dir="${scheduling.project.dir}/config" includes="*/**" />
+         </copy>
+
     </target>
     
 	<!-- ************
@@ -28,7 +36,7 @@
 	<!-- ************
 		Junit tests
 	-->
-	<target name="junit.all"  description="Run all tests">
+	<target name="junit.all"  depends="junit.matsci" description="Run all tests">
 		<antcall target="junit.summary" />
 	</target>
 

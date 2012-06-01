@@ -48,6 +48,7 @@ function [val_k,index]=PAwaitAny(l,timeout)
         if ~isempty(err) then
             warning(err);
             warning('PAwaitAny:Error occured')
+            val_k = [];
         end
     else        
         error('Expected argument of type PAResL, received '+typeof(l))

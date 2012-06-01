@@ -1,10 +1,19 @@
-function [ok, msg]=TestPATaskWithGS(timeout)
-    
-    
+function [ok, msg]=TestPATaskWithGS(nbiter,timeout)
+    if ~exists('timeout')
+        if (getos() == "Windows")
+            timeout = 500000;
+        else
+            timeout = 200000;
+        end
+    end
+    if ~exists('nbiter')
+        nbiter = 1;
+    end  
+
     opt = PAoptions();
-    
+
     testdir = fullfile(opt.MatSciDir, 'scilab', 'PAscheduler','unit_tests');
-    
+
     if pwd() ~= testdir then
         error('TestPATask must be run in directory '+testdir);
     end
@@ -32,83 +41,81 @@ function [ok, msg]=TestPATaskWithGS(timeout)
         save(fileout, res);
         resf=%t;
     endfunction
-    
+
     function b=id(a)
         b=a;
     endfunction
 
     rand("seed", 1);
 
-    if ~exists('timeout')
-        if (getos() == "Windows")
-            timeout = 500000;
-        else
-            timeout = 200000;
+    for kk=1:nbiter
+        disp('-------------------------------------');  
+        disp('------------------------Iteration ' + string(kk));     
+        disp('-------------------------------------');
+
+        disp('...... Testing PAsolve with PATasks');
+
+        // Evaluate bias and variance for these lambdas 
+        //lambdas=[0.1:0.1:0.5 1:10 100:100:1000 1000:1000:10000];
+        lambdas=[0.1:0.1:0.5 1:10 100:100:1000 1000:1000:10000];
+        //lambdas=[0.1];
+        //lambdas=['a' 'a' 'a'];
+
+        b_bias = []; b_variance = []; // Store results here
+
+        fs = filesep();
+
+        // Loading source file
+        srcName = 'estimate.sci';
+        //src = strcat([tstdir, fs, srcName]);
+
+        tic();
+        sz=size(lambdas,2);
+        tsk = PATask(2,sz);
+        tsk(1,1:sz).Func = 'myestimate';
+        tsk(1,1:sz).Sources = srcName;
+
+        tsk(2,1:sz).Func = 'id';
+
+        for i=1:size(lambdas,2) // For each lambda  
+            lambda = lambdas(i);
+            // Input file for each task
+            inputfileName = 'input_'+string(i)+'.dat';
+            save(inputfileName, lambda);
+            //inputfile = tstdir + fs + inputfileName;
+            tsk(1,i).InputFiles = inputfileName;        
+
+            tsk(1,i).Description = 'estimate('+string(lambda)+')';  
+            // Output file for each task
+            outputfileName =  'output_'+string(i)+'.dat';
+            //outputfile = tstdir+fs+outputfileName;
+            tsk(1,i).OutputFiles = outputfileName;
+            tsk(1,i).OutputSource = 'global';
+            tsk(1,i).Params = list(inputfileName, outputfileName);   
+
+            tsk(2,i).InputFiles = outputfileName;
+            tsk(2,i).InputSource = 'global';
+            tsk(2,i).Params = list(%t);
+            tsk(2,i).Description = 'id';  
         end
+        resl = PAsolve(tsk);
+
+        val = PAwaitFor(resl,timeout);
+        for i=1:length(val) // For each lambda
+            load( 'output_'+ string(i)+ '.dat');
+            b_bias($+1) = res(1);
+            b_variance($+1) = res(2);
+        end
+        PAclearResults(resl);
+
+        printf("\n Time: %f\n", toc());
+
+
+        [ok,msg]=checkValuesEst(b_bias,b_variance);    
+        if ~ok error(msg); end 
+        if ok then
+            disp('................................OK');
+        end  
     end
-
-    disp('...... Testing PAsolve with PATasks');
-
-    // Evaluate bias and variance for these lambdas 
-    //lambdas=[0.1:0.1:0.5 1:10 100:100:1000 1000:1000:10000];
-    lambdas=[0.1:0.1:0.5 1:10 100:100:1000 1000:1000:10000];
-    //lambdas=[0.1];
-    //lambdas=['a' 'a' 'a'];
-
-    b_bias = []; b_variance = []; // Store results here
-
-    fs = filesep();
-
-    // Loading source file
-    srcName = 'estimate.sci';
-    //src = strcat([tstdir, fs, srcName]);
-
-    tic();
-    sz=size(lambdas,2);
-    tsk = PATask(2,sz);
-    tsk(1,1:sz).Func = 'myestimate';
-    tsk(1,1:sz).Sources = srcName;
-    
-    tsk(2,1:sz).Func = 'id';
-
-    for i=1:size(lambdas,2) // For each lambda  
-        lambda = lambdas(i);
-        // Input file for each task
-        inputfileName = 'input_'+string(i)+'.dat';
-        save(inputfileName, lambda);
-        //inputfile = tstdir + fs + inputfileName;
-        tsk(1,i).InputFiles = inputfileName;        
-
-        tsk(1,i).Description = 'estimate('+string(lambda)+')';  
-        // Output file for each task
-        outputfileName =  'output_'+string(i)+'.dat';
-        //outputfile = tstdir+fs+outputfileName;
-        tsk(1,i).OutputFiles = outputfileName;
-        tsk(1,i).OutputSource = 'global';
-        tsk(1,i).Params = list(inputfileName, outputfileName);   
-        
-        tsk(2,i).InputFiles = outputfileName;
-        tsk(2,i).InputSource = 'global';
-        tsk(2,i).Params = list(%t);
-         tsk(2,i).Description = 'id';  
-    end
-    resl = PAsolve(tsk);
-
-    val = PAwaitFor(resl,timeout);
-    for i=1:length(val) // For each lambda
-        load( 'output_'+ string(i)+ '.dat');
-        b_bias($+1) = res(1);
-        b_variance($+1) = res(2);
-    end
-    PAclearResults(resl);
-
-    printf("\n Time: %f\n", toc());
-
-
-    [ok,msg]=checkValuesEst(b_bias,b_variance);    
-    if ~ok error(msg); end 
-    if ok then
-        disp('................................OK');
-    end  
 
 endfunction

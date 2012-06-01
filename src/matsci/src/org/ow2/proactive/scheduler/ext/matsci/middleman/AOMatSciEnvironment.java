@@ -262,9 +262,10 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
 
             public void run() {
                 try {
-                    scheduler.disconnect();
-                } catch (NotConnectedException e) {
-                } catch (PermissionException e) {
+                    if (scheduler != null) {
+                        scheduler.disconnect();
+                    }
+                } catch (Exception e) {
                 }
             }
         }));
@@ -302,19 +303,21 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
 
     /** {@inheritDoc} */
     public boolean disconnect() {
-        try {
-            this.scheduler.disconnect();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        if (scheduler != null) {
+            try {
+                this.scheduler.disconnect();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
-        this.scheduler = null;
-        this.model = null;
-        this.auth = null;
-        loggedin = false;
-        joined = false;
-        schedulerKilled = false;
-        schedulerStopped = false;
+            this.scheduler = null;
+            this.model = null;
+            this.auth = null;
+            loggedin = false;
+            joined = false;
+            schedulerKilled = false;
+            schedulerStopped = false;
+        }
         return true;
     }
 
@@ -356,11 +359,11 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
 
     public void endActivity(org.objectweb.proactive.Body body) {
         try {
-            scheduler.disconnect();
-        } catch (NotConnectedException e) {
-            e.printStackTrace();
-        } catch (PermissionException e) {
-            e.printStackTrace();
+            if (scheduler != null) {
+                scheduler.disconnect();
+            }
+        } catch (Exception e) {
+
         }
     }
 
