@@ -84,8 +84,13 @@ public class AbstractScilabTest extends FunctionalTest {
         ProcessBuilder pb = new ProcessBuilder();
         pb.directory(sci_tb_home);
         pb.redirectErrorStream(true);
-
-        pb.command("scilab", "-nw", "-f", (new File(test_home + fs + "PrepareTest.sci")).getCanonicalPath());
+        if (System.getProperty("scilab.bin.path") != null) {
+            pb.command(System.getProperty("scilab.bin.path"), "-nw", "-f", (new File(test_home + fs +
+                "PrepareTest.sci")).getCanonicalPath());
+        } else {
+            pb.command("scilab", "-nw", "-f", (new File(test_home + fs + "PrepareTest.sci"))
+                    .getCanonicalPath());
+        }
         System.out.println("Running command : " + pb.command());
 
         File okFile = new File(sci_tb_home + fs + "ok.tst");
@@ -126,10 +131,15 @@ public class AbstractScilabTest extends FunctionalTest {
         if (System.getProperty("proactive.test.runAsMe") != null) {
             runAsMe = 1;
         }
-
-        pb.command("scilab", "-nw", "-f", (new File(test_home + fs + "RunUnitTest.sci")).getCanonicalPath(),
-                "-args", schedURI.toString(), credFile.toString(), "" + default_nb_iter, testName, "" +
-                    runAsMe);
+        if (System.getProperty("scilab.bin.path") != null) {
+            pb.command(System.getProperty("scilab.bin.path"), "-nw", "-f", (new File(test_home + fs +
+                "RunUnitTest.sci")).getCanonicalPath(), "-args", schedURI.toString(), credFile.toString(),
+                    "" + default_nb_iter, testName, "" + runAsMe);
+        } else {
+            pb.command("scilab", "-nw", "-f", (new File(test_home + fs + "RunUnitTest.sci"))
+                    .getCanonicalPath(), "-args", schedURI.toString(), credFile.toString(), "" +
+                default_nb_iter, testName, "" + runAsMe);
+        }
         System.out.println("Running command : " + pb.command());
 
         File okFile = new File(sci_tb_home + fs + "ok.tst");

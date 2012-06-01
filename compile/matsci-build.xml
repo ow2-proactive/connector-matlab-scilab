@@ -307,6 +307,13 @@
         </else>
     </if>
 
+    <if name="scilab.bin.path">
+            <property name="scilabbin" value="-Dscilab.bin.path=${scilab.bin.path}"/>
+            <else>
+                <property name="scilabbin" value="-Dscilab.bin.noPathSpecified"/>
+            </else>
+    </if>
+
     <if name="test">
         <fileset dir="${cl.matsci.tests.dir}" id="matsci.testsuite">
             <include name="**/scilab/AbstractScilabTest.class"/>
@@ -351,6 +358,7 @@
                 <jvmarg value="${adminlogin}"/>
                 <jvmarg value="${adminpassword}"/>
                 <jvmarg value="${forkas_method}"/>
+                <jvmarg value="${scilabbin}"/>
 
                 <classpath>
                     <additionalClasspath/>
