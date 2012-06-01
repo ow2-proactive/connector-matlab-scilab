@@ -201,27 +201,30 @@
     </target>
 
     <target name="deploy.scheduling.tests" description="Copy Scheduler jars and files into Scheduling test folder">
-        <if name="deploy.scheduling.tests.if" exists="${scheduling.project.dir}">
-            <mkdir dir="${dev.scheduling.test.dir}"/>
-            <copy todir="${dev.scheduling.test.dir}">
-                <fileset dir="${scheduling.project.dir}">
-                    <include name="config/**/*"/>
-                    <include name="scripts/**/*"/>
-                </fileset>
-            </copy>
-            <copy todir="${dev.scheduling.test.dir}/dist">
-                <fileset dir="${scheduling.project.dir}">
-                    <include name="scripts/**/*"/>
-                </fileset>
-            </copy>
-            <chmod dir="${dev.scheduling.test.dir}/dist/scripts" perm="u+x" includes="**/*.sh" />
+        <if name="deploy.scheduling.tests.if">
+            <available file="${scheduling.project.dir}"/>
+            <then>
+                <mkdir dir="${dev.scheduling.test.dir}"/>
+                <copy todir="${dev.scheduling.test.dir}">
+                    <fileset dir="${scheduling.project.dir}">
+                        <include name="config/**/*"/>
+                        <include name="scripts/**/*"/>
+                    </fileset>
+                </copy>
+                <copy todir="${dev.scheduling.test.dir}/dist">
+                    <fileset dir="${scheduling.project.dir}">
+                        <include name="scripts/**/*"/>
+                    </fileset>
+                </copy>
+                <chmod dir="${dev.scheduling.test.dir}/dist/scripts" perm="u+x" includes="**/*.sh"/>
 
-            <mkdir dir="${dev.scheduling.test.deploy.lib.dir}"/>
-            <copy todir="${dev.scheduling.test.deploy.lib.dir}">
-                <fileset dir="${lib.dir}/scheduling">
-                    <include name="*/**"/>
-                </fileset>
-            </copy>
+                <mkdir dir="${dev.scheduling.test.deploy.lib.dir}"/>
+                <copy todir="${dev.scheduling.test.deploy.lib.dir}">
+                    <fileset dir="${lib.dir}/scheduling">
+                        <include name="*/**"/>
+                    </fileset>
+                </copy>
+            </then>
             <else>
                 <echo message="Warning : could not find scheduling project in ${scheduling.project.dir}"/>
             </else>
