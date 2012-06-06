@@ -34,7 +34,7 @@
 %   * ################################################################
 %   * $$PROACTIVE_INITIAL_DEV$$
 %   */
-function [ok, msg]=TestTransferEnv(timeout)
+function [ok, msg]=TestTransferEnv(nbiter,timeout)
 if ~exist('timeout', 'var')
     if ispc()
         timeout = 200000;
@@ -42,32 +42,39 @@ if ~exist('timeout', 'var')
         timeout = 80000;
     end
 end
-disp('...... Testing PAsolve with Transfer Env');
-disp('..........................1 PAwaitFor');
-opt=PAoptions();
-old = opt.TransferEnv;
-PAoptions('TransferEnv', true);
-% declaring toto as a local variable that will be transfered
-toto = dummy('toto');
-% declaring totoGlobal in a subfunction as a global variable (and thus not
-% as a local variable)
-declareGlobal();
-resl = PAsolve(@transferenvfunc,'ok');
-val=PAwaitFor(resl,timeout)
-if val
-    disp('..........................1 ......OK');
-    ok=true;
-    msg = [];
-else
-    disp('..........................1 ......KO');
-    ok=false;
-    msg = 'TestTransferEnv::wrong value for val, error occured remotely';
+if ~exist('nbiter', 'var')
+    nbiter = 1;
 end
-PAoptions('TransferEnv', old);
+for kk=1:nbiter
+    disp('-------------------------------------');
+    disp(['------------------------Iteration '  num2str(kk)]);
+    disp('...... Testing PAsolve with Transfer Env');
+    disp('..........................1 PAwaitFor');
+    opt=PAoptions();
+    old = opt.TransferEnv;
+    PAoptions('TransferEnv', true);
+    % declaring toto as a local variable that will be transfered
+    toto = dummy('toto');
+    % declaring totoGlobal in a subfunction as a global variable (and thus not
+    % as a local variable)
+    declareGlobal();
+    resl = PAsolve(@transferenvfunc,'ok');
+    val=PAwaitFor(resl,timeout)
+    if val
+        disp('..........................1 ......OK');
+        ok=true;
+        msg = [];
+    else
+        disp('..........................1 ......KO');
+        ok=false;
+        msg = 'TestTransferEnv::wrong value for val, error occured remotely';
+    end
+    PAoptions('TransferEnv', old);
+end
 end
 
 function out=declareGlobal()
-    global totoGlobal
-    totoGlobal = dummy('totoGlobal');
-    out='ok';
+global totoGlobal
+totoGlobal = dummy('totoGlobal');
+out='ok';
 end

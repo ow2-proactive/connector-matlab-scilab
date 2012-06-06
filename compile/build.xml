@@ -36,7 +36,7 @@
 	<!-- ************
 		Junit tests
 	-->
-	<target name="junit.all"  depends="junit.matsci" description="Run all tests">
+	<target name="junit.all"  depends="junit.scilab, junit.matlab" description="Run all tests">
 		<antcall target="junit.summary" />
 	</target>
 

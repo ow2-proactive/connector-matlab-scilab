@@ -34,7 +34,7 @@
 %   * ################################################################
 %   * $$PROACTIVE_INITIAL_DEV$$
 %   */
-function [ok, msg]=TestPATask(timeout)
+function [ok, msg]=TestPATask(nbiter,timeout)
 if ~exist('timeout', 'var')
     if ispc()
         timeout = 400000;
@@ -43,6 +43,7 @@ if ~exist('timeout', 'var')
     end
 end
 oldpwd = pwd;
+
 % Create an array of filenames that make up the image sequence
 [pathstr, name, ext] = fileparts(mfilename('fullpath'));
 cd(pathstr);
@@ -62,37 +63,46 @@ for p = 1:numFrames
     [pathstr, name, ext] = fileparts(fileNames{p});
     T(1,p).OutputFiles = {['images_low' '/' 'New_' name '.pgm']};
     T(1,p).Description = ['Image recogition' num2str(p)];
-    [pathstr, name, ext] = fileparts(mfilename('fullpath'));    
+    [pathstr, name, ext] = fileparts(mfilename('fullpath'));
 end
 % Prepare
 
 T
 
-disp('...... Testing PAsolve with image processing, input/output files, and custom selection script');
-resl = PAsolve(T);
-val=PAwaitFor(resl,timeout)
+if ~exist('nbiter', 'var')
+    nbiter = 1;
+end
+for kk=1:nbiter
+    disp('-------------------------------------');
+    disp(['------------------------Iteration '  num2str(kk)]);
 
-for i=1:length(val)
-    if val{i} ~= 1
-        ok=false;
-        msg='TestPATask::Some tasks didn''t succeed';
-        return;
+    disp('...... Testing PAsolve with image processing, input/output files, and custom selection script');
+    resl = PAsolve(T);
+    val=PAwaitFor(resl,timeout)
+
+    for i=1:length(val)
+        if val{i} ~= 1
+            ok=false;
+            msg='TestPATask::Some tasks didn''t succeed';
+            return;
+        end
     end
+
+    % View results
+    h=figure;
+    for k = 1:numFrames
+        imshow(imread(['images_low' filesep fileNames{p}]),'InitialMagnification', 30);
+        title(sprintf('Original Image # %d',k));
+        pause(0.3);
+        [pathstr, name, ext] = fileparts(fileNames{p});
+        newfile = fullfile(pathstr,['images_low' filesep 'New_' name '.pgm']);
+        imshow(imread(newfile),[],'InitialMagnification', 30);
+        title(sprintf('Processed Image # %d',k));
+        pause(1);
+    end
+    close(h);
 end
 
-% View results
-h=figure;
-for k = 1:numFrames
-    imshow(imread(['images_low' filesep fileNames{p}]),'InitialMagnification', 30);
-    title(sprintf('Original Image # %d',k));
-    pause(0.3);
-    [pathstr, name, ext] = fileparts(fileNames{p});
-    newfile = fullfile(pathstr,['images_low' filesep 'New_' name '.pgm']);
-    imshow(imread(newfile),[],'InitialMagnification', 30);
-    title(sprintf('Processed Image # %d',k));
-    pause(1);
-end
-close(h);
 
 cd(oldpwd);
 ok=true;

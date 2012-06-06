@@ -34,7 +34,7 @@
 %   * ################################################################
 %   * $$PROACTIVE_INITIAL_DEV$$
 %   */
-function [ok, msg]=TestDummyDisconnected(timeout)
+function [ok, msg]=TestDummyDisconnected(nbiter, timeout)
 if ~exist('timeout', 'var')
     if ispc()
         timeout = 400000;
@@ -50,74 +50,83 @@ PAoptions('CleanAllTempFilesDirectly', false);
 old2 = opt.RemoveJobAfterRetrieve;
 PAoptions('RemoveJobAfterRetrieve', false);
 
-disp('................ Testing a simulated disconnected mode');
+if ~exist('nbiter', 'var')
+    nbiter = 1;
+end
+for kk=1:nbiter
+    disp('-------------------------------------');
+    disp(['------------------------Iteration '  num2str(kk)]);
 
-disp('........ First submitting two jobs and keep their info');
-disp('..............................................submit 1');
-resl1 = PAsolve(@factorial,{1},{2},{3},{4},{5});
-disp('..............................................submit 2');
-resl2 = PAsolve(@factorial,{1},{2},{3},{4},{5});
+    disp('................ Testing a simulated disconnected mode');
 
-sched = PAScheduler;
+    disp('........ First submitting two jobs and keep their info');
+    disp('..............................................submit 1');
+    resl1 = PAsolve(@factorial,{1},{2},{3},{4},{5});
+    disp('..............................................submit 2');
+    resl2 = PAsolve(@factorial,{1},{2},{3},{4},{5});
 
-jobs = sched.PATaskRepository('uncomplete');
+    sched = PAScheduler;
 
-n = length(jobs);
+    jobs = sched.PATaskRepository('uncomplete');
 
-jobs = jobs(n-1:n);
+    n = length(jobs);
 
-jinfo1 = sched.PATaskRepository(jobs{1}, 'jobinfo');
-alltasks1 = sched.PATaskRepository(jobs{1}, 'alltasks');
-taskinfolist1 = {};
-for j=1:length(alltasks1)
-    taskinfo = sched.PATaskRepository(jobs{1}, alltasks1{j}, 'taskinfo');
-    taskinfolist1 = [taskinfolist1 {taskinfo}];
+    jobs = jobs(n-1:n);
+
+    jinfo1 = sched.PATaskRepository(jobs{1}, 'jobinfo');
+    alltasks1 = sched.PATaskRepository(jobs{1}, 'alltasks');
+    taskinfolist1 = {};
+    for j=1:length(alltasks1)
+        taskinfo = sched.PATaskRepository(jobs{1}, alltasks1{j}, 'taskinfo');
+        taskinfolist1 = [taskinfolist1 {taskinfo}];
+
+    end
+
+    jinfo2 = sched.PATaskRepository(jobs{2}, 'jobinfo');
+    alltasks2 = sched.PATaskRepository(jobs{2}, 'alltasks');
+    taskinfolist2 = {};
+    for j=1:length(alltasks1)
+        taskinfo = sched.PATaskRepository(jobs{2}, alltasks1{j}, 'taskinfo');
+        taskinfolist2 = [taskinfolist2 {taskinfo}];
+
+    end
+
+    disp('..................................then wait for results');
+    val1=PAwaitFor(resl1,timeout)
+    val2=PAwaitFor(resl2,timeout)
+
+    [ok,msg]=checkValuesFact(val1);
+    if ~ok disp(msg),return; end
+    [ok,msg]=checkValuesFact(val2);
+    if ~ok disp(msg),return; end
+
+    disp('........... retrieve the same results from the scheduler');
+
+    solver = sched.PAgetsolver();
+
+    solver.retrieve(jinfo1);
+
+    for i=1:length(taskinfolist1)
+        syncres1(i)=PAResult(taskinfolist1{i});
+        sched.PAaddDirToClean(jobs{1}, taskinfolist1{i}.cleanDirSet);
+    end
+
+    solver.retrieve(jinfo2);
+
+    for i=1:length(taskinfolist2)
+        syncres2(i)=PAResult(taskinfolist2{i});
+        sched.PAaddDirToClean(jobs{2}, taskinfolist1{i}.cleanDirSet);
+    end
+
+    val1=PAwaitFor(syncres1,timeout)
+    val2=PAwaitFor(syncres2,timeout)
+
+    [ok,msg]=checkValuesFact(val1);
+    if ~ok disp(msg),return; end
+    [ok,msg]=checkValuesFact(val2);
+    if ~ok disp(msg),return; end
 
 end
-
-jinfo2 = sched.PATaskRepository(jobs{2}, 'jobinfo');
-alltasks2 = sched.PATaskRepository(jobs{2}, 'alltasks');
-taskinfolist2 = {};
-for j=1:length(alltasks1)
-    taskinfo = sched.PATaskRepository(jobs{2}, alltasks1{j}, 'taskinfo');
-    taskinfolist2 = [taskinfolist2 {taskinfo}];
-
-end
-
-disp('..................................then wait for results');
-val1=PAwaitFor(resl1,timeout)
-val2=PAwaitFor(resl2,timeout)
-
-[ok,msg]=checkValuesFact(val1);
-if ~ok disp(msg),return; end
-[ok,msg]=checkValuesFact(val2);
-if ~ok disp(msg),return; end
-
-disp('........... retrieve the same results from the scheduler');
-
-solver = sched.PAgetsolver();
-
-solver.retrieve(jinfo1);
-
-for i=1:length(taskinfolist1)
-    syncres1(i)=PAResult(taskinfolist1{i});
-    sched.PAaddDirToClean(jobs{1}, taskinfolist1{i}.cleanDirSet);
-end
-
-solver.retrieve(jinfo2);
-
-for i=1:length(taskinfolist2)
-    syncres2(i)=PAResult(taskinfolist2{i});
-    sched.PAaddDirToClean(jobs{2}, taskinfolist1{i}.cleanDirSet);
-end
-
-val1=PAwaitFor(syncres1,timeout)
-val2=PAwaitFor(syncres2,timeout)
-
-[ok,msg]=checkValuesFact(val1);
-if ~ok disp(msg),return; end
-[ok,msg]=checkValuesFact(val2);
-if ~ok disp(msg),return; end
 
 if old1
     PAoptions('CleanAllTempFilesDirectly', true);

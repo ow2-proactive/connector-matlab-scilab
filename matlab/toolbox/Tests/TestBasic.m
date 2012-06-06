@@ -34,7 +34,7 @@
 %   * ################################################################
 %   * $$PROACTIVE_INITIAL_DEV$$
 %   */
-function [ok, msg]=TestBasic(timeout)
+function [ok, msg]=TestBasic(nbiter, timeout)
 if ~exist('timeout', 'var')
     if ispc()
         timeout = 200000;
@@ -43,118 +43,127 @@ if ~exist('timeout', 'var')
     end
 end
 
-disp('...... Testing PAsolve with factorial');
-disp('..........................1 PAwaitFor (all)');
-resl = PAsolve(@factorial,{1},{2},{3},{4},{5});
-val=PAwaitFor(resl,timeout)
-[ok,msg]=checkValuesFact(val);
-if ~ok disp(msg),return; end
-disp('..........................1 ......OK');
-clear val;
-
-disp('..........................2 PAwaitAny');
-resl = PAsolve(@factorial,{1},{2},{3},{4},{5});
-for i=1:5
-    val(i)=PAwaitAny(resl,timeout)
+if ~exist('nbiter', 'var')
+    nbiter = 1;
 end
-val=sort(val)
-[ok,msg]=checkValuesFact(val);
-if ~ok disp(msg),return; end
-disp('..........................2 ......OK');
-clear val;
+for kk=1:nbiter
+    disp('-------------------------------------');
+    disp(['------------------------Iteration '  num2str(kk)]);
 
-disp('..........................3 PAwaitFor (each)');
-resl = PAsolve(@factorial,{1},{2},{3},{4},{5});
-for i=1:5
-    val(i)=PAwaitFor(resl(i),timeout)
-end
-[ok,msg]=checkValuesFact(val);
-if ~ok disp(msg),return; end
-disp('..........................3 ......OK');
-clear val;
+    disp('...... Testing PAsolve with factorial');
+    disp('..........................1 PAwaitFor (all)');
+    resl = PAsolve(@factorial,{1},{2},{3},{4},{5});
+    val=PAwaitFor(resl,timeout)
+    [ok,msg]=checkValuesFact(val);
+    if ~ok disp(msg),return; end
+    disp('..........................1 ......OK');
+    clear val;
 
-disp('..........................4 global val attribute');
-resl = PAsolve(@factorial,{1},{2},{3},{4},{5});
-val=resl(1:5).val
-[ok,msg]=checkValuesFact(val);
-if ~ok disp(msg),return; end
-disp('..........................4 ......OK');
-clear val;
+    disp('..........................2 PAwaitAny');
+    resl = PAsolve(@factorial,{1},{2},{3},{4},{5});
+    for i=1:5
+        val(i)=PAwaitAny(resl,timeout)
+    end
+    val=sort(val)
+    [ok,msg]=checkValuesFact(val);
+    if ~ok disp(msg),return; end
+    disp('..........................2 ......OK');
+    clear val;
 
-disp('..........................5 val and logs attributes');
-resl = PAsolve(@factorial,{1},{2},{3},{4},{5});
-for i=1:5
-    val{i}=resl(i).val;
-    logs{i}=resl(i).logs;
-end
-[ok,msg]=checkValuesFact(val);
-if ~ok disp(msg),return; end
-disp('..........................5 ......OK');
-clear val;
-clear logs;
+    disp('..........................3 PAwaitFor (each)');
+    resl = PAsolve(@factorial,{1},{2},{3},{4},{5});
+    for i=1:5
+        val(i)=PAwaitFor(resl(i),timeout)
+    end
+    [ok,msg]=checkValuesFact(val);
+    if ~ok disp(msg),return; end
+    disp('..........................3 ......OK');
+    clear val;
 
-disp('...... Testing PAsolve with funcSquare and an error');
-disp('..........................6 PAwaitFor (all)');
-resl = PAsolve(@funcSquare,{1},{2},{3},{'a'},{5});
-val1=PAwaitFor(resl(1:3),timeout);
-val2=PAwaitFor(resl(5),timeout);
-try
-val3=PAwaitFor(resl(4),timeout);
-catch 
-end
-val=[val1 {[]} val2];
-[ok,msg]=checkValuesSquare(val);
-if ~ok disp(msg),return; end
-disp('..........................6 ......OK');
-clear val;
+    disp('..........................4 global val attribute');
+    resl = PAsolve(@factorial,{1},{2},{3},{4},{5});
+    val=resl(1:5).val
+    [ok,msg]=checkValuesFact(val);
+    if ~ok disp(msg),return; end
+    disp('..........................4 ......OK');
+    clear val;
 
-disp('..........................7 PAwaitAny');
-resl = PAsolve(@funcSquare,{1},{2},{3},{'a'},{5});
-j=1;
-for i=1:5
+    disp('..........................5 val and logs attributes');
+    resl = PAsolve(@factorial,{1},{2},{3},{4},{5});
+    for i=1:5
+        val{i}=resl(i).val;
+        logs{i}=resl(i).logs;
+    end
+    [ok,msg]=checkValuesFact(val);
+    if ~ok disp(msg),return; end
+    disp('..........................5 ......OK');
+    clear val;
+    clear logs;
+
+    disp('...... Testing PAsolve with funcSquare and an error');
+    disp('..........................6 PAwaitFor (all)');
+    resl = PAsolve(@funcSquare,{1},{2},{3},{'a'},{5});
+    val1=PAwaitFor(resl(1:3),timeout);
+    val2=PAwaitFor(resl(5),timeout);
     try
-        val(j)=PAwaitAny(resl,timeout)
+        val3=PAwaitFor(resl(4),timeout);
+    catch
+    end
+    val=[val1 {[]} val2];
+    [ok,msg]=checkValuesSquare(val);
+    if ~ok disp(msg),return; end
+    disp('..........................6 ......OK');
+    clear val;
+
+    disp('..........................7 PAwaitAny');
+    resl = PAsolve(@funcSquare,{1},{2},{3},{'a'},{5});
+    j=1;
+    for i=1:5
+        try
+            val(j)=PAwaitAny(resl,timeout)
+            j=j+1;
+        catch
+        end
+    end
+    val=sort(val)
+    [ok,msg]=checkValuesSquare2(val);
+    if ~ok disp(msg),return; end
+    disp('..........................7 ......OK');
+    clear val;
+
+    disp('..........................8 PAwaitFor (each)');
+    resl = PAsolve(@funcSquare,{1},{2},{3},{'a'},{5});
+    j=1;
+    for i=1:5
+        try
+            val(j)=PAwaitFor(resl(i),timeout)
+            j=j+1;
+        catch
+        end
+    end
+    [ok,msg]=checkValuesSquare2(val);
+    if ~ok disp(msg),return; end
+    disp('..........................8 ......OK');
+    clear val;
+
+    disp('..........................9 val and logs attributes');
+    resl = PAsolve(@funcSquare,{1},{2},{3},{'a'},{5});
+    j=1;
+    for i=1:5
+        try
+            val{j}=resl(i).val;
+            logs{j}=resl(i).logs;
+        catch
+        end
         j=j+1;
-    catch
     end
-end
-val=sort(val)
-[ok,msg]=checkValuesSquare2(val);
-if ~ok disp(msg),return; end
-disp('..........................7 ......OK');
-clear val;
+    [ok,msg]=checkValuesSquare(val);
+    if ~ok disp(msg),return; end
+    disp('..........................9 ......OK');
+    clear val;
+    clear logs;
 
-disp('..........................8 PAwaitFor (each)');
-resl = PAsolve(@funcSquare,{1},{2},{3},{'a'},{5});
-j=1;
-for i=1:5
-    try
-        val(j)=PAwaitFor(resl(i),timeout)
-         j=j+1;
-    catch
-    end
 end
-[ok,msg]=checkValuesSquare2(val);
-if ~ok disp(msg),return; end
-disp('..........................8 ......OK');
-clear val;
-
-disp('..........................9 val and logs attributes');
-resl = PAsolve(@funcSquare,{1},{2},{3},{'a'},{5});
-j=1;
-for i=1:5
-    try
-        val{j}=resl(i).val;
-        logs{j}=resl(i).logs;
-    catch
-    end
-    j=j+1;
-end
-[ok,msg]=checkValuesSquare(val);
-if ~ok disp(msg),return; end
-disp('..........................9 ......OK');
-clear val;
-clear logs;
 
 function [ok,msg]=checkValuesFact(val)
 [ok,msg]=checkValues(val,{1,2,6,24,120},'factorial');
@@ -186,7 +195,7 @@ else
             if val(i) ~= right{i}
                 ok = false;
                 msg = ['TestBasic::Wrong value of ' name '(' num2str(i) '), received ' num2str(val(i)) ', expected ' num2str(right{i})];
-            else 
+            else
                 ok = true;
                 msg = [];
             end

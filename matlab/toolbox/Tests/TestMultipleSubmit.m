@@ -34,7 +34,7 @@
 %   * ################################################################
 %   * $$PROACTIVE_INITIAL_DEV$$
 %   */
-function [ok, msg]=TestMultipleSubmit(timeout)
+function [ok, msg]=TestMultipleSubmit(nbiter,timeout)
 if ~exist('timeout', 'var')
     if ispc()
         timeout = 500000;
@@ -43,35 +43,42 @@ if ~exist('timeout', 'var')
     end
 end
 
-disp('...... Testing PAsolve with multiple submits');
+if ~exist('nbiter', 'var')
+    nbiter = 1;
+end
+for kk=1:nbiter
+    disp('-------------------------------------');
+    disp(['------------------------Iteration '  num2str(kk)]);
+    disp('...... Testing PAsolve with multiple submits');
 
-disp('..........................submit 1');
-resl1 = PAsolve(@factorial,{1},{2},{3},{4},{5});
-disp('..........................submit 2');
-resl2 = PAsolve(@factorial,{1},{2},{3},{4},{5});   
-disp('..........................submit 3');
-resl3 = PAsolve(@factorial,{1},{2},{3},{4},{5}); 
-disp('..........................submit 4');
-resl4 = PAsolve(@factorial,{1},{2},{3},{4},{5});  
-disp('..........................submit 5');
-resl5 = PAsolve(@factorial,{1},{2},{3},{4},{5});  
+    disp('..........................submit 1');
+    resl1 = PAsolve(@factorial,{1},{2},{3},{4},{5});
+    disp('..........................submit 2');
+    resl2 = PAsolve(@factorial,{1},{2},{3},{4},{5});
+    disp('..........................submit 3');
+    resl3 = PAsolve(@factorial,{1},{2},{3},{4},{5});
+    disp('..........................submit 4');
+    resl4 = PAsolve(@factorial,{1},{2},{3},{4},{5});
+    disp('..........................submit 5');
+    resl5 = PAsolve(@factorial,{1},{2},{3},{4},{5});
 
-val1=PAwaitFor(resl1,timeout)
-val2=PAwaitFor(resl2,timeout)
-val3=PAwaitFor(resl3,timeout)
-val4=PAwaitFor(resl4,timeout)
-val5=PAwaitFor(resl5,timeout)
+    val1=PAwaitFor(resl1,timeout)
+    val2=PAwaitFor(resl2,timeout)
+    val3=PAwaitFor(resl3,timeout)
+    val4=PAwaitFor(resl4,timeout)
+    val5=PAwaitFor(resl5,timeout)
 
-[ok,msg]=checkValuesFact(val1);
-if ~ok disp(msg),return; end
-[ok,msg]=checkValuesFact(val2);
-if ~ok disp(msg),return; end
-[ok,msg]=checkValuesFact(val3);
-if ~ok disp(msg),return; end
-[ok,msg]=checkValuesFact(val4);
-if ~ok disp(msg),return; end
-[ok,msg]=checkValuesFact(val5);
-if ~ok disp(msg),return; end
+    [ok,msg]=checkValuesFact(val1);
+    if ~ok disp(msg),return; end
+    [ok,msg]=checkValuesFact(val2);
+    if ~ok disp(msg),return; end
+    [ok,msg]=checkValuesFact(val3);
+    if ~ok disp(msg),return; end
+    [ok,msg]=checkValuesFact(val4);
+    if ~ok disp(msg),return; end
+    [ok,msg]=checkValuesFact(val5);
+    if ~ok disp(msg),return; end
+end
 
 function [ok,msg]=checkValuesFact(val)
 [ok,msg]=checkValues(val,{1,2,6,24,120},'factorial');
@@ -94,7 +101,7 @@ else
             if val(i) ~= right{i}
                 ok = false;
                 msg = ['TestMultipleSubmit::Wrong value of ' name '(' num2str(i) '), received ' num2str(val(i)) ', expected ' num2str(right{i})];
-            else 
+            else
                 ok = true;
                 msg = [];
             end

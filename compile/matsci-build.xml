@@ -313,15 +313,22 @@
                 <property name="scilabbin" value="-Dscilab.bin.noPathSpecified"/>
             </else>
     </if>
+    <if name="matlab.bin.path">
+                <property name="matlabbin" value="-Dmatlab.bin.path=${matlab.bin.path}"/>
+                <else>
+                    <property name="matlabbin" value="-Dmatlab.bin.noPathSpecified"/>
+                </else>
+        </if>
+
 
     <if name="test">
-        <fileset dir="${cl.matsci.tests.dir}" id="matsci.testsuite">
+        <fileset dir="${cl.matsci.tests.dir}" id="scilab.testsuite">
             <include name="**/scilab/AbstractScilabTest.class"/>
             <include name="${test}"/>
             <exclude name="**/*$*.class"/>
         </fileset>
         <else>
-            <fileset dir="${cl.matsci.tests.dir}" id="matsci.testsuite">
+            <fileset dir="${cl.matsci.tests.dir}" id="scilab.testsuite">
                 <include name="**/scilab/AbstractScilabTest.class"/>
                 <include name="**/scilab/Test*.class"/>
                 <exclude name="**/*$*.class"/>
@@ -329,6 +336,19 @@
 
         </else>
     </if>
+    <if name="test">
+            <fileset dir="${cl.matsci.tests.dir}" id="matlab.testsuite">
+                <include name="${test}"/>
+                <exclude name="**/*$*.class"/>
+            </fileset>
+            <else>
+                <fileset dir="${cl.matsci.tests.dir}" id="matlab.testsuite">
+                    <include name="**/matlab/Test*.class"/>
+                    <exclude name="**/*$*.class"/>
+                </fileset>
+
+            </else>
+        </if>
 
     <macrodef name="junitMacro">
         <attribute name="testsuite"/>
@@ -388,13 +408,21 @@
         </sequential>
     </macrodef>
 
-    <target name="junit.matsci" depends="deploy.matsci, deploy.scheduling.tests, deploy.matsci.scheduling.tests"
-            description="Run Matlab/Scilab tests">
+    <target name="junit.scilab" depends="deploy.matsci, deploy.scheduling.tests, deploy.matsci.scheduling.tests"
+            description="Run Scilab tests">
         <mkdir dir="${cl.matsci.tests.dir}"/>
-        <junitMacro testsuite="matsci.testsuite" testclasspath="matsci.test.classpath"
+        <junitMacro testsuite="scilab.testsuite" testclasspath="matsci.test.classpath"
                     log4jconfig="-Dlog4j.configuration=file:${dev.scheduling.test.dir}/config/log4j/scheduler-log4j-server"/>
         <antcall target="junit.summary"/>
     </target>
+
+    <target name="junit.matlab" depends="deploy.matsci, deploy.scheduling.tests, deploy.matsci.scheduling.tests"
+                description="Run Matlab tests">
+            <mkdir dir="${cl.matsci.tests.dir}"/>
+            <junitMacro testsuite="matlab.testsuite" testclasspath="matsci.test.classpath"
+                        log4jconfig="-Dlog4j.configuration=file:${dev.scheduling.test.dir}/config/log4j/scheduler-log4j-server"/>
+            <antcall target="junit.summary"/>
+        </target>
 
     <target name="junit.summary">
         <junitreport todir="${junit.dir}">

@@ -34,7 +34,7 @@
 %   * ################################################################
 %   * $$PROACTIVE_INITIAL_DEV$$
 %   */
-function [ok, msg]=TestObjectArguments(timeout)
+function [ok, msg]=TestObjectArguments(nbiter,timeout)
 if ~exist('timeout', 'var')
     if ispc()
         timeout = 200000;
@@ -42,18 +42,25 @@ if ~exist('timeout', 'var')
         timeout = 80000;
     end
 end
-disp('...... Testing PAsolve with Object arguments');
- disp('..........................1 PAwaitFor');
-d=dummy(55);
-resl = PAsolve(@dummyfunc,{d});
-val=PAwaitFor(resl,timeout)
+if ~exist('nbiter', 'var')
+    nbiter = 1;
+end
+for kk=1:nbiter
+    disp('-------------------------------------');
+    disp(['------------------------Iteration '  num2str(kk)]);
+    disp('...... Testing PAsolve with Object arguments');
+    disp('..........................1 PAwaitFor');
+    d=dummy(55);
+    resl = PAsolve(@dummyfunc,{d});
+    val=PAwaitFor(resl,timeout)
 
-if val.field2 == 22
-    disp('..........................1 ......OK');
-    ok=true;
-    msg = [];
-else
-    disp('..........................1 ......KO');
-    ok=false;
-    msg = 'TestObjectArguments::wrong value for val.field2';
+    if val.field2 == 22
+        disp('..........................1 ......OK');
+        ok=true;
+        msg = [];
+    else
+        disp('..........................1 ......KO');
+        ok=false;
+        msg = 'TestObjectArguments::wrong value for val.field2';
+    end
 end

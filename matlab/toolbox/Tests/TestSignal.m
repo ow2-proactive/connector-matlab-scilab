@@ -34,7 +34,7 @@
 %   * ################################################################
 %   * $$PROACTIVE_INITIAL_DEV$$
 %   */
-function [ok,msg]=TestSignal(timeout)
+function [ok,msg]=TestSignal(nbiter,timeout)
 
 if ~exist('timeout', 'var')
     if ispc()
@@ -44,15 +44,22 @@ if ~exist('timeout', 'var')
     end
 end
 
-disp('...... Testing PAsolve with signal toolbox');
-resl = PAsolve(@signalfunc,{1},{1},{1},{1},{1},{1});
-val=PAwaitFor(resl,timeout)
-for j=1:length(val)
-    if val{j} ~= 1
-        ok=false;
-        msg='TestBigArrayAndKeepEngine::Some tasks didn''t succeed';
-        return;
-    end
+if ~exist('nbiter', 'var')
+    nbiter = 1;
 end
-ok=true;
-msg='';
+for kk=1:nbiter
+    disp('-------------------------------------');
+    disp(['------------------------Iteration '  num2str(kk)]);
+    disp('...... Testing PAsolve with signal toolbox');
+    resl = PAsolve(@signalfunc,{1},{1},{1},{1},{1},{1});
+    val=PAwaitFor(resl,timeout)
+    for j=1:length(val)
+        if val{j} ~= 1
+            ok=false;
+            msg='TestBigArrayAndKeepEngine::Some tasks didn''t succeed';
+            return;
+        end
+    end
+    ok=true;
+    msg='';
+end

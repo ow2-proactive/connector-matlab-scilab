@@ -40,78 +40,78 @@ runimage = false;
 runsignal = false;
 runbigarray = false;
 
-for i=1:nbiter
-    disp(['Iteration ' num2str(i)]);
+
+
+if exist('timeout', 'var')
+    [ok,msg] = TestBasic(nbiter,timeout);
+else
+    [ok,msg] = TestBasic(nbiter);
+end
+if ~ok disp(msg),return; end
+if exist('timeout', 'var')
+    [ok,msg] = TestCompose(nbiter,timeout);
+else
+    [ok,msg] = TestCompose(nbiter);
+end
+if ~ok disp(msg),return; end
+if exist('timeout', 'var')
+    [ok,msg] = TestObjectArguments(nbiter,timeout);
+else
+    [ok,msg] = TestObjectArguments(nbiter);
+end
+if ~ok disp(msg),return; end
+if exist('timeout', 'var')
+    [ok,msg] = TestTransferEnv(nbiter,timeout);
+else
+    [ok,msg] = TestTransferEnv(nbiter);
+end
+if ~ok disp(msg),return; end
+if runbigarray
     if exist('timeout', 'var')
-        [ok,msg] = TestBasic(timeout);
+        [ok,msg] = TestBigArrayAndKeepEngine(nbiter,timeout);
     else
-        [ok,msg] = TestBasic();
-    end
-    if ~ok disp(msg),return; end
-    if exist('timeout', 'var')
-        [ok,msg] = TestCompose(timeout);
-    else
-        [ok,msg] = TestCompose();
-    end
-    if ~ok disp(msg),return; end
-    if exist('timeout', 'var')
-        [ok,msg] = TestObjectArguments(timeout);
-    else
-        [ok,msg] = TestObjectArguments();
-    end
-    if ~ok disp(msg),return; end
-    if exist('timeout', 'var')
-        [ok,msg] = TestTransferEnv(timeout);
-    else
-        [ok,msg] = TestTransferEnv();
-    end
-    if ~ok disp(msg),return; end
-    if runbigarray
-        if exist('timeout', 'var')
-            [ok,msg] = TestBigArrayAndKeepEngine(timeout);
-        else
-            [ok,msg] = TestBigArrayAndKeepEngine();
-        end
-        if ~ok disp(msg),return; end
-    end
-    if runimage
-        if exist('timeout', 'var')
-            [ok,msg] = TestPATask(timeout);
-        else
-            [ok,msg] = TestPATask();
-        end
-    end
-    if ~ok disp(msg),return; end
-    if runsignal
-        if exist('timeout', 'var')
-            [ok,msg] = TestSignal(timeout);
-        else
-            [ok,msg] = TestSignal();
-        end
-    end
-    if ~ok disp(msg),return; end
-    if exist('timeout', 'var')
-        [ok,msg] = TestMultipleSubmit(timeout);
-    else
-        [ok,msg] = TestMultipleSubmit();
-    end
-    if ~ok disp(msg),return; end
-    if exist('timeout', 'var')
-        [ok,msg] = TestDummyDisconnected(timeout);
-    else
-        [ok,msg] = TestDummyDisconnected();
-    end
-    if ~ok disp(msg),return; end
-    if exist('timeout', 'var')
-        [ok,msg] = TestTopology(timeout);
-    else
-        [ok,msg] = TestTopology();
-    end
-    if ~ok disp(msg),return; end
-    if exist('timeout', 'var')
-        [ok,msg] = TestSelectionScripts(timeout);
-    else
-        [ok,msg] = TestSelectionScripts();
+        [ok,msg] = TestBigArrayAndKeepEngine(nbiter);
     end
     if ~ok disp(msg),return; end
 end
+if runimage
+    if exist('timeout', 'var')
+        [ok,msg] = TestPATask(nbiter,timeout);
+    else
+        [ok,msg] = TestPATask(nbiter);
+    end
+end
+if ~ok disp(msg),return; end
+if runsignal
+    if exist('timeout', 'var')
+        [ok,msg] = TestSignal(nbiter,timeout);
+    else
+        [ok,msg] = TestSignal(nbiter);
+    end
+end
+if ~ok disp(msg),return; end
+if exist('timeout', 'var')
+    [ok,msg] = TestMultipleSubmit(nbiter,timeout);
+else
+    [ok,msg] = TestMultipleSubmit(nbiter);
+end
+if ~ok disp(msg),return; end
+if exist('timeout', 'var')
+    [ok,msg] = TestDummyDisconnected(nbiter,timeout);
+else
+    [ok,msg] = TestDummyDisconnected(nbiter);
+end
+if ~ok disp(msg),return; end
+if exist('timeout', 'var')
+    [ok,msg] = TestTopology(nbiter,timeout);
+else
+    [ok,msg] = TestTopology(nbiter);
+end
+if ~ok disp(msg),return; end
+if exist('timeout', 'var')
+    [ok,msg] = TestSelectionScripts(nbiter,timeout);
+else
+    [ok,msg] = TestSelectionScripts(nbiter);
+end
+if ~ok disp(msg),return; end
+

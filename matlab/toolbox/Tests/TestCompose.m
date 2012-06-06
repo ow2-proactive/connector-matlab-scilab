@@ -34,7 +34,7 @@
 %   * ################################################################
 %   * $$PROACTIVE_INITIAL_DEV$$
 %   */
-function [ok, msg]=TestCompose(timeout)
+function [ok, msg]=TestCompose(nbiter, timeout)
 if ~exist('timeout', 'var')
     if ispc()
         timeout = 500000;
@@ -43,6 +43,7 @@ if ~exist('timeout', 'var')
     end
 end
 format long
+
 t = PATask(3,5);
 t(1,1:5).Func = @mysqrt;
 t(1,1).Params = 1;
@@ -57,26 +58,33 @@ t(3,1:5) = t(1,1:5);
 t(3,1:5).Params = {};
 t(3,1:5).Compose = true;
 t
-
- disp('...... Testing PAsolve with sqrt(sqrt(sqrt(x)))');
- disp('..........................1 PAwaitFor (all)');
- resl = PAsolve(t);
- val=PAwaitFor(resl,timeout)
- [ok,msg]=checkValues(val);
-if ~ok disp(msg),return; end
- disp('..........................1 ......OK');
- clear val;
- 
- disp('..........................2 PAwaitAny');
-resl = PAsolve(t);
-for i=1:5
-    val(i)=PAwaitAny(resl,timeout)
+if ~exist('nbiter', 'var')
+    nbiter = 1;
 end
-val=sort(val)
-[ok,msg]=checkValues(val);
-if ~ok disp(msg),return; end
-disp('..........................2 ......OK');
-clear val;
+for kk=1:nbiter
+    disp('-------------------------------------');
+    disp(['------------------------Iteration '  num2str(kk)]);
+
+    disp('...... Testing PAsolve with sqrt(sqrt(sqrt(x)))');
+    disp('..........................1 PAwaitFor (all)');
+    resl = PAsolve(t);
+    val=PAwaitFor(resl,timeout)
+    [ok,msg]=checkValues(val);
+    if ~ok disp(msg),return; end
+    disp('..........................1 ......OK');
+    clear val;
+
+    disp('..........................2 PAwaitAny');
+    resl = PAsolve(t);
+    for i=1:5
+        val(i)=PAwaitAny(resl,timeout)
+    end
+    val=sort(val)
+    [ok,msg]=checkValues(val);
+    if ~ok disp(msg),return; end
+    disp('..........................2 ......OK');
+    clear val;
+end
 
 function [ok,msg]=checkValues(val)
 right=num2cell(sqrt(sqrt(sqrt(1:5))))
@@ -97,7 +105,7 @@ else
             if val(i) ~= right{i}
                 ok = false;
                 msg = ['TestCompose::Wrong value of sqrt(sqrt(sqrt(' num2str(i) '))), received ' num2str(val(i)) ', expected ' num2str(right{i})];
-            else 
+            else
                 ok = true;
                 msg = [];
             end
