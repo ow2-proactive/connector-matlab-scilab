@@ -37,6 +37,7 @@
 package org.ow2.proactive.scheduler.ext.matlab.worker.util;
 
 import org.objectweb.proactive.utils.OperatingSystem;
+import org.ow2.proactive.scheduler.ext.matsci.worker.util.MatSciConfigurationParser;
 import org.ow2.proactive.scheduler.ext.matsci.worker.util.MatSciEngineConfig;
 import org.ow2.proactive.scheduler.ext.matsci.worker.util.MatSciFinder;
 
@@ -79,7 +80,7 @@ public class MatlabFinder extends MatSciFinder {
             String versionMax, boolean debug) throws Exception {
         ArrayList<MatSciEngineConfig> confs = null;
 
-        confs = MatlabConfigurationParser.getConfigs(debug);
+        confs = MatSciConfigurationParser.getConfigs(debug, MatSciConfigurationParser.Type.matlab);
 
         if (confs == null)
             return null;

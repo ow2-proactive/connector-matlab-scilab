@@ -79,6 +79,11 @@ public class PASolveMatSciGlobalConfig implements Serializable {
     protected boolean runAsMe = false;
 
     /**
+     * Default number of task executions
+     */
+    private int nbExecutions = 2;
+
+    /**
      * Preferred Version to use
      **/
     protected String versionPref = null;
@@ -359,6 +364,14 @@ public class PASolveMatSciGlobalConfig implements Serializable {
 
     public void setRunAsMe(boolean runAsMe) {
         this.runAsMe = runAsMe;
+    }
+
+    public int getNbExecutions() {
+        return nbExecutions;
+    }
+
+    public void setNbExecutions(int nbExecutions) {
+        this.nbExecutions = nbExecutions;
     }
 
     public String getEnvMatFileName() {

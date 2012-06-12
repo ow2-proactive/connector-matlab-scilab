@@ -23,10 +23,8 @@ public enum MatSciProperties {
     /** Scheduler home directory */
     SCHEDULER_HOME("pa.scheduler.home", PropertyType.STRING),
 
-    /** Tells where to find matlab worker configuration file */
-    MATLAB_WORKER_LOCAL_CONFIGURATION_FILE("pa.matsci.matlab.config.worker.local", PropertyType.STRING),
     /** Tells where to find scilab worker configuration file */
-    SCILAB_WORKER_LOCAL_CONFIGURATION_FILE("pa.matsci.scilab.config.worker.local", PropertyType.STRING);
+    MATSCI_WORKER_CONFIGURATION_FILE("pa.matsci.config.worker", PropertyType.STRING);
     /* ***************************************************************************** */
     /* ***************************************************************************** */
     public static final String MATSCI_PROPERTIES_FILEPATH = "pa.matsci.properties.filepath";

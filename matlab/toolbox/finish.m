@@ -45,7 +45,7 @@ try
     end    
     jobs = sched.PATaskRepository('uncomplete');
 
-    if length(jobs) > 0
+    if opt.EnableDisconnectedMode && length(jobs) > 0
         msg = ['The following tasks have not been retrieved : ' 10];
         for i = 1:length(jobs)
             msg = [msg 'Job ' jobs{i} ' : '];

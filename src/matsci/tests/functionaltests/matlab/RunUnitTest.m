@@ -5,9 +5,10 @@ addpath(tlbx_home);
 addpath([tlbx_home fs 'Tests']);
 oldpwd=pwd();
 
+PAoptions('Debug',true);
 try
     PAconnect(url, cred);
-    PAoptions('Debug',true);
+    PAoptions('EnableDisconnectedMode',false);
     if runAsMe == 1
         PAoptions('RunAsMe',true);
     end

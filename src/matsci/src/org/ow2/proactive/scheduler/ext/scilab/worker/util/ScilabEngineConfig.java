@@ -70,8 +70,7 @@ public class ScilabEngineConfig extends MatSciEngineConfigBase {
         return scilabCommandName;
     }
 
-    public ScilabEngineConfig(String scilabHome, String version, String scilabBinDir,
-            String scilabCommandName, boolean hasManyConfigs) {
+    public ScilabEngineConfig(String scilabHome, String version, String scilabBinDir, String scilabCommandName) {
         this.scilabHome = scilabHome;
         this.version = version;
         this.scilabBinDir = scilabBinDir;

@@ -261,6 +261,7 @@ function initSolveConfig(solve_config,opt)
     solve_config.setFork(opt.Fork);
     solve_config.setRunAsMe(opt.RunAsMe);    
     solve_config.setPriority(opt.Priority);    
+    solve_config.setNbExecutions(opt.NbTaskExecution);   
     //solve_config.setTransferEnv(opt.TransferEnv);       
     jinvoke(solve_config,'setWindowsStartupOptionsAsString',opt.WindowsStartupOptions);
     jinvoke(solve_config,'setLinuxStartupOptionsAsString',opt.LinuxStartupOptions);

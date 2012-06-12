@@ -199,6 +199,8 @@ public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResu
                     schedulerTask.setForkEnvironment(new ForkEnvironment());
                 }
 
+                schedulerTask.setMaxNumberOfExecution(gconf.getNbExecutions());
+
                 if (config.isRunAsMe()) {
                     schedulerTask.setRunAsMe(true);
 
@@ -330,7 +332,7 @@ public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResu
                     schedulerTask.setDescription(taskConfigs[i][j].getMainScript());
                 }
 
-                // Topology
+                // Custom Topology
                 if (taskConfigs[i][j].getNbNodes() > 1) {
                     switch (taskConfigs[i][j].getTopology()) {
                         case ARBITRARY:

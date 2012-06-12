@@ -186,17 +186,12 @@
             </fileset>
         </copy>
         <copy todir="${scheduling.project.dir}/addons" flatten="yes">
-            <fileset dir="${base.dir}/matlab/config/worker">
-                <include name="*.xml"/>
+            <fileset dir="${base.dir}/config">
+                <include name="matlab_scilab_connector.ini"/>
+                <include name="MatSciWorkerConfiguration.xml"/>
             </fileset>
         </copy>
-        <copy todir="${scheduling.project.dir}/addons" flatten="yes">
-            <fileset dir="${base.dir}/scilab/config/worker">
-                <include name="*.xml"/>
-            </fileset>
-        </copy>
-        <copy todir="${scheduling.project.dir}/addons" flatten="yes"
-              file="${base.dir}/config/matlab_scilab_connector.ini"/>
+
 
     </target>
 
@@ -241,17 +236,11 @@
             </fileset>
         </copy>
         <copy todir="${dev.scheduling.test.dir}/addons" flatten="yes">
-            <fileset dir="${base.dir}/matlab/config/worker">
-                <include name="**/*.xml"/>
+            <fileset dir="${base.dir}/config">
+                <include name="matlab_scilab_connector.ini"/>
+                <include name="MatSciWorkerConfiguration.xml"/>
             </fileset>
         </copy>
-        <copy todir="${dev.scheduling.test.dir}/addons" flatten="yes">
-            <fileset dir="${base.dir}/scilab/config/worker">
-                <include name="**/*.xml"/>
-            </fileset>
-        </copy>
-        <copy todir="${dev.scheduling.test.dir}/addons" flatten="yes"
-              file="${base.dir}/config/matlab_scilab_connector.ini"/>
 
     </target>
 
@@ -308,17 +297,17 @@
     </if>
 
     <if name="scilab.bin.path">
-            <property name="scilabbin" value="-Dscilab.bin.path=${scilab.bin.path}"/>
-            <else>
-                <property name="scilabbin" value="-Dscilab.bin.noPathSpecified"/>
-            </else>
+        <property name="scilabbin" value="-Dscilab.bin.path=${scilab.bin.path}"/>
+        <else>
+            <property name="scilabbin" value="-Dscilab.bin.noPathSpecified"/>
+        </else>
     </if>
     <if name="matlab.bin.path">
-                <property name="matlabbin" value="-Dmatlab.bin.path=${matlab.bin.path}"/>
-                <else>
-                    <property name="matlabbin" value="-Dmatlab.bin.noPathSpecified"/>
-                </else>
-        </if>
+        <property name="matlabbin" value="-Dmatlab.bin.path=${matlab.bin.path}"/>
+        <else>
+            <property name="matlabbin" value="-Dmatlab.bin.noPathSpecified"/>
+        </else>
+    </if>
 
 
     <if name="test">
@@ -337,18 +326,18 @@
         </else>
     </if>
     <if name="test">
+        <fileset dir="${cl.matsci.tests.dir}" id="matlab.testsuite">
+            <include name="${test}"/>
+            <exclude name="**/*$*.class"/>
+        </fileset>
+        <else>
             <fileset dir="${cl.matsci.tests.dir}" id="matlab.testsuite">
-                <include name="${test}"/>
+                <include name="**/matlab/Test*.class"/>
                 <exclude name="**/*$*.class"/>
             </fileset>
-            <else>
-                <fileset dir="${cl.matsci.tests.dir}" id="matlab.testsuite">
-                    <include name="**/matlab/Test*.class"/>
-                    <exclude name="**/*$*.class"/>
-                </fileset>
 
-            </else>
-        </if>
+        </else>
+    </if>
 
     <macrodef name="junitMacro">
         <attribute name="testsuite"/>
@@ -417,12 +406,12 @@
     </target>
 
     <target name="junit.matlab" depends="deploy.matsci, deploy.scheduling.tests, deploy.matsci.scheduling.tests"
-                description="Run Matlab tests">
-            <mkdir dir="${cl.matsci.tests.dir}"/>
-            <junitMacro testsuite="matlab.testsuite" testclasspath="matsci.test.classpath"
-                        log4jconfig="-Dlog4j.configuration=file:${dev.scheduling.test.dir}/config/log4j/scheduler-log4j-server"/>
-            <antcall target="junit.summary"/>
-        </target>
+            description="Run Matlab tests">
+        <mkdir dir="${cl.matsci.tests.dir}"/>
+        <junitMacro testsuite="matlab.testsuite" testclasspath="matsci.test.classpath"
+                    log4jconfig="-Dlog4j.configuration=file:${dev.scheduling.test.dir}/config/log4j/scheduler-log4j-server"/>
+        <antcall target="junit.summary"/>
+    </target>
 
     <target name="junit.summary">
         <junitreport todir="${junit.dir}">

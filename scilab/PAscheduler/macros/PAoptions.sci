@@ -21,7 +21,9 @@ function opts = PAoptions(varargin)
     listtrans = stringtolist;
 
     deff ("y=urlcheck(x)","if isnumeric(x), y=isempty(x), else y=ischar(x), end","n");
-    deff ("y=charornull(x)","if isnumeric(x), y=isempty(x), else y=ischar(x), end","n");    
+    deff ("y=charornull(x)","if isnumeric(x), y=isempty(x), else y=ischar(x), end","n");   
+    
+    deff("y=isstrictpositiveint(x)","ss=evstr(x),if isnumeric(ss) & sum(length(ss))==1 & ss > 0 & floor(ss) == ss, y=%t, else y=%f, end","n");  
 
 
     v = getversion();
@@ -76,6 +78,11 @@ function opts = PAoptions(varargin)
     inputs(j).default = %f;
     inputs(j).check = 'logcheck';
     inputs(j).trans = 'logtrans';
+    j=j+1;
+    inputs(j).name = 'NbTaskExecution';
+    inputs(j).default = 2;
+    inputs(j).check = 'isstrictpositiveint';
+    inputs(j).trans = 'evstr';
     j=j+1;
     inputs(j).name = 'TransferEnv';
     inputs(j).default = %f;

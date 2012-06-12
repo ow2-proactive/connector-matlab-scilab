@@ -46,6 +46,7 @@ import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -312,7 +313,6 @@ public class IOTools {
         /**  */
         public Boolean goon = true;
 
-        public Boolean patternFound = false;
         private PrintStream out;
         private PrintStream err;
 
@@ -325,7 +325,8 @@ public class IOTools {
 
         private String startpattern;
         private String stoppattern;
-        private String patternToFind;
+        private String[] patternsToFind;
+        private HashMap<String, Boolean> patternFound = new HashMap<String, Boolean>();
 
         private static String HOSTNAME;
 
@@ -355,7 +356,7 @@ public class IOTools {
          * @param out
          */
         public LoggingThread(Process p, String appendMessage, PrintStream out, PrintStream err,
-                String startpattern, String stoppattern, String patternToFind) {
+                String startpattern, String stoppattern, String[] patternToFind) {
             this(p, appendMessage, out, err, null, startpattern, stoppattern, patternToFind);
         }
 
@@ -364,7 +365,7 @@ public class IOTools {
         }
 
         public LoggingThread(Process p, String appendMessage, PrintStream out, PrintStream err,
-                PrintStream ds, String startpattern, String stoppattern, String patternToFind) {
+                PrintStream ds, String startpattern, String stoppattern, String[] patternsToFind) {
             this.brout = new BufferedReader(new InputStreamReader(p.getInputStream()));
             this.brerr = new BufferedReader(new InputStreamReader(p.getErrorStream()));
             this.appendMessage = appendMessage;
@@ -373,7 +374,13 @@ public class IOTools {
             this.debugStream = ds;
             this.startpattern = startpattern;
             this.stoppattern = stoppattern;
-            this.patternToFind = patternToFind;
+            this.patternsToFind = patternsToFind;
+            if (patternsToFind != null) {
+                for (String patternToFind : patternsToFind) {
+                    this.patternFound.put(patternToFind, false);
+                }
+            }
+
             this.p = p;
         }
 
@@ -428,13 +435,19 @@ public class IOTools {
             } catch (IOException e) {
                 return null;
             } finally {
-                if (patternToFind != null) {
-                    if (answer != null && answer.contains(patternToFind)) {
-                        patternFound = true;
+                if (patternsToFind != null) {
+                    for (String pattern : patternsToFind) {
+                        if (answer != null && answer.contains(pattern)) {
+                            patternFound.put(pattern, true);
+                        }
                     }
                 }
             }
             return null;
+        }
+
+        public boolean patternFound(String pattern) {
+            return patternFound.get(pattern);
         }
 
         private boolean readyout() throws IOException {

@@ -65,6 +65,10 @@ public class MatlabConnectionRImpl implements MatlabConnection {
     /** Pattern used to remove Matlab startup message from logs */
     private static final String startPattern = "---- MATLAB START ----";
 
+    private static final String lcFailedPattern = "License checkout failed";
+
+    private static final String outofmemoryPattern = "java.lang.OutOfMemoryError";
+
     /** Startup Options of the Matlab process */
     protected String[] startUpOptions;
 
@@ -212,10 +216,10 @@ public class MatlabConnectionRImpl implements MatlabConnection {
 
         if (debug) {
             lt1 = new IOTools.LoggingThread(process, "[MATLAB]", System.out, System.err, outDebug, null,
-                null, "License checkout failed");
+                null, new String[] { lcFailedPattern, outofmemoryPattern });
         } else {
             lt1 = new IOTools.LoggingThread(process, "[MATLAB]", System.out, System.err, startPattern, null,
-                "License checkout failed");
+                new String[] { lcFailedPattern, outofmemoryPattern });
 
         }
         Thread t1 = new Thread(lt1, "OUT MATLAB");
@@ -225,8 +229,8 @@ public class MatlabConnectionRImpl implements MatlabConnection {
         File ackFile = new File(workingDirectory, "matlab.ack");
         File nackFile = new File(workingDirectory, "matlab.nack");
         int cpt = 0;
-        while (!ackFile.exists() && !nackFile.exists() && (cpt < TIMEOUT_START) && !lt1.patternFound &&
-            running) {
+        while (!ackFile.exists() && !nackFile.exists() && (cpt < TIMEOUT_START) &&
+            !lt1.patternFound(lcFailedPattern) && !lt1.patternFound(outofmemoryPattern) && running) {
             try {
                 int exitValue = process.exitValue();
                 sendAck(false);
@@ -250,12 +254,19 @@ public class MatlabConnectionRImpl implements MatlabConnection {
             lt1.goon = false;
             throw new UnsufficientLicencesException();
         }
-        if (lt1.patternFound) {
+        if (lt1.patternFound(lcFailedPattern)) {
             process.destroy();
             process = null;
             lt1.goon = false;
             sendAck(false);
             throw new UnsufficientLicencesException();
+        }
+        if (lt1.patternFound(outofmemoryPattern)) {
+            process.destroy();
+            process = null;
+            lt1.goon = false;
+            sendAck(false);
+            throw new RuntimeException("Out of memory error in Matlab process");
         }
         if (cpt >= TIMEOUT_START) {
             process.destroy();

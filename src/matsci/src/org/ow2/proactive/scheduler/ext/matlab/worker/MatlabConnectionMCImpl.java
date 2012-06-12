@@ -89,6 +89,10 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
     /** Pattern used to remove Matlab startup message from logs */
     private static final String startPattern = "---- MATLAB START ----";
 
+    private static final String lcFailedPattern = "License checkout failed";
+
+    private static final String outofmemoryPattern = "java.lang.OutOfMemoryError";
+
     /** The temp directory */
     private static String tmpDir;
 
@@ -286,7 +290,9 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
         int cpt = 0;
         try {
 
-            while (!ackFile.exists() && !nackFile.exists() && (cpt < TIMEOUT_START)) {
+            while (!ackFile.exists() && !nackFile.exists() && (cpt < TIMEOUT_START) &&
+                !CustomMatlabProcessCreator.lt1.patternFound(lcFailedPattern) &&
+                !CustomMatlabProcessCreator.lt1.patternFound(outofmemoryPattern)) {
                 Thread.sleep(10);
                 cpt++;
             }
@@ -304,6 +310,16 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
             sendAck(false);
             release();
             throw new UnsufficientLicencesException();
+        }
+        if (CustomMatlabProcessCreator.lt1.patternFound(lcFailedPattern)) {
+            sendAck(false);
+            release();
+            throw new UnsufficientLicencesException();
+        }
+        if (CustomMatlabProcessCreator.lt1.patternFound(outofmemoryPattern)) {
+            sendAck(false);
+            release();
+            throw new RuntimeException("Out of memory error in Matlab process");
         }
         if (cpt >= TIMEOUT_START) {
             sendAck(false);
@@ -350,6 +366,8 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
 
         private Process process;
 
+        static IOTools.LoggingThread lt1;
+
         public CustomMatlabProcessCreator(final String matlabLocation, final File workingDirectory,
                 String[] startUpOptions, boolean debug) {
             this.matlabLocation = matlabLocation;
@@ -382,14 +400,12 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
 
             process = b.start();
 
-            IOTools.LoggingThread lt1;
-
             if (debug) {
                 lt1 = new IOTools.LoggingThread(process, "[MATLAB]", System.out, System.err, outDebug, null,
-                    null, "License checkout failed");
+                    null, new String[] { lcFailedPattern, outofmemoryPattern });
             } else {
                 lt1 = new IOTools.LoggingThread(process, "[MATLAB]", System.out, System.err, startPattern,
-                    null, "License checkout failed");
+                    null, new String[] { lcFailedPattern, outofmemoryPattern });
 
             }
 

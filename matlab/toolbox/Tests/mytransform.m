@@ -39,7 +39,7 @@ function ok = mytransform(file)
 %formats = imformats(format_struct);
 newImg = imcomplement(imread(file));
 
-[pathstr, name, ext, versn] = fileparts(file); 
+[pathstr, name, ext] = fileparts(file);
 newfile = fullfile(pathstr,[strcat('New_',name) '.pgm']);
 imwrite(newImg, newfile);
 ok = 1;

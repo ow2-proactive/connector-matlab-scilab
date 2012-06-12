@@ -63,6 +63,10 @@
 %               Matlab, all the previous session jobs results can be
 %               retrieved via PAgetResults.
 %
+%   NbTaskExecution         integer >= 1
+%               Defines how many times a task can be executed (in case of error),
+%               it defaults to 2, to limit accidental crash of the remote engine due to memory limitations
+%
 %   CustomDataspaceURL        char
 %               URL of the dataspace (both input and output) to expose, if
 %               you don't want to rely on ProActive's automatic transfer
@@ -245,6 +249,8 @@ logtrans = @(x)((islogical(x) && x) || (ischar(x) && (strcmp(x,'on') || strcmp(x
 conftrans = @(x)(strrep(variabletrans(x),'/',filesep));
 
 ischarornull = @(x)(ischar(x) || isnumeric(x)&&isempty(x));
+ss = @(x)str2num(x);
+isstrictpositiveint = @(x)(isnumeric(ss(x)) && isscalar(ss(x)) && ss(x) > 0 && floor(ss(x)) == ss(x));
 
 id = @(x)x;
 
@@ -287,6 +293,16 @@ inputs(j).trans = logtrans;
 j=j+1;
 inputs(j).name = 'RemoveJobAfterRetrieve';
 inputs(j).default = false;
+inputs(j).check = logcheck;
+inputs(j).trans = logtrans;
+j=j+1;
+inputs(j).name = 'NbTaskExecution';
+inputs(j).default = 2;
+inputs(j).check = isstrictpositiveint;
+inputs(j).trans = ss;
+j=j+1;
+inputs(j).name = 'EnableDisconnectedMode';
+inputs(j).default = true;
 inputs(j).check = logcheck;
 inputs(j).trans = logtrans;
 j=j+1;

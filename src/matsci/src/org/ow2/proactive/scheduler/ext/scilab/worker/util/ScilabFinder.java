@@ -36,6 +36,7 @@
  */
 package org.ow2.proactive.scheduler.ext.scilab.worker.util;
 
+import org.ow2.proactive.scheduler.ext.matsci.worker.util.MatSciConfigurationParser;
 import org.ow2.proactive.scheduler.ext.matsci.worker.util.MatSciEngineConfig;
 import org.ow2.proactive.scheduler.ext.matsci.worker.util.MatSciFinder;
 
@@ -68,7 +69,8 @@ public class ScilabFinder extends MatSciFinder {
 
     public MatSciEngineConfig findMatSci(String version_pref, HashSet<String> versionsRej, String versionMin,
             String versionMax, boolean debug) throws Exception {
-        ArrayList<MatSciEngineConfig> confs = ScilabConfigurationParser.getConfigs(debug);
+        ArrayList<MatSciEngineConfig> confs = MatSciConfigurationParser.getConfigs(debug,
+                MatSciConfigurationParser.Type.scilab);
 
         if (confs == null) {
             System.out.println("No configuration found");

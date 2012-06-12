@@ -11,10 +11,11 @@ cred = args(7);
 nbiter = args(8);
 testfunction = args(9);
 runAsMe = args(10);
+PAoptions('Debug',%t);
 
 try
     PAconnect(url, cred);
-    PAoptions('Debug',%t);
+
     if evstr(runAsMe) == 1
         PAoptions('RunAsMe',%t);
     end

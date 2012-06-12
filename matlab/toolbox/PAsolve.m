@@ -500,6 +500,7 @@ solve_config.setMatFileOptions(opt.TransferMatFileOptions);
 solve_config.setLicenseServerUrl(opt.LicenseServerURL);
 solve_config.setFork(opt.Fork);
 solve_config.setRunAsMe(opt.RunAsMe);
+solve_config.setNbExecutions(opt.NbTaskExecution);   
 solve_config.setWindowsStartupOptionsAsString(opt.WindowsStartupOptions);
 solve_config.setLinuxStartupOptionsAsString(opt.LinuxStartupOptions);
 

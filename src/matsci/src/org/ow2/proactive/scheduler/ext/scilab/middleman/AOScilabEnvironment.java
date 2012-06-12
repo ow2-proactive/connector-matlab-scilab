@@ -190,6 +190,8 @@ public class AOScilabEnvironment extends AOMatSciEnvironment<ScilabType, ScilabR
                     schedulerTask.setForkEnvironment(new ForkEnvironment());
                 }
 
+                schedulerTask.setMaxNumberOfExecution(gconf.getNbExecutions());
+
                 // Being fixed in the scheduler trunk
                 if (config.isRunAsMe()) {
                     schedulerTask.setRunAsMe(true);
