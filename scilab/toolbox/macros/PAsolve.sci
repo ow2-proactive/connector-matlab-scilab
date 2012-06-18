@@ -294,6 +294,8 @@ function initSolveConfig(solve_config,opt)
     end
 
     solve_config.setZipSourceFiles(%f);
+    solve_config.setWorkerTimeoutStart(opt.WorkerTimeoutStart);
+    
 endfunction
 
 // Initialize Task Config source files to be transferred

@@ -147,6 +147,8 @@ public class StandardJVMSpawnHelper {
      */
     private static String tmpPath = System.getProperty("java.io.tmpdir");
 
+    private String matSciDir = null;
+
     /**
      * Stream to the Debug file
      */
@@ -174,6 +176,10 @@ public class StandardJVMSpawnHelper {
             instance = new StandardJVMSpawnHelper();
         }
         return instance;
+    }
+
+    public void setMatSciDir(String matSciDir) {
+        this.matSciDir = null;
     }
 
     public void setDebug(boolean d) {
@@ -394,6 +400,17 @@ public class StandardJVMSpawnHelper {
             outDebug = new PrintStream(new BufferedOutputStream(new FileOutputStream(logFile, true)));
 
             ProcessBuilder pb = new ProcessBuilder(cmd);
+
+            if (this.matSciDir != null) {
+                File cd = new File(this.matSciDir);
+                if (cd.exists() && cd.isDirectory()) {
+                    pb.directory(new File(this.matSciDir));
+                } else {
+                    System.err.println("Warning : Can't find directory " + cd + ", using " +
+                        new File(".").getAbsolutePath() + " instead.");
+                }
+            }
+
             Map<String, String> env = pb.environment();
             if (classPath != null) {
                 env.put("CLASSPATH", classPath);

@@ -12,10 +12,8 @@ nbiter = args(8);
 testfunction = args(9);
 runAsMe = args(10);
 PAoptions('Debug',%t);
-
 try
     PAconnect(url, cred);
-
     if evstr(runAsMe) == 1
         PAoptions('RunAsMe',%t);
     end
@@ -33,6 +31,6 @@ catch
     save('ko.tst',ok);
 end
 global('PA_jvminterface');
-ok = jinvoke(PA_jvminterface,'shutdown');
+jinvoke(PA_jvminterface,'shutdown');
 sleep(1000);
 exit();

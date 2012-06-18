@@ -30,7 +30,7 @@ public class ScilabConnectionRImpl implements ScilabConnection {
     protected String scilabLocation;
     protected File workingDirectory;
 
-    protected static final int TIMEOUT_START = 6000;
+    protected int TIMEOUT_START = 6000;
 
     protected File logFile;
     protected boolean debug;
@@ -60,6 +60,7 @@ public class ScilabConnectionRImpl implements ScilabConnection {
         this.debug = paconfig.isDebug();
         this.paconfig = paconfig;
         this.tconfig = tconfig;
+        this.TIMEOUT_START = paconfig.getWorkerTimeoutStart();
         if (os == OperatingSystem.windows) {
             this.startUpOptions = paconfig.getWindowsStartupOptions();
         } else {

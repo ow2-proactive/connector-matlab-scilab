@@ -21,7 +21,14 @@
     <property name="junit.dir" value="${base.dir}/junitReports"/>
 
     <property name="deploy.dir" value="${base.dir}/dist"/>
-    <property name="deploy.lib.dir" value="${deploy.dir}/lib"/>
+    <property name="matlab.tb.path" value="matlab/toolbox"/>
+    <property name="scilab.tb.path" value="scilab/toolbox"/>
+    <property name="matlab.tb.dir" value="${base.dir}/${matlab.tb.path}"/>
+    <property name="scilab.tb.dir" value="${base.dir}/${scilab.tb.path}"/>
+    <property name="deploy.matlab.tb.dir" value="${deploy.dir}/${matlab.tb.path}"/>
+    <property name="deploy.scilab.tb.dir" value="${deploy.dir}/${scilab.tb.path}"/>
+    <property name="deploy.matlab.lib.dir" value="${deploy.matlab.tb.dir}/lib"/>
+    <property name="deploy.scilab.lib.dir" value="${deploy.scilab.tb.dir}/lib"/>
 
 
     <!-- ================================================================ -->

@@ -198,6 +198,12 @@ public class PASolveMatSciGlobalConfig implements Serializable {
      */
     protected String outputSpaceURL = null;
 
+    /**
+     * timeout used to start Matlab/Scilab worker processes (*10ms)
+
+     */
+    protected int workerTimeoutStart = 6000;
+
     public PASolveMatSciGlobalConfig() {
 
     }
@@ -500,6 +506,14 @@ public class PASolveMatSciGlobalConfig implements Serializable {
             windowsStartupOptions = options.split("[ ,;]+");
 
         }
+    }
+
+    public int getWorkerTimeoutStart() {
+        return workerTimeoutStart;
+    }
+
+    public void setWorkerTimeoutStart(int workerTimeoutStart) {
+        this.workerTimeoutStart = workerTimeoutStart;
     }
 
 }

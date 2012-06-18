@@ -73,18 +73,11 @@ function deployJVM(opt)
         
     end
 
-    matsci_dir = PA_matsci_dir;
+    matsci_dir = opt.MatSciDir;
 
-    dist_lib_dir = matsci_dir + fs + 'dist' + fs + 'lib';
+    dist_lib_dir = matsci_dir + fs + 'lib';
     if ~isdir(dist_lib_dir)
-        plugins_dir = matsci_dir +fs +'plugins';
-        dirdir=dir(plugins_dir+fs+ 'org.ow2.proactive.scheduler.lib_*');
-        dd=dirdir.name;
-        dist_lib_dir = plugins_dir + fs + dd + fs +'lib';
-        if ~isdir(dist_lib_dir)
-            clearJavaStack();
-            error('PAconnect::cannot find directory ' +dist_lib_dir);
-        end
+        error('PAconnect::cannot find directory ' +dist_lib_dir);
     end
     jars = opt.ProActiveJars;
     jarsjava = jarray('java.lang.String', size(jars,1));
@@ -94,6 +87,7 @@ function deployJVM(opt)
         jarsjava(i-1) = jartmp;
         addJavaObj(jartmp);
     end
+    jinvoke(deployer,'setMatSciDir', matsci_dir);
     jinvoke(deployer,'setDebug',opt.Debug);
     jinvoke(deployer,'setClasspathEntries',jarsjava);
     jinvoke(deployer,'setProActiveConfiguration',opt.ProActiveConfiguration);

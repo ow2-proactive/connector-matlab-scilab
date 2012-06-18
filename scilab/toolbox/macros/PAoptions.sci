@@ -135,7 +135,7 @@ function opts = PAoptions(varargin)
     inputs(j).trans = 'id';
     j=j+1;
     inputs(j).name = 'FindScilabScript';
-    inputs(j).default = strcat(['$MATSCI$', fs, 'scilab', fs, 'script', fs, 'file_scilab_finder.rb' ]);
+    inputs(j).default = '$MATSCI$' + fs +'script' + 'file_scilab_finder.rb';
     inputs(j).check = 'ischar';
     inputs(j).trans = 'scripttrans';
     j=j+1;
@@ -179,6 +179,12 @@ function opts = PAoptions(varargin)
     //    inputs(j).check = 'logcheck';
     //    inputs(j).trans = 'logtrans';
     //    j=j+1;
+    inputs(j).name = 'PathJars';
+    inputs(j).default = '$MATSCI$'+ fs +'lib';
+    inputs(j).check = 'ischar';
+    inputs(j).trans = 'conftrans';
+    j=j+1;
+    
     inputs(j).name = 'EmbeddedJars';
     inputs(j).default = 'ProActive_Scheduler-matsciemb.jar';
     inputs(j).check = 'jarlistcheck';
@@ -190,17 +196,17 @@ function opts = PAoptions(varargin)
     inputs(j).trans = 'stringtocell';
     j=j+1;
     inputs(j).name = 'ProActiveConfiguration';
-    inputs(j).default = strcat(['$SCHEDULER$', fs, 'config', fs, 'proactive', fs, 'ProActiveConfiguration.xml']);
+    inputs(j).default = '$MATSCI$'+ fs + 'config' + fs +'ScilabProActiveConfiguration.xml';
     inputs(j).check = 'ischar';
     inputs(j).trans = 'conftrans'
     j=j+1;
     inputs(j).name = 'Log4JConfiguration';
-    inputs(j).default = strcat(['$SCHEDULER$', fs, 'config', fs, 'log4j', fs, 'log4j-client']);
+    inputs(j).default = '$MATSCI$'+ fs + 'config' + fs + 'log4j-client';
     inputs(j).check = 'ischar';
     inputs(j).trans = 'conftrans';
     j=j+1;
     inputs(j).name = 'SecurityFile';
-    inputs(j).default = strcat(['$SCHEDULER$', fs, 'config', fs, 'security.java.policy-client']);
+    inputs(j).default = '$MATSCI$'+ fs + 'config' + fs +  'security.java.policy-client';
     inputs(j).check = 'ischar';
     inputs(j).trans = 'conftrans';
     j=j+1;
@@ -218,6 +224,11 @@ function opts = PAoptions(varargin)
     inputs(j).default = 1200;
     inputs(j).check = 'charornum';
     inputs(j).trans = 'charornumtrans';
+    j=j+1;
+    inputs(j).name = 'WorkerTimeoutStart';
+    inputs(j).default = 6000;
+    inputs(j).check = 'charornum';
+    inputs(j).trans = 'charornumtrans';
     //    j=j+1;
     //    inputs(j).name = 'DisconnectedModeFile';
     //    inputs(j).default = strcat(['$HOME$', fs, '.PAsolveTmp.dat']);
@@ -233,7 +244,7 @@ function opts = PAoptions(varargin)
         if isfile(optionpath) then
             [fid, ferr] = mopen(optionpath, 'r'); 
         else
-            optionpath = fullfile(PA_matsci_dir, 'scilab', 'config', 'toolbox', 'PAoptions.ini');
+            optionpath = fullfile(PA_matsci_dir, 'config', 'PAoptions.ini');
             if ~isfile(optionpath) then
                 error(strcat(['Can''t locate options file at ""';optionpath;'"".']));
             end

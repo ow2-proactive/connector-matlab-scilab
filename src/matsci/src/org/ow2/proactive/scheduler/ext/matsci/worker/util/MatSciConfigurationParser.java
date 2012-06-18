@@ -63,7 +63,9 @@ public class MatSciConfigurationParser {
         matlab, scilab
     }
 
-    static final String DEFAULT_CONFIG_PATH = "addons/MatSciWorkerConfiguration.xml";
+    static final String DEFAULT_MATLAB_CONFIG_PATH = "addons/MatlabWorkerConfiguration.xml";
+
+    static final String DEFAULT_SCILAB_CONFIG_PATH = "addons/ScilabWorkerConfiguration.xml";
 
     static String HOSTNAME;
     static String IP;
@@ -87,15 +89,29 @@ public class MatSciConfigurationParser {
         ArrayList<MatSciEngineConfig> configs = new ArrayList<MatSciEngineConfig>();
 
         File schedHome = MatSciProperties.findSchedulerHome();
-
-        String configFilePath = MatSciProperties.MATSCI_WORKER_CONFIGURATION_FILE.getValueAsString();
+        String configFilePath = null;
+        if (type.equals(Type.matlab)) {
+            configFilePath = MatSciProperties.MATLAB_WORKER_CONFIGURATION_FILE.getValueAsString();
+        } else {
+            configFilePath = MatSciProperties.SCILAB_WORKER_CONFIGURATION_FILE.getValueAsString();
+        }
         if (configFilePath == null || "".equals(configFilePath)) {
             // 2 - If not found check for property
-            configFilePath = System.getProperty(MatSciProperties.MATSCI_WORKER_CONFIGURATION_FILE.getKey());
+            if (type.equals(Type.matlab)) {
+                configFilePath = System.getProperty(MatSciProperties.MATLAB_WORKER_CONFIGURATION_FILE
+                        .getKey());
+            } else {
+                configFilePath = System.getProperty(MatSciProperties.SCILAB_WORKER_CONFIGURATION_FILE
+                        .getKey());
+            }
 
             if (configFilePath == null || "".equals(configFilePath)) {
                 // 3 - If not defined use default config path relative to scheduler home
-                configFilePath = DEFAULT_CONFIG_PATH;
+                if (type.equals(Type.matlab)) {
+                    configFilePath = DEFAULT_MATLAB_CONFIG_PATH;
+                } else {
+                    configFilePath = DEFAULT_SCILAB_CONFIG_PATH;
+                }
             }
         }
 

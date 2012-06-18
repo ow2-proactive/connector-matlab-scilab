@@ -130,6 +130,13 @@
             <classpath path="${cl.matsci.tests.dir}"/>
             <include name="**/*.java"/>
         </javac>
+
+        <rmic base="${cl.matsci.dir}" classpathref="all.libs"
+              includes="**/org/ow2/proactive/scheduler/ext/matsci/middleman/AOMatSciEnvironment.class"/>
+        <rmic base="${cl.matsci.dir}" classpathref="all.libs"
+              includes="**/org/ow2/proactive/scheduler/ext/matsci/middleman/AODataspaceRegistry.class"/>
+        <rmic base="${cl.matsci.dir}" classpathref="all.libs"
+              includes="**/org/ow2/proactive/scheduler/ext/matsci/middleman/MatSciJVMProcessInterfaceImpl.class"/>
     </target>
 
     <!-- ************
@@ -137,8 +144,12 @@
      -->
 
     <target name="-deployCopy">
-        <mkdir dir="${deploy.lib.dir}"/>
-        <copy todir="${deploy.lib.dir}" flatten="yes">
+        <mkdir dir="${deploy.matlab.lib.dir}"/>
+        <mkdir dir="${deploy.scilab.lib.dir}"/>
+        <copy todir="${deploy.matlab.lib.dir}" flatten="yes">
+            <fileset dir="${lib.dir}" includes="**/*.jar" excludes="**/sigar.jar"/>
+        </copy>
+        <copy todir="${deploy.scilab.lib.dir}" flatten="yes">
             <fileset dir="${lib.dir}" includes="**/*.jar" excludes="**/sigar.jar"/>
         </copy>
 
@@ -148,13 +159,7 @@
 
     <target name="deploy.matsci" depends="-deployCopy, compile.matsci"
             description="Creates Matlab/Scilab connector jars">
-        <rmic base="${cl.matsci.dir}" classpathref="all.libs"
-              includes="**/org/ow2/proactive/scheduler/ext/matsci/middleman/AOMatSciEnvironment.class"/>
-        <rmic base="${cl.matsci.dir}" classpathref="all.libs"
-              includes="**/org/ow2/proactive/scheduler/ext/matsci/middleman/AODataspaceRegistry.class"/>
-        <rmic base="${cl.matsci.dir}" classpathref="all.libs"
-              includes="**/org/ow2/proactive/scheduler/ext/matsci/middleman/MatSciJVMProcessInterfaceImpl.class"/>
-        <jar destfile="${deploy.lib.dir}/${matsci.jar}" manifest="${basedir}/matsci-Manifest-base.mf" index="true">
+        <jar destfile="${java.io.tmpdir}/${matsci.jar}" manifest="${basedir}/matsci-Manifest-base.mf" index="true">
             <fileset dir="${cl.matsci.dir}" includes="**/org/ow2/proactive/scheduler/ext/common/**"/>
             <fileset dir="${cl.matsci.dir}" includes="**/org/ow2/proactive/scheduler/ext/matsci/**"/>
             <fileset dir="${cl.matsci.dir}" includes="**/org/ow2/proactive/scheduler/ext/matlab/**"/>
@@ -163,7 +168,7 @@
                 <fileset refid="jar.index.fileset"/>
             </indexjars>
         </jar>
-        <jar destfile="${deploy.lib.dir}/${matsci.embedded.jar}" manifest="${basedir}/matsci-Manifest-base.mf"
+        <jar destfile="${java.io.tmpdir}/${matsci.embedded.jar}" manifest="${basedir}/matsci-Manifest-base.mf"
              index="false">
             <fileset dir="${cl.matsci.dir}" includes="**/org/ow2/proactive/scheduler/ext/common/util/**"/>
             <fileset dir="${cl.matsci.dir}" includes="**/org/ow2/proactive/scheduler/ext/matsci/client/**"/>
@@ -177,18 +182,41 @@
         </jar>
     </target>
 
-    <target name="deploy.matsci.scheduling" depends="deploy.matsci"
+    <target name="deploy.matlab" depends="deploy.matsci" description="Deploys the Matlab Toolbox">
+        <mkdir dir="${deploy.matlab.tb.dir}"/>
+        <mkdir dir="${deploy.matlab.lib.dir}"/>
+        <copy todir="${deploy.matlab.lib.dir}" flatten="yes" file="${java.io.tmpdir}/${matsci.embedded.jar}"/>
+        <copy todir="${deploy.matlab.lib.dir}" flatten="yes" file="${java.io.tmpdir}/${matsci.jar}"/>
+        <copy todir="${deploy.matlab.tb.dir}">
+            <fileset dir="${matlab.tb.dir}" includes="**/*" excludes="**/.PAScheduler"/>
+        </copy>
+    </target>
+    <target name="deploy.scilab" depends="deploy.matsci" description="Deploys the Scilab Toolbox">
+        <mkdir dir="${deploy.scilab.tb.dir}"/>
+        <mkdir dir="${deploy.scilab.lib.dir}"/>
+        <copy todir="${deploy.scilab.lib.dir}" flatten="yes" file="${java.io.tmpdir}/${matsci.embedded.jar}"/>
+        <copy todir="${deploy.scilab.lib.dir}" flatten="yes" file="${java.io.tmpdir}/${matsci.jar}"/>
+        <copy todir="${deploy.scilab.tb.dir}">
+            <fileset dir="${scilab.tb.dir}" includes="**/*" excludes="**/.PAScheduler"/>
+        </copy>
+    </target>
+
+    <target name="deploy.matsci.scheduling" depends="deploy.matlab, deploy.scilab"
             description="Copy Matlab/Scilab connector jars into Scheduling">
-        <copy todir="${scheduling.project.dir}/addons" flatten="yes" file="${deploy.lib.dir}/${matsci.jar}"/>
+        <copy todir="${scheduling.project.dir}/addons" flatten="yes" file="${java.io.tmpdir}/${matsci.jar}"/>
         <copy todir="${scheduling.project.dir}/addons" flatten="yes">
             <fileset dir="${lib.dir}">
                 <include name="matsci/**/*.jar"/>
             </fileset>
         </copy>
         <copy todir="${scheduling.project.dir}/addons" flatten="yes">
-            <fileset dir="${base.dir}/config">
+            <fileset dir="${matlab.tb.dir}/config">
                 <include name="matlab_scilab_connector.ini"/>
-                <include name="MatSciWorkerConfiguration.xml"/>
+                <include name="MatlabWorkerConfiguration.xml"/>
+            </fileset>
+            <fileset dir="${scilab.tb.dir}/config">
+                <include name="matlab_scilab_connector.ini"/>
+                <include name="ScilabWorkerConfiguration.xml"/>
             </fileset>
         </copy>
 
@@ -229,16 +257,20 @@
     <target name="deploy.matsci.scheduling.tests" depends="deploy.matsci"
             description="Copy Matlab/Scilab connector jars into Scheduling tests folder">
         <mkdir dir="${dev.scheduling.test.dir}/addons"/>
-        <copy todir="${dev.scheduling.test.dir}/addons" flatten="yes" file="${deploy.lib.dir}/${matsci.jar}"/>
+        <copy todir="${dev.scheduling.test.dir}/addons" flatten="yes" file="${java.io.tmpdir}/${matsci.jar}"/>
         <copy todir="${dev.scheduling.test.dir}/addons" flatten="yes">
             <fileset dir="${lib.dir}">
                 <include name="matsci/**/*.jar"/>
             </fileset>
         </copy>
         <copy todir="${dev.scheduling.test.dir}/addons" flatten="yes">
-            <fileset dir="${base.dir}/config">
+            <fileset dir="${matlab.tb.dir}/config">
                 <include name="matlab_scilab_connector.ini"/>
-                <include name="MatSciWorkerConfiguration.xml"/>
+                <include name="MatlabWorkerConfiguration.xml"/>
+            </fileset>
+            <fileset dir="${scilab.tb.dir}/config">
+                <include name="matlab_scilab_connector.ini"/>
+                <include name="ScilabWorkerConfiguration.xml"/>
             </fileset>
         </copy>
 
@@ -355,6 +387,8 @@
                    dir="${dev.scheduling.test.dir}/bin/unix">
                 <jvmarg value="-Dproactive.home=${dev.scheduling.test.dir}"/>
                 <jvmarg value="-Dpa.matsci.home=${base.dir}"/>
+                <jvmarg value="-Dpa.matlab.home=${deploy.matlab.tb.dir}"/>
+                <jvmarg value="-Dpa.scilab.home=${deploy.scilab.tb.dir}"/>
                 <jvmarg value="-Dpa.scheduler.home=${dev.scheduling.test.dir}"/>
                 <jvmarg value="-Dpa.rm.home=${dev.scheduling.test.dir}"/>
                 <jvmarg value="-Dpa.scheduler.properties.filepath=${dev.scheduling.test.dir}/config/scheduler/settings.ini"/>
@@ -397,7 +431,7 @@
         </sequential>
     </macrodef>
 
-    <target name="junit.scilab" depends="deploy.matsci, deploy.scheduling.tests, deploy.matsci.scheduling.tests"
+    <target name="junit.scilab" depends="deploy.scilab, deploy.scheduling.tests, deploy.matsci.scheduling.tests"
             description="Run Scilab tests">
         <mkdir dir="${cl.matsci.tests.dir}"/>
         <junitMacro testsuite="scilab.testsuite" testclasspath="matsci.test.classpath"
@@ -405,7 +439,7 @@
         <antcall target="junit.summary"/>
     </target>
 
-    <target name="junit.matlab" depends="deploy.matsci, deploy.scheduling.tests, deploy.matsci.scheduling.tests"
+    <target name="junit.matlab" depends="deploy.matlab, deploy.scheduling.tests, deploy.matsci.scheduling.tests"
             description="Run Matlab tests">
         <mkdir dir="${cl.matsci.tests.dir}"/>
         <junitMacro testsuite="matlab.testsuite" testclasspath="matsci.test.classpath"

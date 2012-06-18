@@ -113,7 +113,7 @@ public interface MatSciEnvironment extends Remote {
      * @return
      * @throws java.rmi.RemoteException
      */
-    public boolean terminate() throws RemoteException;
+    public void terminate() throws RemoteException;
 
     /**
      * Asks the environment to submit a job to the scheduler

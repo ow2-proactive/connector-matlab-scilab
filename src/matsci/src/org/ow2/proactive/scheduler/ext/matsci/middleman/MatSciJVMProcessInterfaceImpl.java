@@ -172,7 +172,7 @@ public class MatSciJVMProcessInterfaceImpl implements InitActive, EndActive, Mat
     }
 
     /** {@inheritDoc} */
-    public boolean shutdown() {
+    public void shutdown() {
         try {
             matlab_env.disconnect();
             matlab_env.terminate();
@@ -184,7 +184,6 @@ public class MatSciJVMProcessInterfaceImpl implements InitActive, EndActive, Mat
         } catch (Throwable e) {
         }
         stubOnThis.destroyJVM();
-        return true;
     }
 
     protected void destroyJVM() {

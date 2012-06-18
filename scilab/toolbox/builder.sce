@@ -28,12 +28,11 @@ disp('Start ProActive');
 
 root_tlbx = get_absolute_file_path('builder.sce');
 if ~exists('PA_matsci_dir') | PA_matsci_dir == []
-    oldcd=pwd();
-    cd(root_tlbx);
-    PA_matsci_dir=fullpath('..'+filesep()+'..');
-    cd(oldcd);
-            //error('The environment variable SCHEDULER_HOME must be defined, use setenv to define it in Scilab');
-        
+    if part(root_tlbx, length(root_tlbx)) == '/' then
+       PA_matsci_dir=part(root_tlbx, 1:length(root_tlbx)-1);
+    else
+        PA_matsci_dir=root_tlbx;
+    end
 end
 // ====================================================================
 //if ~with_module('development_tools') then

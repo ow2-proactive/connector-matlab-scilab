@@ -23,6 +23,6 @@ public interface MatSciJVMProcessInterface extends Remote {
      * @return
      * @throws java.rmi.RemoteException
      */
-    public boolean shutdown() throws RemoteException;
+    public void shutdown() throws RemoteException;
 
 }

@@ -53,9 +53,9 @@ for kk=1:nbiter
     % Testing task selection script
     tsk = PATask(1,2);
     tsk(1,1:2).Func = @factorial;
-    tsk(1,1).SelectionScript = fullfile(opt.MatSciDir, 'matlab', 'toolbox','Tests','script','truescript.js');
+    tsk(1,1).SelectionScript = fullfile(opt.MatSciDir, 'Tests','script','truescript.js');
     tsk(1,1).Static = true;
-    tsk(1,2).SelectionScript = fullfile(opt.MatSciDir, 'matlab', 'toolbox', 'Tests', 'script','scriptwithparam.js');
+    tsk(1,2).SelectionScript = fullfile(opt.MatSciDir, 'Tests', 'script','scriptwithparam.js');
     xx = clock();
     sd='';
     for i=1:length(xx)
@@ -83,7 +83,7 @@ for kk=1:nbiter
     tsk(1,2).SelectionScript = [];
 
 
-    PAoptions('CustomScript',fullfile(opt.MatSciDir, 'matlab', 'toolbox', 'Tests', 'script','scriptwithparam.js'));
+    PAoptions('CustomScript',fullfile(opt.MatSciDir, 'Tests', 'script','scriptwithparam.js'));
     PAoptions('CustomScriptStatic', false);
     xx = clock();
     sd='';

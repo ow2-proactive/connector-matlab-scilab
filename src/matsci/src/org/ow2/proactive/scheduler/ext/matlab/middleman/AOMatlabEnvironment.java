@@ -36,8 +36,6 @@
  */
 package org.ow2.proactive.scheduler.ext.matlab.middleman;
 
-import org.objectweb.proactive.core.ProActiveException;
-import org.objectweb.proactive.core.runtime.ProActiveRuntimeImpl;
 import org.ow2.proactive.scheduler.common.exception.SchedulerException;
 import org.ow2.proactive.scheduler.common.exception.UserException;
 import org.ow2.proactive.scheduler.common.job.JobPriority;
@@ -101,6 +99,10 @@ public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResu
         answer.setJobId(jid);
         answer.setTaskName(tname);
         MatSciJobVolatileInfo<Boolean> jinfo = currentJobs.get(jid);
+        if (jinfo == null) {
+            // sometimes the job has been moved to the finished jobs list and results are still requested (incomplete first retrieval completed by a second full retrieval)
+            jinfo = finishedJobs.get(jid);
+        }
 
         if (debug) {
             printLog("Sending the results of task " + tname + " of job " + jid + " back...");
@@ -206,17 +208,9 @@ public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResu
 
                     // Get the SCHEDULER_HOME/extensions/matlab/script/ directory
                     final StringBuilder scriptsDir = new StringBuilder();
-                    String pahome = null;
-                    try {
-                        pahome = ProActiveRuntimeImpl.getProActiveRuntime().getProActiveHome();
-                    } catch (ProActiveException e) {
-                        throw new PASchedulerException(e);
-                    }
-                    scriptsDir.append(pahome);
-                    scriptsDir.append(File.separator);
-                    scriptsDir.append("extensions");
-                    scriptsDir.append(File.separator);
-                    scriptsDir.append("matlab");
+                    // we run the middleman JVM in the toolbox root directory
+                    String matscihome = new File(".").getAbsolutePath();
+                    scriptsDir.append(matscihome);
                     scriptsDir.append(File.separator);
                     scriptsDir.append("script");
                     scriptsDir.append(File.separator);

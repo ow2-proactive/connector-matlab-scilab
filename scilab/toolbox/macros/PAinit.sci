@@ -12,15 +12,13 @@ function [] = PAinit()
     if ~isdir(PA_matsci_dir)
         error('The path '''+PA_matsci_dir+''' doesn''t exist or is not a directory');
     end
-    plugins_dir = fullfile(PA_matsci_dir,'plugins');
-    if isdir(plugins_dir) then
-        release_dir = listfiles(fullfile(PA_matsci_dir,'plugins','org.ow2.proactive.scheduler.lib_*'));
-        dist_lib_dir = fullfile(release_dir,'lib')        
-    else
-        dist_lib_dir = fullfile(PA_matsci_dir,'dist','lib');
-    end   
     opt=PAoptions();
-    
+    dist_lib_dir = opt.PathJars;
+    if ~isdir(dist_lib_dir) then
+        error('PAinit::cannot find directory ' + dist_lib_dir);    
+    end
+     
+        
     schedjar=fullfile(dist_lib_dir,opt.EmbeddedJars(1).entries); 
     if length(fileinfo(schedjar)) == 0 
         error('Can''t locate the scheduler jar at '''+schedjar);

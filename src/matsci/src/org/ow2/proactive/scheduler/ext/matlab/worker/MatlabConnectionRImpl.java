@@ -97,7 +97,7 @@ public class MatlabConnectionRImpl implements MatlabConnection {
     private final String nodeName;
 
     /** Timeout for the matlab process startup x 10 ms */
-    protected static final int TIMEOUT_START = 6000;
+    protected int TIMEOUT_START;
 
     /** Debug mode */
     protected boolean debug;
@@ -131,6 +131,7 @@ public class MatlabConnectionRImpl implements MatlabConnection {
         this.paconfig = paconfig;
         this.tconfig = tconfig;
         this.startUpOptions = paconfig.getStartupOptions();
+        this.TIMEOUT_START = paconfig.getWorkerTimeoutStart();
 
         this.logFile = new File(tmpDir, "MatlabStart" + nodeName + ".log");
         this.mainFuncFile = new File(workingDir, "PAMain.m");

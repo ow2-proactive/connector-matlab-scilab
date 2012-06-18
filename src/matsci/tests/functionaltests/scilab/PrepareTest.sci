@@ -10,6 +10,9 @@ try
     end
 
     exec builder.sce;
+    cd unit_tests;
+    exec buildtests.sce;
+    cd ../
     ok = %t;
     save('ok.tst',ok);
 catch

@@ -43,8 +43,7 @@ public class AbstractMatlabTest extends FunctionalTest {
 
     protected void init() throws Exception {
 
-        mat_tb_home = (new File(System.getProperty("pa.matsci.home") + fs + "matlab" + fs + "toolbox"))
-                .getCanonicalFile();
+        mat_tb_home = new File(System.getProperty("pa.matlab.home")).getCanonicalFile();
 
         test_home = (new File(System.getProperty("pa.matsci.home") + fs + "classes" + fs + "matsciTests" +
             fs + "functionaltests" + fs + "matlab")).getCanonicalFile();

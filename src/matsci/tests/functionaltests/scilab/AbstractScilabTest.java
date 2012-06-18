@@ -43,8 +43,7 @@ public class AbstractScilabTest extends FunctionalTest {
 
     protected void init() throws Exception {
 
-        sci_tb_home = (new File(System.getProperty("pa.matsci.home") + fs + "scilab" + fs + "PAscheduler"))
-                .getCanonicalFile();
+        sci_tb_home = new File(System.getProperty("pa.scilab.home")).getCanonicalFile();
 
         test_home = (new File(System.getProperty("pa.matsci.home") + fs + "classes" + fs + "matsciTests" +
             fs + "functionaltests" + fs + "scilab")).getCanonicalFile();

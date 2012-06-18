@@ -12,7 +12,7 @@ function [ok, msg]=TestPATaskWithGS(nbiter,timeout)
 
     opt = PAoptions();
 
-    testdir = fullfile(opt.MatSciDir, 'scilab', 'PAscheduler','unit_tests');
+    testdir = fullfile(opt.MatSciDir, 'unit_tests');
 
     if pwd() ~= testdir then
         error('TestPATask must be run in directory '+testdir);

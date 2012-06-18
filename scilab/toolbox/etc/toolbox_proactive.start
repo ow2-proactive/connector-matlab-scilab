@@ -17,7 +17,7 @@ function toolbox_proactivelib = startModule()
     if ~exists('PA_matsci_dir') | PA_matsci_dir == []
         oldcd=pwd();
         cd(etc_tlbx);
-        PA_matsci_dir=fullpath('..'+filesep()+'..'+filesep()+'..');
+        PA_matsci_dir=fullpath('..');
         cd(oldcd);
 
     end

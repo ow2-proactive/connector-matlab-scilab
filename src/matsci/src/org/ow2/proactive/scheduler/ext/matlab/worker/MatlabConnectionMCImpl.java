@@ -70,7 +70,7 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
 
     private CustomMatlabProcessCreator processCreator;
 
-    protected static final int TIMEOUT_START = 6000;
+    protected int TIMEOUT_START = 6000;
 
     protected OperatingSystem os = OperatingSystem.getOperatingSystem();
 
@@ -119,6 +119,7 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
         this.paconfig = paconfig;
         this.tconfig = tconfig;
         this.workingDirectory = workingDir;
+        this.TIMEOUT_START = paconfig.getWorkerTimeoutStart();
 
         if (paconfig.getLicenseServerUrl() != null) {
             try {

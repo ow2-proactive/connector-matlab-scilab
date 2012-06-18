@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-15"?>
 <MatSciWorkerConfiguration>
-    <MachineGroup hostname="pendule.*">
+    <MachineGroup hostname=".*">
         <matlab>
 
             <version>7.11</version>
@@ -14,13 +14,6 @@
            <command>matlab</command>
        </installation>     -->
         </matlab>
-        <scilab>
-            <version>5.3.3</version>
-            <!-- Scilab version (must be at least 5.3.0) -->
-            <home>/user/fviale/desktop/home/bin/scilab-5.3.3</home>
-            <!-- Scilab installation directory -->
-            <bindir>bin</bindir>
-            <command>scilab</command>
-        </scilab>
+
     </MachineGroup>
 </MatSciWorkerConfiguration>

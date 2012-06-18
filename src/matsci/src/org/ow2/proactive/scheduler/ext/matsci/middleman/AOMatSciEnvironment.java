@@ -391,9 +391,8 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
     }
 
     /** {@inheritDoc} */
-    public boolean terminate() {
+    public void terminate() {
         this.terminated = true;
-        return true;
     }
 
     protected void printLog(final String message) {

@@ -90,6 +90,10 @@ public class AOScilabEnvironment extends AOMatSciEnvironment<ScilabType, ScilabR
         answer.setJobId(jid);
         answer.setTaskName(tname);
         MatSciJobVolatileInfo<ScilabType> jinfo = currentJobs.get(jid);
+        if (jinfo == null) {
+            // sometimes the job has been moved to the finished jobs list and results are still requested (incomplete first retrieval completed by a second full retrieval)
+            jinfo = finishedJobs.get(jid);
+        }
 
         if (debug) {
 

@@ -19,9 +19,9 @@ function [ok, msg]=TestSelectionScripts(nbiter,timeout)
         // Testing task selection script
         tsk = PATask(1,2);
         tsk(1,1:2).Func = 'cosh';
-        tsk(1,1).SelectionScript = fullfile(opt.MatSciDir, 'scilab', 'PAscheduler','unit_tests','script','truescript.js');
+        tsk(1,1).SelectionScript = fullfile(opt.MatSciDir, 'unit_tests','script','truescript.js');
         tsk(1,1).Static = %t;
-        tsk(1,2).SelectionScript = fullfile(opt.MatSciDir, 'scilab', 'PAscheduler', 'unit_tests', 'script','scriptwithparam.js');
+        tsk(1,2).SelectionScript = fullfile(opt.MatSciDir, 'unit_tests', 'script','scriptwithparam.js');
         x = getdate("s");
         xx = getdate(x);
         sd='';for i=1:length(xx), sd=sd+string(xx(i))+'_',end    
@@ -46,7 +46,7 @@ function [ok, msg]=TestSelectionScripts(nbiter,timeout)
         tsk(1,2).SelectionScript = [];
 
 
-        PAoptions('CustomScript',fullfile(opt.MatSciDir, 'scilab', 'PAscheduler', 'unit_tests', 'script','scriptwithparam.js'));
+        PAoptions('CustomScript',fullfile(opt.MatSciDir, 'unit_tests', 'script','scriptwithparam.js'));
         PAoptions('CustomScriptStatic', %f);    
         x = getdate("s");
         xx = getdate(x);

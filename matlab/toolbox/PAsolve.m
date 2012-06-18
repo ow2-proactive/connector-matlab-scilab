@@ -532,6 +532,7 @@ if ischar(opt.CustomScript)
 end
 solve_config.setZipSourceFiles(true);
 solve_config.setUseMatlabControl(opt.UseMatlabControl);
+solve_config.setWorkerTimeoutStart(opt.WorkerTimeoutStart);
 end
 
 

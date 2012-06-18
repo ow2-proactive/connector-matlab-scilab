@@ -49,15 +49,9 @@ matsci_dir = opt.MatSciDir;
 
 % Dist libs
 fs=filesep();
-dist_lib_dir = [matsci_dir fs 'dist' fs 'lib'];
+dist_lib_dir = opt.PathJars;
 if ~exist(dist_lib_dir,'dir')
-    plugins_dir = [matsci_dir fs 'plugins'];
-    dirdir=dir([plugins_dir fs 'org.ow2.proactive.scheduler.lib_*']);
-    dd=dirdir.name;
-    dist_lib_dir = [plugins_dir fs dd fs 'lib'];
-    if ~exist(dist_lib_dir,'dir')
-        error(['PAprepare::cannot find directory ' dist_lib_dir]);
-    end
+    error(['PAprepare::cannot find directory ' dist_lib_dir]);    
 end
 
 
