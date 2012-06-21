@@ -219,6 +219,8 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
             throw new PASchedulerException(new LoginException(
                 "Could not retrieve public key, contact the Scheduler admininistrator\n" + e),
                 PASchedulerException.ExceptionType.LoginException);
+        } catch (Exception e) {
+            throw new PASchedulerException(e, PASchedulerException.ExceptionType.OtherException);
         }
         initLogin(creds);
 
@@ -232,43 +234,48 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
     protected void initLogin(Credentials creds) throws PASchedulerException {
         SchedulerStatus status = null;
         try {
-            this.scheduler = auth.login(creds);
+            try {
+                this.scheduler = auth.login(creds);
 
-            loggedin = true;
+                loggedin = true;
 
-            this.scheduler.addEventListener(stubOnThis, true, SchedulerEvent.JOB_RUNNING_TO_FINISHED,
-                    SchedulerEvent.JOB_PENDING_TO_FINISHED, SchedulerEvent.KILLED, SchedulerEvent.SHUTDOWN,
-                    SchedulerEvent.SHUTTING_DOWN, SchedulerEvent.STOPPED, SchedulerEvent.RESUMED,
-                    SchedulerEvent.TASK_RUNNING_TO_FINISHED);
+                this.scheduler.addEventListener(stubOnThis, true, SchedulerEvent.JOB_RUNNING_TO_FINISHED,
+                        SchedulerEvent.JOB_PENDING_TO_FINISHED, SchedulerEvent.KILLED,
+                        SchedulerEvent.SHUTDOWN, SchedulerEvent.SHUTTING_DOWN, SchedulerEvent.STOPPED,
+                        SchedulerEvent.RESUMED, SchedulerEvent.TASK_RUNNING_TO_FINISHED);
 
-            status = scheduler.getStatus();
-        } catch (NotConnectedException e) {
-            throw new PASchedulerException(e, PASchedulerException.ExceptionType.NotConnectedException);
-        } catch (PermissionException e) {
-            throw new PASchedulerException(e, PASchedulerException.ExceptionType.PermissionException);
-        } catch (AlreadyConnectedException e) {
-            throw new PASchedulerException(e, PASchedulerException.ExceptionType.AlreadyConnectedException);
-        } catch (LoginException e) {
-            throw new PASchedulerException(e, PASchedulerException.ExceptionType.LoginException);
-        }
-        schedulerStopped = (status == SchedulerStatus.STOPPED);
-        schedulerKilled = (status == SchedulerStatus.KILLED);
-
-        this.model = SchedulerModel.getModel(false);
-        model.connectConsole(new StdOutConsole());
-        model.connectScheduler(this.scheduler);
-
-        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-
-            public void run() {
-                try {
-                    if (scheduler != null) {
-                        scheduler.disconnect();
-                    }
-                } catch (Exception e) {
-                }
+                status = scheduler.getStatus();
+            } catch (NotConnectedException e) {
+                throw new PASchedulerException(e, PASchedulerException.ExceptionType.NotConnectedException);
+            } catch (PermissionException e) {
+                throw new PASchedulerException(e, PASchedulerException.ExceptionType.PermissionException);
+            } catch (AlreadyConnectedException e) {
+                throw new PASchedulerException(e,
+                    PASchedulerException.ExceptionType.AlreadyConnectedException);
+            } catch (LoginException e) {
+                throw new PASchedulerException(e, PASchedulerException.ExceptionType.LoginException);
             }
-        }));
+            schedulerStopped = (status == SchedulerStatus.STOPPED);
+            schedulerKilled = (status == SchedulerStatus.KILLED);
+
+            this.model = SchedulerModel.getModel(false);
+            model.connectConsole(new StdOutConsole());
+            model.connectScheduler(this.scheduler);
+
+            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+
+                public void run() {
+                    try {
+                        if (scheduler != null) {
+                            scheduler.disconnect();
+                        }
+                    } catch (Exception e) {
+                    }
+                }
+            }));
+        } catch (Exception e) {
+            throw new PASchedulerException(e, PASchedulerException.ExceptionType.OtherException);
+        }
 
     }
 

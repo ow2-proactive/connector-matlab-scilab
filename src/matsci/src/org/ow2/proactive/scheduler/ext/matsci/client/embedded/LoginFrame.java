@@ -183,6 +183,10 @@ public class LoginFrame<E extends MatSciEnvironment> extends JDialog {
                     ex.printStackTrace();
                     JOptionPane.showMessageDialog(LoginFrame.this, ex.getMessage(), "Login Error",
                             JOptionPane.ERROR_MESSAGE);
+                case OtherException:
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(LoginFrame.this, ex.getMessage(), "Server Error",
+                            JOptionPane.ERROR_MESSAGE);
             }
         } catch (RemoteException e) {
             e.printStackTrace();

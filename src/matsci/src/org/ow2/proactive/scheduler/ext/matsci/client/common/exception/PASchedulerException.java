@@ -15,7 +15,7 @@ public class PASchedulerException extends RuntimeException {
     private ExceptionType type;
 
     public enum ExceptionType {
-        KeyException, LoginException, SchedulerException, PermissionException, NotConnectedException, AlreadyConnectedException, UnknownJobException, UnknownTaskException
+        KeyException, LoginException, SchedulerException, PermissionException, NotConnectedException, AlreadyConnectedException, UnknownJobException, UnknownTaskException, OtherException
     }
 
     public PASchedulerException() {

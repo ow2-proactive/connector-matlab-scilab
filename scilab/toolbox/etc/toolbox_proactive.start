@@ -22,14 +22,13 @@ function toolbox_proactivelib = startModule()
 
     end
 
-    etc_tlbx  = get_absolute_file_path("toolbox_proactive.start");
     etc_tlbx  = getshortpathname(etc_tlbx);
-    root_tlbx = strncpy( etc_tlbx, length(etc_tlbx)-length("\etc\") );
+    root_tlbx = PA_matsci_dir;
 
     //Load  functions library
     // =============================================================================
     mprintf("\tLoad macros\n");
-    pathmacros = pathconvert( root_tlbx ) + "macros" + filesep();
+    pathmacros = fullfile( root_tlbx, "macros");
     toolbox_proactivelib = lib(pathmacros);
 
     // load gateways
