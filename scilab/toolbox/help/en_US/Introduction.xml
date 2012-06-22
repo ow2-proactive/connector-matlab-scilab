@@ -20,13 +20,13 @@
     <title>Introduction</title>
 
 
-    <para><emphasis>ProActive Scheduler Toolbox</emphasis> is a Scilab toolbox designed to provide interaction with the <emphasis>ProActive Scheduler</emphasis>, part of ProActive Parallel Suite.
+    <para><emphasis>Scilab Connector Toolbox</emphasis> is a Scilab toolbox designed to provide interaction with the <emphasis>ProActive Scheduler</emphasis>, part of ProActive Parallel Suite.
 
 <emphasis>ProActive Parallel Suite</emphasis> is an innovative Open Source solution (OW2) for parallel, distributed, multi-core computing.
 
 ProActive features Java Parallel Programming seamlessly integrated with Scheduling and Resource Management. ProActive simplifies the programming and execution of parallel applications on Linux, Windows and Mac, together with the management of resources such as Desktop, Servers, Clusters, Enterprise GRIDs and Clouds.
 
-        The objectives of ProActive Scheduler Toolbox are to provide you with tools that:</para>
+        The objectives of Scilab Connector Toolbox are to provide you with tools that:</para>
         <itemizedlist>
             <listitem>
                 <para>Allow you to run Scilab functions on remote computers.

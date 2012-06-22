@@ -2,24 +2,26 @@
 
 #argument 1 is the current version being released
 VERSION=$1
-#argument 2 is the temp directory where MatSci_full directory must be (/tmp)
+#argument 2 is the type (Matlab or Scilab)
+TYPE=$2
+#argument 3 is the temp directory where MatSci_full directory must be (/tmp)
 TMP_DIR=/tmp
-if [ ! -z "$2" ] ; then
-	TMP_DIR=`readlink -f $2`
+if [ ! -z "$3" ] ; then
+	TMP_DIR=`readlink -f $3`
 fi
 
 #############################################################################
 
 # name of the directory that contains the full scheduling content  (also set in release-prepare.sh)
-MATSCI_FULL_NAME=Matlab_Scilab_Connector-${VERSION}_full
+MATSCI_FULL_NAME=${TYPE}_Connector-${VERSION}_full
 
 # releases names will be : ${PREFIX}${VERSION}$[SUFFIX}.ext
 
-PREFIX_API=Matlab_Scilab_Connector-
-PREFIX_SRC=Matlab_Scilab_Connector-
+PREFIX_API=${TYPE}_Connector-
+PREFIX_SRC=${TYPE}_Connector-
 
 SUFFIX_SRC=_src
-SUFFIX_BINARY=bin
+SUFFIX_BINARY=_bin
 
 
 #############################################################################
@@ -28,12 +30,16 @@ SUFFIX_BINARY=bin
 function del_dist(){
 	echo "Removing all file related to dist"
 	rm -rf dist
+	rm -rf doc/built
 }
 
 function del_src(){
 	echo "Removing all file related to sources"
-	rm -rf compile lib scripts src
-	rm -rf doc/src doc/toolchain doc/tmp
+	rm -rf compile classes dev doc junitReports lib src matlab scilab
+    echo "moving ${TYPE} dist dir"
+    lower_type=$(echo ${TYPE,,})
+    mv dist/${lower_type}/* .
+    rm -rf dist
 }
 
 
@@ -45,6 +51,7 @@ function warn_print_usage_and_exit {
 	echo "" 1>&2
 	echo "Usage: $0 VERSION TMP_DIR" 1>&2
 	echo "       VERSION : current version to be released" 1>&2
+	echo "       TYPE : Matlab or Scilab" 1>&2
 	echo "       TMP_DIR : directory containing matsci-full" 1>&2
 	exit 1
 }

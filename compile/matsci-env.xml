@@ -25,10 +25,14 @@
     <property name="scilab.tb.path" value="scilab/toolbox"/>
     <property name="matlab.tb.dir" value="${base.dir}/${matlab.tb.path}"/>
     <property name="scilab.tb.dir" value="${base.dir}/${scilab.tb.path}"/>
-    <property name="deploy.matlab.tb.dir" value="${deploy.dir}/${matlab.tb.path}"/>
-    <property name="deploy.scilab.tb.dir" value="${deploy.dir}/${scilab.tb.path}"/>
+    <property name="deploy.matlab.dir" value="${deploy.dir}/matlab"/>
+    <property name="deploy.scilab.dir" value="${deploy.dir}/scilab"/>
+    <property name="deploy.matlab.tb.dir" value="${deploy.matlab.dir}/toolbox"/>
+    <property name="deploy.scilab.tb.dir" value="${deploy.scilab.dir}/toolbox"/>
     <property name="deploy.matlab.lib.dir" value="${deploy.matlab.tb.dir}/lib"/>
     <property name="deploy.scilab.lib.dir" value="${deploy.scilab.tb.dir}/lib"/>
+    <property name="deploy.plugin.matlab.dir" value="${deploy.dir}/matlab/scheduler_plugin"/>
+    <property name="deploy.plugin.scilab.dir" value="${deploy.dir}/scilab/scheduler_plugin"/>
 
 
     <!-- ================================================================ -->
@@ -106,16 +110,14 @@
     <!-- Define fileset for matsci tests -->
 
     <path id="matsci.test.classpath">
-    		<fileset dir="${dev.scheduling.test.deploy.lib.dir}">
-    			<include name="*.jar"/>
-    		</fileset>
+        <fileset dir="${dev.scheduling.test.deploy.lib.dir}">
+            <include name="*.jar"/>
+        </fileset>
 
-            <pathelement location="${cl.matsci.tests.dir}" />
-            <pathelement location="${base.dir}/compile/lib/junit-4.3.jar"/>
-            <pathelement location="${cl.matsci.dir}"/>
-    	</path>
-
-
+        <pathelement location="${cl.matsci.tests.dir}"/>
+        <pathelement location="${base.dir}/compile/lib/junit-4.3.jar"/>
+        <pathelement location="${cl.matsci.dir}"/>
+    </path>
 
 
 </project>

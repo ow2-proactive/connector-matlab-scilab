@@ -8,7 +8,7 @@ function warn_and_exit {
 function warn_print_usage_and_exit {
 	echo "$1" 1>&2
 	echo "" 1>&2
-	echo "Usage: $0 MATSCI_DIR VERSION JAVA_HOME" 1>&2
+	echo "Usage: $0 MATSCI_DIR TYPE VERSION JAVA_HOME" 1>&2
 	exit 1
 }
 
@@ -22,15 +22,17 @@ function init_env() {
 	fi
 
 	MATSCI_DIR=`readlink -f $1`
-	VERSION=$2
-	JAVA_HOME=$3
-	if [ ! -z "$4" ] ; then
-		TMP=$4
+	TYPE=$2
+	VERSION=$3
+	JAVA_HOME=$4
+	if [ ! -z "$5" ] ; then
+		TMP=$5
 	fi
 
 	TMP_DIR=""
 
-	echo " [i] MATSCI_DIR: MATSCI_DIR"
+	echo " [i] MATSCI_DIR: $MATSCI_DIR"
+	echo " [i] TYPE:          $TYPE"
 	echo " [i] VERSION:       $VERSION"
 	echo " [i] JAVA_HOME:     $JAVA_HOME"
 	echo " [i] TMP:           $TMP"
@@ -38,6 +40,9 @@ function init_env() {
 	if [ -z "$MATSCI_DIR" ] ; then
 		warn_print_usage_and_exit "MATSCI_DIR is not defined"
 	fi
+	if [ -z "$TYPE" ] ; then
+			warn_print_usage_and_exit "TYPE is not defined"
+		fi
 
 	if [ -z "$VERSION" ] ; then
 		warn_print_usage_and_exit "VERSION is not defined"
@@ -50,7 +55,7 @@ function init_env() {
 	export JAVA_HOME=${JAVA_HOME}
 
 	# name of the directory that contains the full scheduling content  (also set in release-create.sh)
-	MATSCI_FULL_NAME=Matlab_Scilab_Connector-${VERSION}_full
+	MATSCI_FULL_NAME=${TYPE}_Connector-${VERSION}_full
 }
 
 function copy_to_tmp() {
@@ -96,24 +101,20 @@ function build_and_clean() {
 
 	# Subversion & Git
 	find . -type d -a -name ".svn" -exec rm -rf {} \;
+	# MatSci temp files
+    find . -type d -a -name ".PAScheduler" -exec rm -rf {} \;
 
-	# Remove database directory if exist
-	find . -type d -name "SCHEDULER_DB" -exec rm -rf {} \;
-	find . -type d -name "RM_DB" -exec rm -rf {} \;
-	# Remove logs directory
-	rm -rf ${SCHEDULER_DIR}/.logs
 
 	echo "********************** Building the product ***********************"
 	# Replace version tag in main java file
-	sed -i "s/{matsci-version-main}/$VERSION/" src/scheduler/src/org/ow2/proactive/scheduler/ext/matsci/Main.java
+	sed -i "s/{matsci-version-main}/$VERSION/" src/matsci/src/org/ow2/proactive/scheduler/ext/matsci/Main.java
 
 	cd compile || warn_and_exit "Cannot move in compile"
 	./build clean
 	./build -Dversion="${VERSION}" deploy.all
-	./build -Dversion="${VERSION}" doc.MatSci.manualPdf
+	./build -Dversion="${VERSION}" deploy.MatSci.docs
 
 	echo "********************** Building the product ***********************"
-	generate_credential
 
 	cd ${TMP_DIR} || warn_and_exit "Cannot move in ${TMP_DIR}"
 	echo " [i] Clean"
@@ -121,8 +122,13 @@ function build_and_clean() {
 	# Git
 	rm -rf .git
 
+	# matsci tmp files
+	find . -type d -a -name ".PAScheduler" -exec rm -rf {} \;
+
 	# Remove useless parts of ProActive
 	find . -type f -a -name "*.svg" -exec rm {} \; # svg are converted in png by hands
+
+	find . -type f -a -name "*.pgm" -exec rm {} \; # svg are converted in png by hands
 
 	# Remove non GPL stuff
 	rm -rf ./compile/lib/clover.*
@@ -131,6 +137,12 @@ function build_and_clean() {
 	rm compile/junit*properties
 	rm -rf classes/
 	rm -rf docs/tmp/
+
+	rm -f *.log
+	rm -f *.lck
+	rm -f *.iml
+	rm -f *.tst
+	rm -f *.xml
 
 	# Remove dev directory
 	rm -rf dev/
@@ -142,4 +154,3 @@ init_env $*
 copy_to_tmp
 replace_version
 build_and_clean
-moveRCPs

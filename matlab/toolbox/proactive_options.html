@@ -17,10 +17,10 @@
 <p style="font-size:1px;">&nbsp;</p>
 <table class="nav" summary="Navigation aid" border="0" width="100%" cellpadding="0" cellspacing="0">
     <tr>
-        <td valign="baseline"><b>ProActive Scheduler Toolbox</b></td>
+        <td valign="baseline"><b>Matlab Connector Toolbox</b></td>
         <td valign="baseline" align="right"><a href="proactive_disconnect.html"><img src="b_prev.gif" border="0" align="bottom"
                                                                         alt="Disconnected mode"></a>&nbsp;&nbsp;&nbsp;<a
-                href="proactive_simulink.html"><img src="b_next.gif" border="0" align="bottom" alt="Using ProActive Scheduler Toolbox Simulink GUI"></a></td>
+                href="proactive_simulink.html"><img src="b_next.gif" border="0" align="bottom" alt="Using Matlab Connector Toolbox Simulink GUI"></a></td>
     </tr>
 </table>
 <table class="feedbacklinktop" border="0" width="100%" cellpadding="0" cellspacing="0">
@@ -77,10 +77,10 @@
 <ul type="disc">
     <li><p><b>JobName</b>: Name of the job that will be submitted to the Scheduler</p></li>
     <li><p><b>JobDescription</b>: Description of the job that will be submitted to the scheduler</p></li>
-    <li><p><b>Debug</b>: activate this option if any problem occurs and you want ProActive Scheduler Toolbox to run in debug mode (with verbose output)</p></li>
+    <li><p><b>Debug</b>: activate this option if any problem occurs and you want Matlab Connector Toolbox to run in debug mode (with verbose output)</p></li>
     <li><p><b>TransferEnv</b>: this option is by default set to off. It allows the workspace where the PAsolve call is done to be automatically transfered to the remote matlab engines. Global variables are transferred but not local variables existing in workspaces higher than the current one. The options <b>EnvExcludeList</b> and <b>EnvExcludeTypeList</b> control the name and type of variables that should be excluded from the transfer.</p></li>
     <li><p><b>LicenseServerURL</b>: this very important option is the address of the proxy server which, if installed, acts as a proxy to the FlexNET server. The proxy server ensures that Matlab or toolboxes license tokens are available before any remote Matlab tasks starts. The scheduling of the task will be delayed until the tokens are available. The License Saver Proxy is not distributed with ProActive Toolbox and must be downloaded separately. See <a href="http://www.activeeon.com">http://www.activeeon.com</a> for availablity and download. </p></li>
-    <li><p><b>CustomDataspaceURL</b> and <b>CustomDataspacePath</b>: by default these options are not set. Dataspaces are a ProActive internal mechanism allowing a shared file system between hosts. The mechanism allows the automatic transfer of files between the local matlab session and the remote engines. <b>ProActive Scheduler Toolbox</b> has an internal automatic Dataspace creation. But sometimes, one would like to rely on an external Dataspace such as a ftp server. This Dataspace MUST be accessible from the local file system in order to work with <b>ProActive Scheduler Toolbox</b>.The <b>CustomDataspaceURL</b> option gives the Universally accessible URL of this dataspace and the <b>CustomDataspacePath</b> gives the path to access this dataspace from the local file system. </p></li>
+    <li><p><b>CustomDataspaceURL</b> and <b>CustomDataspacePath</b>: by default these options are not set. Dataspaces are a ProActive internal mechanism allowing a shared file system between hosts. The mechanism allows the automatic transfer of files between the local matlab session and the remote engines. <b>Matlab Connector Toolbox</b> has an internal automatic Dataspace creation. But sometimes, one would like to rely on an external Dataspace such as a ftp server. This Dataspace MUST be accessible from the local file system in order to work with <b>Matlab Connector Toolbox</b>.The <b>CustomDataspaceURL</b> option gives the Universally accessible URL of this dataspace and the <b>CustomDataspacePath</b> gives the path to access this dataspace from the local file system. </p></li>
     <li><p><b>VersionPref</b>, <b>VersionMin</b>, <b>VersionMax</b> and <b>VersionRej</b>: these options allow the user to define which version of Matlab should/should not be used. In an heterogeneous environment, several versions of matlab can be available simultaneously on the network. These options ensures that the submitted matlab code will meet the correct matlab version. It is the responsibility of the user to find which versions are/are not compatible with the code.</p></li>
     <li><p><b>VersionPref</b>: is the preferred version to use. It won't prevent another version to be used if the preferred version is not available.It is set automatically to the version of the local matlab session, but can be as well user defined via this option.</p></li>
     <li><p><b>VersionMin</b> and <b>VersionMax</b>: is the minimum/maximum version to use. It is set by default to the minimum/maximum version supported.</p></li>
@@ -93,15 +93,15 @@
                 the local Matlab session crashes. Thus, after restarting Matlab, all the previous session jobs results can be retrieved via PAgetResults.</p></li>
     <li><p><b>RemoveJobAfterRetrieve</b>: automatically removes the job from the scheduler after all results of the job have been retrieved.</p></li>
     <li><p><b>FindMatlabScript</b>: this option sets the script used to find matlab on the remote host. Changing the script means modifying the toolbox internal behavior and is therefore not recommended.</p></li>
-    <li><p><b>MatlabReservationScript</b>: this option sets the script used to reserve a matlab token (and eventually toolboxes tokens) prior to run matlab code on the remote engine. Again, changing the script means modifying the toolbox internal behavior and is therefore not recommended. Eventually the script itself could be edited to add checks for toolboxes that are not supported by ProActive Scheduler Toolbox : simulink, control system, fixedpoint, images, neural networks, optimization, pde, robust, signal, spline, stats, symbolic, system identification, virtual reality, simulink control design, simulink stateflow, compiler.</p></li>
+    <li><p><b>MatlabReservationScript</b>: this option sets the script used to reserve a matlab token (and eventually toolboxes tokens) prior to run matlab code on the remote engine. Again, changing the script means modifying the toolbox internal behavior and is therefore not recommended. Eventually the script itself could be edited to add checks for toolboxes that are not supported by Matlab Connector Toolbox : simulink, control system, fixedpoint, images, neural networks, optimization, pde, robust, signal, spline, stats, symbolic, system identification, virtual reality, simulink control design, simulink stateflow, compiler.</p></li>
     <li><p><b>CustomScript</b>: In addition to FindMatlabScript and MatlabReservationScript a custom selection script can be added to select only specific resources, such as matlab engine running only on Windows, or from a specific set of machines. The options <b>CustomScriptStatic</b> and <b>CustomScriptParams</b> control, respectively, if the script is static and the script parameters.</p></li>
-    <li><p><b>ProActiveJars</b> and <b>EmbeddedJars</b>: libraries used by ProActive Scheduler Toolbox (internal use only).</p></li>
+    <li><p><b>ProActiveJars</b> and <b>EmbeddedJars</b>: libraries used by Matlab Connector Toolbox (internal use only).</p></li>
     <li><p><b>ProActiveConfiguration</b>: path to ProActive Configuration file (internal).</p></li>
     <li><p><b>Log4JConfiguration</b>: path to log4j configuration file (internal).</p></li>
     <li><p><b>SecurityFile</b>: path to java security configuration file (internal).</p></li>
     <li><p><b>RmiPort</b>: default RMI port used when deploying the middleman JVM (internal).</p></li>
     <li><p><b>JvmTimeout</b>: default timeout used when deploying the middleman JVM (internal).</p></li>
-    <li><p><b>DisconnectedModeFile</b>: path to a file used by ProActive Scheduler Toolbox disconnected mode.</p></li>
+    <li><p><b>DisconnectedModeFile</b>: path to a file used by Matlab Connector Toolbox disconnected mode.</p></li>
     <li><p><b>UseMatlabControl</b>: do we use the MatlabControl framework (internal).</p></li>
     <li><p><b>CleanAllTempFilesDirectly</b>: do we clean the temporary files after all results of a PAsolve
                 call are received (default), or do we wait until Matlab terminates
@@ -222,7 +222,7 @@ Error in ==> PAResult.subsref at 47
     <script language="Javascript">addTopOfPageButtons();</script>
     <a href="#top_of_page">Back to Top</a></p>
 <h3 class="title">Debugging</h3>
-<p>Debugging of the different ProActive Scheduler Toolbox components is done via all of the following:</p>
+<p>Debugging of the different Matlab Connector Toolbox components is done via all of the following:</p>
 <ul type="disc">
     <li><p>The <b>Debug</b> option.</p></li>
     <li><p>The <b>CheckMatlabXXX.log</b> and <b>ReserveMatlabXXX.log</b> files.</p></li>
@@ -379,9 +379,9 @@ NODE_LIST      NODE_URL_LIST  in1            t
                                                                 alt="Disconnected mode"></a>&nbsp;</td>
         <td align="left">Disconnected mode</td>
         <td>&nbsp;</td>
-        <td align="right">Using ProActive Scheduler Toolbox Simulink GUI</td>
+        <td align="right">Using Matlab Connector Toolbox Simulink GUI</td>
         <td align="right" width="20"><a href="proactive_simulink.html"><img src="b_next.gif" border="0" align="bottom"
-                                                                   alt="Using ProActive Scheduler Toolbox Simulink GUI"></a></td>
+                                                                   alt="Using Matlab Connector Toolbox Simulink GUI"></a></td>
     </tr>
 </table>
 <br>

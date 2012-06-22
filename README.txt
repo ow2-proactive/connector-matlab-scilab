@@ -49,7 +49,7 @@ Javadoc and updated documentation are available online: http://proactive.inria.f
 
       val = PAwaitFor(r)
 
-    - Read the documentation of ProActive Scheduler Toolbox from the Matlab help for more info on how to use the toolbox
+    - Read the documentation of Matlab Connector Toolbox from the Matlab help for more info on how to use the toolbox
 
 * If you use Scilab :
 
@@ -74,7 +74,7 @@ Javadoc and updated documentation are available online: http://proactive.inria.f
 
         val = PAwaitFor(r)
 
-    - Read the documentation of ProActive Scheduler Toolbox from the Scilab help for more info on how to use the toolbox
+    - Read the documentation of Scilab Connector Toolbox from the Scilab help for more info on how to use the toolbox
 
 
 
@@ -85,7 +85,7 @@ along with Matlab toolbox and Scilab toolbox documentations (available from with
 *** Prepare project for compilation
 
 Matlab/Scilab Connector project depends on the ProActive Scheduling project. To build Matlab/Scilab Connector
-it is necessary to copy there all binaries produced as result of Scheduling
+it is necessary to copy there all binaries produced as result of the Scheduling
 compilation: content of the 'Scheduling/dist/lib' into the 'matlab_scilab_connector/lib/scheduling'.
 This can be done using special ant target (this target assumes that special build property 
 'scheduling.project.dir' contains path to the compiled ProActive Scheduling project):

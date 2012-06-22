@@ -2,7 +2,10 @@
 <project name="Matlab_Scilab_Connector_Doc_Init">
 
 	<import file="../toolchain/doc_macros.xml" />
-	<import file="MatSci/build.xml" />
+	<import file="Matlab/build.xml" />
+    <import file="Scilab/build.xml" />
+    <import file="../../compile/matsci-env.xml" />
+    <import file="../../compile/matsci-build.xml" />
 
 	<property name="doc.root.name" value="" />
 	<property name="snippets.start" value="${docs.dir}/../src:${docs.dir}/../samples" />
@@ -13,6 +16,19 @@
 			<include name="**/*.jar"/>
 		</fileset>
 	</path>
+
+    <target name="doc.MatSci.docs" depends="doc.Matlab.docs, doc.Scilab.docs"/>
+    <target name="doc.MatSci.doc.zips" depends="doc.Matlab.doc.zips,doc.Scilab.doc.zips"/>
+    <target name="doc.MatSci.javadoc.all" depends="doc.Matlab.javadoc.all, doc.Scilab.javadoc.all"/>
+    <target name="doc.Matsci.manual" depends="doc.Matlab.manual, doc.Scilab.manual"/>
+
+
+
+    <target name="doc.MatSci.toolbox" depends="doc.Matlab.toolbox, doc.Scilab.toolbox"/>
+
+    <target name="deploy.MatSci.docs" depends="deploy.Matlab.docs,deploy.Scilab.docs"/>
+
+
 
 	<!-- ================================================================ -->
 	<!--            Create docs, which is the javadoc + manual            -->

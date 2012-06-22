@@ -17,7 +17,7 @@
 <p style="font-size:1px;">&nbsp;</p>
 <table class="nav" summary="Navigation aid" border="0" width="100%" cellpadding="0" cellspacing="0">
     <tr>
-        <td valign="baseline"><b>ProActive Scheduler Toolbox</b></td>
+        <td valign="baseline"><b>Matlab Connector Toolbox</b></td>
         <td valign="baseline" align="right"><a href="proactive_installation.html"><img src="b_prev.gif" border="0" align="bottom"
                                                                         alt="Installation"></a>&nbsp;&nbsp;&nbsp;<a
                 href="proactive_monitoring.html"><img src="b_next.gif" border="0" align="bottom" alt="Monitoring"></a></td>
@@ -57,7 +57,7 @@
 
 <ul type="disc">
     <li><p><b>ProActive Resource Manager</b>: the resource manager is the program in charge of a pool of resources called Nodes. Each node is a Java Virtual Machine running on a worker host. There can be several of these Nodes deployed on a single host, generally when a host has multiple processes or cores. It allows to maximize the processing power available on the network. The Resource Manager needs to be configured according to the network topology in order to deploy Nodes on available machines. Configuration of the Resource Manager for acquiring resources is beyond the scope of this document and is explained on the Resource Manager manual available at <a href="http://proactive.inria.fr/release-doc/Resourcing/multiple_html/index.html">http://proactive.inria.fr/release-doc/Resourcing/multiple_html/index.html</a>.</p></li>
-    <li><p><b>ProActive Scheduler</b>: the scheduler receives jobs to be executed. It will schedule their execution according to its policy and its workload. When a job is ready to be scheduled, the scheduler will contact the resource manager to find the maximum number of resources available to execute the job. Resources will be selected sometimes according to specific policies. In case of ProActive Scheduler Toolbox, only resources which have a valid Matlab configuration will be selected. A lot of extra selection will be done dynamically, for example specific Matlab versions needed by the job, or toolbox tokens availability .</p></li>
+    <li><p><b>ProActive Scheduler</b>: the scheduler receives jobs to be executed. It will schedule their execution according to its policy and its workload. When a job is ready to be scheduled, the scheduler will contact the resource manager to find the maximum number of resources available to execute the job. Resources will be selected sometimes according to specific policies. In case of Matlab Connector Toolbox, only resources which have a valid Matlab configuration will be selected. A lot of extra selection will be done dynamically, for example specific Matlab versions needed by the job, or toolbox tokens availability .</p></li>
 </ul>
 
 
@@ -102,7 +102,7 @@ Scheduler successfully created on rmi://pendule.inria.fr:1099/</pre>
     <a href="#top_of_page">Back to Top</a></p>
 <h3 class="title">Connecting to a running ProActive Scheduler from Matlab</h3>
 
-<p>From a matlab session, assuming that ProActive Scheduler Toolbox is already in Matlab path, run the following command (where PAconnect's argument is the url you received from the Scheduler starting command):</p>
+<p>From a matlab session, assuming that Matlab Connector Toolbox is already in Matlab path, run the following command (where PAconnect's argument is the url you received from the Scheduler starting command):</p>
 
 <pre>>> PAconnect('rmi://pendule.inria.fr:1099/');</pre>
 

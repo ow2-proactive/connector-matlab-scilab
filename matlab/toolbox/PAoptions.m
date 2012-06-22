@@ -142,6 +142,8 @@
 %   ProActiveJars and EmbeddedJars
 %               Comma separated list of jar files used by ProActive
 %               (internal)
+%   PathJars
+%               path to the proactive and embedded jars (internal)
 %
 %   ProActiveConfiguration
 %               path to ProActive configuration file (internal)

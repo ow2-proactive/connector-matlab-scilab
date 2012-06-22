@@ -12,7 +12,7 @@
     <refnamediv>
         <refname>Installation</refname>
 
-        <refpurpose>Installation of the ProActive Toolbox</refpurpose>
+        <refpurpose>Installation of the ProActive Scilab Connector Toolbox</refpurpose>
 
     </refnamediv>
 
@@ -57,10 +57,10 @@
     </refsection>
     <refsection>
         <title>Downloading and Installing ProActive Toolbox</title>
-        <para>ProActive Scheduler Toolbox can be downloaded from :
+        <para>Scilab Connector Toolbox can be downloaded from :
             <emphasis>http://www.activeeon.com/community-downloads</emphasis>
-            The packages which must be downloaded are called Matlab_Scilab_Connector and ProActive Scheduling Server
-            After downloading the package unzip it in a directory e.g. D:\Matlab_Scilab_Connector and D:\ProActive_Scheduling_server
+            The packages which must be downloaded are called Scilab_Connector and ProActive Scheduling Server
+            After downloading the package unzip it in a directory e.g. D:\Scilab_Connector and D:\ProActive_Scheduling_server
             IMPORTANT: According to your deployment infrastructure, ProActive Scheduler must be installed on :
         </para>
         <itemizedlist>
@@ -74,7 +74,7 @@
             </listitem>
         </itemizedlist>
         <para>
-            Matlab_Scilab_Connector must be installed on :
+            Scilab_Connector must be installed on :
         </para>
         <itemizedlist>
             <listitem>
@@ -85,26 +85,33 @@
     </refsection>
     <refsection>
         <title>Configuration of Remote Workers for Scilab</title>
-        <para>On each worker host that will be used to compute remotely scilab functions, a specific configuration file must be written to tell the scheduler where to find a scilab installation. The configuration file is called ScilabConfiguration.xml, and is located in the folder Matlab_Scilab_Connector/scilab/config/worker for each Worker Hosts.</para>
-        <para>By default, the Matlab_Scilab_Connector/scilab/config/worker folder only contains two template files one for Linux and one for Windows called ScilabConfigurationTemplateUnix.xml and ScilabConfigurationTemplateWindows.xml, one of this template must be edited and renamed into ScilabConfiguration.xml to setup the configuration for the current Worker Host. The same operation must be done on each machine (unless you use a network shared directory).
-</para><para>For example, here is ScilabConfigurationTemplateWindows.xml :
+        <para>On each worker host that will be used to compute remotely scilab functions, a specific configuration file must be written to tell the scheduler where to find a scilab installation. The configuration file is called <emphasis>ScilabWorkerConfiguration.xml</emphasis>, and a template is located in the folder <emphasis>Scilab_Connector/toolbox/config</emphasis>.</para>
+        <para>This file must be edited and put in the <emphasis>addons</emphasis> directory of ProActive Scheduler</para>
+        <para>If the scheduler is installed in a directory shared by all workers, then only one ScilabWorkerConfiguration.xml file needs to be created. The syntax of the file allows to create a configuration for several machines, machine groups, and as well several matlab installations for the same machine.</para>
+        <para>For example, here is an example of ScilabWorkerConfiguration.xml :
         </para>
-        <programlisting><![CDATA[<ScilabInstallations>
-    <installation>
-        <version>5.3.0</version> <!-- Scilab version (must be at least 5.3.0) -->
-        <home>c:\Program Files\scilab-5.3.0</home> <!-- Scilab installation directory -->
-        <bindir>bin</bindir>
-        <command>Scilex.exe</command>
-    </installation>
+        <programlisting><![CDATA[<MatSciWorkerConfiguration>
+    <MachineGroup hostname=".*">
+        <scilab>
+            <version>5.3.0</version> <!-- Scilab version (must be at least 5.3.0) -->
+            <home>c:\Program Files\scilab-5.3.0</home> <!-- Scilab installation directory -->
+            <bindir>bin</bindir>
+            <command>Scilex.exe</command>
+         </scilab>
+    </MachineGroup>
 </ScilabInstallations>]]></programlisting>
         <para>Here is an explanation of tags used by this file:</para>
         <itemizedlist>
+            <listitem>
+                  <para><emphasis>MachineGroup:</emphasis> this defines the machines which are targeted by this configuration. Machines can be identified by either <emphasis>hostname</emphasis> or <emphasis>ip</emphasis>. The syntax of hostname and ip attributes follow the Regular Expression syntax
+                  </para>
+            </listitem>
             <listitem>
                 <para><emphasis>version:</emphasis> the Scilab version installed in numeric format.
                 </para>
             </listitem>
             <listitem>
-                <para><emphasis>home:</emphasis> full path to matlab home directory.
+                <para><emphasis>home:</emphasis> full path to scilab home directory.
                 </para>
             </listitem>
             <listitem>

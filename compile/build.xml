@@ -30,7 +30,7 @@
 	<!-- ************
 		Deploy
 	-->
-	<target name="deploy.all" depends="deploy.matlab, deploy.scilab" description="Generate Matlab/Scilab Connector toolboxes"/>
+	<target name="deploy.all" depends="deploy.matlab, deploy.scilab, deploy.plugin.matlab, deploy.plugin.scilab" description="Generate Matlab/Scilab Connector toolboxes"/>
 
 
 	<!-- ************

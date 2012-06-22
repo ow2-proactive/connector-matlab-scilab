@@ -36,12 +36,12 @@
       xmlns:mml="http://www.w3.org/1998/Math/MathML"
       xmlns:html="http://www.w3.org/1999/xhtml"
       xmlns:db="http://docbook.org/ns/docbook">
-  <info xml:id='pascheduler_manual'>
-    <title>PAscheduler</title>
+  <info xml:id='proactivescilabconnector_manual'>
+    <title>ProActiveScilabConnector</title>
   </info>
 
 <part xml:id='section_4b95fee84cae20949f9940f07195d0c8'>
-<title>PAscheduler</title>
+<title>ProActiveScilabConnector</title>
 &afc61ddcbb07d49254cd5c75ef6115b5b;
 &adb346521efc0f56954eec2f511cb024d;
 &a6aa2949caff4fb1e78c7f80358e79193;

@@ -3,14 +3,14 @@
 
 <toc version="1.0">
 
-    <tocitem target="proactive_top.html">ProActive Scheduler Toolbox
+    <tocitem target="proactive_top.html">ProActive Matlab Connector
 
         <tocitem target="proactive_about.html" image="$toolbox/matlab/icons/greencircleicon.gif">Getting Started
-            <tocitem target="proactive_overview.html">What is ProActive Scheduler Toolbox?
+            <tocitem target="proactive_overview.html">What is Matlab Connector Toolbox?
                 <tocitem target="proactive_overview.html#overview-1">Introduction</tocitem>
-                <tocitem target="proactive_overview.html#overview-2">Can I Use ProActive Scheduler Toolbox?</tocitem>
+                <tocitem target="proactive_overview.html#overview-2">Can I Use Matlab Connector Toolbox?</tocitem>
                 <tocitem target="proactive_overview.html#overview-3">Which versions of Matlab and Operating Systems are compatible?</tocitem>
-                <tocitem target="proactive_overview.html#overview-4">What are the current limitations of ProActive Scheduler Toolbox?</tocitem>
+                <tocitem target="proactive_overview.html#overview-4">What are the current limitations of Matlab Connector Toolbox?</tocitem>
             </tocitem>
             <tocitem target="proactive_installation.html">Installation
                 <tocitem target="proactive_installation.html#installation-1">Introduction</tocitem>
@@ -48,7 +48,7 @@
                 <tocitem target="proactive_options.html#options-3">Using the PAoptions function</tocitem>
                 <tocitem target="proactive_options.html#options-4">Debugging</tocitem>
             </tocitem>
-            <tocitem target="proactive_simulink.html">Using ProActive Scheduler Toolbox Simulink GUI
+            <tocitem target="proactive_simulink.html">Using Matlab Connector Toolbox Simulink GUI
                 <tocitem target="proactive_simulink.html#simulink-1">Introduction</tocitem>
                 <tocitem target="proactive_simulink.html#simulink-2">Starting the GUI</tocitem>
                 <tocitem target="proactive_simulink.html#simulink-3">Defining model and parameters</tocitem>

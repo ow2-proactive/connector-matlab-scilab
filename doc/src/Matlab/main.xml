@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Converted by db4-upgrade version 1.0
+	!DOCTYPE book PUBLIC "-//INRIA//DTD DocBook V5.0-Based Subset V0.1//EN"-->
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V5.0//EN"
+                "docbook.dtd" [
+	<!-- WARNING: Please do not edit with XXE -->
+	<!-- This file is only meant as a concatenation of the other xml files -->
+	<!ENTITY BookInfo			SYSTEM "BookInfo.xml">
+	<!ENTITY Contributors		SYSTEM "Contributors.xml">
+
+
+	<!ENTITY Matlab				SYSTEM "Matlab.xml">
+]>
+
+<book xmlns="http://docbook.org/ns/docbook" version="5.0">
+	&BookInfo;
+	&Contributors;
+
+	<part xml:id="MatlabConnector">
+		<info>
+			<title>Matlab Connector</title>
+		</info>
+        &Matlab;
+	</part>
+
+</book>

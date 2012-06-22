@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Using ProActive Scheduler Toolbox Simulink GUI:: Getting Started (ProActive Scheduler
+    <title>Using Matlab Connector Toolbox Simulink GUI:: Getting Started (ProActive Scheduler
         Toolbox)</title>
     <link rel="stylesheet" href="docstyle.css" type="text/css">
     <meta name="generator" content="DocBook XSL Stylesheets V1.52.2">
@@ -17,7 +17,7 @@
 <p style="font-size:1px;">&nbsp;</p>
 <table class="nav" summary="Navigation aid" border="0" width="100%" cellpadding="0" cellspacing="0">
     <tr>
-        <td valign="baseline"><b>ProActive Scheduler Toolbox</b></td>
+        <td valign="baseline"><b>Matlab Connector Toolbox</b></td>
         <td valign="baseline" align="right"><a href="proactive_options.html"><img src="b_prev.gif" border="0" align="bottom"
                                                                         alt="Configuring PAsolve behavior and Debugging"></a>&nbsp;&nbsp;&nbsp;</td>
         <td valign="baseline" align="right"><a
@@ -36,7 +36,7 @@
     </tr>
 </table>
 
-<h2 class="title">Using ProActive Scheduler Toolbox Simulink GUI</h2>
+<h2 class="title">Using Matlab Connector Toolbox Simulink GUI</h2>
 <table border="0" cellpadding="4" cellspacing="0" class="pagenavtable">
     <tr>
         <th>On this page&#8230;</th>
@@ -60,7 +60,7 @@
 <a name="simulink-1"></a>
 
 <h3 class="title">Introduction</h3>
-<p>The <b>ProActive Scheduler Toolbox Simulink GUI</b> is a simple GUI which allows to run a Simulink model on a remote engine. It allows to do batch simulations through the use of Matlab script initialization parameters. Thus, the same model can be run multiple times with parameters. The GUI is NOT an interface similar in its complexity to the Simulink interface, it doesn't allow real time display of the simulation. But results from the simulations can be displayed graphically.</p>
+<p>The <b>Matlab Connector Toolbox Simulink GUI</b> is a simple GUI which allows to run a Simulink model on a remote engine. It allows to do batch simulations through the use of Matlab script initialization parameters. Thus, the same model can be run multiple times with parameters. The GUI is NOT an interface similar in its complexity to the Simulink interface, it doesn't allow real time display of the simulation. But results from the simulations can be displayed graphically.</p>
 <p> In order to display the results the model MUST save remotely output signals to mat files via the <b>To File</b> block. Usages in the model of <b>Scope</b> or <b>To workspace</b> should be avoided as it would slow down the remote simulation and consume memory.</p>
 
 <a name="simulink-2"></a>
@@ -71,7 +71,7 @@
     <a href="#top_of_page">Back to Top</a></p>
 <h3 class="title">Starting the GUI</h3>
 
-<p>The <b>ProActive Scheduler Toolbox Simulink GUI</b> is located at MATSCI/matlab/toolbox/GUI_Simulink , before opening the GUI, make sure it's available in matlab path. Opening the GUI can be done either by running the function <b>GUI_Simulation_Plot</b>, or via Matlab start button at <b>Start > Toolboxes > ProActive Scheduler > Scheduler Simulink GUI :</b></p>
+<p>The <b>Matlab Connector Toolbox Simulink GUI</b> is located at MATSCI/matlab/toolbox/GUI_Simulink , before opening the GUI, make sure it's available in matlab path. Opening the GUI can be done either by running the function <b>GUI_Simulation_Plot</b>, or via Matlab start button at <b>Start > Toolboxes > ProActive Scheduler > Scheduler Simulink GUI :</b></p>
 <pre>>> addpath('/home/fviale/eclipse_workspace/Matlab_Scilab_Connector/matlab/toolbox/GUI_Simulink/');
 >> GUI_Simulation_Plot</pre>
 <p>At startup, a popup window appears asking if we want to load an existing model, we answer No for now. Here is a view of the GUI:</p>
@@ -157,7 +157,7 @@ init_pos=30;</pre>
     <a href="#top_of_page">Back to Top</a></p>
 <h3 class="title">Using Disconnected Mode</h3>
 
-<p>It is possible to use the GUI in combination with <b>ProActive Scheduler Toolbox Disconnected Mode</b>. In order to do that:</p>
+<p>It is possible to use the GUI in combination with <b>Matlab Connector Toolbox Disconnected Mode</b>. In order to do that:</p>
 
 <ol>
     <li><p>Submit a simulation.</p></li>

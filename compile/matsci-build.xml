@@ -200,27 +200,50 @@
             <fileset dir="${scilab.tb.dir}" includes="**/*" excludes="**/.PAScheduler"/>
         </copy>
     </target>
-
-    <target name="deploy.matsci.scheduling" depends="deploy.matlab, deploy.scilab"
-            description="Copy Matlab/Scilab connector jars into Scheduling">
-        <copy todir="${scheduling.project.dir}/addons" flatten="yes" file="${java.io.tmpdir}/${matsci.jar}"/>
-        <copy todir="${scheduling.project.dir}/addons" flatten="yes">
+    <target name="deploy.plugin.matlab" depends="deploy.matlab"
+            description="Creates the scheduler plugin dir for matlab">
+        <mkdir dir="${deploy.plugin.matlab.dir}"/>
+        <mkdir dir="${deploy.plugin.scilab.dir}"/>
+        <copy todir="${deploy.plugin.matlab.dir}" flatten="yes" file="${java.io.tmpdir}/${matsci.jar}"/>
+        <copy todir="${deploy.plugin.matlab.dir}" flatten="yes">
             <fileset dir="${lib.dir}">
                 <include name="matsci/**/*.jar"/>
             </fileset>
         </copy>
-        <copy todir="${scheduling.project.dir}/addons" flatten="yes">
+        <copy todir="${deploy.plugin.matlab.dir}" flatten="yes">
             <fileset dir="${matlab.tb.dir}/config">
                 <include name="matlab_scilab_connector.ini"/>
                 <include name="MatlabWorkerConfiguration.xml"/>
             </fileset>
+        </copy>
+    </target>
+    <target name="deploy.plugin.scilab" depends="deploy.matlab, deploy.scilab"
+            description="Creates the scheduler plugin dir for scilab">
+        <mkdir dir="${deploy.plugin.scilab.dir}"/>
+        <copy todir="${deploy.plugin.scilab.dir}" flatten="yes" file="${java.io.tmpdir}/${matsci.jar}"/>
+        <copy todir="${deploy.plugin.scilab.dir}" flatten="yes">
+            <fileset dir="${lib.dir}">
+                <include name="matsci/**/*.jar"/>
+            </fileset>
+        </copy>
+        <copy todir="${deploy.plugin.scilab.dir}" flatten="yes">
             <fileset dir="${scilab.tb.dir}/config">
                 <include name="matlab_scilab_connector.ini"/>
                 <include name="ScilabWorkerConfiguration.xml"/>
             </fileset>
         </copy>
+    </target>
 
-
+    <target name="deploy.matsci.scheduling" depends="deploy.plugin.matlab, deploy.plugin.scilab"
+            description="Copy Matlab/Scilab connector jars into Scheduling">
+        <copy todir="${scheduling.project.dir}/addons" flatten="yes" file="${java.io.tmpdir}/${matsci.jar}">
+            <fileset dir="${deploy.plugin.matlab.dir}">
+                <include name="*"/>
+            </fileset>
+            <fileset dir="${deploy.plugin.scilab.dir}">
+                <include name="*"/>
+            </fileset>
+        </copy>
     </target>
 
     <target name="deploy.scheduling.tests" description="Copy Scheduler jars and files into Scheduling test folder">

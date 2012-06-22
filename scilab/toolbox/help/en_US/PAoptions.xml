@@ -121,7 +121,7 @@
                     automatic transfer of files between the local scilab session and the remote engines. ProActive
                     Toolbox has an internal automatic Dataspace creation. But sometimes, one would like to rely on an
                     external Dataspace such as a ftp server. This Dataspace MUST be accessible from the local file
-                    system in order to work with ProActive Scheduler Toolbox.The CustomDataspaceURL option gives the
+                    system in order to work with Scilab Connector Toolbox.The CustomDataspaceURL option gives the
                     Universally accessible URL of this dataspace and the CustomDataspacePath gives the path to access
                     this dataspace from the local file system.
                 </para>
@@ -184,7 +184,7 @@
             <listitem>
                 <para>
                     <emphasis>EmbeddedJars</emphasis>
-                    and<emphasis>ProActiveJars</emphasis>: libraries used by ProActive Scheduler Toolbox (internal use
+                    and<emphasis>ProActiveJars</emphasis>: libraries used by Scilab Connector Toolbox (internal use
                     only)
                 </para>
             </listitem>
