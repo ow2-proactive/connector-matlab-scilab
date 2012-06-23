@@ -61,6 +61,8 @@ import java.net.URI;
  */
 public class SchedulerTStarter implements Serializable {
 
+    private static final long serialVersionUID = 10L;
+
     protected String rmUsername = "demo";
     protected String rmPassword = "demo";
 

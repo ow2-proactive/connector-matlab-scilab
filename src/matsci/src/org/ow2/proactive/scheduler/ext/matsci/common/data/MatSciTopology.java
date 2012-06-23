@@ -23,6 +23,8 @@ public enum MatSciTopology {
 
     private String ref;
 
+    private static final long serialVersionUID = 10L;
+
     private MatSciTopology(String str) {
         this.ref = str;
     }

@@ -9,6 +9,9 @@ import java.io.Serializable;
  * @author The ProActive Team
  */
 public final class UnReifiable<T> implements Serializable {
+
+    private static final long serialVersionUID = 10L;
+
     T t;
 
     public UnReifiable() {

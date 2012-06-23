@@ -27,6 +27,8 @@ import java.util.regex.Pattern;
  */
 public class MatSciJVMProcessInterfaceImpl implements InitActive, EndActive, MatSciJVMProcessInterface {
 
+    private static final long serialVersionUID = 10L;
+
     MatSciEnvironment matlab_env;
 
     MatSciEnvironment scilab_env;

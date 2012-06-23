@@ -75,6 +75,8 @@ import java.util.TreeSet;
  */
 public class AOScilabEnvironment extends AOMatSciEnvironment<ScilabType, ScilabResultsAndLogs> {
 
+    private static final long serialVersionUID = 10L;
+
     public AOScilabEnvironment() {
         super();
     }

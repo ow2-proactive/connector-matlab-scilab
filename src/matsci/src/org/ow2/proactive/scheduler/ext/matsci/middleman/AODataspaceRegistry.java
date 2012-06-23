@@ -53,6 +53,8 @@ import java.util.HashMap;
  */
 public class AODataspaceRegistry implements DataspaceRegistry {
 
+    private static final long serialVersionUID = 10L;
+
     /**
      * Input Dataspaces created locally for a specific directory
      */

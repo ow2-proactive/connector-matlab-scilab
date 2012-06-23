@@ -48,6 +48,8 @@ import java.util.HashSet;
  */
 public class PASolveMatSciGlobalConfig implements Serializable {
 
+    private static final long serialVersionUID = 10L;
+
     /**
      * Name of the Scheduler job
      */

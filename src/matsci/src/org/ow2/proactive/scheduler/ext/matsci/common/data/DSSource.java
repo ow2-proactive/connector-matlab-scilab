@@ -12,6 +12,8 @@ public enum DSSource {
 
     GLOBAL("global");
 
+    private static final long serialVersionUID = 10L;
+
     private String ref;
 
     private DSSource(String str) {

@@ -44,6 +44,8 @@ public enum MatSciJobStatus implements java.io.Serializable {
      */
     KILLED("Killed");
 
+    private static final long serialVersionUID = 10L;
+
     /** The textual definition of the status */
     private String definition;
 

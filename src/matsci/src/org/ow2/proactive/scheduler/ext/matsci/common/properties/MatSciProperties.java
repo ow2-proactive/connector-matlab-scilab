@@ -34,6 +34,8 @@ public enum MatSciProperties {
     /** Default properties file for the scheduler configuration */
     private static final String DEFAULT_PROPERTIES_FILE = "addons/matlab_scilab_connector.ini";
 
+    private static final long serialVersionUID = 10L;
+
     private static String properties_file = null;
     /** to know if the file has been loaded or not */
     private static boolean fileLoaded;

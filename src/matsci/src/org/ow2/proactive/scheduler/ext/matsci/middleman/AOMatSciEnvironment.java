@@ -72,6 +72,8 @@ import java.util.concurrent.TimeoutException;
 public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, Serializable,
         SchedulerEventListener, InitActive, RunActive, EndActive {
 
+    private static final long serialVersionUID = 10L;
+
     /**
      * Connection to the scheduler
      */

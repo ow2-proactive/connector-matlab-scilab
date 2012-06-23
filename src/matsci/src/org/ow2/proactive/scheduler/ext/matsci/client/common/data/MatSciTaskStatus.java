@@ -62,6 +62,8 @@ public enum MatSciTaskStatus {
     /** The textual definition of the status */
     private String definition;
 
+    private static final long serialVersionUID = 10L;
+
     /**
      * Default constructor.
      * @param def the textual definition of the status.
