@@ -420,7 +420,7 @@ public class AOScilabEnvironment extends AOMatSciEnvironment<ScilabType, ScilabR
                     sscript = new SelectionScript(url1, new String[] { "versionPref",
                             config.getVersionPref(), "versionRej", config.getVersionRejAsString(),
                             "versionMin", config.getVersionMin(), "versionMax", config.getVersionMax() },
-                        false);
+                        true);
                 } catch (InvalidScriptException e1) {
                     throw new PASchedulerException(e1);
                 }
