@@ -61,7 +61,6 @@ import org.ow2.proactive.scripting.SelectionScript;
 import org.ow2.proactive.scripting.SimpleScript;
 import org.ow2.proactive.topology.descriptor.ThresholdProximityDescriptor;
 import org.ow2.proactive.topology.descriptor.TopologyDescriptor;
-import org.scilab.modules.types.ScilabType;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -73,7 +72,7 @@ import java.util.TreeSet;
  *
  * @author The ProActive Team
  */
-public class AOScilabEnvironment extends AOMatSciEnvironment<ScilabType, ScilabResultsAndLogs> {
+public class AOScilabEnvironment extends AOMatSciEnvironment<Boolean, ScilabResultsAndLogs> {
 
     public AOScilabEnvironment() {
         super();
@@ -89,7 +88,7 @@ public class AOScilabEnvironment extends AOMatSciEnvironment<ScilabType, ScilabR
         ScilabResultsAndLogs answer = new ScilabResultsAndLogs();
         answer.setJobId(jid);
         answer.setTaskName(tname);
-        MatSciJobVolatileInfo<ScilabType> jinfo = currentJobs.get(jid);
+        MatSciJobVolatileInfo<Boolean> jinfo = currentJobs.get(jid);
         if (jinfo == null) {
             // sometimes the job has been moved to the finished jobs list and results are still requested (incomplete first retrieval completed by a second full retrieval)
             jinfo = finishedJobs.get(jid);
