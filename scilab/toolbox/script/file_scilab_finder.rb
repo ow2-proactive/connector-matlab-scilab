@@ -1,9 +1,13 @@
 include Java
-
-import org.ow2.proactive.scheduler.ext.scilab.worker.util.ScilabEngineConfig
-import org.ow2.proactive.scheduler.ext.scilab.worker.util.ScilabFinder
-
 import java.lang.System
+begin
+	import org.ow2.proactive.scheduler.ext.scilab.worker.util.ScilabEngineConfig
+	import org.ow2.proactive.scheduler.ext.scilab.worker.util.ScilabFinder
+rescue Exception => e
+  puts e.message + "\n" + e.backtrace.join("\n")
+  raise java.lang.RuntimeException.new(e.message + "\n" + e.backtrace.join("\n"))
+end
+
 
 module JavaIO
     include_package "java.io"
