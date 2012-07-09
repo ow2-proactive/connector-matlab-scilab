@@ -164,9 +164,6 @@
             <fileset dir="${cl.matsci.dir}" includes="**/org/ow2/proactive/scheduler/ext/matsci/**"/>
             <fileset dir="${cl.matsci.dir}" includes="**/org/ow2/proactive/scheduler/ext/matlab/**"/>
             <fileset dir="${cl.matsci.dir}" includes="**/org/ow2/proactive/scheduler/ext/scilab/**"/>
-            <indexjars>
-                <fileset refid="jar.index.fileset"/>
-            </indexjars>
         </jar>
         <jar destfile="${java.io.tmpdir}/${matsci.embedded.jar}" manifest="${basedir}/matsci-Manifest-base.mf"
              index="false">
