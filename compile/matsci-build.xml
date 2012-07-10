@@ -116,6 +116,7 @@
             <class name="org.ow2.proactive.scheduler.ext.scilab.middleman.AOScilabEnvironment"/>
             <class name="org.ow2.proactive.scheduler.ext.matsci.middleman.AOMatSciEnvironment"/>
             <class name="org.ow2.proactive.scheduler.ext.matsci.middleman.AODataspaceRegistry"/>
+            <class name="org.ow2.proactive.scheduler.ext.matsci.middleman.MatSciJVMProcessInterfaceImpl"/>
         </stubGenerator>
 
         <mkdir dir="${cl.matsci.tests.dir}"/>
