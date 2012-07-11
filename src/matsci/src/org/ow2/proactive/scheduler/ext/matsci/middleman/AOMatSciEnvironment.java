@@ -273,6 +273,8 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                     }
                 }
             }));
+        } catch (PASchedulerException e) {
+            throw e;
         } catch (Exception e) {
             throw new PASchedulerException(e, PASchedulerException.ExceptionType.OtherException);
         }

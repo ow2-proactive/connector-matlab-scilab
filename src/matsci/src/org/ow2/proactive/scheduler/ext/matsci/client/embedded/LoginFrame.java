@@ -179,10 +179,12 @@ public class LoginFrame<E extends MatSciEnvironment> extends JDialog {
                     JOptionPane.showMessageDialog(LoginFrame.this,
                             "Incorrect username/password combination.", "Login Error",
                             JOptionPane.ERROR_MESSAGE);
+                    break;
                 case SchedulerException:
                     ex.printStackTrace();
                     JOptionPane.showMessageDialog(LoginFrame.this, ex.getMessage(), "Login Error",
                             JOptionPane.ERROR_MESSAGE);
+                    break;
                 case OtherException:
                     ex.printStackTrace();
                     JOptionPane.showMessageDialog(LoginFrame.this, ex.getMessage(), "Server Error",
