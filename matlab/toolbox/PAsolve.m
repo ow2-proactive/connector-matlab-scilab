@@ -118,7 +118,7 @@ function results = PAsolve(varargin)
     end
 
 
-%mlock
+mlock
 persistent solveid
 if exist('solveid','var') == 1 && isa(solveid,'int32')
     solveid = solveid + 1;

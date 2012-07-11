@@ -99,6 +99,16 @@ public class StandardJVMSpawnHelper {
     private String className;
 
     /**
+     * scheduler URI used when creating this middleman JVM
+     */
+    private static String oldSchedulerURI;
+
+    /**
+     * scheduler URI used now
+     */
+    private String newSchedulerURI;
+
+    /**
      * Deployed MatlabEnvironment Interface
      */
     private MatSciEnvironment matlab_environment;
@@ -180,6 +190,10 @@ public class StandardJVMSpawnHelper {
 
     public void setMatSciDir(String matSciDir) {
         this.matSciDir = null;
+    }
+
+    public void setSchedulerURI(String uri) {
+        this.newSchedulerURI = uri;
     }
 
     public void setDebug(boolean d) {
@@ -338,6 +352,15 @@ public class StandardJVMSpawnHelper {
             } catch (Exception e) {
 
             }
+
+            if (stubsFound && oldSchedulerURI != null && !oldSchedulerURI.equals(newSchedulerURI)) {
+                // We force the old MiddlemanJVM to die and be replaced by a new one
+                this.jvmitf.shutdown();
+                Thread.sleep(1000);
+                stubsFound = false;
+            }
+
+            oldSchedulerURI = newSchedulerURI;
 
             if (stubsFound) {
                 return new Pair<HashMap<String, Object>, Integer>(stubs, rmi_port);
