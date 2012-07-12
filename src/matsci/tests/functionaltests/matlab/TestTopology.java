@@ -9,7 +9,7 @@ public class TestTopology extends AbstractMatlabTest {
     @org.junit.Test
     public void run() throws Throwable {
 
-        runCommand("TestTopology");
+        runCommand("TestTopology", 10);
 
     }
 }

@@ -9,7 +9,7 @@ public class TestMultipleSubmit extends AbstractScilabTest {
     @org.junit.Test
     public void run() throws Throwable {
 
-        runCommand("TestMultipleSubmit");
+        runCommand("TestMultipleSubmit", 10);
 
     }
 }
