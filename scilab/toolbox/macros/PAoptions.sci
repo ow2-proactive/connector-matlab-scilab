@@ -7,12 +7,12 @@ function [n,key,value]=getkeyvalue(fid)
     line = getline(fid);
     start=[]
     if ~isempty(line) then
-        [start]=strindex(line,'%')
+        [start]=strindex(line,'%%')
     end
     while ~isempty(line) & ~isempty(start)
         line = getline(fid);
         if ~isempty(line) then
-            [start]=strindex(line,'%')
+            [start]=strindex(line,'%%')
         end
     end
     if ~isempty(line) then
