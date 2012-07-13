@@ -199,8 +199,12 @@ public class PASolveMatSciGlobalConfig implements Serializable {
     protected String outputSpaceURL = null;
 
     /**
-     * timeout used to start Matlab/Scilab worker processes (*10ms)
+     * Is check MatSci Script static
+     */
+    protected boolean checkMatSciScriptStatic = true;
 
+    /**
+     * timeout used to start Matlab/Scilab worker processes (*10ms)
      */
     protected int workerTimeoutStart = 6000;
 
@@ -514,6 +518,14 @@ public class PASolveMatSciGlobalConfig implements Serializable {
 
     public void setWorkerTimeoutStart(int workerTimeoutStart) {
         this.workerTimeoutStart = workerTimeoutStart;
+    }
+
+    public boolean isCheckMatSciScriptStatic() {
+        return checkMatSciScriptStatic;
+    }
+
+    public void setCheckMatSciScriptStatic(boolean checkMatSciScriptStatic) {
+        this.checkMatSciScriptStatic = checkMatSciScriptStatic;
     }
 
 }

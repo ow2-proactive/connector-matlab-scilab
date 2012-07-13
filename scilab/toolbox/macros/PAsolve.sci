@@ -292,6 +292,7 @@ function initSolveConfig(solve_config,opt)
         solve_config.setCustomScriptStatic(opt.CustomScriptStatic);
         solve_config.setCustomScriptParams(opt.CustomScriptParams);
     end
+    solve_config.setCheckMatSciScriptStatic(opt.CheckMatSciScriptStatic);
 
     solve_config.setZipSourceFiles(%f);
     solve_config.setWorkerTimeoutStart(opt.WorkerTimeoutStart);

@@ -530,6 +530,7 @@ if ischar(opt.CustomScript)
     solve_config.setCustomScriptStatic(opt.CustomScriptStatic);
     solve_config.setCustomScriptParams(opt.CustomScriptParams);
 end
+solve_config.setCheckMatSciScriptStatic(opt.CheckMatSciScriptStatic);
 solve_config.setZipSourceFiles(true);
 solve_config.setUseMatlabControl(opt.UseMatlabControl);
 solve_config.setWorkerTimeoutStart(opt.WorkerTimeoutStart);

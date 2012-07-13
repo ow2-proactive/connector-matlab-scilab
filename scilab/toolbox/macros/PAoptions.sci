@@ -245,6 +245,11 @@ endfunction
     inputs(j).check = 'ischarornull';
     inputs(j).trans = 'id';
     j=j+1;
+    inputs(j).name = 'CheckMatSciScriptStatic';
+    inputs(j).default = %t;
+    inputs(j).check = 'logcheck';
+    inputs(j).trans = 'logtrans';
+    j=j+1;
     inputs(j).name = 'Priority';
     inputs(j).default = 'Normal';
     inputs(j).check = 'prioritycheck';
