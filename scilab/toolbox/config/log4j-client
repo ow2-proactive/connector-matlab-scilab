@@ -4,7 +4,7 @@
 # The default logging level is INFO
 # The root logger logs in NULL
 
-log4j.rootLogger=INFO,NULL
+log4j.rootLogger=INFO,CONSOLE
 
 # avoid displaying additivity of the inherit loggers
 log4j.additivity.proactive.deployment=false
