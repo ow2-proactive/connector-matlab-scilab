@@ -42,7 +42,7 @@ import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 import org.objectweb.proactive.utils.OperatingSystem;
 import org.ow2.proactive.scheduler.ext.matlab.worker.util.MatlabEngineConfig;
-import org.ow2.proactive.scheduler.ext.matsci.common.properties.MatSciProperties;
+import org.ow2.proactive.scheduler.ext.matsci.worker.properties.MatSciProperties;
 import org.ow2.proactive.scheduler.ext.scilab.worker.util.ScilabEngineConfig;
 
 import java.io.File;

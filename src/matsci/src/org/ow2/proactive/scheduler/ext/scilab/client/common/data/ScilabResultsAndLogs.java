@@ -38,7 +38,6 @@ package org.ow2.proactive.scheduler.ext.scilab.client.common.data;
 
 import org.ow2.proactive.scheduler.ext.matsci.client.common.data.MatSciTaskStatus;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.data.ResultsAndLogs;
-import org.scilab.modules.types.ScilabType;
 
 
 /**
@@ -46,7 +45,7 @@ import org.scilab.modules.types.ScilabType;
  *
  * @author The ProActive Team
  */
-public class ScilabResultsAndLogs extends ResultsAndLogs<ScilabType> {
+public class ScilabResultsAndLogs extends ResultsAndLogs<Boolean> {
 
     private static final long serialVersionUID = 10L;
 
@@ -54,7 +53,7 @@ public class ScilabResultsAndLogs extends ResultsAndLogs<ScilabType> {
         super();
     }
 
-    public ScilabResultsAndLogs(ScilabType result, String logs, Throwable exception, MatSciTaskStatus status) {
+    public ScilabResultsAndLogs(Boolean result, String logs, Throwable exception, MatSciTaskStatus status) {
         super(result, logs, exception, status);
     }
 

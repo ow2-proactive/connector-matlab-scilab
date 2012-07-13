@@ -1,4 +1,4 @@
-package org.ow2.proactive.scheduler.ext.matsci.common.properties;
+package org.ow2.proactive.scheduler.ext.matsci.worker.properties;
 
 import org.objectweb.proactive.core.runtime.ProActiveRuntimeImpl;
 
