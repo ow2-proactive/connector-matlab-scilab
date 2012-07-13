@@ -9,7 +9,7 @@ public class TestBasic extends AbstractMatlabTest {
     @org.junit.Test
     public void run() throws Throwable {
 
-        runCommand("TestBasic");
+        runCommand("TestBasic", 10);
 
     }
 }

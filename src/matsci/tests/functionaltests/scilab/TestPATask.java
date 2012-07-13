@@ -9,7 +9,7 @@ public class TestPATask extends AbstractScilabTest {
     @org.junit.Test
     public void run() throws Throwable {
 
-        runCommand("TestPATask");
+        runCommand("TestPATask", 10);
 
     }
 }

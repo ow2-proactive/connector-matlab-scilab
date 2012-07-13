@@ -9,7 +9,7 @@ public class TestMultipleSubmit extends AbstractMatlabTest {
     @org.junit.Test
     public void run() throws Throwable {
 
-        runCommand("TestMultipleSubmit");
+        runCommand("TestMultipleSubmit", 10);
 
     }
 }

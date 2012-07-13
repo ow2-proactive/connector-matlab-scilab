@@ -36,8 +36,6 @@ public class AbstractMatlabTest extends FunctionalTest {
 
     String localhost;
 
-    int default_nb_iter = 10;
-
     private String adminName = "demo";
     private String adminPwd = "demo";
 
@@ -76,7 +74,7 @@ public class AbstractMatlabTest extends FunctionalTest {
         cred.writeToDisk(credFile.toString());
     }
 
-    protected void runCommand(String testName) throws Exception {
+    protected void runCommand(String testName, int nb_iter) throws Exception {
         // Start the scheduler
         start();
         ProcessBuilder pb = new ProcessBuilder();
@@ -90,11 +88,11 @@ public class AbstractMatlabTest extends FunctionalTest {
         if (System.getProperty("matlab.bin.path") != null) {
             pb.command(System.getProperty("matlab.bin.path"), "-nodesktop", "-nosplash", "-r", "addpath('" +
                 test_home + "');RunUnitTest('" + schedURI.toString() + "','" + credFile.toString() + "','" +
-                mat_tb_home + "'," + default_nb_iter + ",'" + testName + "'," + runAsMe + ");");
+                mat_tb_home + "'," + nb_iter + ",'" + testName + "'," + runAsMe + ");");
         } else {
             pb.command("matlab", "-nodesktop", "-nosplash", "-r", "addpath('" + test_home +
                 "');RunUnitTest('" + schedURI.toString() + "','" + credFile.toString() + "','" + mat_tb_home +
-                "'," + default_nb_iter + ",'" + testName + "'," + runAsMe + ");");
+                "'," + nb_iter + ",'" + testName + "'," + runAsMe + ");");
         }
         System.out.println("Running command : " + pb.command());
 

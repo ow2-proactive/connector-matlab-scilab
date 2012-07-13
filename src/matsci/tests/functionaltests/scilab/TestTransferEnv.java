@@ -9,7 +9,7 @@ public class TestTransferEnv extends AbstractScilabTest {
     @org.junit.Test
     public void run() throws Throwable {
 
-        runCommand("TestTransferEnv");
+        runCommand("TestTransferEnv", 10);
 
     }
 }

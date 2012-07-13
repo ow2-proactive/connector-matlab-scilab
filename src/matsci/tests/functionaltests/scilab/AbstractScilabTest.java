@@ -36,8 +36,6 @@ public class AbstractScilabTest extends FunctionalTest {
 
     String localhost;
 
-    int default_nb_iter = 10;
-
     private String adminName = "demo";
     private String adminPwd = "demo";
 
@@ -119,7 +117,7 @@ public class AbstractScilabTest extends FunctionalTest {
 
     }
 
-    protected void runCommand(String testName) throws Exception {
+    protected void runCommand(String testName, int nb_iter) throws Exception {
         // Start the scheduler
         start();
         ProcessBuilder pb = new ProcessBuilder();
@@ -133,11 +131,11 @@ public class AbstractScilabTest extends FunctionalTest {
         if (System.getProperty("scilab.bin.path") != null) {
             pb.command(System.getProperty("scilab.bin.path"), "-nw", "-f", (new File(test_home + fs +
                 "RunUnitTest.sci")).getCanonicalPath(), "-args", schedURI.toString(), credFile.toString(),
-                    "" + default_nb_iter, testName, "" + runAsMe);
+                    "" + nb_iter, testName, "" + runAsMe);
         } else {
             pb.command("scilab", "-nw", "-f", (new File(test_home + fs + "RunUnitTest.sci"))
-                    .getCanonicalPath(), "-args", schedURI.toString(), credFile.toString(), "" +
-                default_nb_iter, testName, "" + runAsMe);
+                    .getCanonicalPath(), "-args", schedURI.toString(), credFile.toString(), "" + nb_iter,
+                    testName, "" + runAsMe);
         }
         System.out.println("Running command : " + pb.command());
 

@@ -9,7 +9,7 @@ public class TestDummyDisconnected extends AbstractMatlabTest {
     @org.junit.Test
     public void run() throws Throwable {
 
-        runCommand("TestObjectArguments");
+        runCommand("TestObjectArguments", 10);
 
     }
 }
