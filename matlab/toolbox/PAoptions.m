@@ -537,7 +537,7 @@ if ~exist('pa_options','var') == 1 || ~isstruct(pa_options)
         fid = fopen(optionpath, 'r');
     end
     try
-        C = textscan(fid, '%s = %[^\n]', 'CommentStyle', '%');
+        C = textscan(fid, '%s = %[^\n]', 'CommentStyle', '%%');
         for i=1:length(C{1})
             for j=1:length(inputs)
                 if strcmp(C{1}{i},inputs(j).name)
