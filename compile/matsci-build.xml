@@ -116,6 +116,7 @@
             <class name="org.ow2.proactive.scheduler.ext.scilab.middleman.AOScilabEnvironment"/>
             <class name="org.ow2.proactive.scheduler.ext.matsci.middleman.AOMatSciEnvironment"/>
             <class name="org.ow2.proactive.scheduler.ext.matsci.middleman.AODataspaceRegistry"/>
+            <class name="org.ow2.proactive.scheduler.ext.matsci.middleman.MatSciJVMProcessInterfaceImpl"/>
         </stubGenerator>
 
         <mkdir dir="${cl.matsci.tests.dir}"/>
@@ -164,9 +165,6 @@
             <fileset dir="${cl.matsci.dir}" includes="**/org/ow2/proactive/scheduler/ext/matsci/**"/>
             <fileset dir="${cl.matsci.dir}" includes="**/org/ow2/proactive/scheduler/ext/matlab/**"/>
             <fileset dir="${cl.matsci.dir}" includes="**/org/ow2/proactive/scheduler/ext/scilab/**"/>
-            <indexjars>
-                <fileset refid="jar.index.fileset"/>
-            </indexjars>
         </jar>
         <jar destfile="${java.io.tmpdir}/${matsci.embedded.jar}" manifest="${basedir}/matsci-Manifest-base.mf"
              index="false">
