@@ -79,6 +79,9 @@ function jobs = PAconnect(url, credpath)
 %   * $$PROACTIVE_INITIAL_DEV$$
 %   */
 
+mlock
+persistent PA_scheduler_URI
+
 sched = PAScheduler;
 opt = PAoptions();
 
@@ -111,10 +114,18 @@ else
     isConnected = 0;
 end
 
+if exist('PA_scheduler_URI','var') == 1 && ~strcmp(PA_scheduler_URI,url)
+    % particular case when the scheduler uri changes, we redeploy everything
+    isJVMdeployed = 0;
+    isConnected = 0;
+else
+    PA_scheduler_URI = url;
+end
+
 
 if ~isJVMdeployed
     % Creating a new connection
-    deployJVM(sched,opt);
+    deployJVM(sched,opt,url);
 end
 if ~isConnected
     % joining the scheduler
@@ -143,7 +154,7 @@ end
 
 end
 
-function deployJVM(sched,opt)
+function deployJVM(sched,opt,url)
 deployer = org.ow2.proactive.scheduler.ext.matsci.client.embedded.util.StandardJVMSpawnHelper.getInstance();
 home = getenv('JAVA_HOME');
 fs=filesep();
@@ -169,6 +180,7 @@ for i=1:length(jars)
     jarsjava(i) = java.lang.String([dist_lib_dir filesep jars{i}]);
 end
 deployer.setMatSciDir(matsci_dir);
+deployer.setSchedulerURI(url);
 deployer.setDebug(opt.Debug);
 deployer.setClasspathEntries(jarsjava);
 deployer.setProActiveConfiguration(opt.ProActiveConfiguration);

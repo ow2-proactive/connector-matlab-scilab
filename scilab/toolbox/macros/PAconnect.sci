@@ -1,6 +1,6 @@
 function [] = PAconnect(uri,credpath)
 
-    global ('PA_initialized', 'PA_connected','PA_solver')
+    global ('PA_initialized', 'PA_connected','PA_solver', 'PA_scheduler_URI')
     initJavaStack();
     if ~exists('PA_initialized') | PA_initialized ~= 1
         PAinit();
@@ -24,13 +24,21 @@ function [] = PAconnect(uri,credpath)
         catch 
             isJVMdeployed = 0;
         end
-    else
+    else        
         isJVMdeployed = 0;
         isConnected = 0;
     end
+    
+    if ~isempty(PA_scheduler_URI) & PA_scheduler_URI ~= uri then
+        // particular case when the scheduler uri changes, we redeploy everything
+        isJVMdeployed = 0;
+        isConnected = 0;
+    else
+        PA_scheduler_URI = uri;
+    end
         
     if ~isJVMdeployed 
-        deployJVM(opt);  
+        deployJVM(opt,uri);  
     end 
     if ~isConnected then
         ok = jinvoke(PA_solver,'join', uri);
@@ -56,7 +64,7 @@ function [] = PAconnect(uri,credpath)
     clearJavaStack();
 endfunction
 
-function deployJVM(opt)
+function deployJVM(opt,uri)
     global ('PA_matsci_dir','PA_solver', 'PA_dsregistry', 'PA_jvminterface')
     jimport org.ow2.proactive.scheduler.ext.matsci.client.embedded.util.StandardJVMSpawnHelper;
     jimport java.lang.String;    
@@ -87,6 +95,7 @@ function deployJVM(opt)
         jarsjava(i-1) = jartmp;
         addJavaObj(jartmp);
     end
+    jinvoke(deployer,'setSchedulerURI', uri);
     jinvoke(deployer,'setMatSciDir', matsci_dir);
     jinvoke(deployer,'setDebug',opt.Debug);
     jinvoke(deployer,'setClasspathEntries',jarsjava);
