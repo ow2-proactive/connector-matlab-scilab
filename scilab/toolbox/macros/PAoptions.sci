@@ -1,5 +1,96 @@
 function opts = PAoptions(varargin)
 
+function [n,key,value]=getkeyvalue(fid)
+    key = []
+    value = []
+    n = -1
+    line = getline(fid);
+    start=[]
+    if ~isempty(line) then
+        [start]=strindex(line,'%%')
+    end
+    while ~isempty(line) & ~isempty(start)
+        line = getline(fid);
+        if ~isempty(line) then
+            [start]=strindex(line,'%%')
+        end
+    end
+    if ~isempty(line) then
+         res = strtok(line,'=')
+         key=stripblanks(res, %t)
+         res = strtok('=')
+          value=stripblanks(res, %t)
+          n=1
+    end
+
+endfunction
+
+function [line]=getline(fid)
+    eof = meof(fid);
+    line=[];
+    while ~eof & isempty(line)
+        line=mgetl(fid,1);
+        if ~isempty(line) then
+            line=stripblanks(line, %t)
+        end
+        eof = meof(fid);
+    end
+endfunction
+
+function y=logcheck(x)
+    if islogical(x) then
+        y=%t
+    elseif isnumeric(x) then
+        y=((x == 0)|(x == 1))
+    elseif ischar(x) then
+        y=ismember(x,{'true','false'})
+    else
+        y=%f
+    end
+endfunction
+
+function cl=stringtocell(x)
+    cl=cell();
+    i=1;
+    remain=x;
+    if iscell(x) then
+        cl = x;
+        return
+    end
+    goon=%t;
+    str = strtok(remain, ',; ');
+    while goon
+        if isempty(str) | length(str) == 0 then
+            goon=%f;
+        else
+            cl(i).entries=str;
+            i=i+1;
+        end
+        str = strtok(',; ');
+    end
+endfunction
+
+function cl=stringtolist(x)
+    cl=list();
+    i=1;
+    remain=x;
+    if iscell(x) then
+        cl = x;
+        return
+    end
+    goon=%t;
+    str = strtok(remain, ',; ');
+    while goon
+        if isempty(str) | length(str) == 0 then
+            goon=%f;
+        else
+            cl($+1)=str;
+            i=i+1;
+        end
+        str = strtok(',; ');
+    end
+endfunction
+
     global ('proactive_pa_options', 'PA_matsci_dir')
     if  argn(2) == 0 & ~isempty(proactive_pa_options) then
         opts = proactive_pa_options; 
@@ -12,7 +103,7 @@ function opts = PAoptions(varargin)
     deff ("y=islogical(x)","y=or(type(x)==[4,6])","n");
     deff ("y=ischar(x)","y=type(x)==10","n");
     deff ("y=ismember(a,l)","y=(or(a==l))","n");
-    deff ("y=logcheck(x)","if islogical(x), y=%t, elseif isnumeric(x), y=((x == 0)|(x == 1))elseif ischar(x), y=ismember(x,{''true'',''false''}), else y=%f, end","n");
+    //  deff ("y=logcheck(x)","if islogical(x), y=%t, elseif isnumeric(x), y=((x == 0)|(x == 1))elseif ischar(x), y=ismember(x,{''true'',''false''}), else y=%f, end","n");
     deff ("y=versioncheck(x)","if isnumeric(x), y=isempty(x), elseif ischar(x), y=~isempty(regexp(x, ''/^[1-9][0-9]*(\.[0-9]+)*$/'')), else y=%f, end","n");
     deff ("y=versionlistcheck(x)","if isnumeric(x), y=isempty(x), elseif ischar(x), y=~isempty(regexp(x, ''/^([1-9][0-9]*(\.[0-9]+)*[ ;,]+)*[1-9][0-9]*(\.[0-9]+)*$/'')), else y=%f, end","n");
     deff ("y=jarlistcheck(x)","if ischar(x), y=~isempty(regexp(x, ''/^([\w\-]+\.jar[ ;,]+)*[\w\-]+\.jar$/'')), else y=%f ,end","n");
@@ -22,7 +113,7 @@ function opts = PAoptions(varargin)
 
     deff ("y=urlcheck(x)","if isnumeric(x), y=isempty(x), else y=ischar(x), end","n");
     deff ("y=charornull(x)","if isnumeric(x), y=isempty(x), else y=ischar(x), end","n");   
-    
+
     deff("y=isstrictpositiveint(x)","ss=evstr(x),if isnumeric(ss) & sum(length(ss))==1 & ss > 0 & floor(ss) == ss, y=%t, else y=%f, end","n");  
 
 
@@ -184,7 +275,7 @@ function opts = PAoptions(varargin)
     inputs(j).check = 'ischar';
     inputs(j).trans = 'conftrans';
     j=j+1;
-    
+
     inputs(j).name = 'EmbeddedJars';
     inputs(j).default = 'ProActive_Scheduler-matsciemb.jar';
     inputs(j).check = 'jarlistcheck';
@@ -252,7 +343,7 @@ function opts = PAoptions(varargin)
         end    
         try
 
-            [n,key, value] = getline(fid);
+            [n,key, value] = getkeyvalue(fid);
 
             //C = textscan(fid, '%s = %[^\n]', 'CommentStyle', '%');
             while n~=-1
@@ -270,12 +361,12 @@ function opts = PAoptions(varargin)
                         proactive_pa_options(inputs(j).name) =  def;                   
                     end
                 end
-                [n,key, value] = getline(fid);
+                [n,key, value] = getkeyvalue(fid);
             end
         catch 
             mclose(fid);
             [str2,n2,line2,func2]=lasterror(%t);printf('!-- error %i %s at line %i of function %s',n2,str2,line2,func2);        
-            error('Error while reading configuration file');
+            error('Error while reading configuration file at ' + optionpath);
         end  
         mclose(fid);
     end    
@@ -310,51 +401,4 @@ function opts = PAoptions(varargin)
 
 endfunction
 
-function [n,key,value]=getline(fid)
-    [n,key, value] = mfscanf(fid, '%%%[^\n]')
-    while n > 0
-        [n,key, value] = mfscanf(fid, '%%%[^\n]') 
-    end    
-    [n,key, value] = mfscanf(fid, '%s = %[^\n]')
-endfunction
 
-function cl=stringtocell(x)
-    cl=cell();
-    i=1;
-    remain=x;
-    if iscell(x) then
-        cl = x;
-        return
-    end
-    goon=%t;
-    str = strtok(remain, ',; ');
-    while goon                          
-        if isempty(str) | length(str) == 0 then
-            goon=%f;
-        else            
-            cl(i).entries=str;
-            i=i+1;
-        end
-        str = strtok(',; ');
-    end
-endfunction
-function cl=stringtolist(x)
-    cl=list();
-    i=1;
-    remain=x;
-    if iscell(x) then
-        cl = x;
-        return
-    end
-    goon=%t;
-    str = strtok(remain, ',; ');
-    while goon                          
-        if isempty(str) | length(str) == 0 then
-            goon=%f;
-        else            
-            cl($+1)=str;
-            i=i+1;
-        end
-        str = strtok(',; ');
-    end
-endfunction
