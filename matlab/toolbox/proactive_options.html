@@ -72,8 +72,8 @@
 <h3 class="title">The PAoptions.ini file</h3>
 
 <p>The <b>PAoptions.ini</b> file is located inside the ProActive Scheduler release at the following location :</p>
-<pre>MATSCI/matlab/config/toolbox/PAoptions.ini</pre>
-<p>It contains the following options:</p>
+<pre>Matlab_Connector/toolbox/config/PAoptions.ini</pre>
+<p>It contains, among others, the following options (see the PAoptions.ini file or the <a href="matlab:doc PAoptions">PAoptions</a> function for an up-to-date list):</p>
 <ul type="disc">
     <li><p><b>JobName</b>: Name of the job that will be submitted to the Scheduler</p></li>
     <li><p><b>JobDescription</b>: Description of the job that will be submitted to the scheduler</p></li>
@@ -117,7 +117,7 @@
     <a href="#top_of_page">Back to Top</a></p>
 <h3 class="title">Using the PAoptions function</h3>
 
-<p>While options can be edited via the PAoptions.ini file, it is still possible to change options on the run via calls to the PAoptions function. The example in this chapter will detail the usage of the option <b>TransferEnv</b> which allows the local workspace to be transferred to remote engines.</p>
+<p>While options can be edited via the PAoptions.ini file, it is still possible to change options on the run via calls to the <a href="matlab:doc PAoptions">PAoptions</a>  function. The example in this chapter will detail the usage of the option <b>TransferEnv</b> which allows the local workspace to be transferred to remote engines.</p>
 <p>We will define a function called <b>testenv</b> which will read a variable from the parent workspace and will compute the factorial of it. Here is how the <b>testenv</b> function is defined:</p>
 
 <pre>function out=testenv()

@@ -45,7 +45,9 @@
 
             <p><a href="proactive_monitoring.html#monitoring-2">Scheduler and Resource Manager command line controllers</a></p>
 
-            <p><a href="proactive_monitoring.html#monitoring-3">Scheduler and Resource Manager GUI</a></p>
+            <p><a href="proactive_monitoring.html#monitoring-3">ProActive Studio GUI</a></p>
+
+            <p><a href="proactive_monitoring.html#monitoring-4">Matlab Connector Toolbox monitoring functions</a></p>
 
             </td>
     </tr>
@@ -191,9 +193,9 @@ Type command here (type '?' or help() to see the list of commands)
     <script language="Javascript">updateSectionId("monitoring-3");</script>
     <script language="Javascript">addTopOfPageButtons();</script>
     <a href="#top_of_page">Back to Top</a></p>
-<h3 class="title">Scheduler and Resource Manager GUI</h3>
+<h3 class="title">ProActive Studio GUI</h3>
 
-<p>Scheduler and Resource Manager come as well with graphical user interfaces which provide even more features than the command line interfaces, in a graphical and intuitive way. The GUI must be downloaded separately from ProActive Scheduler on the <a href="http://www.activeeon.com/community-downloads">ProActive downloads page</a>. They required a Java Virtual Machine installed in order to run.</p>
+<p>The ProActive Studio is a graphical user interface for both Scheduler and Resource Manager, and which provide a more convenient way of monitoring job execution. The ProActive Studio GUI must be downloaded separately from ProActive Scheduler on the <a href="http://www.activeeon.com/community-downloads">ProActive downloads page</a>. They required a Java Virtual Machine installed in order to run.</p>
 <p>Here is a view of the <b>Scheduler GUI</b>:</p>
 <p><img src="Scheduling_Big.png" alt="Scheduler GUI"></p>
 <p>Information on its usage can be found at <a href="http://proactive.inria.fr/release-doc/Scheduling/multiple_html/Scheduler_Eclipse_Plugin.html">ProActive Scheduler Eclipse Plugin</a>.</p>
@@ -202,8 +204,61 @@ Type command here (type '?' or help() to see the list of commands)
 <p><img src="tree_view.png" alt="Resource Manager GUI"></p>
 <p>Information on its usage can be found at <a href="http://proactive.inria.fr/release-doc/Resourcing/multiple_html/Resource_Manager_admin.html#Resource_Manager_plugin">Resource Manager Graphical User Interface</a>.</p>
 
-<p></p>
+<a name="monitoring-4"></a>
 
+<p class="pagenavlink">
+    <script language="Javascript">updateSectionId("monitoring-4");</script>
+    <script language="Javascript">addTopOfPageButtons();</script>
+    <a href="#top_of_page">Back to Top</a></p>
+<h3 class="title">Matlab Connector Toolbox monitoring functions</h3>
+
+<p>Matlab Connector Toolbox provides a set of function for monitoring job execution, similarly as the scheduler-client command line interface. Here is the list of those functions :</p>
+<table cellspacing="0" width="100%" border="0" cellpadding="2">
+    <tr valign="top">
+        <td width="150"><a href="PAstate.html">PAstate</a></td>
+        <td>State of ProActive Scheduler</td>
+    </tr>
+    <tr valign="top">
+        <td width="150"><a href="PAjobState.html">PAjobState</a></td>
+        <td>State of the given job</td>
+    </tr>
+    <tr valign="top">
+        <td width="150"><a href="PAjobState.html">PAjobRemove</a></td>
+        <td>Removes the given job from the scheduler</td>
+    </tr>
+    <tr valign="top">
+        <td width="150"><a href="PAjobOutput.html">PAjobOutput</a></td>
+        <td>Textual log of the given job</td>
+    </tr>
+    <tr valign="top">
+        <td width="150"><a href="PAjobResult.html">PAjobResult</a></td>
+        <td>Textual result of the given job</td>
+    </tr>
+    <tr valign="top">
+        <td width="150"><a href="PAkillJob.html">PAkillJob</a></td>
+        <td>Kills the given job</td>
+    </tr>
+    <tr valign="top">
+        <td width="150"><a href="PApauseJob.html">PApauseJob</a></td>
+        <td>Pauses the given job</td>
+    </tr>
+    <tr valign="top">
+        <td width="150"><a href="PAresumeJob.html">PAresumeJob</a></td>
+        <td>Resumes the given job</td>
+    </tr>
+    <tr valign="top">
+        <td width="150"><a href="PAkillTask.html">PAkillTask</a></td>
+        <td>Kills the given task</td>
+    </tr>
+    <tr valign="top">
+        <td width="150"><a href="PAtaskOutput.html">PAtaskOutput</a></td>
+        <td>Textual log of the given task</td>
+    </tr>
+    <tr valign="top">
+        <td width="150"><a href="PAtaskResult.html">PAtaskResult</a></td>
+        <td>Textual result of the given task</td>
+    </tr>
+</table>
 
 <a name="bottom_of_page"></a>
 
