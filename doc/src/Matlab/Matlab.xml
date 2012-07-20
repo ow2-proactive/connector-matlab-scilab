@@ -80,10 +80,45 @@
             <title>Installation for Matlab</title>
         </info>
 
+        <para>A typical deployment of ProActive Scheduler with Matlab can be seen on the diagram below:</para>
+        <para>
+            <inlinemediaobject>
+                <imageobject>
+                    <imagedata fileref="images/png/matsci/SchedulerMatlab.png"/>
+                </imageobject>
+            </inlinemediaobject>
+        </para>
+        <itemizedlist>
+            <listitem>
+                <para>The local Matlab session will connect to the ProActive Scheduler.
+                </para>
+            </listitem>
+            <listitem>
+                <para>The local user will submit a function "foo" to call with a set of parameters.
+                </para>
+            </listitem>
+            <listitem>
+                <para>The Scheduler will select among all its resources, those suited to the job.
+                </para>
+            </listitem>
+            <listitem>
+                <para>A Matlab engine will be started on each selected resource.
+                </para>
+            </listitem>
+            <listitem>
+                <para>Each foo(k) will be executed on remote engine.
+                </para>
+            </listitem>
+            <listitem>
+                <para>Results will be forwarded back to the use
+                </para>
+            </listitem>
+        </itemizedlist>
+
         <para>
             The toolbox can be found at <emphasis>MATLAB_CONNECTOR/toolbox</emphasis>. To install it inside Matlab, simply add the path to the toolbox to matlab search path, via the <emphasis>addpath</emphasis> command at the matlab prompt:
         </para>
-        <screen>>> addpath('/home/fviale/MATLAB_CONNECTOR/toolbox/')</screen>
+        <screen>>> addpath('/home/user/MATLAB_CONNECTOR/toolbox/')</screen>
 
         <para>
             The full documentation of <emphasis>ProActive Matlab Connector Toolbox</emphasis> will then be available on the Matlab Help:

@@ -63,9 +63,9 @@
 <p>The three main actors of Matlab Connector Toolbox are the following functions and objects:</p>
 
 <ul type="disc">
-    <li><p><b>PAsolve</b>: It is the function used to run matlab code remotely. A call to PAsolve will create a Matlab job inside ProActive Scheduler. After the job is created, the PAsolve function will return, allowing the local Matlab session to continue while the results are being produced.</p></li>
-    <li><p><b>PAResult</b>: this object is returned by the PAsolve function. PAsolve returns a vector of PAResult objects, whose size matches the number of parameters to the PAsolve function. The PAResult object defines a collection of methods which can be used to wait (block the local Matlab session) for specific results.</p></li>
-    <li><p><b>PATask</b>: this object allows to define complex tasks that can be given as parameters to PAsolve.</p></li>
+    <li><p><b><a href="matlab:doc PAsolve">PAsolve</a></b>: It is the function used to run matlab code remotely. A call to PAsolve will create a Matlab job inside ProActive Scheduler. After the job is created, the PAsolve function will return, allowing the local Matlab session to continue while the results are being produced.</p></li>
+    <li><p><b><a href="matlab:doc PAResult">PAResult</a></b>: this object is returned by the PAsolve function. PAsolve returns a vector of PAResult objects, whose size matches the number of parameters to the PAsolve function. The PAResult object defines a collection of methods which can be used to wait (block the local Matlab session) for specific results.</p></li>
+    <li><p><b><a href="matlab:doc PATask">PATask</a></b>: this object allows to define complex tasks that can be given as parameters to PAsolve.</p></li>
 </ul>
 
 
@@ -575,7 +575,7 @@ ans =
     <a href="#top_of_page">Back to Top</a></p>
 <h3 class="title">Adding Input and Output Files</h3>
 <p>Running single matlab functions remotely is the standard way of using <b>PAsolve</b>, but sometimes Matlab functions will also need to read input files and/or write output files. In this chapter, we will describe how to do that using the object class <b>PATask</b>.</p>
-<p>The <b>PATask</b> object works exactly like a structure. It contains the following fields:</p>
+<p>The <b>PATask</b> object works exactly like a structure. It contains, among others the following fields (see <a href="matlab:doc PATask">PATask</a> for the full list):</p>
 <ul type="disc">
     <li><p><b>Func</b>:</p> the function to be executed in this task, i.e. @factorial.</li>
     <li><p><b>Params</b>: the parameters to the function, which can either be a single parameter or a cell array containing the function multiple parmaeters.</p></li>

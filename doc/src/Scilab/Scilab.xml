@@ -52,6 +52,40 @@
         <info>
             <title>Installation for Scilab</title>
         </info>
+         <para>A typical deployment of ProActive Scheduler with Scilab can be seen on the diagram below:</para>
+                 <para>
+                     <inlinemediaobject>
+                         <imageobject>
+                             <imagedata fileref="images/png/matsci/SchedulerScilab.png"/>
+                         </imageobject>
+                     </inlinemediaobject>
+                 </para>
+                 <itemizedlist>
+                     <listitem>
+                         <para>The local Scilab session will connect to the ProActive Scheduler.
+                         </para>
+                     </listitem>
+                     <listitem>
+                         <para>The local user will submit a function "foo" to call with a set of parameters.
+                         </para>
+                     </listitem>
+                     <listitem>
+                         <para>The Scheduler will select among all its resources, those suited to the job.
+                         </para>
+                     </listitem>
+                     <listitem>
+                         <para>A Scilab engine will be started on each selected resource.
+                         </para>
+                     </listitem>
+                     <listitem>
+                         <para>Each foo(k) will be executed on remote engine.
+                         </para>
+                     </listitem>
+                     <listitem>
+                         <para>Results will be forwarded back to the use
+                         </para>
+                     </listitem>
+                 </itemizedlist>
         <para>Scilab Connector Toolbox can be downloaded from <emphasis xlink:href="http://www.activeeon.com/community-downloads">http://www.activeeon.com/community-downloads</emphasis></para>
         <para>The package which must be downloaded is called <emphasis>Scilab_Connector</emphasis>. After downloading the package unzip it in a directory e.g. D:\Scilab_Connector</para>
         <para>
