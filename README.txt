@@ -2,29 +2,25 @@ Thanks for your interest in ProActive Matlab/Scilab Connector.
 
 ProActive Matlab/Scilab Connector {version}
 
-You can find the documentation of ProActive Matlab/Scilab Connector in the docs directory.
+You can find the documentation of ProActive Matlab/Scilab Connector in the docs folder.
 
 Javadoc and updated documentation are available online: http://proactive.inria.fr
 
 
+*** Quick start using the Matlab_Connector_bin or the Scilab_Connector_bin package :
 
-*** Quick start :
+* Download ProActive Scheduling Server from the ProActive website : http://proactive.inria.fr and install it preferably in a shared folder of your computation farm.
 
-* Download ProActive Scheduling Server from the ProActive website : http://proactive.inria.fr
+* Copy the contents of folder matsci_connector/scheduler_plugin into ProActive_Scheduler_server/addons/ folder
 
-* Copy matlab_scilab_connector/dist/lib/ProActive_Matlab_Scilab.jar into Scheduling/addons/ directory or run the ant target deploy.matsci.scheduling
+* After copying, if you use Matlab, edit the XML file MatlabWorkerConfiguration.xml inside the Scheduling/addons/ folder according to your local Matlab installation.
+  The MachineGroup tag allows to specify a range of host for which the given configuration applies. Several configurations for several machine groups can be written in a single MatlabWorkerConfiguration.xml file, but
+  this makes sense only if the scheduler is installed in a shared folder and every worker Node will use the same scheduler installation when starting and registering to the ResourceManager.
+  When each machine uses a local scheduler-worker installation, then the scheduler_plugin folder must be copied into each addons folder of the scheduler_worker installation, and the MatlabWorkerConfiguration.xml file
+  must be edited on each machine.
 
-* If you use Matlab, choose any of the files, depending on your environment :
-    - matlab_scilab_connector/matlab/config/worker/MatlabConfigurationTemplateUnix.xml
-    - matlab_scilab_connector/matlab/config/worker/MatlabConfigurationTemplateWindows.xml
-  Edit it according to your local Matlab installation, rename it to MatlabConfiguration.xml and copy this file into
-  SCHEDULING/addons/
 
-* If you use Scilab, choose any of the files, depending on your environment :
-    - matlab_scilab_connector/scilab/config/worker/ScilabConfigurationTemplateUnix.xml
-    - matlab_scilab_connector/scilab/config/worker/ScilabConfigurationTemplateWindows.xml
-  Edit it according to your local Scilab installation, rename it to ScilabConfiguration.xml and copy this file into
-  SCHEDULING/addons/
+* If you use Scilab, edit the ScilabWorkerConfiguration.xml file. The same remarks apply as with Matlab.
 
 
 * Read the instructions in SCHEDULING/README.txt in order to start the scheduler
@@ -56,11 +52,11 @@ Javadoc and updated documentation are available online: http://proactive.inria.f
     - Open Scilab and install JIMS (Java Interaction Mechanism in Scilab) from ATOMS.
 
     - build the ProActive Scilab toolbox located on matlab_scilab_connector/scilab/PAScheduler, e.g. :
-        cd matlab_scilab_connector/scilab/PAScheduler
+        cd scilab_connector/toolbox
         exec builder.sce
 
-    - load the toolbox into the Scilab environment
-        exec loader
+    - load the toolbox into the Scilab environment (at each Scilab restart only the exec loader.sce command will be necessary)
+        exec loader.sce
 
     - Connect to the scheduler by using the function PAconnect, e.g.:
 
@@ -78,39 +74,21 @@ Javadoc and updated documentation are available online: http://proactive.inria.f
 
 
 
-* For further information, please refers to the Matlab/Scilab Connector documentation in matlab_scilab_connector/doc/built,
+* For further information, please refers to the Matlab/Scilab Connector documentation in matsci_connector/doc folder,
 along with Matlab toolbox and Scilab toolbox documentations (available from within Matlab and Scilab);
 
 
-*** Prepare project for compilation
+*** Compilation process when you use the Matlab/Scilab Connector src package or when you use a git version
+
+Ant and a jdk >= 1.6 must be installed on your computer before building the project.
 
 Matlab/Scilab Connector project depends on the ProActive Scheduling project. To build Matlab/Scilab Connector
-it is necessary to copy there all binaries produced as result of the Scheduling
-compilation: content of the 'Scheduling/dist/lib' into the 'matlab_scilab_connector/lib/scheduling'.
-This can be done using special ant target (this target assumes that special build property 
-'scheduling.project.dir' contains path to the compiled ProActive Scheduling project):
-    o Under Linux:
-      cd compile
-      ./build copy.dependencies  (check that the build script has executable permission)
+it is necessary to copy in folder lib/scheduling all binaries produced as result of the Scheduling compilation:
+i.e. contents of the 'Scheduling/dist/lib' folder into the 'matlab_scilab_connector/lib/scheduling'.
 
-    o Under Windows:
-      cd compile
-      build.bat copy.dependencies
+Please refer to the Readme file inside the scheduling project in order to compile Scheduling
 
-Also special ant script was created for quick start with Matlab/Scilab Connector project:
-- check out 'build' project (git://gitorious.ow2.org/ow2-proactive/build.git)
-- go to the build project
-- execute 'ant prepare-matsciConnector'
-This ant target will check out ProActive Programming, Scheduling and Matlab/Scilab Connector projects,
-compile Programming and Scheduling and will copy all required dependencies into the Matlab/Scilab Connector,
-after this Matlab/Scilab Connector project is completely ready for compilation (note: before executing
-ant script it is possible to modify some script parameters like svn url to use, 
-see build/build.properties for all available options).
-  
-
-*** Compilation :
-
-If you want to recompile all sources and generate all jar files:
+When those binaries have been copied, move to the compile folder of the matlab_scilab_connector and execute :
 
 	o Under Linux:
 	  cd compile
@@ -120,15 +98,9 @@ If you want to recompile all sources and generate all jar files:
 	  cd compile
 	  build.bat deploy.all
 
-If you want only to compile all sources (and not the jar files):
+Both Matlab and Scilab toolboxes along with the scheduler_plugin folder, will be available inside the "dist" folfer.
 
-	o Under Linux:
-	  cd compile
-	  ./build compile.all  (check that the build script has executable permission)
-
-	o Under Windows:
-	  cd compile
-	  build.bat compile.all
+Please refer to the quick-start section above in order to run the toolboxes.
 
 If you have any problems or questions when using ProActive Matlab/Scilab Connector,
 feel free to contact us at proactive@ow2.org
@@ -136,7 +108,7 @@ feel free to contact us at proactive@ow2.org
 
 *** Known bugs and issues:
 
-Details can be found on the ProActive Jira bug-tracking system
-(http://bugs.activeeon.com/):
+Details can be found on the Matlab/Scilab Connector Jira bug-tracking system
+http://bugs.activeeon.com/browse/MSC
 
 *** Enjoy ProActive Matlab/Scilab Connector !
