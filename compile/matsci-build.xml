@@ -186,7 +186,12 @@
         <copy todir="${deploy.matlab.lib.dir}" flatten="yes" file="${java.io.tmpdir}/${matsci.embedded.jar}"/>
         <copy todir="${deploy.matlab.lib.dir}" flatten="yes" file="${java.io.tmpdir}/${matsci.jar}"/>
         <copy todir="${deploy.matlab.tb.dir}">
-            <fileset dir="${matlab.tb.dir}" includes="**/*" excludes="**/.PAScheduler"/>
+            <fileset dir="${matlab.tb.dir}">
+                <include name="**/*"/>
+                <exclude name="**/.PAScheduler"/>
+                <exclude name="**/matlab_scilab_connector.ini"/>
+                <exclude name="**/MatlabWorkerConfiguration.xml"/>
+            </fileset>
         </copy>
     </target>
     <target name="deploy.scilab" depends="deploy.matsci" description="Deploys the Scilab Toolbox">
@@ -195,7 +200,12 @@
         <copy todir="${deploy.scilab.lib.dir}" flatten="yes" file="${java.io.tmpdir}/${matsci.embedded.jar}"/>
         <copy todir="${deploy.scilab.lib.dir}" flatten="yes" file="${java.io.tmpdir}/${matsci.jar}"/>
         <copy todir="${deploy.scilab.tb.dir}">
-            <fileset dir="${scilab.tb.dir}" includes="**/*" excludes="**/.PAScheduler"/>
+            <fileset dir="${scilab.tb.dir}">
+                 <include name="**/*"/>
+                 <exclude name="**/.PAScheduler"/>
+                 <exclude name="**/matlab_scilab_connector.ini"/>
+                 <exclude name="**/ScilabWorkerConfiguration.xml"/>
+            </fileset>
         </copy>
     </target>
     <target name="deploy.plugin.matlab" depends="deploy.matlab"
