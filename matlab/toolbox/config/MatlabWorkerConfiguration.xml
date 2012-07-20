@@ -1,19 +1,13 @@
 <?xml version="1.0" encoding="ISO-8859-15"?>
 <MatSciWorkerConfiguration>
-    <MachineGroup hostname=".*">
+    <MachineGroup hostname=".*">  <!-- This is a regular expression representing the machines targetted by this configuration, attributes can either be "hostname" or "ip" -->
         <matlab>
-
-            <version>7.11</version>
-            <home>/usr/local/matlab2010b</home>
-            <bindir>bin</bindir>
-            <command>matlab</command>
-            <!-- <installation>
-           <version>7.11</version>
-           <home>/Applications/MATLAB_R2010bSP1.app</home>
-           <bindir>bin</bindir>
-           <command>matlab</command>
-       </installation>     -->
+            <version>7.11</version>     <!-- The version of matlab -->
+            <home>/usr/local/matlab2010b</home>    <!-- Matlab installation directory -->
+            <!-- Example windows path: <home>C:\Program Files\Matlab2010b</home> -->
+            <bindir>bin</bindir> <!-- Matlab bin directory (should not be changed) -->
+            <command>matlab</command>  <!-- Matlab executable name -->
+            <!-- Matlab executable name on windows:: matlab.exe -->
         </matlab>
-
     </MachineGroup>
 </MatSciWorkerConfiguration>
