@@ -111,8 +111,14 @@ function build_and_clean() {
 
 	cd compile || warn_and_exit "Cannot move in compile"
 	./build clean
-	./build -Dversion="${VERSION}" deploy.all
-	./build -Dversion="${VERSION}" deploy.MatSci.docs
+	if [ "$TYPE" = "Matlab" ] ; then
+	    ./build -Dversion="${VERSION}" deploy.matlab deploy.plugin.matlab
+	    ./build -Dversion="${VERSION}" deploy.Matlab.docs
+	else
+	    ./build -Dversion="${VERSION}" deploy.scilab deploy.plugin.scilab
+	    ./build -Dversion="${VERSION}" deploy.Scilab.docs
+	fi
+
 
 	echo "********************** Building the product ***********************"
 
@@ -134,7 +140,7 @@ function build_and_clean() {
 	rm -rf ./compile/lib/clover.*
 
 	# Remove temporary files
-	rm compile/junit*properties
+	rm -f compile/junit*properties
 	rm -rf classes/
 	rm -rf docs/tmp/
 
