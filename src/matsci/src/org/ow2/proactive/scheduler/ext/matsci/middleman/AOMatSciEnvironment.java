@@ -52,6 +52,7 @@ import org.ow2.proactive.scheduler.common.task.TaskResult;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.MatSciEnvironment;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.data.*;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.exception.PASchedulerException;
+import org.ow2.proactive.scheduler.ext.matsci.client.common.exception.PASchedulerExceptionType;
 import org.ow2.proactive.scheduler.ext.matsci.common.exception.MatSciTaskException;
 import org.ow2.proactive.scheduler.util.console.SchedulerModel;
 import org.ow2.proactive.utils.FileToBytesConverter;
@@ -214,13 +215,13 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         } catch (IOException e) {
             throw new PASchedulerException(e);
         } catch (KeyException e) {
-            throw new PASchedulerException(e, PASchedulerException.ExceptionType.KeyException);
+            throw new PASchedulerException(e, PASchedulerExceptionType.KeyException);
         } catch (LoginException e) {
             throw new PASchedulerException(new LoginException(
                 "Could not retrieve public key, contact the Scheduler admininistrator\n" + e),
-                PASchedulerException.ExceptionType.LoginException);
+                PASchedulerExceptionType.LoginException);
         } catch (Exception e) {
-            throw new PASchedulerException(e, PASchedulerException.ExceptionType.OtherException);
+            throw new PASchedulerException(e, PASchedulerExceptionType.OtherException);
         }
         initLogin(creds);
 
@@ -246,14 +247,13 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
 
                 status = scheduler.getStatus();
             } catch (NotConnectedException e) {
-                throw new PASchedulerException(e, PASchedulerException.ExceptionType.NotConnectedException);
+                throw new PASchedulerException(e, PASchedulerExceptionType.NotConnectedException);
             } catch (PermissionException e) {
-                throw new PASchedulerException(e, PASchedulerException.ExceptionType.PermissionException);
+                throw new PASchedulerException(e, PASchedulerExceptionType.PermissionException);
             } catch (AlreadyConnectedException e) {
-                throw new PASchedulerException(e,
-                    PASchedulerException.ExceptionType.AlreadyConnectedException);
+                throw new PASchedulerException(e, PASchedulerExceptionType.AlreadyConnectedException);
             } catch (LoginException e) {
-                throw new PASchedulerException(e, PASchedulerException.ExceptionType.LoginException);
+                throw new PASchedulerException(e, PASchedulerExceptionType.LoginException);
             }
             schedulerStopped = (status == SchedulerStatus.STOPPED);
             schedulerKilled = (status == SchedulerStatus.KILLED);
@@ -276,7 +276,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         } catch (PASchedulerException e) {
             throw e;
         } catch (Exception e) {
-            throw new PASchedulerException(e, PASchedulerException.ExceptionType.OtherException);
+            throw new PASchedulerException(e, PASchedulerExceptionType.OtherException);
         }
 
     }
@@ -298,7 +298,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         try {
             creds = Credentials.getCredentials(credPath);
         } catch (KeyException e) {
-            throw new PASchedulerException(e, PASchedulerException.ExceptionType.KeyException);
+            throw new PASchedulerException(e, PASchedulerExceptionType.KeyException);
         }
         initLogin(creds);
 

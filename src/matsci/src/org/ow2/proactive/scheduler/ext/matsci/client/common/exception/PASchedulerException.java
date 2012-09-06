@@ -48,17 +48,13 @@ import org.ow2.proactive.scheduler.ext.common.util.StackTraceUtil;
  */
 public class PASchedulerException extends RuntimeException {
 
-    private ExceptionType type;
-
-    public enum ExceptionType {
-        KeyException, LoginException, SchedulerException, PermissionException, NotConnectedException, AlreadyConnectedException, UnknownJobException, UnknownTaskException, OtherException
-    }
+    private PASchedulerExceptionType type;
 
     public PASchedulerException() {
         super();
     }
 
-    public PASchedulerException(ExceptionType type) {
+    public PASchedulerException(PASchedulerExceptionType type) {
         super();
         this.type = type;
     }
@@ -67,7 +63,7 @@ public class PASchedulerException extends RuntimeException {
         super(message);
     }
 
-    public PASchedulerException(String message, ExceptionType type) {
+    public PASchedulerException(String message, PASchedulerExceptionType type) {
         super(message);
         this.type = type;
     }
@@ -76,7 +72,7 @@ public class PASchedulerException extends RuntimeException {
         super(message + "\nCaused By:\n" + StackTraceUtil.getStackTrace(cause));
     }
 
-    public PASchedulerException(String message, Throwable cause, ExceptionType type) {
+    public PASchedulerException(String message, Throwable cause, PASchedulerExceptionType type) {
         super(message + "\nCaused By:\n" + StackTraceUtil.getStackTrace(cause));
         this.type = type;
     }
@@ -85,12 +81,12 @@ public class PASchedulerException extends RuntimeException {
         super(StackTraceUtil.getStackTrace(cause));
     }
 
-    public PASchedulerException(Throwable cause, ExceptionType type) {
+    public PASchedulerException(Throwable cause, PASchedulerExceptionType type) {
         super(StackTraceUtil.getStackTrace(cause));
         this.type = type;
     }
 
-    public ExceptionType getType() {
+    public PASchedulerExceptionType getType() {
         return type;
     }
 
