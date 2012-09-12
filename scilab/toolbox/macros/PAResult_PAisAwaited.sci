@@ -9,7 +9,9 @@ function tf=PAResult_PAisAwaited(l)
     unrei = jinvoke(PA_solver,'areAwaited',jobid, taskids);        
     answers = jinvoke(unrei,'get');
     
-    tf=jinvoke(answers,'get', 0);
-           
-    //jremove(PAFuture);
+    tf=jinvoke(answers,'get', 0);    
+    jremove(answers);
+    jremove(unrei);
+    jremove(taskids);
+
 endfunction

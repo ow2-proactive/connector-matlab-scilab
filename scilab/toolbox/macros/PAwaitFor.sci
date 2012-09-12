@@ -33,16 +33,15 @@ function val_k=PAwaitFor(l,timeout)
         for i=1:m
             R=l.matrix(i).entries;
             if ~allRes
-                
-                [tmpval,err] = PAResult_PAwaitFor(R,jinvoke(answers,'get',i-1));
+                RaL = jinvoke(answers,'get',i-1);
+                [tmpval,err] = PAResult_PAwaitFor(R,RaL);
+                jremove(RaL);
                 val_k($+1)=tmpval;
                 if ~isempty(err) then
                     warning(err);
                     anyerror = %t;
                 end
-                
-            else                
-                
+            else
                 [tmpval,err] = PAResult_PAwaitFor(R);
                 val_k($+1)=tmpval;
                 if ~isempty(err) then
@@ -55,6 +54,11 @@ function val_k=PAwaitFor(l,timeout)
         if anyerror then
              warning('PAWaitFor:Error occured');
         end
+        if ~allRes
+            jremove(answers);
+            jremove(unrei);
+        end
+        jremove(taskids);
 
     else        
         error('Expected argument of type PAResL, received '+typeof(l))

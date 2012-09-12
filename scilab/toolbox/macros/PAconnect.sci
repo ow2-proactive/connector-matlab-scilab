@@ -74,9 +74,9 @@ function deployJVM(opt,uri)
     fs=filesep();
     if length(home) > 0
         if (getos() == "Windows") then
-            deployer.setJavaPath(home + fs + 'bin'+ fs +'java.exe');
+            jinvoke(deployer,'setJavaPath',home + fs + 'bin'+ fs +'java.exe');
         else
-            deployer.setJavaPath(home + fs + 'bin'+ fs +'java');
+            jinvoke(deployer,'setJavaPath',home + fs + 'bin'+ fs +'java');
         end
         
     end

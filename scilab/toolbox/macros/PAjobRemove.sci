@@ -8,5 +8,4 @@ function PAjobRemove(jobid)
     end        
     txt = jinvoke(PA_solver,'jobRemove',jobid);    
     printf('%s\n',txt);
-    //jremove(ScilabSolver);
 endfunction

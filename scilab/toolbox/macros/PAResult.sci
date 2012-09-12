@@ -9,8 +9,6 @@ function res=PAResult(taskinfo)
     jimport org.ow2.proactive.scheduler.ext.matsci.client.common.data.UnReifiable;                 
     jimport java.lang.StringBuilder;
     res = tlist(['PAResult','cleanFileSet','cleanDirSet', 'outFile','jobid','taskid', 'cleaned', 'logsPrinted','logs','waited','iserror','resultSet','dbrid','sid','RaL'],taskinfo.cleanFileSet, taskinfo.cleanDirSet, taskinfo.outFile, taskinfo.jobid, taskinfo.taskid, jnewInstance(AtomicBoolean,%f), jnewInstance(AtomicBoolean,%f), jnewInstance(StringBuilder), jnewInstance(AtomicBoolean,%f), jnewInstance(AtomicBoolean,%f),jnewInstance(AtomicBoolean,%f), dbrid, taskinfo.sid, jnewInstance(UnReifiable));
-    //jremove(AtomicBoolean, StringBuilder);
-    
 endfunction
 
 

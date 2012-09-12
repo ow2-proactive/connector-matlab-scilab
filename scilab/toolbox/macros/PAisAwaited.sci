@@ -13,9 +13,11 @@ function tf=PAisAwaited(l)
         unrei = jinvoke(PA_solver,'areAwaited',jobid, taskids);        
         answers = jinvoke(unrei,'get');
         for i=1:m
-            pares=l.matrix(i).entries;
             tf(i)=jinvoke(answers,'get', i-1);
-        end
+        end        
+        jremove(answers);
+        jremove(unrei);
+        jremove(taskids);
     else
         error('Expected argument of type PAResL, received '+typeof(l))
     end

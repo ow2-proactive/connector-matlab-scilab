@@ -35,6 +35,8 @@ function [ok, msg]=TestSelectionScripts(nbiter,timeout)
         val = PAwaitFor(res, timeout);
         disp('..........................1 ......OK');
 
+        PAclearResults(res);
+
         // Adding global selection script
         disp('...... Testing PAsolve with Global Selection Script');
         oldsel = opt.CustomScript;
@@ -58,6 +60,7 @@ function [ok, msg]=TestSelectionScripts(nbiter,timeout)
         val = PAwaitFor(res, timeout);
 
         disp('..........................2 ......OK');
+        PAclearResults(res);
 
         PAoptions('CustomScript', oldsel);
         PAoptions('CustomScriptStatic',oldstat);

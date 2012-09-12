@@ -37,12 +37,12 @@ function [val_k,index]=PAwaitAny(l,timeout)
         end
         pair = jinvoke(unrei,'get');
         ind = jinvoke(pair,'getY');
-        jremove(taskids);
-        //jremove(ArrayList,PAFuture);
+
         j=indList(ind+1);
         index = j;
         pares=l.matrix(j).entries;
-        jinvoke(pares.RaL,'set', jinvoke(pair,'getX'));
+        RaL = jinvoke(pair,'getX');
+        jinvoke(pares.RaL,'set', RaL);
         jinvoke(pares.waited,'set',%t);
         [val_k,err] = PAResult_PAwaitFor(pares);
         if ~isempty(err) then
@@ -50,6 +50,11 @@ function [val_k,index]=PAwaitAny(l,timeout)
             warning('PAwaitAny:Error occured')
             val_k = [];
         end
+        jremove(RaL);
+        jremove(unrei);
+        jremove(pair);
+        jremove(taskids);
+
     else        
         error('Expected argument of type PAResL, received '+typeof(l))
     end

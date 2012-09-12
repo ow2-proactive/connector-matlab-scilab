@@ -37,7 +37,9 @@ function [ok, msg]=TestPATask(nbiter,timeout)
         load(filein);
         [bias,var]=estimate(lambda);
         res = list(bias,var);
+        warning('off');
         save(fileout, res);
+        warning('on');
         resf=%t;
     endfunction
 
@@ -74,7 +76,9 @@ function [ok, msg]=TestPATask(nbiter,timeout)
             lambda = lambdas(i);
             // Input file for each task
             inputfileName = 'input_'+string(i)+'.dat';
+            warning('off');
             save(inputfileName, lambda);
+            warning('on');
             //inputfile = tstdir + fs + inputfileName;
             tsk(1,i).InputFiles = inputfileName;
 

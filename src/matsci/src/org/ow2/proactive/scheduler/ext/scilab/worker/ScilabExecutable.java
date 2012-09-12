@@ -421,8 +421,9 @@ public class ScilabExecutable extends JavaExecutable {
         File outputFile = new File(tempSubDir, taskconfig.getOutputVariablesFileName());
 
         printLog("Storing 'out' variable into " + outputFile);
-
+        scilabConnection.evalString("warning('off');");
         scilabConnection.evalString("save('" + outputFile + "',out);");
+        scilabConnection.evalString("warning('on');");
 
         //if (!outputFile.exists()) {
         //    throw new ScilabTaskException("Unable to store 'out' variable, the output file does not exist");
