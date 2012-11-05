@@ -91,6 +91,7 @@ public class IOTools {
             }
         });
 
+        service.shutdown();
         boolean ok = service.awaitTermination(timeout, TimeUnit.MILLISECONDS);
         if (!ok) {
             process.destroy();
@@ -216,8 +217,8 @@ public class IOTools {
      * @param in input stream to read
      * @return content as a string
      */
-    public static String readFileAsString(final File in, long timeout) throws InterruptedException,
-            TimeoutException {
+    public static String readFileAsString(final File in, long timeout, final String startPattern,
+            final String stopPattern) throws InterruptedException, TimeoutException {
 
         ExecutorService service = Executors.newSingleThreadExecutor();
 
@@ -241,9 +242,23 @@ public class IOTools {
                     e.printStackTrace();
                     line = null;
                 }
-
+                String startP = startPattern;
+                String stopP = stopPattern;
                 while (line != null) {
-                    answer.append(line + nl);
+                    if (startP != null) {
+                        if (line.contains(startP)) {
+                            startP = null;
+                        }
+                    } else if (stopP != null) {
+                        if (line.contains(stopP)) {
+                            startP = "[{THEIMMPOSSIBLEPATTERN}]";
+                            stopP = null;
+                        } else {
+                            answer.append(line + nl);
+                        }
+                    } else {
+                        answer.append(line + nl);
+                    }
 
                     try {
                         line = d.readLine();
@@ -260,6 +275,7 @@ public class IOTools {
             }
         });
 
+        service.shutdown();
         boolean ok = service.awaitTermination(timeout, TimeUnit.MILLISECONDS);
 
         return answer.toString();

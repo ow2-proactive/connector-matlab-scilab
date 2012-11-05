@@ -36,13 +36,18 @@
  */
 package org.ow2.proactive.scheduler.ext.scilab.worker;
 
+import org.apache.log4j.Level;
 import org.objectweb.proactive.api.PAActiveObject;
 import org.objectweb.proactive.core.node.Node;
+import org.objectweb.proactive.core.util.log.ProActiveLogger;
 import org.objectweb.proactive.extensions.dataspaces.api.DataSpacesFileObject;
 import org.objectweb.proactive.utils.OperatingSystem;
 import org.ow2.proactive.scheduler.common.task.TaskResult;
 import org.ow2.proactive.scheduler.common.task.executable.JavaExecutable;
 import org.ow2.proactive.scheduler.ext.common.util.FileUtils;
+import org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveEnvFile;
+import org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveFile;
+import org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveZippedFile;
 import org.ow2.proactive.scheduler.ext.matsci.worker.util.MatSciEngineConfig;
 import org.ow2.proactive.scheduler.ext.matsci.worker.util.MatSciEngineConfigBase;
 import org.ow2.proactive.scheduler.ext.scilab.common.PASolveScilabGlobalConfig;
@@ -50,6 +55,7 @@ import org.ow2.proactive.scheduler.ext.scilab.common.PASolveScilabTaskConfig;
 import org.ow2.proactive.scheduler.ext.scilab.common.exception.ScilabTaskException;
 import org.ow2.proactive.scheduler.ext.scilab.worker.util.ScilabEngineConfig;
 import org.ow2.proactive.scheduler.ext.scilab.worker.util.ScilabFinder;
+import org.ow2.proactive.scheduler.task.launcher.TaskLauncher;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -58,6 +64,7 @@ import java.io.Serializable;
 import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 
@@ -170,6 +177,10 @@ public class ScilabExecutable extends JavaExecutable {
             }
         }
 
+        if (paconfig.isDebug()) {
+            ProActiveLogger.getLogger(TaskLauncher.class).setLevel(Level.DEBUG);
+        }
+
         final String scilabCmd = this.scilabEngineConfig.getFullCommand();
         this.printLog("Acquiring SCILAB connection using " + scilabCmd);
 
@@ -187,11 +198,9 @@ public class ScilabExecutable extends JavaExecutable {
         } finally {
             this.printLog("Closing SCILAB...");
             this.scilabConnection.release();
+            printLog("End of Task");
+            this.closeLogFileOnDebug();
         }
-
-        printLog("Task completed successfully");
-
-        this.closeLogFileOnDebug();
 
         return result;
     }
@@ -277,43 +286,32 @@ public class ScilabExecutable extends JavaExecutable {
 
         // Create a temp dir in the root dir of the local space
         this.localSpaceRootDir = new File(new URI(dsURI));
-        String[] subDirs = this.paconfig.getTempSubDirNames();
-        this.tempSubDir = this.localSpaceRootDir;
+        this.tempSubDir = new File(this.localSpaceRootDir, paconfig.getJobSubDirOSPath()).getCanonicalFile();
 
-        this.tempSubDirRel = "";
-        int i = 0;
-        while (i < subDirs.length) {
-            this.tempSubDir = new File(this.tempSubDir, subDirs[i]);
-            tempSubDirRel += subDirs[i] + "/";
-            i++;
-        }
+        this.tempSubDirRel = paconfig.getJobSubDirPortablePath();
 
         // Set the local space of the global configuration
         this.paconfig.setLocalSpace(new URI(dsURI));
     }
 
     private void initTransferSource() throws Exception {
-        if (paconfig.isZipSourceFiles()) {
-            String sourceZipFileName = taskconfig.getSourceZipFileName();
-            if (sourceZipFileName == null) {
-                sourceZipFileName = paconfig.getSourceZipFileName();
-            }
-            taskconfig.setSourceZipFileURI(new URI(getLocalFile(tempSubDirRel + sourceZipFileName)
-                    .getRealURI()));
 
-            File sourceZip = new File(taskconfig.getSourceZipFileURI());
-
-            printLog("Unzipping source files from " + sourceZip);
-
-            if (!sourceZip.exists() || !sourceZip.canRead()) {
-                System.err.println("Error, source zip file cannot be accessed at " + sourceZip);
-                throw new IllegalStateException("Error, source zip file cannot be accessed at " + sourceZip);
-            }
-
-            // Uncompress the source files into the temp dir
-            if (!FileUtils.unzip(sourceZip, tempSubDir)) {
-                System.err.println("Unable to unzip source file " + sourceZip);
-                throw new IllegalStateException("Unable to unzip source file " + sourceZip);
+        for (PASolveFile file : taskconfig.getSourceFiles()) {
+            if (file instanceof PASolveZippedFile) {
+                PASolveZippedFile zippedFile = (PASolveZippedFile) file;
+                zippedFile.setRootDirectory(localSpaceRootDir);
+                File sourceZip = new File(zippedFile.getFullPathName());
+                printLog("Unzipping source files from " + sourceZip);
+                if (!sourceZip.exists() || !sourceZip.canRead()) {
+                    System.err.println("Error, source zip file cannot be accessed at " + sourceZip);
+                    throw new IllegalStateException("Error, source zip file cannot be accessed at " +
+                        sourceZip);
+                }
+                // Uncompress the source files into the temp dir
+                if (!FileUtils.unzip(sourceZip, sourceZip.getParentFile())) {
+                    System.err.println("Unable to unzip source file " + sourceZip);
+                    throw new IllegalStateException("Unable to unzip source file " + sourceZip);
+                }
             }
         }
 
@@ -329,10 +327,8 @@ public class ScilabExecutable extends JavaExecutable {
         if (!paconfig.isTransferEnv()) {
             return;
         }
-
-        taskconfig.setEnvMatFileURI(new URI(getLocalFile(tempSubDirRel + paconfig.getEnvMatFileName())
-                .getRealURI()));
-
+        PASolveFile file = paconfig.getEnvMatFile();
+        file.setRootDirectory(localSpaceRootDir);
     }
 
     private void initTransferInputFiles() throws Exception {
@@ -340,13 +336,12 @@ public class ScilabExecutable extends JavaExecutable {
     }
 
     private void initTransferVariables() throws Exception {
+        PASolveFile file = taskconfig.getInputVariablesFile();
+        file.setRootDirectory(localSpaceRootDir);
 
-        taskconfig.setInputVariablesFileURI(new URI(getLocalFile(
-                tempSubDirRel + taskconfig.getInputVariablesFileName()).getRealURI()));
-
-        if (taskconfig.getComposedInputVariablesFileName() != null) {
-            taskconfig.setComposedInputVariablesFileURI(new URI(getLocalFile(
-                    tempSubDirRel + taskconfig.getComposedInputVariablesFileName()).getRealURI()));
+        if (taskconfig.getComposedInputVariablesFile() != null) {
+            file = taskconfig.getComposedInputVariablesFile();
+            file.setRootDirectory(localSpaceRootDir);
         }
 
     }
@@ -357,8 +352,9 @@ public class ScilabExecutable extends JavaExecutable {
             // Add unzipped source files to the MATALAB path
             scilabConnection.evalString("try;getd('" + tempSubDir + "');catch; end;");
             if (taskconfig.getFunctionVarFiles() != null) {
-                for (String fileName : taskconfig.getFunctionVarFiles()) {
-                    scilabConnection.evalString("load('" + this.tempSubDir + fs + fileName + "');");
+                for (PASolveFile funcFile : taskconfig.getFunctionVarFiles()) {
+                    funcFile.setRootDirectory(this.localSpaceRootDir.getCanonicalPath());
+                    scilabConnection.evalString("load('" + funcFile.getFullPathName() + "');");
                 }
             }
         }
@@ -366,15 +362,17 @@ public class ScilabExecutable extends JavaExecutable {
 
     private void loadWorkspace() throws Exception {
         if (paconfig.isTransferEnv()) {
-            File envMat = new File(taskconfig.getEnvMatFileURI());
+            PASolveEnvFile paenv = paconfig.getEnvMatFile();
+            paenv.setRootDirectory(this.localSpaceRootDir.getCanonicalPath());
+            File envMat = new File(paenv.getFullPathName());
             printLog("Loading workspace from " + envMat);
             if (paconfig.isDebug()) {
                 scilabConnection.evalString("disp('Contents of " + envMat + "');");
                 scilabConnection.evalString("listvarinfile('" + envMat + "')");
             }
             // Load workspace using SCILAB command
-            String[] globals = paconfig.getEnvGlobalNames();
-            if (globals != null && globals.length > 0) {
+            List<String> globals = paenv.getEnvGlobalNames();
+            if (globals != null && globals.size() > 0) {
                 String globalstr = "";
                 for (String name : globals) {
                     globalstr += "'" + name + "'" + ",";
@@ -388,13 +386,13 @@ public class ScilabExecutable extends JavaExecutable {
 
     private void loadInputVariables() throws Exception {
 
-        File inMat = new File(taskconfig.getInputVariablesFileURI());
+        File inMat = new File(taskconfig.getInputVariablesFile().getFullPathName());
 
         printLog("Loading input variables from " + inMat);
 
         scilabConnection.evalString("load('" + inMat + "');");
-        if (taskconfig.getComposedInputVariablesFileURI() != null) {
-            File compinMat = new File(taskconfig.getComposedInputVariablesFileURI());
+        if (taskconfig.getComposedInputVariablesFile() != null) {
+            File compinMat = new File(taskconfig.getComposedInputVariablesFile().getFullPathName());
             scilabConnection.evalString("load('" + compinMat + "');in=out;clear out;");
         }
 
@@ -418,7 +416,9 @@ public class ScilabExecutable extends JavaExecutable {
     }
 
     private void storeOutputVariable() throws Exception {
-        File outputFile = new File(tempSubDir, taskconfig.getOutputVariablesFileName());
+        PASolveFile pafile = taskconfig.getOutputVariablesFile();
+        pafile.setRootDirectory(localSpaceRootDir.getCanonicalPath());
+        File outputFile = new File(pafile.getFullPathName());
 
         printLog("Storing 'out' variable into " + outputFile);
         scilabConnection.evalString("warning('off');");
@@ -437,7 +437,9 @@ public class ScilabExecutable extends JavaExecutable {
     private void testOutput() throws Exception {
         printLog("Receiving and testing output...");
 
-        File outputFile = new File(tempSubDir, taskconfig.getOutputVariablesFileName());
+        PASolveFile pafile = taskconfig.getOutputVariablesFile();
+        pafile.setRootDirectory(localSpaceRootDir.getCanonicalPath());
+        File outputFile = new File(pafile.getFullPathName());
 
         if (!outputFile.exists()) {
             throw new ScilabTaskException("Cannot find output variable file.");
@@ -477,14 +479,20 @@ public class ScilabExecutable extends JavaExecutable {
     }
 
     private void closeLogFileOnDebug() {
-        if (!this.paconfig.isDebug()) {
-            return;
-        }
         try {
-            outDebugWriter.close();
-            outFile.close();
+            if (outDebugWriter != null) {
+                outDebugWriter.close();
+            }
         } catch (Exception e) {
 
         }
+        try {
+            if (outFile != null) {
+                outFile.close();
+            }
+        } catch (Exception e) {
+
+        }
+
     }
 }

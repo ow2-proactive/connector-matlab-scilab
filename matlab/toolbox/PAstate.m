@@ -13,7 +13,7 @@
 %
 %       PAstate prints the current state of Scheduler. It prints which jobs
 %       are Pending, Running or Finished. To print the inner state of any
-%       given job, use PAjobState.
+%       given job, use PAjobState. Warning, this function can be time-consuming if the scheduler database is big.
 %
 % See also
 %       PAjobState
@@ -57,11 +57,15 @@
 %   */
 function PAstate()
     sched = PAScheduler;
-    if ~PAisConnected()
-        error('A connection to the ProActive scheduler is not established, see PAconnect');
+    PAensureConnected();
+
+    solver = sched.PAgetsolver();
+    try
+        output = solver.schedulerState();
+    catch
+        PAensureConnected();
+        output = solver.schedulerState();
     end
-    solver = sched.PAgetsolver();  
-    output = solver.schedulerState();
     disp(output);
     if nargout == 1        
         varargout{1} = output;                        

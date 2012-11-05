@@ -49,21 +49,21 @@ for i=1:length(fn)
                 this.Params = {value};
             end
         case 'InputFiles'
-            if iscell(value) || (isnumeric(value) && isempty(value))
+            if isa(value,'PAFile') || (isnumeric(value) && isempty(value))
                 this.InputFiles = value;
-            else
-                this.InputFiles = {value};
+            elseif ischar(value)
+                ff = PAFile();
+                ff.Path = value;
+                this.InputFiles = ff;
             end
-        case 'InputSource'
-            this.InputSource = lower(value);
         case 'OutputFiles'
-            if iscell(value) || (isnumeric(value) && isempty(value))
+            if isa(value,'PAFile') || (isnumeric(value) && isempty(value))
                 this.OutputFiles = value;
-            else
-                this.OutputFiles = {value};
+            elseif ischar(value)
+                ff = PAFile();
+                ff.Path = value;
+                this.OutputFiles = ff;
             end
-        case 'OutputSource'
-            this.OutputSource = lower(value);
         case 'SelectionScript'
             if ischar(value)
                 this.SelectionScript = ['file:' strrep(value, '\', '/')];

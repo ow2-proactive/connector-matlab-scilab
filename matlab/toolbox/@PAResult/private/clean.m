@@ -36,40 +36,10 @@
 %   */
 function clean(R)
 if ~R.cleaned.get()
-    opt = PAoptions();
-    if opt.CleanAllTempFilesDirectly
-        sched = PAScheduler;
-        warning('off');
-        setd = R.cleanDirSet;
-        tsks = sched.PATaskRepository(R.jobid, 'toreceive');
-        if isempty(tsks)
-            for i=1:length(setd)
-                if exist(setd{i},'dir')
-                    try
-                        rmdir(setd{i},'s');
-                    catch
-                    end
-                end
-            end
-        end        
-        R.cleaned.set(1);
-        warning('on');
-    else
-        sched = PAScheduler;
-        warning('off');
-        setf = R.cleanFileSet;
-        for i=1:length(setf)
-            if exist(setf{i},'file')
-                delete(setf{i});
-            end
-        end
-        warning('on');
-        R.cleaned.set(1);        
-    end
-    setd = R.cleanDirSet;
-    tsks = sched.PATaskRepository(R.jobid, 'toreceive');
-        
-    if opt.RemoveJobAfterRetrieve && isempty(tsks)
+
+    opt=PAoptions();
+    trep = org.ow2.proactive.scheduler.ext.matlab.client.embedded.MatlabTaskRepository.getInstance();
+    if opt.RemoveJobAfterRetrieve && trep.allReceived(R.jobid)
         PAjobRemove(R.jobid);
     end
 end

@@ -36,6 +36,12 @@
  */
 package org.ow2.proactive.scheduler.ext.matsci.middleman;
 
+import org.objectweb.proactive.Body;
+import org.objectweb.proactive.InitActive;
+import org.objectweb.proactive.RunActive;
+import org.objectweb.proactive.Service;
+import org.objectweb.proactive.api.PAActiveObject;
+import org.objectweb.proactive.core.body.request.BlockingRequestQueueImpl;
 import org.objectweb.proactive.extensions.vfsprovider.FileSystemServerDeployer;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.DataspaceRegistry;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.data.Pair;
@@ -51,7 +57,7 @@ import java.util.HashMap;
  *
  * @author The ProActive Team
  */
-public class AODataspaceRegistry implements DataspaceRegistry {
+public class AODataspaceRegistry implements DataspaceRegistry, RunActive, InitActive {
 
     /**
      * Input Dataspaces created locally for a specific directory
@@ -77,6 +83,9 @@ public class AODataspaceRegistry implements DataspaceRegistry {
      * debug mode
      */
     private boolean debug;
+    private boolean terminated;
+    private Thread serviceThread;
+    private Body bodyOnThis;
 
     public AODataspaceRegistry() {
 
@@ -95,6 +104,27 @@ public class AODataspaceRegistry implements DataspaceRegistry {
             return;
         }
         MatSciJVMProcessInterfaceImpl.printLog(this, message, true, true);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void terminateFast() {
+        this.terminated = true;
+        BlockingRequestQueueImpl rq = (BlockingRequestQueueImpl) bodyOnThis.getRequestQueue();
+        rq.destroy();
+        try {
+            bodyOnThis.terminate(false);
+        } catch (Exception e) {
+
+        }
+        while (serviceThread.isAlive()) {
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     /** {@inheritDoc} */
@@ -139,4 +169,18 @@ public class AODataspaceRegistry implements DataspaceRegistry {
                 .getVFSRootURL()));
     }
 
+    @Override
+    public void runActivity(Body body) {
+        Service service = new Service(body);
+        while (!terminated) {
+            service.blockingServeOldest();
+        }
+    }
+
+    @Override
+    public void initActivity(Body body) {
+        terminated = false;
+        serviceThread = Thread.currentThread();
+        bodyOnThis = PAActiveObject.getBodyOnThis();
+    }
 }

@@ -137,6 +137,8 @@ elseif length(S) == 2
                 for j=1:m
                     if strcmp(S(2).subs, 'Params') && ~iscell(A)
                         subList(i,j) = builtin('subsasgn',subList(i,j),S(2),{A});
+                    elseif strcmp(S(2).subs, 'InputFiles') || strcmp(S(2).subs, 'OutputFiles')
+                        subList(i,j) = assign(subList(i,j),S(2).subs,A);
                     else
                         subList(i,j) = builtin('subsasgn',subList(i,j),S(2),A);
                     end

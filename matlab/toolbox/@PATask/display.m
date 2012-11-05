@@ -54,9 +54,7 @@ if isequal(get(0,'FormatSpacing'),'compact')
     dp2(X.Params,'Params')
     dp2(X.Description,'Description')
     dp2(X.InputFiles,'InputFiles')
-    dp2(X.InputSource,'InputSource')
     dp2(X.OutputFiles,'OuputFiles')
-    dp2(X.OutputSource,'OutputSource')
     dp2(X.Compose,'Compose')
     dp2(X.SelectionScript,'SelectionScript')
     dp2(X.Static,'Static')
@@ -74,9 +72,7 @@ else
     dp2(X.Params,'Params')
     dp2(X.Description,'Description')
     dp2(X.InputFiles,'InputFiles')
-    dp2(X.InputSource,'InputSource')
     dp2(X.OutputFiles,'OuputFiles')
-    dp2(X.OutputSource,'OutputSource')
     dp2(X.Compose,'Compose')
     dp2(X.SelectionScript,'SelectionScript')
     dp2(X.Static,'Static')
@@ -106,6 +102,9 @@ elseif islogical(Y)
     end
 elseif isnumeric(Y) && ~isempty(Y)
     disp(['    ' name ': ' num2str(Y)]);
+elseif isa(Y,'PAFile')
+    disp(['    ' name ': ']);
+    disp(Y);
 else
     try 
     disp(['    ' name ': ' char(Y)]);

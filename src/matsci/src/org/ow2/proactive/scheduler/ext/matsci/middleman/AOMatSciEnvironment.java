@@ -36,24 +36,39 @@
  */
 package org.ow2.proactive.scheduler.ext.matsci.middleman;
 
+import jdbm.PrimaryHashMap;
+import jdbm.RecordManager;
+import jdbm.RecordManagerFactory;
+import org.apache.commons.vfs.FileSystemException;
 import org.objectweb.proactive.*;
 import org.objectweb.proactive.api.PAActiveObject;
+import org.objectweb.proactive.core.ProActiveException;
+import org.objectweb.proactive.core.ProActiveRuntimeException;
 import org.objectweb.proactive.core.body.request.BlockingRequestQueue;
+import org.objectweb.proactive.core.body.request.BlockingRequestQueueImpl;
 import org.objectweb.proactive.core.body.request.Request;
 import org.objectweb.proactive.core.body.request.RequestFilter;
+import org.objectweb.proactive.core.node.NodeException;
 import org.ow2.proactive.authentication.crypto.CredData;
 import org.ow2.proactive.authentication.crypto.Credentials;
 import org.ow2.proactive.scheduler.common.*;
 import org.ow2.proactive.scheduler.common.exception.*;
 import org.ow2.proactive.scheduler.common.job.*;
-import org.ow2.proactive.scheduler.common.job.JobStatus;
 import org.ow2.proactive.scheduler.common.task.TaskInfo;
 import org.ow2.proactive.scheduler.common.task.TaskResult;
+import org.ow2.proactive.scheduler.common.task.dataspaces.InputAccessMode;
+import org.ow2.proactive.scheduler.common.task.dataspaces.OutputAccessMode;
+import org.ow2.proactive.scheduler.ext.common.util.BitMatrix;
+import org.ow2.proactive.scheduler.ext.common.util.FileUtils;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.MatSciEnvironment;
+import org.ow2.proactive.scheduler.ext.matsci.client.common.PASessionState;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.data.*;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.exception.PASchedulerException;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.exception.PASchedulerExceptionType;
+import org.ow2.proactive.scheduler.ext.matsci.common.data.DSSource;
 import org.ow2.proactive.scheduler.ext.matsci.common.exception.MatSciTaskException;
+import org.ow2.proactive.scheduler.ext.matsci.middleman.proxy.ISchedulerEventListenerExtended;
+import org.ow2.proactive.scheduler.ext.matsci.middleman.proxy.MatSciSchedulerProxy;
 import org.ow2.proactive.scheduler.util.console.SchedulerModel;
 import org.ow2.proactive.utils.FileToBytesConverter;
 import org.ow2.proactive.utils.console.StdOutConsole;
@@ -71,12 +86,22 @@ import java.util.concurrent.TimeoutException;
  * @author The ProActive Team
  */
 public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, Serializable,
-        SchedulerEventListener, InitActive, RunActive, EndActive {
+        ISchedulerEventListenerExtended, InitActive, RunActive {
 
     /**
      * Connection to the scheduler
      */
     protected Scheduler scheduler;
+
+    /**
+     * ProActive stub of the proxy to the scheduler with disconnected mode support
+     */
+    protected MatSciSchedulerProxy sched_proxy;
+
+    /**
+     * real object of the proxy
+     */
+    protected MatSciSchedulerProxy sched_proxy_root;
 
     /**
      * Connection to the scheduler console
@@ -94,19 +119,82 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
     protected String aoid;
 
     /**
-     * Id of the current jobs running
+     * Name of the jobs backup table
      */
-    protected HashMap<String, MatSciJobVolatileInfo<R>> currentJobs = new HashMap<String, MatSciJobVolatileInfo<R>>();
+    public static final String MIDDLEMAN_JOBS_RECORD_NAME = "MiddlemanJobs";
+
+    /**
+     * Name of the jobs backup table being recorded for replay
+     */
+    public static final String MIDDLEMAN_LASTJOBS_RECORD_NAME = "MiddlemanLastJobs";
+
+    /**
+     * Name of the jobs backup table being recorded for replay
+     */
+    public static final String MIDDLEMAN_RECORDEDJOBS_RECORD_NAME = "MiddlemanRecordedJobs";
+
+    /**
+     * Name of the jobs backup table being recorded for replay
+     */
+    public static final String MIDDLEMAN_SEQTOJOBID_RECORD_NAME = "MiddlemanSeq2JobId";
+
+    /**
+     * Name of the jobs backup table being recorded for replay
+     */
+    public static final String SESSION_RECORD_NAME = "MiddlemanSession";
+
+    protected static final int MIN_RECONNECTION_SLEEP = 4;
+
+    protected static final int MAX_RECONNECTION_SLEEP = 128;
+
+    /**
+     * Object handling the middlemanJobsFile connection
+     */
+    protected RecordManager recMan;
+
+    protected static final String TMPDIR = System.getProperty("java.io.tmpdir");
+
+    /**
+     * All jobs which have been submitted
+     */
+    protected PrimaryHashMap<Long, MatSciJobInfo<R>> allJobs;
+
+    /**
+     * jobs being recorded during a session
+     */
+    protected PrimaryHashMap<Long, MatSciJobInfo<R>> recordedJobs;
+
+    /**
+     * ids of jobs from the last session
+     */
+    protected PrimaryHashMap<Long, Long> lastJobs;
+
+    protected PrimaryHashMap<Integer, Long> mappingSeqToJobID;
+
+    protected PrimaryHashMap<Integer, Date> sessions;
+
+    protected PASessionState state = PASessionState.NORMAL;
+
+    protected Date sessionStart = null;
+
+    protected int currentSequenceIndex = 1;
+
+    protected HashMap<Long, BitMatrix> tasksReceived = new HashMap<Long, BitMatrix>();
+
+    /**
+     * Ids of current jobs
+     */
+    protected HashSet<Long> currentJobs = new HashSet<Long>();
 
     /**
      * Ids of finished jobs
      */
-    protected HashMap<String, MatSciJobVolatileInfo<R>> finishedJobs = new HashMap<String, MatSciJobVolatileInfo<R>>();
+    protected HashSet<Long> finishedJobs = new HashSet<Long>();
 
     /**
      * Map storing the pending request for a given job
      */
-    protected HashMap<String, Request> pendingRequests = new HashMap<String, Request>();
+    protected HashMap<Long, Request> pendingRequests = new HashMap<Long, Request>();
 
     /**
      * Index used when executing PAwaitAny (index of the result received)
@@ -116,17 +204,17 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
     /**
      * timeout given when calling waitAny or waitAll
      */
-    protected HashMap<String, Integer> timeouts = new HashMap<String, Integer>();
+    protected HashMap<Long, Integer> timeouts = new HashMap<Long, Integer>();
 
     /**
      * current time when the waitAny or waitAll requests are received
      */
-    protected HashMap<String, Long> beginTimes = new HashMap<String, Long>();
+    protected HashMap<Long, Long> beginTimes = new HashMap<Long, Long>();
 
     /**
      * If a timeout occured before serving waitAny or waitAll
      */
-    protected HashMap<String, Boolean> timeoutOccured = new HashMap<String, Boolean>();
+    protected HashMap<Long, Boolean> timeoutOccured = new HashMap<Long, Boolean>();
 
     /**
      * Debug mode
@@ -134,9 +222,26 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
     protected boolean debug;
 
     /**
+     * tells if the hook used for PAMR reconnection has been deployed or not
+     */
+    private static boolean pamrHookSet = false;
+
+    /**
+     * Credentials used last
+     */
+    private Credentials oldCred;
+
+    /**
+     * Number of seconds slept before two reconnection attempts
+     */
+    protected int reconnectionSleep = MIN_RECONNECTION_SLEEP;
+
+    /**
      * Proactive stub on this AO
      */
     protected AOMatSciEnvironment<R, RL> stubOnThis;
+
+    protected Body bodyOnThis;
 
     /**
      * Is the AO terminated ?
@@ -144,9 +249,16 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
     protected boolean terminated;
 
     /**
-     * The scheduler has been stopped
+     * Thread used for the service of this active object
      */
-    protected boolean schedulerStopped = false;
+    protected Thread serviceThread;
+
+    protected Thread shutDownHook;
+
+    /**
+     * Thread used to ping the scheduler
+     */
+    Thread pingerThread;
 
     /**
      * The scheduler has been killed
@@ -173,8 +285,10 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
      */
     protected String schedulerURL = null;
 
-    /**********************************************************************************************************
-     ************************************** LOGIN AND CONNECTION *********************************************/
+    /**
+     * *******************************************************************************************************
+     * ************************************* LOGIN AND CONNECTION ********************************************
+     */
 
     public AOMatSciEnvironment() {
 
@@ -182,18 +296,63 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
 
     public AOMatSciEnvironment(boolean debug) {
         this.debug = debug;
+        try {
+            recMan = RecordManagerFactory.createRecordManager(getMidlemanJobsFile().getCanonicalPath());
+            allJobs = recMan.hashMap(MIDDLEMAN_JOBS_RECORD_NAME);
+
+            lastJobs = recMan.hashMap(MIDDLEMAN_LASTJOBS_RECORD_NAME);
+            recordedJobs = recMan.hashMap(MIDDLEMAN_RECORDEDJOBS_RECORD_NAME);
+            mappingSeqToJobID = recMan.hashMap(MIDDLEMAN_SEQTOJOBID_RECORD_NAME);
+            sessions = recMan.hashMap(SESSION_RECORD_NAME);
+
+            // we clear the jobs of the n-2 session, if any
+            lastJobs = recMan.hashMap(MIDDLEMAN_LASTJOBS_RECORD_NAME);
+            cleanOldJobs();
+            // after this cleaning the jobs remaining are only the ones from last session, so we record their ids and replace
+            // lastJobs accordingly
+            lastJobs.clear();
+            for (Long id : allJobs.keySet()) {
+                lastJobs.put(id, id);
+            }
+
+            // updating results matrix
+            for (Map.Entry<Long, MatSciJobInfo<R>> entry : allJobs.entrySet()) {
+                Long jid = entry.getKey();
+                MatSciJobInfo jinfo = entry.getValue();
+                jinfo.resetServedTasks();
+                BitMatrix matrix = jinfo.getTaskReceptionMatrix();
+                //System.out.println("Job "+jid+" : "+matrix);
+                tasksReceived.put(jid, matrix);
+                if (matrix.isTrue()) {
+                    finishedJobs.add(jid);
+                } else {
+                    currentJobs.add(jid);
+                }
+            }
+
+            try {
+                recMan.commit();
+            } catch (IOException e) {
+                printLog(e, true, true);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void login(String user, String passwd) throws PASchedulerException {
         login(user, passwd, null);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void login(String user, String passwd, String keyfile) throws PASchedulerException {
 
         if (scheduler != null) {
             try {
                 scheduler.disconnect();
+                sched_proxy.disconnect();
             } catch (Exception e) {
 
             }
@@ -224,11 +383,11 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
             throw new PASchedulerException(e, PASchedulerExceptionType.OtherException);
         }
         initLogin(creds);
-
     }
 
     /**
      * Internal method for login
+     *
      * @param creds
      * @throws PASchedulerException
      */
@@ -237,10 +396,12 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         try {
             try {
                 this.scheduler = auth.login(creds);
+                this.sched_proxy.init(schedulerURL, creds);
 
                 loggedin = true;
+                this.oldCred = creds;
 
-                this.scheduler.addEventListener(stubOnThis, true, SchedulerEvent.JOB_RUNNING_TO_FINISHED,
+                this.sched_proxy.addEventListener(stubOnThis, true, SchedulerEvent.JOB_RUNNING_TO_FINISHED,
                         SchedulerEvent.JOB_PENDING_TO_FINISHED, SchedulerEvent.KILLED,
                         SchedulerEvent.SHUTDOWN, SchedulerEvent.SHUTTING_DOWN, SchedulerEvent.STOPPED,
                         SchedulerEvent.RESUMED, SchedulerEvent.TASK_RUNNING_TO_FINISHED);
@@ -255,14 +416,16 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
             } catch (LoginException e) {
                 throw new PASchedulerException(e, PASchedulerExceptionType.LoginException);
             }
-            schedulerStopped = (status == SchedulerStatus.STOPPED);
             schedulerKilled = (status == SchedulerStatus.KILLED);
 
-            this.model = SchedulerModel.getModel(false);
+            this.model = SchedulerModel.getNewModel(false);
             model.connectConsole(new StdOutConsole());
             model.connectScheduler(this.scheduler);
+            if (shutDownHook != null) {
+                Runtime.getRuntime().removeShutdownHook(shutDownHook);
+            }
 
-            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            shutDownHook = new Thread(new Runnable() {
 
                 public void run() {
                     try {
@@ -272,16 +435,28 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                     } catch (Exception e) {
                     }
                 }
-            }));
+            });
+
+            Runtime.getRuntime().addShutdownHook(shutDownHook);
+
         } catch (PASchedulerException e) {
             throw e;
         } catch (Exception e) {
             throw new PASchedulerException(e, PASchedulerExceptionType.OtherException);
         }
+        // We start a thread that will keep the session alive
+        pingerThread = new Thread(new SchedulerPinger());
+        pingerThread.setDaemon(true);
+        pingerThread.start();
+        if (!currentJobs.isEmpty()) {
+            syncAll();
+        }
 
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void login(String credPath) throws PASchedulerException {
 
         if (scheduler != null) {
@@ -304,13 +479,17 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
 
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isLoggedIn() {
 
         return loggedin && isConnected();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean disconnect() {
         if (scheduler != null) {
             try {
@@ -325,12 +504,46 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
             loggedin = false;
             joined = false;
             schedulerKilled = false;
-            schedulerStopped = false;
         }
         return true;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * This method tries forcefully to reconnect to a lost scheduler, it will not stop until it could reconnect
+     */
+    protected void reconnect() {
+        boolean joined = false;
+        printLog("Connection to " + schedulerURL + " lost, trying to reconnect.", true, true);
+        try {
+            sched_proxy.disconnect();
+        } catch (Exception e) {
+            // this should never occur
+            printLog(e);
+        }
+        while (!joined) {
+            joined = this.join(schedulerURL);
+            try {
+                Thread.sleep(reconnectionSleep);
+                reconnectionSleep = reconnectionSleep * 2;
+                if (reconnectionSleep > MAX_RECONNECTION_SLEEP) {
+                    reconnectionSleep = MAX_RECONNECTION_SLEEP;
+                }
+            } catch (InterruptedException e) {
+                printLog(e);
+                return;
+            }
+        }
+
+        initLogin(oldCred);
+        printLog("Reconnected to " + schedulerURL + " synchronizing jobs...", true, true);
+        syncAll();
+        printLog("jobs synchronized...", true, true);
+
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public boolean isConnected() {
         try {
             return this.scheduler.isConnected();
@@ -339,18 +552,23 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         }
     }
 
-    /** {@inheritDoc} */
-    public void ensureConnection() throws PASchedulerException {
+    /**
+     * {@inheritDoc}
+     */
+    public void ensureConnection() {
         if (!isLoggedIn()) {
             try {
                 this.scheduler.renewSession();
             } catch (Exception e) {
-                throw new PASchedulerException(e);
+                printLog(e);
+                reconnect();
             }
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String getLogFilePath() {
         return MatSciJVMProcessInterfaceImpl.getLogFilePath();
     }
@@ -364,23 +582,65 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
     public void initActivity(Body body) {
         stubOnThis = (AOMatSciEnvironment) PAActiveObject.getStubOnThis();
         aoid = PAActiveObject.getBodyOnThis().getID().getVMID().toString();
-    }
+        terminated = false;
+        serviceThread = Thread.currentThread();
+        bodyOnThis = PAActiveObject.getBodyOnThis();
 
-    public void endActivity(org.objectweb.proactive.Body body) {
+        sched_proxy_root = MatSciSchedulerProxy.getInstance();
         try {
-            if (scheduler != null) {
-                scheduler.disconnect();
-            }
-        } catch (Exception e) {
-
+            sched_proxy = PAActiveObject.turnActive(sched_proxy_root, PAActiveObject.getNode());
+        } catch (ActiveObjectCreationException e) {
+            throw new RuntimeException(e);
+        } catch (NodeException e) {
+            throw new RuntimeException(e);
         }
+
     }
 
-    /** {@inheritDoc} */
+    protected abstract File getMidlemanJobsFile();
+
+    protected InputAccessMode getSourceAsMode(DSSource dss) {
+        InputAccessMode iam = null;
+        switch (dss) {
+            case INPUT:
+                iam = InputAccessMode.TransferFromInputSpace;
+                break;
+            case OUTPUT:
+                iam = InputAccessMode.TransferFromOutputSpace;
+                break;
+            case GLOBAL:
+                iam = InputAccessMode.TransferFromGlobalSpace;
+                break;
+            case AUTOMATIC:
+                iam = InputAccessMode.TransferFromInputSpace;
+                break;
+        }
+        return iam;
+    }
+
+    protected OutputAccessMode getDestinationAsMode(DSSource dss) {
+        OutputAccessMode iam = null;
+        switch (dss) {
+            case OUTPUT:
+                iam = OutputAccessMode.TransferToOutputSpace;
+                break;
+            case GLOBAL:
+                iam = OutputAccessMode.TransferToGlobalSpace;
+                break;
+            case AUTOMATIC:
+                iam = OutputAccessMode.TransferToOutputSpace;
+                break;
+        }
+        return iam;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public boolean join(String url) throws PASchedulerException {
         try {
             auth = SchedulerConnection.join(url);
-        } catch (ConnectionException e) {
+        } catch (Exception e) {
             printLog(e, false, true);
             return false;
         }
@@ -394,14 +654,153 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         return schedulerURL;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isJoined() {
         return joined;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void terminate() {
         this.terminated = true;
+        try {
+            if (scheduler != null) {
+                scheduler.disconnect();
+            }
+        } catch (Throwable e) {
+
+        }
+        try {
+            recMan.close();
+        } catch (Throwable e) {
+        }
+    }
+
+    /**
+     * method used to clean the list of recorded jobs after a call to endSession :
+     * after the end of a session, recorded jobs become handled as other normal jobs (they are not kept after two reboots)
+     */
+    protected void cleanRecordedJobs() {
+        currentSequenceIndex = 1;
+        recordedJobs.clear();
+        mappingSeqToJobID.clear();
+        try {
+            recMan.commit();
+        } catch (IOException e) {
+            printLog(e, true, true);
+        }
+    }
+
+    /**
+     * method used to clean the jobs coming from the n-2 session, we remove all temporary directories and files
+     * we avoid to remove the job data of a job inside the "recordedJobs" list
+     */
+    protected void cleanOldJobs() {
+        for (Long key : lastJobs.keySet()) {
+            if (!recordedJobs.containsKey(key)) {
+                allJobs.remove(key);
+            }
+        }
+        try {
+            recMan.commit();
+        } catch (IOException e) {
+            printLog(e, true, true);
+        }
+    }
+
+    /**
+     * This method tries to terminate the active object with
+     */
+    public void terminateFast() {
+        sched_proxy_root.terminateFast();
+        // if the service thread is locked on a user-level Thread.sleep() :
+        serviceThread.interrupt();
+        // interrupt the pinger thread
+        pingerThread.interrupt();
+        // terminates this runactivity
+        this.terminated = true;
+        // destroy the request queue
+        BlockingRequestQueueImpl rq = (BlockingRequestQueueImpl) bodyOnThis.getRequestQueue();
+        rq.destroy();
+        // kill the body
+        try {
+            bodyOnThis.terminate(false);
+        } catch (Exception e) {
+
+        }
+        stubOnThis = null;
+        while (serviceThread.isAlive()) {
+            try {
+                Thread.sleep(10);
+                // if the service thread is locked on a user-level Thread.sleep() :
+                serviceThread.interrupt();
+            } catch (InterruptedException e) {
+
+                throw new RuntimeException(e);
+            }
+        }
+        this.pendingRequests.clear();
+        this.timeouts.clear();
+        this.timeoutOccured.clear();
+    }
+
+    @Override
+    public Pair<Boolean, String> beginSession() {
+        currentSequenceIndex = 1;
+        if (debug) {
+            printLog("Start recording session");
+        }
+        if (mappingSeqToJobID.isEmpty()) {
+            state = PASessionState.RECORDING;
+            sessionStart = new Date();
+            sessions.put(0, sessionStart);
+            return new Pair<Boolean, String>(true, "Started Recording Session at " + sessionStart);
+        } else {
+            Long jid;
+            int index = 1;
+            state = PASessionState.REPLAYING;
+            while ((jid = mappingSeqToJobID.get(index)) != null) {
+
+                MatSciJobInfo jinfo = recordedJobs.get(jid);
+                jinfo.resetServedTasks();
+                BitMatrix matrix = jinfo.getTaskReceptionMatrix();
+                //System.out.println("Job "+jid+" : "+matrix);
+                tasksReceived.put(jid, matrix);
+                currentJobs.add(jid);
+                if (!matrix.isTrue()) {
+                    // we get the current state of the job if it's not finished yet
+                    syncRetrieve(jinfo);
+                }
+                index++;
+            }
+            try {
+                recMan.commit();
+            } catch (IOException e) {
+                printLog(e, true, true);
+            }
+            if (sessionStart == null) {
+                sessionStart = sessions.get(0);
+            }
+            return new Pair<Boolean, String>(true, "Recalled Recorded Session at " + sessionStart);
+        }
+
+    }
+
+    @Override
+    public Pair<Boolean, String> endSession() {
+        if (state == PASessionState.NORMAL) {
+            return new Pair<Boolean, String>(false, "Recording Session not started, please use beginSession");
+        }
+        if (debug) {
+            printLog("End recording session");
+        }
+        state = PASessionState.NORMAL;
+        cleanRecordedJobs();
+
+        return new Pair<Boolean, String>(true, "Ended Recording Session started at " + sessionStart);
     }
 
     protected void printLog(final String message) {
@@ -435,8 +834,23 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
 
     }
 
-    /**********************************************************************************************************
-     ************************************* JOB STATES AND COMMANDS *******************************************/
+    protected boolean isProActiveExeption(Exception e) {
+        Throwable re = e;
+        do {
+            if (re instanceof ProActiveRuntimeException) {
+                return true;
+            } else if (re instanceof ProActiveException) {
+                return true;
+            }
+            re = re.getCause();
+        } while (re != null);
+        return false;
+    }
+
+    /**
+     * *******************************************************************************************************
+     * ************************************ JOB STATES AND COMMANDS ******************************************
+     */
 
     private ByteArrayOutputStream redirectStreams() {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -451,7 +865,9 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         System.setErr(new PrintStream(new FileOutputStream(FileDescriptor.err)));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String schedulerState() throws PASchedulerException {
         ensureConnection();
         ByteArrayOutputStream baos = redirectStreams();
@@ -460,7 +876,9 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         return baos.toString();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String jobState(String jid) throws PASchedulerException {
         ensureConnection();
         ByteArrayOutputStream baos = redirectStreams();
@@ -469,7 +887,9 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         return baos.toString();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String jobOutput(String jid) throws PASchedulerException {
         ensureConnection();
         ByteArrayOutputStream baos = redirectStreams();
@@ -478,7 +898,9 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         return baos.toString();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String jobResult(String jid) throws PASchedulerException {
         ensureConnection();
         ByteArrayOutputStream baos = redirectStreams();
@@ -487,8 +909,13 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         return baos.toString();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String jobRemove(String jid) throws PASchedulerException {
+        if (state == PASessionState.REPLAYING) {
+            return "Currently in Replaying mode, skipped removal of job " + jid;
+        }
         ensureConnection();
         ByteArrayOutputStream baos = redirectStreams();
         model.remove_(jid);
@@ -496,7 +923,9 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         return baos.toString();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String pauseJob(String jid) throws PASchedulerException {
         ensureConnection();
         ByteArrayOutputStream baos = redirectStreams();
@@ -505,7 +934,9 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         return baos.toString();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String resumeJob(String jid) throws PASchedulerException {
         ensureConnection();
         ByteArrayOutputStream baos = redirectStreams();
@@ -514,7 +945,9 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         return baos.toString();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String killJob(String jid) throws PASchedulerException {
         ensureConnection();
         ByteArrayOutputStream baos = redirectStreams();
@@ -523,7 +956,9 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         return baos.toString();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String taskOutput(String jid, String tname) throws PASchedulerException {
         ensureConnection();
         ByteArrayOutputStream baos = redirectStreams();
@@ -532,7 +967,9 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         return baos.toString();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String taskResult(String jid, String tname) throws PASchedulerException {
         ensureConnection();
         ByteArrayOutputStream baos = redirectStreams();
@@ -541,7 +978,9 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         return baos.toString();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String killTask(String jid, String tname) throws PASchedulerException {
         ensureConnection();
         ByteArrayOutputStream baos = redirectStreams();
@@ -551,52 +990,100 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
     }
 
     /**********************************************************************************************************/
-    /*********************************************** TASKS  **************************************************/
+    /**
+     * ******************************************** TASKS  *************************************************
+     */
+
+    protected MatSciJobInfo getJobInfo(Long jid) {
+        if (allJobs.containsKey(jid)) {
+            return allJobs.get(jid);
+        } else {
+            return recordedJobs.get(jid);
+        }
+    }
+
+    protected void putJobInfo(Long jid, MatSciJobInfo jinfo) {
+        if (state == PASessionState.NORMAL) {
+            allJobs.put(jid, jinfo);
+        } else {
+            recordedJobs.put(jid, jinfo);
+        }
+    }
+
+    protected void syncAll() throws PASchedulerException {
+        for (Long jid : currentJobs) {
+            MatSciJobInfo jinfo = allJobs.get(jid);
+            syncRetrieve(jinfo);
+        }
+    }
 
     /**
      * Updates synchronously the list of results from the given job
      */
-    protected void syncRetrieve(MatSciJobPermanentInfo jpinfo) throws PASchedulerException {
+    protected void syncRetrieve(MatSciJobInfo jinfo) throws PASchedulerException {
         ensureConnection();
-        String jid = jpinfo.getJobId();
-        MatSciJobVolatileInfo jinfo = new MatSciJobVolatileInfo(jpinfo);
-        currentJobs.put(jid, jinfo);
+        Long jid = Long.parseLong(jinfo.getJobId());
+        if (debug) {
+            printLog("Sync updating results of job " + jid);
+        }
+        //currentJobs.put(jid, jinfo);
         JobResult jResult = null;
         try {
-            jResult = scheduler.getJobResult(jid);
+            boolean doThing = true;
+            while (doThing) {
+                try {
+                    jResult = scheduler.getJobResult("" + jid);
+                    doThing = false;
+                } catch (ProActiveRuntimeException re) {
+                    stubOnThis.ensureConnection();
+                    return;
+                } catch (UnknownJobException uje) {
+                    printLog("[WARNING] : job " + jid + " is unknown, maybe it has been removed?", true, true);
+                    return;
+                }
+            }
         } catch (SchedulerException e) {
-            e.printStackTrace();
+            printLog(e, true, true);
         }
         if (jResult != null) {
             // full update if the job is finished
             updateJobResult(jid, jResult, jResult.getJobInfo().getStatus());
         }
         // partial update otherwise
-        for (String tname : jpinfo.getTaskNames()) {
+        TreeSet<String> tnames = jinfo.getTaskNames();
+        for (String tname : tnames) {
             TaskResult tres = null;
             try {
-                tres = scheduler.getTaskResult(jid, tname);
+                boolean doThing = true;
+                while (doThing) {
+                    try {
+                        tres = scheduler.getTaskResult("" + jid, tname);
+                        doThing = false;
+                    } catch (ProActiveRuntimeException re) {
+                        stubOnThis.ensureConnection();
+                        return;
+                    }
+                }
             } catch (NotConnectedException e) {
+                printLog(e);
                 e.printStackTrace();
             } catch (UnknownJobException e) {
+                printLog(e);
                 e.printStackTrace();
+                // if this happens it means that the scheduler has been restarted clean
             } catch (UnknownTaskException e) {
-                // ignore this exception
+                printLog(e);
+                // if this happens it means that the scheduler has been restarted clean
             } catch (PermissionException e) {
+                printLog(e);
                 e.printStackTrace();
             }
             if (tres != null) {
+
                 updateTaskResult(null, tres, jid, tname);
             }
         }
 
-    }
-
-    /** {@inheritDoc} */
-    public boolean retrieve(MatSciJobPermanentInfo jpinfo) {
-
-        syncRetrieve(jpinfo);
-        return true;
     }
 
     /**
@@ -606,23 +1093,23 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
      * @param jResult
      * @param status
      */
-    protected void updateJobResult(String jid, JobResult jResult, JobStatus status) {
+    protected void updateJobResult(Long jid, JobResult jResult, JobStatus status) {
         // Getting the Job result from the Scheduler
-        MatSciJobVolatileInfo jinfo = currentJobs.get(jid);
+        MatSciJobInfo jinfo = getJobInfo(jid);
         if (debug) {
-            printLog("Updating results of job: " + jid + "(" + jid + ") : " + status);
+            printLog("Updating results of job " + jid + " : " + status);
         }
         jinfo.setStatus(MatSciJobStatus.getJobStatus(status.toString()));
         jinfo.setJobFinished(true);
 
         Throwable mainException = null;
-        if (schedulerStopped || schedulerKilled) {
+        if (schedulerKilled) {
             mainException = new IllegalStateException("The Scheduler has been killed.");
         } else if (status == JobStatus.KILLED) {
             mainException = new IllegalStateException("The Job " + jid + " has been killed.");
         }
 
-        if (schedulerStopped || schedulerKilled || status == JobStatus.KILLED || status == JobStatus.CANCELED) {
+        if (schedulerKilled || status == JobStatus.KILLED || status == JobStatus.CANCELED) {
 
             int depth = jinfo.getDepth();
             // Getting the task results from the job result
@@ -635,10 +1122,12 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                 if (debug) {
                     printLog("Updating job " + jResult.getName() + "(" + jid + ") tasks ");
                 }
+                BitMatrix received = tasksReceived.get(jid);
 
                 // Iterating over the task results
                 for (String tname : task_results.keySet()) {
-                    if (!jinfo.isReceivedResult(tname)) {
+                    Pair<Integer, Integer> ids = MatSciJobInfo.computeIdsFromTName(tname);
+                    if (!received.get(ids.getX(), ids.getY())) {
                         TaskResult res = task_results.get(tname);
                         if (debug) {
                             printLog("Looking for result of task: " + tname);
@@ -664,10 +1153,10 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
      * @param jid           job id
      * @param tname         name of the task
      */
-    protected void updateTaskResult(Throwable mainException, TaskResult res, String jid, String tname) {
-        MatSciJobVolatileInfo jinfo = currentJobs.get(jid);
+    protected void updateTaskResult(Throwable mainException, TaskResult res, Long jid, String tname) {
+        MatSciJobInfo jinfo = getJobInfo(jid);
 
-        boolean intermediate = !jinfo.getFinalTasksNames().contains(tname);
+        boolean intermediate = !jinfo.getFinalTaskNames().contains(tname);
         if (debug) {
             if (intermediate) {
                 printLog("Looking for result of intermediate task " + tname + " for job " + jid);
@@ -686,7 +1175,11 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         if (res == null && mainException == null) {
             ex = new RuntimeException("Task id = " + tname + " was not returned by the scheduler");
         } else if (res != null && res.hadException()) {
-            ex = res.getException();
+            if (res.getException() instanceof MatSciTaskException) {
+                ex = res.getException();
+            } else {
+                ex = new PASchedulerException(res.getException());
+            }
         }
         if (ex != null) {
             if (debug) {
@@ -719,12 +1212,30 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                     //}
                 } catch (Throwable e2) {
                     // should never occur
-                    jinfo.setException(tname, e2);
+                    jinfo.setException(tname, new PASchedulerException(e2));
                     //jobDidNotSucceed(jid, e2, true, logs);
                 }
             }
         }
+        if (jinfo.getConf().getSharedPushPublicUrl() != null) {
+            try {
+                sched_proxy.pullData("" + jid, tname, null);
+            } catch (FileSystemException e) {
+                throw new PASchedulerException("Exception Occured while transfering results of task " +
+                    tname + " from job " + jid, e);
+            }
+        }
+
         jinfo.addReceivedTask(tname);
+        Pair<Integer, Integer> ids = MatSciJobInfo.computeIdsFromTName(tname);
+        tasksReceived.get(jid).set(ids.getX(), ids.getY(), true);
+        putJobInfo(jid, jinfo);
+        //System.out.println("Job "+jid+" : "+tasksReceived.get(jid));
+        try {
+            recMan.commit();
+        } catch (IOException e) {
+            printLog(e, true, true);
+        }
 
     }
 
@@ -732,16 +1243,19 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
      * gets the result of the given task (the result is already received)
      * Converts exceptions if any occurred
      *
-     * @param jid id of the job
+     * @param jid   id of the job
      * @param tname name of the task
      * @return an object containing the result, exception and logs
      */
-    protected abstract ResultsAndLogs getResultOfTask(String jid, String tname);
+    protected abstract ResultsAndLogs getResultOfTask(Long jid, String tname);
 
-    /** {@inheritDoc} */
-    public UnReifiable<Pair<ResultsAndLogs, Integer>> waitAny(String jid, ArrayList<String> tnames,
+    /**
+     * {@inheritDoc}
+     */
+    public UnReifiable<Pair<ResultsAndLogs, Integer>> waitAny(String sjid, ArrayList<String> tnames,
             Integer timeout) throws Exception {
         try {
+            Long jid = Long.parseLong(sjid);
             Boolean tout = timeoutOccured.get(jid);
             if (tout != null && tout) {
                 timeoutOccured.put(jid, false);
@@ -755,10 +1269,13 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         }
     }
 
-    /** {@inheritDoc} */
-    public UnReifiable<ArrayList<ResultsAndLogs>> waitAll(String jid, ArrayList<String> tnames,
+    /**
+     * {@inheritDoc}
+     */
+    public UnReifiable<ArrayList<ResultsAndLogs>> waitAll(String sjid, ArrayList<String> tnames,
             Integer timeout) throws Exception {
         try {
+            Long jid = Long.parseLong(sjid);
             Boolean tout = timeoutOccured.get(jid);
             if (tout != null && tout) {
                 timeoutOccured.put(jid, false);
@@ -775,13 +1292,21 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         }
     }
 
-    /** {@inheritDoc} */
-    public UnReifiable<ArrayList<Boolean>> areAwaited(String jid, ArrayList<String> tnames) {
+    /**
+     * {@inheritDoc}
+     */
+    public UnReifiable<ArrayList<Boolean>> areAwaited(String sjid, ArrayList<String> tnames) {
         try {
-            if (currentJobs.containsKey(jid)) {
-                return new UnReifiable<ArrayList<Boolean>>(currentJobs.get(jid).areAwaited(tnames));
-            } else if (finishedJobs.containsKey(jid)) {
-                return new UnReifiable<ArrayList<Boolean>>(finishedJobs.get(jid).areAwaited(tnames));
+            Long jid = Long.parseLong(sjid);
+            if (currentJobs.contains(jid)) {
+                return new UnReifiable<ArrayList<Boolean>>(tasksReceived.get(jid).not(
+                        MatSciJobInfo.computeLinesFromTNames(tnames)));
+            } else if (finishedJobs.contains(jid)) {
+                ArrayList<Boolean> answer = new ArrayList<Boolean>(tnames.size());
+                for (int i = 0; i < tnames.size(); i++) {
+                    answer.add(new Boolean(false));
+                }
+                return new UnReifiable<ArrayList<Boolean>>(answer);
             } else {
                 throw new IllegalArgumentException("Unknown job " + jid);
             }
@@ -798,6 +1323,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
      * @see org.ow2.proactive.scheduler.common.SchedulerEventListener#schedulerStateUpdatedEvent(org.ow2.proactive.scheduler.common.SchedulerEvent)
      */
     public void schedulerStateUpdatedEvent(SchedulerEvent eventType) {
+        // we don't react to these events any more, if the scheduler is stopped, we wait that it resumes
         switch (eventType) {
             case KILLED:
             case SHUTDOWN:
@@ -806,27 +1332,19 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                     printLog("Received " + eventType.toString() + " event");
                 }
                 schedulerKilled = true;
-                for (String jid : currentJobs.keySet()) {
-                    updateJobResult(jid, null, JobStatus.KILLED);
-                }
+
                 break;
             case STOPPED:
                 if (debug) {
                     printLog("Received " + eventType.toString() + " event");
                 }
-                for (String jid : currentJobs.keySet()) {
-                    updateJobResult(jid, null, JobStatus.KILLED);
-                }
-                schedulerStopped = true;
                 break;
             case RESUMED:
                 if (debug) {
                     printLog("Received " + eventType.toString() + " event");
                 }
-                schedulerStopped = false;
                 break;
         }
-
     }
 
     /**
@@ -834,7 +1352,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
      */
     public void jobStateUpdatedEvent(NotificationData<JobInfo> notification) {
         JobInfo info = notification.getData();
-        String jid = info.getJobId().value();
+        Long jid = Long.parseLong(info.getJobId().value());
         switch (notification.getEventType()) {
 
             case JOB_PENDING_TO_FINISHED:
@@ -844,7 +1362,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                     }
 
                     // Filtering the right job
-                    if (!currentJobs.containsKey(jid)) {
+                    if (!currentJobs.contains(jid)) {
                         return;
                     }
 
@@ -859,13 +1377,23 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                     }
 
                     // Filtering the right job
-                    if (!currentJobs.containsKey(jid)) {
+                    if (!currentJobs.contains(jid)) {
                         return;
                     }
 
                     JobResult jResult = null;
                     try {
-                        jResult = scheduler.getJobResult(jid);
+                        boolean doThing = true;
+                        while (doThing) {
+                            try {
+                                jResult = scheduler.getJobResult("" + jid);
+                                doThing = false;
+                            } catch (ProActiveRuntimeException re) {
+                                stubOnThis.ensureConnection();
+                                return;
+                            }
+                        }
+
                     } catch (SchedulerException e) {
                         e.printStackTrace();
                     }
@@ -880,12 +1408,21 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                     }
 
                     // Filtering the right job
-                    if (!currentJobs.containsKey(jid)) {
+                    if (!currentJobs.contains(jid)) {
                         return;
                     }
                     JobResult jResult = null;
                     try {
-                        jResult = scheduler.getJobResult(jid);
+                        boolean doThing = true;
+                        while (doThing) {
+                            try {
+                                jResult = scheduler.getJobResult("" + jid);
+                                doThing = false;
+                            } catch (ProActiveRuntimeException re) {
+                                stubOnThis.ensureConnection();
+                                return;
+                            }
+                        }
                     } catch (SchedulerException e) {
                         e.printStackTrace();
                     }
@@ -911,26 +1448,48 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
             case TASK_RUNNING_TO_FINISHED:
                 TaskInfo info = notification.getData();
                 String tnm = info.getName();
-                String jid = info.getJobId().value();
+                Long jid = Long.parseLong(info.getJobId().value());
                 if (debug) {
                     printLog("Received task " + tnm + " of Job " + jid + " finished event...");
                 }
                 // Filtering the right job
-                if (!currentJobs.containsKey(jid)) {
+                if (!currentJobs.contains(jid)) {
                     return;
                 }
                 TaskResult tres = null;
 
                 try {
-                    tres = scheduler.getTaskResult(jid, tnm);
+                    boolean doThing = true;
+                    while (doThing) {
+                        try {
+                            tres = scheduler.getTaskResult("" + jid, tnm);
+                            doThing = false;
+                        } catch (ProActiveRuntimeException re) {
+                            stubOnThis.ensureConnection();
+                            return;
+                        }
+                    }
+
                 } catch (NotConnectedException e) {
+                    // If this happens, it means either a bug, or that the scheduler has been restarted clean, between
+                    // the moment that the notification sent and it has been handled
                     e.printStackTrace();
+                    return;
                 } catch (UnknownJobException e) {
+                    // If this happens, it means either a bug, or that the scheduler has been restarted clean, between
+                    // the moment that the notification sent and it has been handled
                     e.printStackTrace();
+                    return;
                 } catch (UnknownTaskException e) {
+                    // If this happens, it means either a bug, or that the scheduler has been restarted clean, between
+                    // the moment that the notification sent and it has been handled
                     e.printStackTrace();
+                    return;
                 } catch (PermissionException e) {
+                    // If this happens, it means either a bug, or that the scheduler has been restarted clean, between
+                    // the moment that the notification sent and it has been handled
                     e.printStackTrace();
+                    return;
                 }
                 updateTaskResult(null, tres, jid, tnm);
         }
@@ -941,6 +1500,16 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
      */
     public void usersUpdatedEvent(NotificationData<UserIdentification> notification) {
         // TODO Auto-generated method stub
+    }
+
+    @Override
+    public void pullDataFinished(String jobId, String taskName, String localFolderPath) {
+        // TODO implement the proxy's automaticTransfer mode
+    }
+
+    @Override
+    public void pullDataFailed(String jobId, String taskName, String remoteFolder_URL, Throwable t) {
+        // TODO implement the proxy's automaticTransfer mode
     }
 
     /**********************************************************************************************************/
@@ -981,7 +1550,9 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                         printLog("Request received : " + randomRequest.getMethodName());
                     }
                     if (randomRequest.getMethodName().equals("waitAll")) {
-                        String jid = (String) randomRequest.getParameter(0);
+                        String sjid = (String) randomRequest.getParameter(0);
+                        ArrayList<String> tnames = (ArrayList<String>) randomRequest.getParameter(1);
+                        Long jid = Long.parseLong(sjid);
                         tout = (Integer) randomRequest.getParameter(2);
                         if (tout > 0) {
                             timeouts.put(jid, tout);
@@ -992,12 +1563,13 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
 
                         pendingRequests.put(jid, randomRequest);
                         if (debug) {
-                            printLog("Removed " + randomRequest.getMethodName() + " for job=" + jid +
-                                " request from the queue");
+                            printLog("Removed " + randomRequest.getMethodName() + "(" + tnames +
+                                ") for job=" + jid + " request from the queue");
                         }
                         service.blockingRemoveOldest("waitAll");
                     } else if (randomRequest.getMethodName().equals("waitAny")) {
-                        String jid = (String) randomRequest.getParameter(0);
+                        String sjid = (String) randomRequest.getParameter(0);
+                        Long jid = Long.parseLong(sjid);
                         tout = (Integer) randomRequest.getParameter(2);
                         if (tout > 0) {
                             timeouts.put(jid, tout);
@@ -1013,10 +1585,14 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                         service.blockingRemoveOldest("waitAny");
                     }
                     if (service.hasRequestToServe()) {
+                        String mname = service.getOldest().getMethodName();
+                        // TODO : do we need to make sure that only one method "ensureConnection" is in the queue at the same time ?
+                        if (debug) {
+                            printLog("Serving " + mname);
+                        }
                         service.serveOldest();
                     }
                 }
-
                 // we maybe serve the pending waitXXX method if there is one and if the necessary results are collected
                 maybeServePending(service);
             } catch (Throwable ex) {
@@ -1033,26 +1609,28 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
     }
 
     /**
-     * computes the timeout required by active timed-out requests
+     * computes the minimum timeout required by active timed-out requests
+     *
      * @return
      */
     private int computeTimeoutServing() {
-        int timeout = Integer.MAX_VALUE;
-        for (String jid : timeouts.keySet()) {
+        int min_timeout = Integer.MAX_VALUE;
+        for (Long jid : timeouts.keySet()) {
             Integer tout = timeouts.get(jid);
-            if ((tout != null) && (tout < timeout)) {
-                timeout = tout;
+            if ((tout != null) && (tout < min_timeout)) {
+                min_timeout = tout;
             }
         }
-        return timeout;
+        return min_timeout;
     }
 
     /**
-     * substract a waited time to stored requests timeouts
+     * substracts the amount of time actually waited to each stored requests timeouts
+     *
      * @param time time waited
      */
     private void substractTimeout(int time) {
-        for (String jid : timeouts.keySet()) {
+        for (Long jid : timeouts.keySet()) {
             Integer tout = timeouts.get(jid);
             if (tout != null) {
                 timeouts.put(jid, tout - time);
@@ -1067,50 +1645,54 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
      * @param service
      */
     protected void maybeServePending(Service service) {
-        if (!currentJobs.isEmpty()) {
-            Map<String, MatSciJobVolatileInfo<R>> clonedJobIds = new HashMap<String, MatSciJobVolatileInfo<R>>(
-                finishedJobs);
-            // for the rare case that the scheduler is restarted with a clean database, we must make sure that the current jobs are not overwritten by old finished jobs ids, so we construct the hashmap this way
-            clonedJobIds.putAll(currentJobs);
-            for (Map.Entry<String, MatSciJobVolatileInfo<R>> entry : clonedJobIds.entrySet()) {
-                MatSciJobVolatileInfo<R> jinfo = entry.getValue();
-                String jid = entry.getKey();
-                Request req = pendingRequests.get(jid);
-                if (req != null) {
-                    if (req.getMethodName().equals("waitAll")) {
-                        ArrayList<String> tnames = (ArrayList<String>) req.getParameter(1);
-                        Integer tout = timeouts.get(jid);
-                        boolean to = (tout != null) &&
-                            (System.currentTimeMillis() - beginTimes.get(jid) >= tout);
-                        if (schedulerStopped || schedulerKilled || to || jinfo.areAllReceived(tnames)) {
-                            beginTimes.put(jid, null);
-                            timeouts.put(jid, null);
-                            timeoutOccured.put(jid, to);
-                            pendingRequests.put(jid, null);
-                            if (debug) {
-                                printLog("serving " + req.getMethodName() + " for job " + jid);
-                            }
-                            service.serve(req);
-                        }
-                    } else if (req.getMethodName().equals("waitAny")) {
-                        ArrayList<String> tnames = (ArrayList<String>) req.getParameter(1);
-                        Integer tout = timeouts.get(jid);
-                        boolean to = (tout != null) &&
-                            (System.currentTimeMillis() - beginTimes.get(jid) >= tout);
-                        int any = jinfo.isAnyReceivedResult(tnames);
-                        if (schedulerStopped || schedulerKilled || to || any >= 0) {
-                            beginTimes.put(jid, null);
-                            timeouts.put(jid, null);
-                            timeoutOccured.put(jid, to);
-                            pendingRequests.put(jid, null);
-                            if (debug) {
-                                printLog("serving " + req.getMethodName() + " for job " + jid);
-                            }
-                            lastPAWaitAnyIndex = any;
-                            service.serve(req);
-                        }
+        boolean noneServed = true;
+        for (Map.Entry<Long, Request> entry : ((HashMap<Long, Request>) pendingRequests.clone()).entrySet()) {
+            Long jid = entry.getKey();
+            Request req = entry.getValue();
+            if (req.getMethodName().equals("waitAll")) {
+                ArrayList<String> tnames = (ArrayList<String>) req.getParameter(1);
+                Integer tout = timeouts.get(jid);
+                boolean to = (tout != null) && (System.currentTimeMillis() - beginTimes.get(jid) >= tout);
+                List<Integer> lines = MatSciJobInfo.computeLinesFromTNames(tnames);
+                //printLog("lines :"+lines);
+                boolean ok = tasksReceived.get(jid).areLinesTrue(lines);
+                //printLog("bitset:"+tasksReceived.get(jid));
+                //printLog("ok :"+ok);
+                if (to || ok) {
+                    beginTimes.remove(jid);
+                    timeouts.remove(jid);
+                    timeoutOccured.put(jid, to);
+                    pendingRequests.remove(jid);
+                    if (debug) {
+                        printLog("serving " + req.getMethodName() + "(" + tnames + ") for job " + jid);
                     }
+                    noneServed = false;
+                    service.serve(req);
                 }
+            } else if (req.getMethodName().equals("waitAny")) {
+                ArrayList<String> tnames = (ArrayList<String>) req.getParameter(1);
+                Integer tout = timeouts.get(jid);
+                boolean to = (tout != null) && (System.currentTimeMillis() - beginTimes.get(jid) >= tout);
+                int any = tasksReceived.get(jid).isAnyLineTrue(MatSciJobInfo.computeLinesFromTNames(tnames));
+                if (to || any >= 0) {
+                    beginTimes.remove(jid);
+                    timeouts.remove(jid);
+                    timeoutOccured.put(jid, to);
+                    pendingRequests.remove(jid);
+                    if (debug) {
+                        printLog("serving " + req.getMethodName() + "(" + any + ") for job " + jid);
+                    }
+                    lastPAWaitAnyIndex = any;
+                    noneServed = false;
+                    service.serve(req);
+                }
+            }
+        }
+        if (noneServed) {
+            try {
+                Thread.sleep(5);
+            } catch (InterruptedException e) {
+                return;
             }
         }
     }
@@ -1139,6 +1721,58 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                 return false;
             }
             return true;
+        }
+    }
+
+    protected class SchedulerPinger implements Runnable {
+
+        private static final int KEEP_ALIVE_TIME = 120000;
+
+        /**
+         * we use a private Schuduler connection because two different thread cannot use the same scheduler connection
+         */
+        private Scheduler scheduler_itf_for_pinger;
+
+        @Override
+        public void run() {
+            try {
+                scheduler_itf_for_pinger = auth.login(oldCred);
+            } catch (LoginException e) {
+                // should never occur
+                printLog(e, true, true);
+                return;
+            } catch (AlreadyConnectedException e) {
+                // should never occur
+                printLog(e, true, true);
+                return;
+            }
+            while (true) {
+                try {
+                    synchronized (scheduler) {
+                        scheduler_itf_for_pinger.renewSession();
+                    }
+                } catch (RuntimeException e) {
+                    // scheduler connection lost
+                    printLog(e);
+                    // if we lost connection to the scheduler we call the ensureConnection method
+                    // this method will reconnect only if necessary (i.e. if it is not has been reconnected by another call)
+                    synchronized (stubOnThis) {
+                        stubOnThis.ensureConnection();
+                    }
+                    return;
+                } catch (NotConnectedException e) {
+                    printLog(e);
+                    synchronized (stubOnThis) {
+                        stubOnThis.ensureConnection();
+                    }
+                    return;
+                }
+                try {
+                    Thread.sleep(KEEP_ALIVE_TIME);
+                } catch (InterruptedException e) {
+                    return;
+                }
+            }
         }
     }
 

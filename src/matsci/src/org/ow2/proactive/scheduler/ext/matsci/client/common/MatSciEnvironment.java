@@ -36,7 +36,7 @@
  */
 package org.ow2.proactive.scheduler.ext.matsci.client.common;
 
-import org.ow2.proactive.scheduler.ext.matsci.client.common.data.MatSciJobPermanentInfo;
+import org.ow2.proactive.scheduler.ext.matsci.client.common.data.MatSciClientJobInfo;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.data.Pair;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.data.ResultsAndLogs;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.data.UnReifiable;
@@ -152,6 +152,18 @@ public interface MatSciEnvironment extends Remote {
     public void terminate() throws RemoteException;
 
     /**
+     * Starts Recording session or reload previous one
+     * @throws RemoteException
+     */
+    public Pair<Boolean, String> beginSession() throws RemoteException;
+
+    /**
+     * Ends recording session
+     * @throws RemoteException
+     */
+    public Pair<Boolean, String> endSession() throws RemoteException;
+
+    /**
      * Asks the environment to submit a job to the scheduler
      * @param config the PAsolve job configuration
      * @param taskConfigs each individual task configuration
@@ -160,9 +172,8 @@ public interface MatSciEnvironment extends Remote {
      * @throws java.net.MalformedURLException if script urls are wrong
      * @throws java.rmi.RemoteException
      */
-    public MatSciJobPermanentInfo solve(PASolveMatSciGlobalConfig config,
-            PASolveMatSciTaskConfig[][] taskConfigs) throws PASchedulerException, MalformedURLException,
-            RemoteException;
+    public MatSciClientJobInfo solve(PASolveMatSciGlobalConfig config, PASolveMatSciTaskConfig[][] taskConfigs)
+            throws PASchedulerException, MalformedURLException, RemoteException;
 
     /**
      * waits for the first computed task among a given list, with an optonal timeout
@@ -197,15 +208,6 @@ public interface MatSciEnvironment extends Remote {
      */
     public UnReifiable<ArrayList<Boolean>> areAwaited(String jid, ArrayList<String> tnames)
             throws RemoteException;
-
-    /**
-     * Try to retrieve a previously submitted job (disconnected mode)
-     * @param jpinfo
-     * @return
-     * @throws org.ow2.proactive.scheduler.ext.matsci.client.common.exception.PASchedulerException
-     * @throws java.rmi.RemoteException
-     */
-    public boolean retrieve(MatSciJobPermanentInfo jpinfo) throws PASchedulerException, RemoteException;
 
     /**
      * Current state of the scheduler

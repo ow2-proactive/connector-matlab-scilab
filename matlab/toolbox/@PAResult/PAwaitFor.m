@@ -84,10 +84,12 @@ for i=1:s(1)
 end
 if ~allRes
     if exist('timeout','var') == 1
-        unrei = solver.waitAll(jobid,taskids,java.lang.Integer(timeout));
+        tout = java.lang.Integer(timeout);
     else
-        unrei = solver.waitAll(jobid,taskids,java.lang.Integer(-1));
+        tout = java.lang.Integer(-1);
     end
+    unrei = solver.waitAll(jobid,taskids,tout);
+
     answers = unrei.get();
 end
 A = cell(i,j);
@@ -155,8 +157,8 @@ end
 
 function resultSet(R)
 R.resultSet.set(true);
-sched = PAScheduler;
-sched.PATaskRepository(R.jobid, R.taskid, 'received');
+trep = org.ow2.proactive.scheduler.ext.matlab.client.embedded.MatlabTaskRepository.getInstance();
+trep.receivedTask(R.jobid,R.taskid);
 clean(R);
 end
 

@@ -1,11 +1,14 @@
 function PAkillTask(jobid,taskname)
-    global ('PA_connected','PA_solver');
-    if ~PAisConnected()
-        error('A connection to the ProActive scheduler is not established, see PAconnect');
-    end
+    global ('PA_solver');
+    PAensureConnected();
     if or(type(jobid)==[1 5 8]) then
         jobid = string(jobid);
-    end    
-    txt = jinvoke(PA_solver,'killTask',jobid,taskname);    
+    end
+    try
+        txt = jinvoke(PA_solver,'killTask',jobid,taskname);
+    catch
+        PAensureConnected();
+        txt = jinvoke(PA_solver,'killTask',jobid,taskname);
+    end
     printf('%s\n',txt);
 endfunction

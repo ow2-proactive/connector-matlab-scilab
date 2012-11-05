@@ -97,12 +97,6 @@ else
 end
 if ~ok disp(msg),return; end
 if exist('timeout', 'var')
-    [ok,msg] = TestDummyDisconnected(nbiter,timeout);
-else
-    [ok,msg] = TestDummyDisconnected(nbiter);
-end
-if ~ok disp(msg),return; end
-if exist('timeout', 'var')
     [ok,msg] = TestTopology(nbiter,timeout);
 else
     [ok,msg] = TestTopology(nbiter);

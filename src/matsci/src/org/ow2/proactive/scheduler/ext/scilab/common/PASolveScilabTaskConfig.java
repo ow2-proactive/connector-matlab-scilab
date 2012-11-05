@@ -36,7 +36,12 @@
  */
 package org.ow2.proactive.scheduler.ext.scilab.common;
 
+import org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveFile;
 import org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveMatSciTaskConfig;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 
 /**
@@ -59,7 +64,7 @@ public class PASolveScilabTaskConfig extends PASolveMatSciTaskConfig {
     /**
      * list of files used to store the definition of the function
      */
-    private String[] functionVarFiles;
+    private List<PASolveFile> functionVarFiles = new ArrayList<PASolveFile>();
 
     /**
      * name of the output variables used (obsolete)
@@ -94,12 +99,24 @@ public class PASolveScilabTaskConfig extends PASolveMatSciTaskConfig {
         this.functionDefinition = functionDefinition;
     }
 
-    public String[] getFunctionVarFiles() {
+    public List<PASolveFile> getFunctionVarFiles() {
         return functionVarFiles;
     }
 
-    public void setFunctionVarFiles(String[] functionVarFiles) {
-        this.functionVarFiles = functionVarFiles;
+    public void setFunctionVarFiles(PASolveFile[] functionVarFiles) {
+        this.functionVarFiles = Arrays.asList(functionVarFiles);
+    }
+
+    public void addFunctionVarFile(PASolveFile file) {
+        this.functionVarFiles.add(file);
+    }
+
+    public void addFunctionVarFile(String pathName) {
+        functionVarFiles.add(new PASolveFile(pathName));
+    }
+
+    public void addFunctionVarFile(String relativePath, String name) {
+        functionVarFiles.add(new PASolveFile(relativePath, name));
     }
 
 }

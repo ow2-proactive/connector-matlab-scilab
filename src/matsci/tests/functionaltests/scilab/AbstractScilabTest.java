@@ -153,9 +153,7 @@ public class AbstractScilabTest extends FunctionalTest {
 
     }
 
-    protected void runCommand(String testName, int nb_iter) throws Exception {
-        // Start the scheduler
-        start();
+    protected ProcessBuilder initCommand(String testName, int nb_iter) throws Exception {
         ProcessBuilder pb = new ProcessBuilder();
         pb.directory(sci_tb_home);
         pb.redirectErrorStream(true);
@@ -173,10 +171,18 @@ public class AbstractScilabTest extends FunctionalTest {
                     .getCanonicalPath(), "-args", schedURI.toString(), credFile.toString(), "" + nb_iter,
                     testName, "" + runAsMe);
         }
+        return pb;
+    }
+
+    protected void runCommand(String testName, int nb_iter) throws Exception {
+        // Start the scheduler
+        start();
+        ProcessBuilder pb = initCommand(testName, nb_iter);
         System.out.println("Running command : " + pb.command());
 
         File okFile = new File(sci_tb_home + fs + "ok.tst");
         File koFile = new File(sci_tb_home + fs + "ko.tst");
+        File reFile = new File(sci_tb_home + fs + "re.tst");
 
         if (okFile.exists()) {
             okFile.delete();
@@ -184,6 +190,9 @@ public class AbstractScilabTest extends FunctionalTest {
 
         if (koFile.exists()) {
             koFile.delete();
+        }
+        if (reFile.exists()) {
+            reFile.delete();
         }
 
         Process p = pb.start();
@@ -196,6 +205,11 @@ public class AbstractScilabTest extends FunctionalTest {
         //ProcessResult pr = IOTools.blockingGetProcessResult(p, 580000);
 
         p.waitFor();
+        if (reFile.exists()) {
+            // we restart in case of JIMS loading bug
+            runCommand(testName, nb_iter);
+            return;
+        }
 
         assertTrue(testName + " passed", okFile.exists());
     }

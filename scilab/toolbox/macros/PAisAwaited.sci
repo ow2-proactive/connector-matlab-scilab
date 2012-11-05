@@ -10,7 +10,12 @@ function tf=PAisAwaited(l)
             R = l.matrix(i).entries;            
             jinvoke(taskids,'add',R.taskid); 
         end
-        unrei = jinvoke(PA_solver,'areAwaited',jobid, taskids);        
+        try
+            unrei = jinvoke(PA_solver,'areAwaited',jobid, taskids);
+        catch
+            PAensureConnected();
+            unrei = jinvoke(PA_solver,'areAwaited',jobid, taskids);
+        end
         answers = jinvoke(unrei,'get');
         for i=1:m
             tf(i)=jinvoke(answers,'get', i-1);

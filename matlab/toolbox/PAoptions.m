@@ -227,7 +227,9 @@ versionlistcheck = @(x)((isnumeric(x)&&isempty(x)) || (ischar(x) && isempty(x)) 
 
 jarlistcheck = @(x)(ischar(x) &&  ~isempty(regexp(x, '^([\w\-]+\.jar[ ;,]+)*[\w\-]+\.jar$')));
 listcheck = @(x)(ischar(x) && (isempty(x) || ~isempty(regexp(x, '^([^ ;,]+[ ;,]+)*[^ ;,]+$'))));
+listcheck2 = @(x)((isnumeric(x)&&isempty(x)) || (ischar(x) && (isempty(x) || ~isempty(regexp(x, '^([^ ]+[ ]+)*[^ ]+$')))));
 listtrans = @listtocell;
+listtrans2 = @listtocell2;
 
 urlcheck=@(x)((isnumeric(x)&&isempty(x)) || ischar(x));
 
@@ -292,6 +294,26 @@ inputs(j).name = 'RunAsMe';
 inputs(j).default = false;
 inputs(j).check = logcheck;
 inputs(j).trans = logtrans;
+j=j+1;
+inputs(j).name = 'SharedPushPublicUrl';
+inputs(j).default = [];
+inputs(j).check = urlcheck;
+inputs(j).trans = id;
+j=j+1;
+inputs(j).name = 'SharedPullPublicUrl';
+inputs(j).default = [];
+inputs(j).check = urlcheck;
+inputs(j).trans = id;
+j=j+1;
+inputs(j).name = 'SharedPushPrivateUrl';
+inputs(j).default = [];
+inputs(j).check = urlcheck;
+inputs(j).trans = id;
+j=j+1;
+inputs(j).name = 'SharedPullPrivateUrl';
+inputs(j).default = [];
+inputs(j).check = urlcheck;
+inputs(j).trans = id;
 j=j+1;
 inputs(j).name = 'RemoveJobAfterRetrieve';
 inputs(j).default = false;
@@ -448,11 +470,6 @@ inputs(j).default = false;
 inputs(j).check = logcheck;
 inputs(j).trans = logtrans;
 j=j+1;
-inputs(j).name = 'CleanAllTempFilesDirectly';
-inputs(j).default = true;
-inputs(j).check = logcheck;
-inputs(j).trans = logtrans;
-j=j+1;
 inputs(j).name = 'MatSciDir';
 inputs(j).default = matsci_dir;
 inputs(j).check = @ischar;
@@ -462,6 +479,11 @@ inputs(j).name = 'RmiPort';
 inputs(j).default = 1111;
 inputs(j).check = charornum;
 inputs(j).trans = @charornumtrans;
+j=j+1;
+inputs(j).name = 'JvmArguments';
+inputs(j).default = [];
+inputs(j).check = listcheck2;
+inputs(j).trans = listtrans2;
 j=j+1;
 inputs(j).name = 'JvmTimeout';
 inputs(j).default = 1200;
@@ -516,6 +538,26 @@ end
 goon=true;
 while goon
     [str, remain] = strtok(remain, ',; ');
+    if isempty(str) || length(str) == 0
+        goon=false;
+    else
+        cl{i}=str;
+        i=i+1;
+    end
+end
+end
+
+function cl=listtocell2(x)
+cl={};
+i=1;
+remain=x;
+if iscell(x)
+    cl = x;
+    return;
+end
+goon=true;
+while goon
+    [str, remain] = strtok(remain, ' ');
     if isempty(str) || length(str) == 0
         goon=false;
     else

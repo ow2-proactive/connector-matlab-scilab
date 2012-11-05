@@ -58,11 +58,15 @@ function PApauseJob(jobid)
     if isnumeric(jobid)
         jobid = num2str(jobid);
     end
-    if ~PAisConnected()
-        error('A connection to the ProActive scheduler is not established, see PAconnect');
-    end
+    PAensureConnected();
+
     sched = PAScheduler;
     solver = sched.PAgetsolver();
-    output = solver.pauseJob(jobid);
+    try
+        output = solver.pauseJob(jobid);
+    catch
+        PAensureConnected();
+        output = solver.pauseJob(jobid);
+    end
     disp(output);
 end

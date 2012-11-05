@@ -63,12 +63,16 @@ function varargout = PAtaskOutput(jobid, tname)
     if isnumeric(jobid)
         jobid = num2str(jobid);
     end
-    if ~PAisConnected()
-        error('A connection to the ProActive scheduler is not established, see PAconnect');
-    end
+    PAensureConnected();
+
     sched = PAScheduler;
     solver = sched.PAgetsolver();
-    output = solver.taskOutput(jobid, tname);
+    try
+        output = solver.taskOutput(jobid, tname);
+    catch
+        PAensureConnected();
+        output = solver.taskOutput(jobid, tname);
+    end
     disp(output);
     if nargout == 1        
         varargout{1} = output;                        

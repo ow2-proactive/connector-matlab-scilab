@@ -37,16 +37,13 @@
 package org.ow2.proactive.scheduler.ext.matsci.client.embedded.util;
 
 import org.ow2.proactive.scheduler.ext.common.util.IOTools;
-import org.ow2.proactive.scheduler.ext.matsci.client.common.DataspaceRegistry;
-import org.ow2.proactive.scheduler.ext.matsci.client.common.MatSciEnvironment;
-import org.ow2.proactive.scheduler.ext.matsci.client.common.MatSciJVMProcessInterface;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.data.Pair;
-import org.ow2.proactive.scheduler.ext.matsci.client.embedded.LoginFrame;
 
-import javax.swing.*;
 import java.io.*;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.ArrayList;
@@ -60,29 +57,27 @@ import java.util.Map;
  *
  * @author The ProActive Team
  */
-public class StandardJVMSpawnHelper {
+public abstract class StandardJVMSpawnHelper {
 
-    private static StandardJVMSpawnHelper instance = null;
-
-    private final static String POLICY_OPTION = "-Djava.security.policy=";
-    private final static String LOG4J_OPTION = "-Dlog4j.configuration=file:";
-    private final static String PA_CONFIGURATION_OPTION = "-Dproactive.configuration=";
+    protected final static String POLICY_OPTION = "-Djava.security.policy=";
+    protected final static String LOG4J_OPTION = "-Dlog4j.configuration=file:";
+    protected final static String PA_CONFIGURATION_OPTION = "-Dproactive.configuration=";
 
     /**
      * Timeout used to deploy the JVM (times 50ms)
      */
-    private static int TIMEOUT = 1200;
+    protected static int TIMEOUT = 1200;
 
     /**
      * Default classpath (classpath of the current JVM)
      */
-    private final static String DEFAULT_CLASSPATH = convertClasspathToAbsolutePath(System
+    protected final static String DEFAULT_CLASSPATH = convertClasspathToAbsolutePath(System
             .getProperty("java.class.path"));
 
     /**
      * Default Java executable path (java path of the current JVM)
      */
-    private static String DEFAULT_JAVAPATH;
+    protected static String DEFAULT_JAVAPATH;
 
     static {
         if (System.getProperty("os.name").startsWith("Windows")) {
@@ -97,131 +92,101 @@ public class StandardJVMSpawnHelper {
     /**
      * Options for the JVM
      */
-    private ArrayList<String> jvmOptions = new ArrayList<String>();
+    protected ArrayList<String> jvmOptions = new ArrayList<String>();
 
     /**
      * Entries of the classpath
      */
-    private String[] cpEntries;
+    protected String[] cpEntries;
 
     /**
      * Full classpath
      */
-    private String classPath;
+    protected String classPath;
 
     /**
      * Path to ProActive Configuration
      */
-    private String proactiveConf;
+    protected String proactiveConf;
 
     /**
      * Path to log4J file
      */
-    private String log4JFile;
+    protected String log4JFile;
 
     /**
      * Path to Java security policy file
      */
-    private String policyFile;
+    protected String policyFile;
 
     /**
      * Path to Java executable
      */
-    private String javaPath;
+    protected String javaPath;
 
     /**
      * Name of the Main class
      */
-    private String className;
+    protected String className;
 
     /**
      * scheduler URI used when creating this middleman JVM
      */
-    private static String oldSchedulerURI;
+    protected static String oldSchedulerURI;
 
     /**
      * scheduler URI used now
      */
-    private String newSchedulerURI;
-
-    /**
-     * Deployed MatlabEnvironment Interface
-     */
-    private MatSciEnvironment matlab_environment;
-    /**
-     * Deployed MatlabEnvironment Interface
-     */
-    private MatSciEnvironment scilab_environment;
-
-    /**
-     * Deployed DataspaceRegistry Interface
-     */
-    private DataspaceRegistry registry;
-
-    /*
-     * Deployed MatSciJVMProcessInterface Interface
-     */
-    private MatSciJVMProcessInterface jvmitf;
-
-    /**
-     * Login Frame
-     */
-    LoginFrame lf;
+    protected String newSchedulerURI;
 
     /**
      * RMI port to use
      */
-    private int rmi_port = 1099;
+    protected int rmi_port = 1099;
 
     /**
      * Debug mode
      */
-    private boolean debug = false;
+    protected boolean debug = false;
 
     /**
      * Command line arguments
      */
-    private ArrayList<String> arguments = new ArrayList<String>();
+    protected ArrayList<String> arguments = new ArrayList<String>();
 
     /**
      * Names of the RMI interfaces
      */
-    private ArrayList<String> itfNames = new ArrayList<String>();
+    protected ArrayList<String> itfNames = new ArrayList<String>();
+
+    /**
+     * Names of the RMI interfaces
+     */
+    protected HashMap<String, Object> stubs = new HashMap<String, Object>();
 
     /**
      * Path to tmp dir
      */
-    private static String tmpPath = System.getProperty("java.io.tmpdir");
+    protected static String tmpPath = System.getProperty("java.io.tmpdir");
 
-    private String matSciDir = null;
+    protected String matSciDir = null;
 
     /**
      * Stream to the Debug file
      */
-    private PrintStream outDebug;
+    protected PrintStream outDebug;
 
     /**
      * Minimum RMI port number
      */
-    private static final int MIN_PORT_NUMBER = 1000;
+    protected static final int MIN_PORT_NUMBER = 1000;
 
     /**
      * Maximum RMI port number
      */
     private static final int MAX_PORT_NUMBER = 9999;
 
-    private StandardJVMSpawnHelper() {
-        itfNames.add("org.ow2.proactive.scheduler.ext.matlab.middleman.AOMatlabEnvironment");
-        itfNames.add("org.ow2.proactive.scheduler.ext.scilab.middleman.AOScilabEnvironment");
-        itfNames.add(DataspaceRegistry.class.getName());
-        itfNames.add(MatSciJVMProcessInterface.class.getName());
-    }
-
-    public static StandardJVMSpawnHelper getInstance() {
-        if (instance == null) {
-            instance = new StandardJVMSpawnHelper();
-        }
-        return instance;
+    protected StandardJVMSpawnHelper() {
     }
 
     public void setMatSciDir(String matSciDir) {
@@ -291,10 +256,8 @@ public class StandardJVMSpawnHelper {
         this.itfNames.add(name);
     }
 
-    public void addJvmOptions(String[] options) {
-        for (String o : options) {
-            jvmOptions.add(o);
-        }
+    public void addJvmOption(String option) {
+        jvmOptions.add(option);
     }
 
     public void setClassName(String cn) {
@@ -303,22 +266,6 @@ public class StandardJVMSpawnHelper {
 
     public void addArgument(String arg) {
         this.arguments.add(arg);
-    }
-
-    public MatSciEnvironment getMatlabEnvironment() {
-        return matlab_environment;
-    }
-
-    public MatSciEnvironment getScilabEnvironment() {
-        return scilab_environment;
-    }
-
-    public DataspaceRegistry getRegistry() {
-        return registry;
-    }
-
-    public MatSciJVMProcessInterface getJvmInterface() {
-        return jvmitf;
     }
 
     /**
@@ -358,6 +305,43 @@ public class StandardJVMSpawnHelper {
         return false;
     }
 
+    protected abstract void updateStubs(Registry registry) throws RemoteException, NotBoundException;
+
+    public void updateAllStubs(boolean keepTrying) {
+        boolean stubsFound = false;
+        Exception lasterr = null;
+        int cpt = 0;
+        String lastMessage = "NO MESSAGE";
+        do {
+            cpt++;
+
+            try {
+                Registry registry = LocateRegistry.getRegistry(rmi_port);
+
+                updateStubs(registry);
+                stubsFound = true;
+
+            } catch (Exception e) {
+                lasterr = e;
+                if (debug && !e.getMessage().equals(lastMessage)) {
+                    e.printStackTrace(outDebug);
+                    lastMessage = e.getMessage();
+                }
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                    break;
+                }
+            }
+        } while (!stubsFound && keepTrying && cpt < TIMEOUT);
+        if (cpt >= TIMEOUT) {
+            throw new RuntimeException("Timeout occured when trying to update stubs", lasterr);
+        }
+    }
+
+    public abstract void shutdown();
+
     /**
      * Starts a new JVM or lookup an existing one
      *
@@ -366,32 +350,25 @@ public class StandardJVMSpawnHelper {
      */
     public Pair<HashMap<String, Object>, Integer> deployOrLookup() throws Exception {
         try {
-            HashMap<String, Object> stubs = new HashMap<String, Object>();
-            boolean stubsFound = false;
+
+            //HashMap<String, Object> stubs = new HashMap<String, Object>();
+
             boolean av = false;
 
-            try {
-                Registry registry = LocateRegistry.getRegistry(rmi_port);
+            File logFile = new File(tmpPath, "" + this.getClass().getSimpleName() + ".log");
+            if (!logFile.exists()) {
 
-                for (String name : itfNames) {
-                    stubs.put(name, registry.lookup(name));
-                }
-                stubsFound = true;
-                this.matlab_environment = (MatSciEnvironment) stubs
-                        .get("org.ow2.proactive.scheduler.ext.matlab.middleman.AOMatlabEnvironment");
-                this.scilab_environment = (MatSciEnvironment) stubs
-                        .get("org.ow2.proactive.scheduler.ext.scilab.middleman.AOScilabEnvironment");
-                this.registry = (DataspaceRegistry) stubs.get(DataspaceRegistry.class.getName());
-                this.jvmitf = (MatSciJVMProcessInterface) stubs
-                        .get(MatSciJVMProcessInterface.class.getName());
-
-            } catch (Exception e) {
+                logFile.createNewFile();
 
             }
 
+            outDebug = new PrintStream(new BufferedOutputStream(new FileOutputStream(logFile, true)));
+            updateAllStubs(false);
+            boolean stubsFound = !stubs.isEmpty();
+
             if (stubsFound && oldSchedulerURI != null && !oldSchedulerURI.equals(newSchedulerURI)) {
                 // We force the old MiddlemanJVM to die and be replaced by a new one
-                this.jvmitf.shutdown();
+                shutdown();
                 Thread.sleep(1000);
                 stubsFound = false;
             }
@@ -445,18 +422,11 @@ public class StandardJVMSpawnHelper {
 
             cmd.add(className);
 
+            cmd.add(debug ? "true" : "false");
+
             for (String arg : arguments) {
                 cmd.add(arg);
             }
-
-            File logFile = new File(tmpPath, "" + this.getClass().getSimpleName() + ".log");
-            if (!logFile.exists()) {
-
-                logFile.createNewFile();
-
-            }
-
-            outDebug = new PrintStream(new BufferedOutputStream(new FileOutputStream(logFile, true)));
 
             ProcessBuilder pb = new ProcessBuilder(cmd);
 
@@ -494,45 +464,10 @@ public class StandardJVMSpawnHelper {
             t1.setDaemon(true);
             t1.start();
 
-            Exception lasterr = null;
             if (itfNames.size() > 0) {
-                boolean deployed = false;
 
-                int cpt = 0;
-                Registry registry = null;
-                while (!deployed && cpt < TIMEOUT) {
-                    try {
-                        if (registry == null) {
-                            registry = LocateRegistry.getRegistry(rmi_port);
-                        }
-                        for (String name : itfNames) {
-                            stubs.put(name, registry.lookup(name));
-                        }
-                        deployed = true;
-                    } catch (Exception e) {
-                        lasterr = e;
-                        if (debug) {
-                            e.printStackTrace(outDebug);
-                        }
-                        try {
-                            Thread.sleep(50);
-                        } catch (InterruptedException e1) {
-                            e1.printStackTrace();
-                            break;
-                        }
-                        cpt++;
-                    }
-                }
-                if (cpt >= TIMEOUT) {
-                    throw new IllegalStateException("Timeout occured when waiting for deployment.", lasterr);
-                }
-                this.matlab_environment = (MatSciEnvironment) stubs
-                        .get("org.ow2.proactive.scheduler.ext.matlab.middleman.AOMatlabEnvironment");
-                this.scilab_environment = (MatSciEnvironment) stubs
-                        .get("org.ow2.proactive.scheduler.ext.scilab.middleman.AOScilabEnvironment");
-                this.registry = (DataspaceRegistry) stubs.get(DataspaceRegistry.class.getName());
-                this.jvmitf = (MatSciJVMProcessInterface) stubs
-                        .get(MatSciJVMProcessInterface.class.getName());
+                updateAllStubs(true);
+
                 return new Pair<HashMap<String, Object>, Integer>(stubs, rmi_port);
             }
             return null;
@@ -541,32 +476,6 @@ public class StandardJVMSpawnHelper {
             throw e;
         }
 
-    }
-
-    /**
-     * Starts the Login GUI
-     */
-    public void startLoginGUI() {
-        if (scilab_environment == null) {
-            throw new IllegalStateException("Environment not initialized");
-        }
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                lf = new LoginFrame(scilab_environment, true);
-                lf.start();
-            }
-        });
-    }
-
-    /**
-     * Returns the number of login attempts
-     *
-     * @return
-     */
-    public int getNbAttempts() {
-        if (lf != null)
-            return lf.getNbAttempts();
-        return 0;
     }
 
     private static String convertClasspathToAbsolutePath(String classpath) {

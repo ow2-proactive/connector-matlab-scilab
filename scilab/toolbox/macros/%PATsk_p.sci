@@ -9,23 +9,11 @@ function %PATsk_p(l)
     end
     if ~isempty(l.InputFiles) then        
         printf('InputFiles: ');
-        for i=1:length(l.InputFiles)
-            printf('%s ', l.InputFiles(i));
-        end 
-        printf('\n');               
-    end
-    if ~isempty(l.InputSource) then        
-        printf('InputSource: '+l.InputSource+'\n');                   
+        %PAFiles_p(l.InputFiles);
     end
     if ~isempty(l.OutputFiles) then
         printf('OutputFiles: ');
-        for i=1:length(l.OutputFiles)
-            printf('%s ', l.OutputFiles(i));
-        end 
-        printf('\n');
-    end
-    if ~isempty(l.OutputSource) then        
-        printf('OutputSource: '+l.OutputSource+'\n');                   
+        %PAFiles_p(l.OutputFiles);
     end
     if ~isempty(l.SelectionScript) then
         printf('SelectionScript: '+l.SelectionScript+'\n');

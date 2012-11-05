@@ -60,23 +60,15 @@ endfunction
 
 function resultSet(R)
     if ~jinvoke(R.resultSet,'get') then
-
-        global('PAResult_TasksDB')
         jinvoke(R.resultSet,'set',%t);
-        remainingTasks = PAResult_TasksDB(R.sid);
-        ind = -1;
-        for i=1:length(remainingTasks)
-            if remainingTasks(i) == R.taskid then
-                ind = i;            
-            end
-        end    
-        if ind > 0 then
-            remainingTasks(ind) = null();
-        end
 
-        PAResult_TasksDB(R.sid) = remainingTasks;
+        jimport org.ow2.proactive.scheduler.ext.scilab.client.embedded.ScilabTaskRepository;
+        repository = jinvoke(ScilabTaskRepository,'getInstance');
+        jinvoke(repository,'addReceived',R.jobid, R.taskid);
+        tf = jinvoke(repository,'allReceived',R.jobid)
+        jremove(repository);
         opt = PAoptions();
-        if opt.RemoveJobAfterRetrieve & length(remainingTasks) == 0 then
+        if opt.RemoveJobAfterRetrieve & tf then
             PAjobRemove(R.jobid);
         end
     end
@@ -89,13 +81,13 @@ function printLogs(R,RaL,err)
     if ~jinvoke(R.logsPrinted,'get')
         logs = jinvoke(RaL,'getLogs');
         dummy = jinvoke(R.logs,'append',logs);
+        //jremove(logs);
         jremove(dummy); // append returns a StringBuilder object that must be freed
         logstr = jinvoke(R.logs,'toString');
         if ~isempty(logstr) then
-            bprintf('%s',logstr);
+            bprintf('%s\n',logstr);
         end
         jinvoke(R.logsPrinted,'set',%t);
-        jremove(logs);
     elseif err
         logstr = jinvoke(R.logs,'toString');
         if ~isempty(logstr) then
@@ -118,5 +110,5 @@ function bprintf(form, exstr)
     end 
 //    mprintf('%d %d\n',llen+1,ilen)
     sstr = part(exstr,llen+1:ilen);
-    mprintf(form,sstr);
+    mprintf(form+'\n',sstr);
 endfunction

@@ -69,8 +69,7 @@
 function varargout = PAResult(varargin)
 if nargin > 0       
     taskinfo = varargin{1};
-    this.cleanFileSet = taskinfo.cleanFileSet;
-    this.cleanDirSet = taskinfo.cleanDirSet;
+    this.cleanDir = taskinfo.cleanDir;
     this.outFile = taskinfo.outFile;
     this.jobid = taskinfo.jobid;
     this.taskid = taskinfo.taskid;
@@ -84,9 +83,8 @@ if nargin > 0
         this.RaL =  org.ow2.proactive.scheduler.ext.matsci.client.common.data.UnReifiable();
     
     
-else      
-    this.cleanFileSet = [];
-    this.cleanDirSet = [];
+else
+    this.cleanDir = [];
     this.outFile = [];
     this.jobid = 0;
     this.taskid = [];

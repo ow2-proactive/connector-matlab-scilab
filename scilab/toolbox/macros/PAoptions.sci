@@ -16,9 +16,9 @@ function [n,key,value]=getkeyvalue(fid)
         end
     end
     if ~isempty(line) then
-         res = strtok(line,'=')
-         key=stripblanks(res, %t)
-         res = strtok('=')
+         pos = strcspn(line,'=')
+         key=stripblanks(part(line,1:pos), %t)
+         res = part(line,pos+2:length(line))
           value=stripblanks(res, %t)
           n=1
     end
@@ -70,6 +70,27 @@ function cl=stringtocell(x)
     end
 endfunction
 
+function cl=stringtocell2(x)
+    cl=cell();
+    i=1;
+    remain=x;
+    if iscell(x) then
+        cl = x;
+        return
+    end
+    goon=%t;
+    str = strtok(remain, ' ');
+    while goon
+        if isempty(str) | length(str) == 0 then
+            goon=%f;
+        else
+            cl(i).entries=str;
+            i=i+1;
+        end
+        str = strtok(' ');
+    end
+endfunction
+
 function cl=stringtolist(x)
     cl=list();
     i=1;
@@ -91,6 +112,8 @@ function cl=stringtolist(x)
     end
 endfunction
 
+
+
     global ('proactive_pa_options', 'PA_matsci_dir')
     if  argn(2) == 0 & ~isempty(proactive_pa_options) then
         opts = proactive_pa_options; 
@@ -102,12 +125,14 @@ endfunction
     deff ("y=isnumeric(x)","y=or(type(x)==[1,5,8])","n");
     deff ("y=islogical(x)","y=or(type(x)==[4,6])","n");
     deff ("y=ischar(x)","y=type(x)==10","n");
+    deff ("y=isvoid(x)","if isnumeric(x), y=isempty(x), elseif ischar(x), y=isempty(x), else y=%f, end", "n");
     deff ("y=ismember(a,l)","y=(or(a==l))","n");
     //  deff ("y=logcheck(x)","if islogical(x), y=%t, elseif isnumeric(x), y=((x == 0)|(x == 1))elseif ischar(x), y=ismember(x,{''true'',''false''}), else y=%f, end","n");
     deff ("y=versioncheck(x)","if isnumeric(x), y=isempty(x), elseif ischar(x), y=~isempty(regexp(x, ''/^[1-9][0-9]*(\.[0-9]+)*$/'')), else y=%f, end","n");
     deff ("y=versionlistcheck(x)","if isnumeric(x), y=isempty(x), elseif ischar(x), y=~isempty(regexp(x, ''/^([1-9][0-9]*(\.[0-9]+)*[ ;,]+)*[1-9][0-9]*(\.[0-9]+)*$/'')), else y=%f, end","n");
-    deff ("y=jarlistcheck(x)","if ischar(x), y=~isempty(regexp(x, ''/^([\w\-]+\.jar[ ;,]+)*[\w\-]+\.jar$/'')), else y=%f ,end","n");
+    deff ("y=jarlistcheck(x)","if ischar(x), y=~isempty(regexp(x, ''/^([\w\-\.]+\.jar[ ;,]+)*[\w\-\.]+\.jar$/'')), else y=%f ,end","n");
     deff ("y=listcheck(x)","if ischar(x), y=~isempty(regexp(x, ''/^([^ ;,]+[ ;,]+)*[^ ;,]+$/'')), else y=%f ,end","n");
+    deff ("y=listcheck2(x)","if isvoid(x),y=%t, elseif ischar(x), y=~isempty(regexp(x, ''/^([^ ]+[ ]+)*[^ ]+$/'')), else y=%f ,end","n");
 
     listtrans = stringtolist;
 
@@ -164,6 +189,26 @@ endfunction
     inputs(j).default = %f;
     inputs(j).check = 'logcheck';
     inputs(j).trans = 'logtrans';
+    j=j+1;
+    inputs(j).name = 'SharedPushPublicUrl';
+    inputs(j).default = [];
+    inputs(j).check = 'urlcheck';
+    inputs(j).trans = 'id';
+    j=j+1;
+    inputs(j).name = 'SharedPullPublicUrl';
+    inputs(j).default = [];
+    inputs(j).check = 'urlcheck';
+    inputs(j).trans = 'id';
+    j=j+1;
+    inputs(j).name = 'SharedPushPrivateUrl';
+    inputs(j).default = [];
+    inputs(j).check = 'urlcheck';
+    inputs(j).trans = 'id';
+    j=j+1;
+    inputs(j).name = 'SharedPullPrivateUrl';
+    inputs(j).default = [];
+    inputs(j).check = 'urlcheck';
+    inputs(j).trans = 'id';
     j=j+1;
     inputs(j).name = 'RemoveJobAfterRetrieve';
     inputs(j).default = %f;
@@ -316,6 +361,11 @@ endfunction
     inputs(j).check = 'charornum';
     inputs(j).trans = 'charornumtrans';
     j=j+1;
+    inputs(j).name = 'JvmArguments';
+    inputs(j).default = [];
+    inputs(j).check = 'listcheck2';
+    inputs(j).trans = 'stringtocell2';
+    j=j+1;
     inputs(j).name = 'JvmTimeout';
     inputs(j).default = 1200;
     inputs(j).check = 'charornum';
@@ -350,7 +400,6 @@ endfunction
 
             [n,key, value] = getkeyvalue(fid);
 
-            //C = textscan(fid, '%s = %[^\n]', 'CommentStyle', '%');
             while n~=-1
                 deblanked = stripblanks(key(1), %t);                                
                 for j=1:inlength                          

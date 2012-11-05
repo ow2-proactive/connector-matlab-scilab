@@ -53,6 +53,7 @@ import java.io.File;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -142,12 +143,12 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
 
             proxyFactory = new RemoteMatlabProxyFactory(processCreator);
         } catch (MatlabConnectionException e) {
-            // Possible cause: registry problem or receiver is not bind
+            // Possible cause: dsregistry problem or receiver is not bind
             e.printStackTrace();
 
             // Nothing can be done maybe a retry ... check this later
             MatlabInitException me = new MatlabInitException(
-                "Unable to create the MATLAB proxy factory. Possible causes: registry cannot be created or the receiver cannot be bind");
+                "Unable to create the MATLAB proxy factory. Possible causes: dsregistry cannot be created or the receiver cannot be bind");
             me.initCause(e);
 
             try {
@@ -169,7 +170,7 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
 
             // Nothing can be done maybe a retry ... check this later
             MatlabInitException me = new MatlabInitException(
-                "Unable to create the MATLAB proxy factory. Possible causes: registry cannot be created or the receiver cannot be bind");
+                "Unable to create the MATLAB proxy factory. Possible causes: dsregistry cannot be created or the receiver cannot be bind");
             me.initCause(e);
 
             // clean factory
@@ -231,6 +232,18 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
         } catch (Exception e) {
         }
         System.gc();
+    }
+
+    @Override
+    public String getOutput(boolean debug) {
+        String output = "";
+        // TODO implement it using a logfile
+        return output;
+    }
+
+    @Override
+    public boolean isMatlabRunViaAStarter() {
+        return false;
     }
 
     /**

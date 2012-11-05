@@ -37,10 +37,12 @@
 package org.ow2.proactive.scheduler.ext.matsci.middleman;
 
 import org.objectweb.proactive.Body;
-import org.objectweb.proactive.EndActive;
 import org.objectweb.proactive.InitActive;
+import org.objectweb.proactive.RunActive;
+import org.objectweb.proactive.Service;
 import org.objectweb.proactive.api.PAActiveObject;
 import org.objectweb.proactive.api.PALifeCycle;
+import org.objectweb.proactive.core.body.request.BlockingRequestQueueImpl;
 import org.ow2.proactive.scheduler.ext.common.util.StackTraceUtil;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.MatSciEnvironment;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.MatSciJVMProcessInterface;
@@ -61,21 +63,26 @@ import java.util.regex.Pattern;
  *
  * @author The ProActive Team
  */
-public class MatSciJVMProcessInterfaceImpl implements InitActive, EndActive, MatSciJVMProcessInterface {
+public class MatSciJVMProcessInterfaceImpl implements InitActive, RunActive, MatSciJVMProcessInterface {
 
-    MatSciEnvironment matlab_env;
-
-    MatSciEnvironment scilab_env;
+    MatSciEnvironment env;
 
     MatSciJVMProcessInterfaceImpl stubOnThis;
 
     private static File logFile;
     private static PrintWriter outDebugWriter;
     private static FileWriter outFile;
+    private static long lastMillis = System.currentTimeMillis();
+    private static long DELAY = 2;
+    private static Throwable lastException = new Exception();
 
     private static final SimpleDateFormat ISO8601FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:sss");
 
     private static final String TMPDIR = System.getProperty("java.io.tmpdir");
+
+    private boolean terminated;
+    private Thread serviceThread;
+    protected Body bodyOnThis;
 
     /**
      * host name
@@ -96,9 +103,13 @@ public class MatSciJVMProcessInterfaceImpl implements InitActive, EndActive, Mat
 
     }
 
-    public MatSciJVMProcessInterfaceImpl(MatSciEnvironment matlab_env, MatSciEnvironment scilab_env) {
-        this.scilab_env = scilab_env;
-        this.matlab_env = matlab_env;
+    public MatSciJVMProcessInterfaceImpl(MatSciEnvironment env) {
+        this.env = env;
+        try {
+            createLogFileOnDebug();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /** Creates a log file in the java.io.tmpdir if debug is enabled */
@@ -128,6 +139,22 @@ public class MatSciJVMProcessInterfaceImpl implements InitActive, EndActive, Mat
 
     public static void printLog(Object origin, final Throwable ex, boolean out, boolean file) {
         final Date d = new Date();
+        // This avoids ever growing logs because of Exceptions occurring inside loops
+        if (ex != null) {
+            long millis = System.currentTimeMillis();
+            boolean eq = StackTraceUtil.equalsStackTraces(ex, lastException);
+            if (eq && ((millis - lastMillis) < (DELAY * 1000))) {
+                return;
+            }
+            if (eq) {
+                DELAY = DELAY * 2;
+            } else {
+                DELAY = 2;
+            }
+            lastException = ex;
+            lastMillis = millis;
+        }
+
         if (out) {
             final String log1 = "[" + origin.getClass().getSimpleName() + "] " +
                 StackTraceUtil.getStackTrace(ex);
@@ -137,7 +164,6 @@ public class MatSciJVMProcessInterfaceImpl implements InitActive, EndActive, Mat
         }
 
         if (file) {
-
             final String log2 = "[" + ISO8601FORMAT.format(d) + " " + host + "][" +
                 origin.getClass().getSimpleName() + "] " + StackTraceUtil.getStackTrace(ex);
             if (outDebugWriter != null) {
@@ -173,16 +199,31 @@ public class MatSciJVMProcessInterfaceImpl implements InitActive, EndActive, Mat
      */
     public void initActivity(Body body) {
         stubOnThis = (MatSciJVMProcessInterfaceImpl) PAActiveObject.getStubOnThis();
-        try {
-            createLogFileOnDebug();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        terminated = false;
+        serviceThread = Thread.currentThread();
+        bodyOnThis = PAActiveObject.getBodyOnThis();
+
     }
 
-    public void endActivity(Body body) {
-        closeLogFileOnDebug();
-        PALifeCycle.exitSuccess();
+    /**
+     * {@inheritDoc}
+     */
+    public void terminateFast() {
+        this.terminated = true;
+        BlockingRequestQueueImpl rq = (BlockingRequestQueueImpl) bodyOnThis.getRequestQueue();
+        rq.destroy();
+        try {
+            bodyOnThis.terminate(false);
+        } catch (Exception e) {
+
+        }
+        while (serviceThread.isAlive()) {
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     /** {@inheritDoc} */
@@ -210,21 +251,27 @@ public class MatSciJVMProcessInterfaceImpl implements InitActive, EndActive, Mat
     /** {@inheritDoc} */
     public void shutdown() {
         try {
-            matlab_env.disconnect();
-            matlab_env.terminate();
-        } catch (Throwable e) {
-        }
-        try {
-            scilab_env.disconnect();
-            scilab_env.terminate();
+            //matlab_env.disconnect();
+            env.terminate();
         } catch (Throwable e) {
         }
         stubOnThis.destroyJVM();
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+        }
     }
 
     protected void destroyJVM() {
         closeLogFileOnDebug();
-        PAActiveObject.terminateActiveObject(false);
+        PALifeCycle.exitSuccess();
     }
 
+    @Override
+    public void runActivity(Body body) {
+        Service service = new Service(body);
+        while (!terminated) {
+            service.blockingServeOldest();
+        }
+    }
 }

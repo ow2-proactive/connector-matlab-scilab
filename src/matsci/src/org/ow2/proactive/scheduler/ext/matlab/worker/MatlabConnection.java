@@ -109,4 +109,16 @@ public interface MatlabConnection {
      * @param command command which checks the toolboxes
      */
     void execCheckToolboxes(String command) throws Exception;
+
+    /**
+     * Returns the textual output of matlab (as stored in the log file)
+     * @return textual output
+     */
+    String getOutput(boolean debug);
+
+    /**
+     * Is Matlab run via a starter process (the real Matlab process is hidden) ?
+     * @return answer
+     */
+    boolean isMatlabRunViaAStarter();
 }

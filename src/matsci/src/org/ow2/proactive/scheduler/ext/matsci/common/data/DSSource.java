@@ -46,7 +46,9 @@ public enum DSSource {
 
     OUTPUT("output"),
 
-    GLOBAL("global");
+    GLOBAL("global"),
+
+    AUTOMATIC("automatic");
 
     private String ref;
 
@@ -58,7 +60,7 @@ public enum DSSource {
         return ref;
     }
 
-    public static DSSource getSource(String str) {
+    public static DSSource getSpace(String str) {
         for (DSSource s : DSSource.values()) {
             if (s.toString().equals(str)) {
                 return s;

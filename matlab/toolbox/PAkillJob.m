@@ -57,11 +57,14 @@ function PAkillJob(jobid)
     if isnumeric(jobid)
         jobid = num2str(jobid);
     end
-    if ~PAisConnected()
-        error('A connection to the ProActive scheduler is not established, see PAconnect');
-    end
+    PAensureConnected();
     sched = PAScheduler;
     solver = sched.PAgetsolver();
-    output = solver.killJob(jobid);
+    try
+        output = solver.killJob(jobid);
+    catch
+        PAensureConnected();
+        output = solver.killJob(jobid);
+    end
     disp(output);   
 end

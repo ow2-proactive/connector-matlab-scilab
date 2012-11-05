@@ -37,8 +37,9 @@
 package org.ow2.proactive.scheduler.ext.matsci.common.data;
 
 import java.io.Serializable;
-import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 
 /**
@@ -49,49 +50,39 @@ import java.util.ArrayList;
 public class PASolveMatSciTaskConfig implements Serializable {
 
     /**
-     * names of source files
+     * Matlab or Scilab source files
      */
-    private ArrayList<String> sourceFileNames = new ArrayList<String>();
+    private List<PASolveFile> sourceFiles = new ArrayList<PASolveFile>();
 
     /**
-     * Name of source zipped file
+     * File storing the Matlab or Scilab environment
      */
-    private String sourceZipFileName = null;
+    private PASolveFile environmentFile = null;
 
     /**
-     * URI of source Zipped file
+     * input Variables file (storing the function parameter)
      */
-    private URI sourceZipFileURI = null;
+    private PASolveFile inputVariablesFile = null;
 
     /**
-     * URI of source files (non zipped)
+     * input Variables file for composed task
      */
-    private URI[] sourcesFilesURIs = null;
+    private PASolveFile composedinputVariablesFile = null;
 
     /**
-     * name of input Variables file
+     * ouput Variables file (storing the function return)
      */
-    private String inputVariablesFileName = null;
+    private PASolveFile outputVariablesFile = null;
 
     /**
-     * name of input Variables file for composed task
+     * user input files
      */
-    private String composedInputVariablesFileName = null;
+    private List<PASolveFile> inputFiles = new ArrayList<PASolveFile>();
 
     /**
-     * URI of input Variables file
+     * user output files
      */
-    private URI inputVariablesFileURI = null;
-
-    /**
-     * URI of input Variables file for composed task
-     */
-    private URI composedInputVariablesFileURI = null;
-
-    /**
-     * name of output Variables file
-     */
-    private String outputVariablesFileName = null;
+    private List<PASolveFile> outputFiles = new ArrayList<PASolveFile>();
 
     /**
      * url of custom selection Script
@@ -112,40 +103,6 @@ public class PASolveMatSciTaskConfig implements Serializable {
      * task description
      */
     private String description = null;
-
-    /**
-     * output files (non zipped)
-     */
-    private String[] outputFiles;
-
-    /**
-     * input files (non zipped)
-     */
-    private String[] inputFiles;
-
-    private DSSource inputSource = DSSource.INPUT;
-
-    private DSSource outputSource = DSSource.OUTPUT;
-
-    /**
-     * URI of environment zipped file
-     */
-    private URI envZipFileURI = null;
-
-    /**
-     * URI of environment file (non zipped)
-     */
-    private URI envMatFileURI = null;
-
-    /**
-     * presence of input Files
-     */
-    private boolean inputFilesThere = false;
-
-    /**
-     * presence of output files
-     */
-    private boolean outputFilesThere = false;
 
     /**
      * Matlab/Scilab input code
@@ -176,32 +133,113 @@ public class PASolveMatSciTaskConfig implements Serializable {
 
     }
 
-    public URI getSourceZipFileURI() {
-        return sourceZipFileURI;
+    public PASolveFile getEnvironmentFile() {
+        return environmentFile;
     }
 
-    public void setSourceZipFileURI(URI sourceZipFileURI) {
-        this.sourceZipFileURI = sourceZipFileURI;
+    public void setEnvironmentFile(PASolveFile file) {
+        environmentFile = file;
     }
 
-    public URI getEnvZipFileURI() {
-        return envZipFileURI;
+    public PASolveFile getInputVariablesFile() {
+        return inputVariablesFile;
     }
 
-    public DSSource getInputSource() {
-        return inputSource;
+    public void setInputVariablesFile(PASolveFile inputVariablesFile) {
+        this.inputVariablesFile = inputVariablesFile;
     }
 
-    public void setInputSource(DSSource inputSource) {
-        this.inputSource = inputSource;
+    public void setInputVariablesFile(String pathname) {
+        this.inputVariablesFile = new PASolveFile(pathname);
     }
 
-    public DSSource getOutputSource() {
-        return outputSource;
+    public void setInputVariablesFile(String relPath, String name) {
+        this.inputVariablesFile = new PASolveFile(relPath, name);
     }
 
-    public void setOutputSource(DSSource outputSource) {
-        this.outputSource = outputSource;
+    public PASolveFile getComposedInputVariablesFile() {
+        return composedinputVariablesFile;
+    }
+
+    public void setComposedInputVariablesFile(PASolveFile composedinputVariablesFile) {
+        this.composedinputVariablesFile = composedinputVariablesFile;
+    }
+
+    public void setComposedInputVariablesFile(String pathname) {
+        this.composedinputVariablesFile = new PASolveFile(pathname);
+    }
+
+    public void setComposedInputVariablesFile(String relPath, String name) {
+        this.composedinputVariablesFile = new PASolveFile(relPath, name);
+    }
+
+    public PASolveFile getOutputVariablesFile() {
+        return outputVariablesFile;
+    }
+
+    public void setOutputVariablesFile(PASolveFile outputVariablesFile) {
+        this.outputVariablesFile = outputVariablesFile;
+    }
+
+    public void setOutputVariablesFile(String pathname) {
+        this.outputVariablesFile = new PASolveFile(pathname);
+    }
+
+    public void setOutputVariablesFile(String relPath, String name) {
+        this.outputVariablesFile = new PASolveFile(relPath, name);
+    }
+
+    public void setOutputVariablesFile(String rootDir, String relPath, String name) {
+        this.outputVariablesFile = new PASolveFile(relPath, name);
+        this.outputVariablesFile.setRootDirectory(rootDir);
+    }
+
+    public List<PASolveFile> getInputFiles() {
+        return inputFiles;
+    }
+
+    public void addInputFile(PASolveFile file) {
+        this.inputFiles.add(file);
+    }
+
+    public void addInputFile(String pathname, DSSource source) {
+        PASolveFile file = new PASolveFile(pathname);
+        file.setSource(source);
+        this.inputFiles.add(file);
+    }
+
+    public void addInputFile(String relpath, String name, DSSource source) {
+        PASolveFile file = new PASolveFile(relpath, name);
+        file.setSource(source);
+        this.inputFiles.add(file);
+    }
+
+    public void setInputFiles(PASolveFile[] inputFiles) {
+        this.inputFiles = Arrays.asList(inputFiles);
+    }
+
+    public List<PASolveFile> getOutputFiles() {
+        return outputFiles;
+    }
+
+    public void addOutputFile(PASolveFile file) {
+        this.outputFiles.add(file);
+    }
+
+    public void addOutputFile(String pathname, DSSource dest) {
+        PASolveFile file = new PASolveFile(pathname);
+        file.setDestination(dest);
+        this.outputFiles.add(file);
+    }
+
+    public void addOutputFile(String relpath, String name, DSSource dest) {
+        PASolveFile file = new PASolveFile(relpath, name);
+        file.setDestination(dest);
+        this.outputFiles.add(file);
+    }
+
+    public void setOutputFiles(PASolveFile[] outputFiles) {
+        this.outputFiles = Arrays.asList(outputFiles);
     }
 
     public String getCustomScriptUrl() {
@@ -228,98 +266,6 @@ public class PASolveMatSciTaskConfig implements Serializable {
         this.customScriptParams = customScriptParams;
     }
 
-    public String getInputVariablesFileName() {
-        return inputVariablesFileName;
-    }
-
-    public void setInputVariablesFileName(String inputVariablesFileName) {
-        this.inputVariablesFileName = inputVariablesFileName;
-    }
-
-    public String getOutputVariablesFileName() {
-        return outputVariablesFileName;
-    }
-
-    public void setOutputVariablesFileName(String outputVariablesFileName) {
-        this.outputVariablesFileName = outputVariablesFileName;
-    }
-
-    public String getComposedInputVariablesFileName() {
-        return composedInputVariablesFileName;
-    }
-
-    public void setComposedInputVariablesFileName(String composedInputVariablesFileName) {
-        this.composedInputVariablesFileName = composedInputVariablesFileName;
-    }
-
-    public URI getComposedInputVariablesFileURI() {
-        return composedInputVariablesFileURI;
-    }
-
-    public void setComposedInputVariablesFileURI(URI composedInputVariablesFileURI) {
-        this.composedInputVariablesFileURI = composedInputVariablesFileURI;
-    }
-
-    public URI getInputVariablesFileURI() {
-        return inputVariablesFileURI;
-    }
-
-    public void setInputVariablesFileURI(URI inputVariablesFileURI) {
-        this.inputVariablesFileURI = inputVariablesFileURI;
-    }
-
-    public URI[] getSourcesFilesURIs() {
-        return sourcesFilesURIs;
-    }
-
-    public void setSourcesFilesURIs(URI[] sourcesFilesURIs) {
-        this.sourcesFilesURIs = sourcesFilesURIs;
-    }
-
-    public String[] getOutputFiles() {
-        return outputFiles;
-    }
-
-    public void setOutputFiles(String[] outputFiles) {
-        this.outputFiles = outputFiles;
-    }
-
-    public void setEnvZipFileURI(URI envZipFileURI) {
-        this.envZipFileURI = envZipFileURI;
-    }
-
-    public String[] getInputFiles() {
-        return inputFiles;
-    }
-
-    public void setInputFiles(String[] inputFiles) {
-        this.inputFiles = inputFiles;
-    }
-
-    public boolean isInputFilesThere() {
-        return inputFilesThere;
-    }
-
-    public void setInputFilesThere(boolean inputFilesThere) {
-        this.inputFilesThere = inputFilesThere;
-    }
-
-    public boolean isOutputFilesThere() {
-        return outputFilesThere;
-    }
-
-    public void setOutputFilesThere(boolean outputFilesThere) {
-        this.outputFilesThere = outputFilesThere;
-    }
-
-    public URI getEnvMatFileURI() {
-        return envMatFileURI;
-    }
-
-    public void setEnvMatFileURI(URI envMatFileURI) {
-        this.envMatFileURI = envMatFileURI;
-    }
-
     public String getInputScript() {
         return inputScript;
     }
@@ -344,20 +290,20 @@ public class PASolveMatSciTaskConfig implements Serializable {
         this.description = description;
     }
 
-    public String getSourceZipFileName() {
-        return sourceZipFileName;
+    public List<PASolveFile> getSourceFiles() {
+        return sourceFiles;
     }
 
-    public void setSourceZipFileName(String sourceZipFileName) {
-        this.sourceZipFileName = sourceZipFileName;
+    public void addSourceFile(String pathName) {
+        sourceFiles.add(new PASolveFile(pathName));
     }
 
-    public ArrayList<String> getSourceFileNames() {
-        return sourceFileNames;
+    public void addSourceFile(String relativePath, String name) {
+        sourceFiles.add(new PASolveFile(relativePath, name));
     }
 
-    public void addSourceFile(String src) {
-        sourceFileNames.add(src);
+    public void addSourceFile(PASolveFile src) {
+        sourceFiles.add(src);
     }
 
     public MatSciTopology getTopology() {

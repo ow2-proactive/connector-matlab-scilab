@@ -50,6 +50,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -59,63 +60,106 @@ import java.util.Map;
  */
 public class MatlabConnectionRImpl implements MatlabConnection {
 
-    /** System-dependent line separator */
+    /**
+     * System-dependent line separator
+     */
     public static final String nl = System.getProperty("line.separator");
 
-    /** Pattern used to remove Matlab startup message from logs */
+    /**
+     * Pattern used to remove Matlab startup message from logs
+     */
     private static final String startPattern = "---- MATLAB START ----";
 
     private static final String lcFailedPattern = "License checkout failed";
 
     private static final String outofmemoryPattern = "java.lang.OutOfMemoryError";
 
-    /** Startup Options of the Matlab process */
+    /**
+     * Startup Options of the Matlab process
+     */
     protected String[] startUpOptions;
 
-    /** Location of the Matlab process */
+    /**
+     * Location of the Matlab process
+     */
     protected String matlabLocation;
 
-    /** Full Matlab code which will be executed by the Matlab process */
+    /**
+     * Full Matlab code which will be executed by the Matlab process
+     */
     protected StringBuilder fullcommand = new StringBuilder();
 
-    /** File used to store MATLAB code to be executed */
+    /**
+     * File used to store MATLAB code to be executed
+     */
     protected File mainFuncFile;
 
-    /** Directory where the MATLAB process should start (Localspace) */
+    /**
+     * Directory where the MATLAB process should start (Localspace)
+     */
     protected File workingDirectory;
 
-    /** File used to capture MATLAB process output (in addition to Threads) */
+    /**
+     * File used to capture MATLAB process output (in addition to Threads)
+     */
     protected File logFile;
 
-    /** Stream used for debug output */
+    /**
+     * Stream used for debug output
+     */
     private final PrintStream outDebug;
 
-    /** The temp directory */
+    /**
+     * The temp directory
+     */
     private final String tmpDir;
 
-    /** The ProActive node name */
+    /**
+     * The ProActive node name
+     */
     private final String nodeName;
 
-    /** Timeout for the matlab process startup x 10 ms */
+    /**
+     * Timeout for the matlab process startup x 10 ms
+     */
     protected int TIMEOUT_START;
 
-    /** Debug mode */
+    /**
+     * Debug mode
+     */
     protected boolean debug;
 
-    /** MATLAB Process */
+    /**
+     * MATLAB Process
+     */
     protected Process process;
 
-    /** Lock used to prevent process destroy while starting up */
+    /**
+     * Lock used to prevent process destroy while starting up
+     */
     protected Boolean running = false;
 
-    /** Licensing Proxy Server Client */
+    protected boolean isMatlabUsingAStarter = false;
+
+    /**
+     * Licensing Proxy Server Client
+     */
     private LicenseSaverClient lclient;
 
-    /** Matlab configuration of the current job */
+    /**
+     * Matlab configuration of the current job
+     */
     PASolveMatlabGlobalConfig paconfig;
 
-    /** Matlab configuration of the current task */
+    /**
+     * Matlab configuration of the current task
+     */
     PASolveMatlabTaskConfig tconfig;
+
+    /**
+     * Logging thread used *
+     */
+    IOTools.LoggingThread lt1;
 
     public MatlabConnectionRImpl(final String tmpDir, final PrintStream outDebug, final String nodeName) {
         this.tmpDir = tmpDir;
@@ -180,6 +224,28 @@ public class MatlabConnectionRImpl implements MatlabConnection {
         fullcommand.append(command);
     }
 
+    @Override
+    public String getOutput(boolean debug) {
+        String output = "";
+        try {
+            if (debug) {
+                output = IOTools.readFileAsString(this.logFile, 20000, null, null);
+            } else {
+                output = IOTools.readFileAsString(this.logFile, 20000, startPattern, null);
+            }
+        } catch (InterruptedException e) {
+
+        } catch (TimeoutException e) {
+
+        }
+        return output;
+    }
+
+    @Override
+    public boolean isMatlabRunViaAStarter() {
+        return isMatlabUsingAStarter;
+    }
+
     public void evalString(String command) throws MatlabTaskException {
         fullcommand.append(command + nl);
     }
@@ -194,7 +260,15 @@ public class MatlabConnectionRImpl implements MatlabConnection {
 
     public void launch() throws Exception {
         fullcommand.append("catch ME" + nl + "disp('Error occured in .');" + nl + "disp(getReport(ME));" +
-            nl + "end" + nl + "exit();");
+            nl + "end" + nl);
+        // we remove all file handles possibily kept by matlab
+        fullcommand.append("fclose('all');restoredefaultpath();");
+        // we create a marker file to signify the end, but keep a handle on it. By doing that we can synchronize the java
+        // process with the real matlab termination (it will liberate the handle when it will really exit)
+        fullcommand.append("    fend = fullfile('" + workingDirectory + "','matlab.end');" + nl +
+
+        "fid = fopen(fend,'w');" + nl);
+        fullcommand.append("exit();");
         PrintStream out = null;
 
         try {
@@ -213,8 +287,6 @@ public class MatlabConnectionRImpl implements MatlabConnection {
             running = true;
         }
 
-        IOTools.LoggingThread lt1;
-
         if (debug) {
             lt1 = new IOTools.LoggingThread(process, "[MATLAB]", System.out, System.err, outDebug, null,
                 null, new String[] { lcFailedPattern, outofmemoryPattern });
@@ -229,67 +301,100 @@ public class MatlabConnectionRImpl implements MatlabConnection {
 
         File ackFile = new File(workingDirectory, "matlab.ack");
         File nackFile = new File(workingDirectory, "matlab.nack");
-        int cpt = 0;
-        while (!ackFile.exists() && !nackFile.exists() && (cpt < TIMEOUT_START) &&
-            !lt1.patternFound(lcFailedPattern) && !lt1.patternFound(outofmemoryPattern) && running) {
-            try {
-                int exitValue = process.exitValue();
+        File endFile = new File(workingDirectory, "matlab.end");
+
+        try {
+
+            int cpt = 0;
+            while (!ackFile.exists() && !nackFile.exists() && (cpt < TIMEOUT_START) &&
+                !lt1.patternFound(lcFailedPattern) && !lt1.patternFound(outofmemoryPattern) && running) {
+                try {
+                    // WARNING : on windows platform, matlab is initialized by a startup program which exits immediately, we cannot take decisions based on exit status.
+                    int exitValue = process.exitValue();
+                    if (exitValue != 0) {
+                        sendAck(false);
+                        // lt1.goon = false; unnecessary as matlab process exited
+                        throw new MatlabInitException("Matlab process exited with code : " + exitValue);
+                    } else {
+                        // matlab uses a startup program, unfortunately, we won't be able to receive logs from the standard process
+                        isMatlabUsingAStarter = true;
+
+                    }
+                    // maybe the matlab launcher exited
+                } catch (IllegalThreadStateException e) {
+                    // ok process still exists
+                }
+                Thread.sleep(10);
+                cpt++;
+            }
+
+            if (nackFile.exists()) {
                 sendAck(false);
 
-                // lt1.goon = false; unnecessary as matlab process exited
-                throw new MatlabInitException("Matlab process exited with code : " + exitValue);
-            } catch (Exception e) {
-                // ok process still exists
+                lt1.goon = false;
+                throw new UnsufficientLicencesException();
             }
-            Thread.sleep(10);
-            cpt++;
-        }
-        if (ackFile.exists()) {
-            ackFile.delete();
-        }
+            if (lt1.patternFound(lcFailedPattern)) {
+                process.destroy();
+                process = null;
+                sendAck(false);
+                throw new UnsufficientLicencesException();
+            }
+            if (lt1.patternFound(outofmemoryPattern)) {
+                process.destroy();
+                process = null;
+                sendAck(false);
+                throw new RuntimeException("Out of memory error in Matlab process");
+            }
+            if (cpt >= TIMEOUT_START) {
+                process.destroy();
+                process = null;
+                sendAck(false);
+                String output = IOTools.readFileAsString(this.logFile, 20000, null, null);
+                throw new MatlabInitException(
+                    "Timeout occured while starting Matlab, with following output (" + this.logFile + "):" +
+                        nl + output);
+            }
+            if (!running) {
+                sendAck(false);
+                throw new MatlabInitException("Task killed while initialization");
+            }
+            sendAck(true);
 
-        if (nackFile.exists()) {
-            nackFile.delete();
-            sendAck(false);
+            int exitValue = process.waitFor();
+            if (exitValue != 0) {
+                String output = IOTools.readFileAsString(this.logFile, 20000, null, null);
+                throw new MatlabInitException("Matlab process exited with code : " + exitValue +
+                    " after task started. With following output (" + this.logFile + "):" + nl + output);
+            }
+            // on windows the matlab initialization process can terminate while Matlab still exists in the background
+            // we use then the end file to synchronize
+            while (!endFile.exists()) {
+                Thread.sleep(10);
+            }
+            // now we wait that matlab exists completely and remove its grasp on the file
+            boolean isDeleted = false;
+            while (!isDeleted) {
+                try {
+                    isDeleted = endFile.delete();
+                } catch (Exception e) {
 
+                }
+                if (!isDeleted) {
+                    Thread.sleep(10);
+                }
+            }
+        } finally {
             lt1.goon = false;
-            throw new UnsufficientLicencesException();
-        }
-        if (lt1.patternFound(lcFailedPattern)) {
-            process.destroy();
-            process = null;
-            lt1.goon = false;
-            sendAck(false);
-            throw new UnsufficientLicencesException();
-        }
-        if (lt1.patternFound(outofmemoryPattern)) {
-            process.destroy();
-            process = null;
-            lt1.goon = false;
-            sendAck(false);
-            throw new RuntimeException("Out of memory error in Matlab process");
-        }
-        if (cpt >= TIMEOUT_START) {
-            process.destroy();
-            process = null;
-            lt1.goon = false;
-            sendAck(false);
-            String output = IOTools.readFileAsString(this.logFile, 20000);
-            throw new MatlabInitException("Timeout occured while starting Matlab, with following output (" +
-                this.logFile + "):" + nl + output);
-        }
-        if (!running) {
-            lt1.goon = false;
-            sendAck(false);
-            throw new MatlabInitException("Task killed while initialization");
-        }
-        sendAck(true);
-
-        int exitValue = process.waitFor();
-        if (exitValue != 0) {
-            String output = IOTools.readFileAsString(this.logFile, 20000);
-            throw new MatlabInitException("Matlab process exited with code : " + exitValue +
-                " after task started. With following output (" + this.logFile + "):" + nl + output);
+            if (ackFile.exists()) {
+                ackFile.delete();
+            }
+            if (nackFile.exists()) {
+                nackFile.delete();
+            }
+            if (endFile.exists()) {
+                endFile.delete();
+            }
         }
 
     }

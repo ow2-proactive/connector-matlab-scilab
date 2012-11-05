@@ -1,8 +1,6 @@
 function [] = PAstate()
-    global ('PA_connected','PA_solver');
-    if ~PAisConnected()
-        error('A connection to the ProActive scheduler is not established, see PAconnect');
-    end
+    global ('PA_solver');
+    PAensureConnected();
     
     txt = jinvoke(PA_solver, 'schedulerState');    
     printf('%s\n',txt);   

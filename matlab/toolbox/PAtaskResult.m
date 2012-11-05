@@ -67,11 +67,15 @@ function PAtaskResult(jobid, tname)
         jobid = num2str(jobid);
     end
     sched = PAScheduler;
-    if ~PAisConnected()
-        error('A connection to the ProActive scheduler is not established, see PAconnect');
-    end
+    PAensureConnected();
+
     solver = sched.PAgetsolver();
-    output = solver.taskResult(jobid, tname);
+    try
+        output = solver.taskResult(jobid, tname);
+    catch
+        PAensureConnected();
+        output = solver.taskResult(jobid, tname);
+    end
     disp(output);
     if nargout == 1        
         varargout{1} = output;                        

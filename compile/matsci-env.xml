@@ -103,7 +103,6 @@
     </path>
 
     <fileset id="jar.index.fileset" dir="${lib.dir}">
-        <include name="scheduling/**/*.jar"/>
         <include name="matsci/**/*.jar"/>
     </fileset>
 
@@ -117,6 +116,9 @@
         <pathelement location="${cl.matsci.tests.dir}"/>
         <pathelement location="${base.dir}/compile/lib/junit-4.3.jar"/>
         <pathelement location="${cl.matsci.dir}"/>
+        <fileset dir="${lib.dir}">
+            <include name="matsci/**/*.jar"/>
+        </fileset>
     </path>
 
 

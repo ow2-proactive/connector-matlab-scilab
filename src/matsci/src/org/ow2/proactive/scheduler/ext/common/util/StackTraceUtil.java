@@ -60,6 +60,26 @@ public final class StackTraceUtil {
         return result.toString();
     }
 
+    public static boolean equalsStackTraces(Throwable a, Throwable b) {
+        if ((a == null) && (b == null)) {
+            return true;
+        }
+        if (a == null) {
+            return false;
+        }
+        if (b == null) {
+            return false;
+        }
+        if (!a.getClass().equals(b.getClass())) {
+            return false;
+        }
+        if (!a.getMessage().equals(b.getMessage())) {
+            return false;
+        }
+        return equalsStackTraces(a.getCause(), b.getCause());
+
+    }
+
     /**
     * Defines a custom format for the stack trace as String.
     */

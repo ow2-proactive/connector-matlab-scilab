@@ -40,6 +40,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Stack;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -62,10 +63,12 @@ public final class FileUtils {
     public static boolean unzip(final File zipFile, final File destDir) {
         final String destDirAbsPath = destDir.getAbsolutePath() + File.separatorChar;
         final byte[] buf = new byte[2048];
+        ZipInputStream ziStream = null;
+        FileInputStream fiStream = null;
 
         try {
-            final FileInputStream fiStream = new FileInputStream(zipFile);
-            final ZipInputStream ziStream = new ZipInputStream(fiStream);
+            fiStream = new FileInputStream(zipFile);
+            ziStream = new ZipInputStream(fiStream);
 
             ZipEntry zipEntry = ziStream.getNextEntry();
 
@@ -79,17 +82,29 @@ public final class FileUtils {
                     File absDir = new File(absDirName);
                     absDir.mkdirs();
                     FileOutputStream fos = new FileOutputStream(absPath);
-                    int len;
-                    while ((len = ziStream.read(buf)) > 0) {
-                        fos.write(buf, 0, len);
+                    try {
+                        int len;
+                        while ((len = ziStream.read(buf)) > 0) {
+                            fos.write(buf, 0, len);
+                        }
+                    } finally {
+                        fos.close();
                     }
-                    fos.close();
                 }
                 zipEntry = ziStream.getNextEntry();
             }
 
             // Close the input stream
-            ziStream.close();
+            try {
+                ziStream.close();
+            } catch (Exception e) {
+
+            }
+            try {
+                fiStream.close();
+            } catch (Exception e) {
+
+            }
         } catch (Exception e) {
             return false;
         }
@@ -111,7 +126,7 @@ public final class FileUtils {
      * compresses the specified files into a zip archive
      *
      * @param zipFile contains the zip archive name
-     * @param files files to put in the archive
+     * @param files   files to put in the archive
      * @return Returns true if the zip was successful, false otherwise
      */
     public static boolean zip(final File zipFile, final File[] files) {
@@ -162,7 +177,7 @@ public final class FileUtils {
      * compresses the specified files into a zip archive
      *
      * @param zipFile contains the zip archive name
-     * @param files files to put in the archive
+     * @param files   files to put in the archive
      * @return Returns true if the zip was successful, false otherwise
      */
     public static boolean zip(final String zipFile, final String[] files) {
@@ -171,5 +186,26 @@ public final class FileUtils {
             ffiles[i] = new File(files[i]);
         }
         return zip(new File(zipFile), ffiles);
+    }
+
+    public static void deleteDirectory(String dirPath) {
+        File dir = new File(dirPath);
+        File[] currList;
+        Stack<File> stack = new Stack<File>();
+        stack.push(dir);
+        while (!stack.isEmpty()) {
+            if (stack.lastElement().isDirectory()) {
+                currList = stack.lastElement().listFiles();
+                if (currList.length > 0) {
+                    for (File curr : currList) {
+                        stack.push(curr);
+                    }
+                } else {
+                    stack.pop().delete();
+                }
+            } else {
+                stack.pop().delete();
+            }
+        }
     }
 }

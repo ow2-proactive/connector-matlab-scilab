@@ -1,5 +1,13 @@
 lines(0);
 oldpwd = pwd();
+
+if ~atomsIsLoaded('JIMS')
+    // due to a bug that JIMS is sometimes not loaded at Scilab start
+    ok = %t;
+    save('re.tst',ok);
+    exit();
+end
+
 //disp(oldpwd);
 
 exec loader.sce;

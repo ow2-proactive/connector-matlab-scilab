@@ -24,15 +24,14 @@ function [val_k,index]=PAwaitAny(l,timeout)
         end
 
         if argn(2) == 2
-            // Because of this error in JIMS:
-            // Method invocation: An error occurred during the data retrieving in Java:
-            // Too many possible methods named waitForAny in the class org.objectweb.proactive.api.PAFuture.
-            // timeout is for now ignored in PAwaitAny
-            //ind = PAFuture.waitForAny(arrayList,timeout);
             tout = jinvoke(Integer,'parseInt',string(timeout));
-            unrei = jinvoke(PA_solver,'waitAny',jobid, taskids,tout);
         else
             tout = jinvoke(Integer,'parseInt',string(-1));
+        end
+        try
+            unrei = jinvoke(PA_solver,'waitAny',jobid, taskids,tout);
+        catch
+            PAensureConnected();
             unrei = jinvoke(PA_solver,'waitAny',jobid, taskids,tout);
         end
         pair = jinvoke(unrei,'get');

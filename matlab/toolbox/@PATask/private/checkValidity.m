@@ -45,12 +45,12 @@ switch attrib
             error('Description must be a string');
         end
     case 'InputFiles'
-        if ~(iscellstr(val) || (isnumeric(val) && isempty(val)))
-            error('InputFiles must be a cell array of strings');
+        if ~(isa(val,'PAFile') || ischar(val) || (isnumeric(val) && isempty(val)))
+            error('InputFiles must be an array of PAFile objects');
         end
     case 'OutputFiles'
-        if ~(iscellstr(val) || (isnumeric(val) && isempty(val)))
-            error('OutputFiles must be a cell array of strings');
+        if ~(isa(val,'PAFile') || ischar(val) || (isnumeric(val) && isempty(val)))
+            error('OutputFiles must be an array of PAFile objects');
         end    
     case 'Compose'
         if ~(islogical(val) || (isnumeric(val) && isempty(val)))

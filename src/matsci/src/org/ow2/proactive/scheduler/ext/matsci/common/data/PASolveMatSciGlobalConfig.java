@@ -36,6 +36,7 @@
  */
 package org.ow2.proactive.scheduler.ext.matsci.common.data;
 
+import java.io.File;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.HashSet;
@@ -77,6 +78,31 @@ public class PASolveMatSciGlobalConfig implements Serializable {
      * The tasks are executed under the account of the current user
      **/
     protected boolean runAsMe = false;
+
+    /**
+     * Push URL of the Scheduler's shared space, seen by the Matlab/Scilab client
+     */
+    protected String sharedPushPublicUrl = null;
+
+    /**
+     * Pull URL of the Scheduler's shared space, seen by the Matlab/Scilab client
+     */
+    protected String sharedPullPublicUrl = null;
+
+    /**
+     * Push URL of the Scheduler's shared space, seen by the nodes
+     */
+    protected String sharedPushPrivateUrl = null;
+
+    /**
+     * Pull URL of the Scheduler's shared space, seen by the nodes
+     */
+    protected String sharedPullPrivateUrl = null;
+
+    /**
+     * Directory storing the files used by the job (used only with the scheduler proxy and the shared space)
+     */
+    protected String jobDirectoryFullPath = null;
 
     /**
      * Default number of task executions
@@ -144,29 +170,14 @@ public class PASolveMatSciGlobalConfig implements Serializable {
     private String[] linuxStartupOptions = null;
 
     /**
-     * Name of source zip file
-     */
-    protected String sourceZipFileName = null;
-
-    /**
      * parameters of the
      */
     protected String[] scriptParams;
 
     /**
-     * Name of env mat file (TransferEnv)
+     * environment mat file (TransferEnv)
      */
-    protected String envMatFileName = null;
-
-    /**
-     * Names of global variables (TransferEnv)
-     */
-    protected String[] envGlobalNames = null;
-
-    /**
-     * Do we zip source files before sending them ?
-     */
-    protected boolean zipSourceFiles;
+    protected PASolveEnvFile envMatFile = null;
 
     /**
      * name of the input space
@@ -186,7 +197,7 @@ public class PASolveMatSciGlobalConfig implements Serializable {
     /**
      * directory structure of the matsci temp directory (each element of the array is a subdirectory of the previous one)
      */
-    protected String[] tempSubDirNames;
+    protected String jobSubDirPath;
 
     /**
      * url of the input space
@@ -207,6 +218,11 @@ public class PASolveMatSciGlobalConfig implements Serializable {
      * timeout used to start Matlab/Scilab worker processes (*10ms)
      */
     protected int workerTimeoutStart = 6000;
+
+    /**
+     * Directory used in this job which needs to be cleaned
+     */
+    protected String dirToClean;
 
     public PASolveMatSciGlobalConfig() {
 
@@ -376,6 +392,46 @@ public class PASolveMatSciGlobalConfig implements Serializable {
         this.runAsMe = runAsMe;
     }
 
+    public String getSharedPushPublicUrl() {
+        return sharedPushPublicUrl;
+    }
+
+    public void setSharedPushPublicUrl(String sharedPushPublicUrl) {
+        this.sharedPushPublicUrl = sharedPushPublicUrl;
+    }
+
+    public String getSharedPullPublicUrl() {
+        return sharedPullPublicUrl;
+    }
+
+    public void setSharedPullPublicUrl(String sharedPullPublicUrl) {
+        this.sharedPullPublicUrl = sharedPullPublicUrl;
+    }
+
+    public String getSharedPushPrivateUrl() {
+        return sharedPushPrivateUrl;
+    }
+
+    public void setSharedPushPrivateUrl(String sharedPushPrivateUrl) {
+        this.sharedPushPrivateUrl = sharedPushPrivateUrl;
+    }
+
+    public String getSharedPullPrivateUrl() {
+        return sharedPullPrivateUrl;
+    }
+
+    public void setSharedPullPrivateUrl(String sharedPullPrivateUrl) {
+        this.sharedPullPrivateUrl = sharedPullPrivateUrl;
+    }
+
+    public String getJobDirectoryFullPath() {
+        return jobDirectoryFullPath;
+    }
+
+    public void setJobDirectoryFullPath(String jobDirectoryFullPath) {
+        this.jobDirectoryFullPath = jobDirectoryFullPath;
+    }
+
     public int getNbExecutions() {
         return nbExecutions;
     }
@@ -384,20 +440,22 @@ public class PASolveMatSciGlobalConfig implements Serializable {
         this.nbExecutions = nbExecutions;
     }
 
-    public String getEnvMatFileName() {
-        return envMatFileName;
+    public PASolveEnvFile getEnvMatFile() {
+        return envMatFile;
     }
 
-    public void setEnvMatFileName(String envMatFileName) {
-        this.envMatFileName = envMatFileName;
+    public void setEnvMatFile(PASolveEnvFile envMatFile) {
+        this.envMatFile = envMatFile;
     }
 
-    public void setEnvGlobalNames(String[] names) {
-        this.envGlobalNames = names;
+    public void setEnvMatFile(String pathname, String[] globalNames) {
+        this.envMatFile = new PASolveEnvFile(pathname);
+        this.envMatFile.setEnvGlobalNames(globalNames);
     }
 
-    public String[] getEnvGlobalNames() {
-        return this.envGlobalNames;
+    public void setEnvMatFile(String relPath, String name, String[] globalNames) {
+        this.envMatFile = new PASolveEnvFile(relPath, name);
+        this.envMatFile.setEnvGlobalNames(globalNames);
     }
 
     public String getInputSpaceName() {
@@ -432,14 +490,6 @@ public class PASolveMatSciGlobalConfig implements Serializable {
         return this.localSpace;
     }
 
-    public boolean isZipSourceFiles() {
-        return zipSourceFiles;
-    }
-
-    public void setZipSourceFiles(boolean zipSourceFiles) {
-        this.zipSourceFiles = zipSourceFiles;
-    }
-
     public boolean isTransferEnv() {
         return transferEnv;
     }
@@ -448,28 +498,16 @@ public class PASolveMatSciGlobalConfig implements Serializable {
         this.transferEnv = transferEnv;
     }
 
-    public String getTempSubDirName() {
-        return tempSubDirNames[0];
+    public String getJobSubDirPortablePath() {
+        return jobSubDirPath;
     }
 
-    public String[] getTempSubDirNames() {
-        return tempSubDirNames;
+    public String getJobSubDirOSPath() {
+        return jobSubDirPath.replace("/", File.separator);
     }
 
-    public void setTempSubDirName(String tempSubDirName) {
-        this.tempSubDirNames = new String[] { tempSubDirName };
-    }
-
-    public void setTempSubDirNames(String[] tempSubDirNames) {
-        this.tempSubDirNames = tempSubDirNames;
-    }
-
-    public String getSourceZipFileName() {
-        return sourceZipFileName;
-    }
-
-    public void setSourceZipFileName(String sourceZipFileName) {
-        this.sourceZipFileName = sourceZipFileName;
+    public void setJobSubDirPath(String jobSurDir) {
+        this.jobSubDirPath = jobSurDir.replace(File.separator, "/");
     }
 
     public String[] getStartupOptions() {
@@ -526,6 +564,14 @@ public class PASolveMatSciGlobalConfig implements Serializable {
 
     public void setCheckMatSciStatic(boolean checkMatSciScriptStatic) {
         this.checkMatSciStatic = checkMatSciScriptStatic;
+    }
+
+    public String getDirToClean() {
+        return dirToClean;
+    }
+
+    public void setDirToClean(String dirToClean) {
+        this.dirToClean = dirToClean;
     }
 
 }

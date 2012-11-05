@@ -2,7 +2,7 @@ function outputs = PAsolve(varargin)
     [locals,globals] = who_user1();
     ke=grep(locals,['varargin']);
     locals(ke)=[];
-    global ('PA_connected','PA_solver', 'SOLVEid', 'PAResult_TasksDB')
+    global ('PA_connected','PA_solver', 'SOLVEid')
 
     if ~exists('PA_connected') | PA_connected ~= 1
         error('A connection to the ProActive scheduler must be established in order to use PAsolve, see PAconnect');
@@ -13,100 +13,129 @@ function outputs = PAsolve(varargin)
     else
         SOLVEid = int32(1);
     end
-    
-    if typeof(PAResult_TasksDB) ~= 'list'
-        PAResult_TasksDB = list();
-    end
-    
+
     opt=PAoptions();
-    
+
     deff ("y=ischar(x)","y=type(x)==10","n");
 
     [Tasks, NN, MM]=parseParams(varargin(:));
 
-    
+    PAensureConnected();
+
 
     initJavaStack();
 
+
     gc_clz=jimport('org.ow2.proactive.scheduler.ext.scilab.common.PASolveScilabGlobalConfig',%f);
     jimport org.ow2.proactive.scheduler.ext.scilab.common.PASolveScilabTaskConfig;
-    jimport org.ow2.proactive.scheduler.ext.common.util.FileUtils;       
-        
-    //addJavaObj(PASolveScilabGlobalConfig);
-    //addJavaObj(PASolveScilabTaskConfig); 
-    //addJavaObj(FileUtils);
-            
+    jimport org.ow2.proactive.scheduler.ext.common.util.FileUtils;    
+    jimport org.ow2.proactive.scheduler.ext.scilab.client.embedded.ScilabTaskRepository;   
 
-    solve_config = jnewInstance(gc_clz);
-    addJavaObj(solve_config);
-    
-    task_configs = jarray('org.ow2.proactive.scheduler.ext.scilab.common.PASolveScilabTaskConfig', NN,MM);
-    addJavaObj(task_configs);
-    for i=1:NN       
-        for j=1:MM
-            t_conf = jnewInstance(PASolveScilabTaskConfig);
-            addJavaObj(t_conf);
-            task_configs(i-1,j-1) = t_conf;
+    repository = jinvoke(ScilabTaskRepository,'getInstance');
+    addJavaObj(repository);
+
+    // we check if there was a previously recorded job    
+    recordedJobInfo = jinvoke(repository, 'getNextJob');
+    if (type(recordedJobInfo) == 1)        
+
+        solve_config = jnewInstance(gc_clz);
+        addJavaObj(solve_config);
+
+        task_configs = jarray('org.ow2.proactive.scheduler.ext.scilab.common.PASolveScilabTaskConfig', NN,MM);
+        addJavaObj(task_configs);
+        for i=1:NN       
+            for j=1:MM
+                t_conf = jnewInstance(PASolveScilabTaskConfig);
+                addJavaObj(t_conf);
+                task_configs(i-1,j-1) = t_conf;
+            end
         end
-    end
-                
 
-    initSolveConfig(solve_config, opt);
 
-    [taskFilesToClean,pa_dir,curr_dir,fs,subdir] = initDirectories(opt,solve_config,NN,SOLVEid);
+        initSolveConfig(solve_config, opt);
 
-    initDS(solve_config,opt);              
+        [taskFilesToClean,pa_dir,curr_dir,fs,subdir] = initDirectories(opt,solve_config,NN,SOLVEid);
+
+        initDS(solve_config,opt);              
+
+
+        taskFilesToClean = initTransferSource(task_configs,solve_config,opt,Tasks, SOLVEid,taskFilesToClean, pa_dir,subdir,fs,NN,MM);
+
+        initTransferEnv(locals,globals,solve_config,opt,SOLVEid,taskFilesToClean, pa_dir,subdir,fs);
+
+        initInputFiles(task_configs,solve_config,opt,Tasks,NN,MM);
+
+        initOutputFiles(task_configs,solve_config,opt,Tasks,NN,MM);
+
+        [outVarFiles, inputscript, mainScript,taskFilesToClean] = initParameters(task_configs,solve_config,opt,Tasks,pa_dir,subdir,fs,NN,MM,taskFilesToClean);
+
+        initOtherTCAttributes(NN,MM, task_configs, Tasks);
+
+        jobinfo = jinvoke(PA_solver,'solve',solve_config, task_configs);
+        // if null is returned there was a connection problem, we reconnect and retry
+        if (type(jobinfo) == 1)
+            PAensureConnected();
+            // clearJavaStack();
+            // outputs = PAsolve(varargin);
+            // return;
+            jobinfo = jinvoke(PA_solver,'solve',solve_config, task_configs);
+        end
+        addJavaObj(jobinfo);
+
+
+        jidjava = jinvoke(jobinfo,'getJobId');
+        jid = string(jidjava);
+        disp('Job submitted : '+ jid);
+
+        jinvoke(repository, 'addJob', jobinfo);
+
+    else
+        addJavaObj(recordedJobInfo);
+        solve_config = jinvoke(recordedJobInfo,'getGlobalConfig');
+        addJavaObj(solve_config);
+        task_configs = jinvoke(recordedJobInfo,'getTaskConfigs');
+        addJavaObj(task_configs);
+
+        jobinfo = jinvoke(PA_solver,'solve',solve_config, task_configs);
+         // if null is returned there was a connection problem, we reconnect and retry
+        if (type(jobinfo) == 1)
+            PAensureConnected();
+            jobinfo = jinvoke(PA_solver,'solve',solve_config, task_configs);
+        end
+        addJavaObj(jobinfo);
+
+        jidjava = jinvoke(jobinfo,'getJobId');
+        jid = string(jidjava);
+        disp('Job recalled : '+ jid);
+
+    end    
+
     
-    
-    taskFilesToClean = initTransferSource(task_configs,solve_config,opt,Tasks, SOLVEid,taskFilesToClean, pa_dir,fs,NN,MM);
-    
-    initTransferEnv(locals,globals,solve_config,opt,SOLVEid,taskFilesToClean, pa_dir,fs);
-    
-    initInputFiles(task_configs,solve_config,opt,Tasks,NN,MM);
-    
-    initOutputFiles(task_configs,solve_config,opt,Tasks,NN,MM);
-    
-    [outVarFiles, inputscript, mainScript,taskFilesToClean] = initParameters(task_configs,solve_config,opt,Tasks,pa_dir,fs,NN,MM,taskFilesToClean);
-    
-    initOtherTCAttributes(NN,MM, task_configs, Tasks);
-        
-       
-    //addJavaObj(ScilabSolver);
-    //addJavaObj(PAFuture);
-    
-    if ~PAisConnected() then
-        schedUrl = jinvoke(PA_solver,'getSchedulerURL');
-        error('This Scilab session was disconnected from the scheduler at ' +schedUrl +', please contact the scheduler administrators and reconnect using PAconnect');
-    end
-        
-    jobinfo = jinvoke(PA_solver,'solve',solve_config, task_configs);    
-    addJavaObj(jobinfo);    
-    jidjava = jinvoke(jobinfo,'getJobId');
-    addJavaObj(jidjava);
-    jid = string(jidjava);
-    disp('Job submitted : '+ jid);    
+    dir_to_clean_java = jinvoke(jobinfo,'getDirToClean');
+    //addJavaObj(dir_to_clean_java);
+    dir_to_clean = string(dir_to_clean_java);
 
     ftnjava = jinvoke(jobinfo,'getFinalTasksNamesAsList');
     ftn = list();
-    
+
     addJavaObj(ftnjava);
-    taskinfo = struct('cleanFileSet',[],'cleanDirSet',[], 'outFile',[], 'jobid',[], 'taskid',[] );
+    taskinfo = struct('cleanDir',[], 'outFile',[], 'jobid',[], 'taskid',[] );
     results=list(NN);
     for i=1:NN
         tidjava = jinvoke(ftnjava,'get',i-1);
         addJavaObj(tidjava);
-        ftn(i) = string(tidjava);
-        taskinfo.cleanFileSet = taskFilesToClean(i);
-        taskinfo.cleanDirSet = list(pa_dir);
-        taskinfo.outFile = outVarFiles(i);
+        ftn(i) = string(tidjava);        
+        taskinfo.cleanDir = dir_to_clean;
+        out_path_java = jinvoke(jobinfo,'getOutputVariablePathWithIndex',i-1);
+        //addJavaObj(out_path_java);
+        taskinfo.outFile = string(out_path_java);
         taskinfo.jobid = jid;
-        
+
         taskinfo.taskid = ftn(i);
         taskinfo.sid = SOLVEid;        
 
         results(i)=PAResult(taskinfo);
-    end    
-    PAResult_TasksDB(SOLVEid) = ftn;
+    end
     outputs = PAResL(results);
     clearJavaStack();
 
@@ -114,7 +143,7 @@ endfunction
 
 // Parse command line parameters
 function [Tasks, NN, MM]=parseParams(varargin)
-    
+
     if ischar(varargin(1)) then
         Func = varargin(1);
         NN=length(varargin)-1; 
@@ -196,29 +225,22 @@ function [taskFilesToClean,pa_dir,curr_dir,fs,subdir] = initDirectories(opt,solv
         end
         pa_dir = opt.CustomDataspacePath + fs + subdir + fs + string(solveid);
     end
-       
-    
+
+
     taskFilesToClean=list();
     for i=1:NN
         taskFilesToClean($+1)=list();
     end
-    
-    subDirNames = jarray('java.lang.String', 2);
-    addJavaObj(subDirNames);
-    strName1 = jnewInstance(String,subdir);
-    addJavaObj(strName1);
-    subDirNames(0) = strName1;
-    strName2 = jnewInstance(String,string(solveid));
-    addJavaObj(strName2);
-    subDirNames(1) = strName2;
-    jinvoke(solve_config,'setTempSubDirNames',subDirNames);
-    
-    subdir = subdir + '/' + string(solveid); 
+
+    subdir = subdir + '/' + string(solveid);
+    jinvoke(solve_config,'setJobSubDirPath',subdir);
+    jinvoke(solve_config,'setDirToClean',pa_dir);
 endfunction
 
 // Initialize Data Spaces
-function initDS(solve_config,opt)
-    global('PA_dsregistry')    
+function initDS(solve_config, opt)
+    global('PA_dsregistry')
+    curr_dir = pwd();
     //addJavaObj(AODataspaceRegistry); 
     if isempty(opt.CustomDataspaceURL)   
         try                     
@@ -254,12 +276,18 @@ endfunction
 function initSolveConfig(solve_config,opt)
     jimport java.net.URL;
     //addJavaObj(URL);
+    curr_dir = pwd();
     jinvoke(solve_config,'setJobName',opt.JobName);
     jinvoke(solve_config,'setJobDescription',opt.JobDescription);
     jinvoke(solve_config,'setDebug',opt.Debug);
     jinvoke(solve_config,'setTransferEnv',opt.TransferEnv);
     jinvoke(solve_config,'setFork',opt.Fork);
-    jinvoke(solve_config,'setRunAsMe',opt.RunAsMe);    
+    jinvoke(solve_config,'setRunAsMe',opt.RunAsMe);
+    jinvoke(solve_config, 'setSharedPushPublicUrl', opt.SharedPushPublicUrl);
+    jinvoke(solve_config, 'setSharedPullPublicUrl', opt.SharedPullPublicUrl);
+    jinvoke(solve_config, 'setSharedPushPrivateUrl', opt.SharedPushPrivateUrl);
+    jinvoke(solve_config, 'setSharedPullPrivateUrl', opt.SharedPullPrivateUrl);
+    jinvoke(solve_config, 'setJobDirectoryFullPath',curr_dir);
     jinvoke(solve_config,'setPriority',opt.Priority);    
     jinvoke(solve_config,'setNbExecutions',opt.NbTaskExecution);   
     //solve_config.setTransferEnv(opt.TransferEnv);       
@@ -294,13 +322,12 @@ function initSolveConfig(solve_config,opt)
     end
     jinvoke(solve_config,'setCheckMatSciStatic',opt.CheckMatSciScriptStatic);
 
-    jinvoke(solve_config,'setZipSourceFiles',%f);
     jinvoke(solve_config,'setWorkerTimeoutStart',opt.WorkerTimeoutStart);
-    
+
 endfunction
 
 // Initialize Task Config source files to be transferred
-function taskFilesToClean = initTransferSource(task_configs,solve_config,opt,Tasks, solveid,taskFilesToClean, pa_dir,fs,NN,MM)    
+function taskFilesToClean = initTransferSource(task_configs,solve_config,opt,Tasks, solveid,taskFilesToClean, pa_dir, subdir,fs,NN,MM)
     jimport java.lang.String;
     //addJavaObj(String);
     for i=1:NN       
@@ -321,19 +348,19 @@ function taskFilesToClean = initTransferSource(task_configs,solve_config,opt,Tas
                     srcPath = srcs(k);
                     if isfile(srcPath) then
                         [ppath,fname,extension]=fileparts(srcPath);
-                        srcName = strcat(strcat([fname,extension]));
+                        srcName = fname + extension;
 
                         if opt.Debug then
                             disp(strcat(['Copying file ', srcPath, ' to ',pa_dir]));
                         end
                         copyfile(srcPath,pa_dir);
-                        // TODO find a cleaning mechanisme
+                        // TODO find a cleaning mechanism
                         //taskFilesToClean(i)=lstcat(taskFilesToClean(i), list(pa_dir+fs+fname+extension));
                         //tmpFiles($+1)=strcat([pa_dir,fs,fname,extension]);
 
                         strName = jnewInstance(String,srcName);
                         addJavaObj(strName);
-                        jinvoke(t_conf,'addSourceFile',strName);
+                        jinvoke(t_conf,'addSourceFile',subdir, strName);
                     else
                         clearJavaStack();
                         error(strcat(['Source file ', srcPath, ' cannot be found']));
@@ -341,11 +368,10 @@ function taskFilesToClean = initTransferSource(task_configs,solve_config,opt,Tas
 
                 end
             end
-            
+
             // Saving main function name (with or without Sources attribute)
-            sourceNames = jarray('java.lang.String', 1);
-            addJavaObj(sourceNames);
-            sFN = 'ScilabPAsolve_src'+string(solveid)+indToFile([i j])+'.bin';
+
+            sFN = 'ScilabPAsolveSrc_'+string(solveid)+indToFile([i j])+'.bin';
             if opt.Debug then
                 disp('Saving function '+Func+' into file ' +pa_dir+fs+sFN);
             end
@@ -354,22 +380,20 @@ function taskFilesToClean = initTransferSource(task_configs,solve_config,opt,Tas
             warning('on')
             strName = jnewInstance(String,sFN);
             addJavaObj(strName);
-            sourceNames(0) = strName;
-            jinvoke(t_conf,'setFunctionVarFiles',sourceNames);                
+            jinvoke(t_conf,'addFunctionVarFile',subdir, strName);
             code=[];
             taskFilesToClean(i)=lstcat(taskFilesToClean(i), list(pa_dir+fs+sFN));
 
 
             jinvoke(t_conf,'setFunctionName',Func);
-            jinvoke(t_conf,'addSourceFile',sFN);
+            jinvoke(t_conf,'addSourceFile',subdir, sFN);
             jremove(t_conf);
         end
     end
 endfunction
 
-function initTransferEnv(locals,globals,solve_config,opt,solveid,taskFilesToClean, pa_dir,fs)
-    // Transfering the environment    
-    
+function initTransferEnv(locals,globals,solve_config,opt,solveid,taskFilesToClean, pa_dir, subdir,fs)
+    // Transfering the environment        
     if opt.TransferEnv
         jimport java.lang.String;
         envMatName = 'ScilabPAsolveEnv_'+ string(solveid)+ '.mat';
@@ -393,13 +417,11 @@ function initTransferEnv(locals,globals,solve_config,opt,solveid,taskFilesToClea
         else 
             globalNames = [];
         end
-                
         for i=1:size(globals,1)
             name = jnewInstance(String,globals(i));
             addJavaObj(name);
         end
-        jinvoke(solve_config,'setEnvMatFileName',envMatName);     
-        jinvoke(solve_config,'setEnvGlobalNames',globalNames);         
+        jinvoke(solve_config,'setEnvMatFile',subdir, envMatName, globalNames);
     end
 endfunction
 
@@ -413,26 +435,18 @@ function initInputFiles(task_configs,solve_config,opt,Tasks,NN,MM)
         for j=1:MM
             t_conf = task_configs(i-1,j-1);
             // Input Files
-            if ~isempty(Tasks(j,i).InputFiles) then
-                ilen = length(Tasks(j,i).InputFiles);
+            ilen = size(Tasks(j,i).InputFiles);
                 if ilen > 0 then
-                    inputFiles = jarray('java.lang.String', ilen);
-                    addJavaObj(inputFiles);
                     filelist = Tasks(j,i).InputFiles;
                     for k=1:ilen
-                        filename = filelist(k);
-                        ifstr = jnewInstance(String,strsubst(filename,'\','/'));
+                        afile = filelist(k);
+                        ifstr = jnewInstance(String,afile.Path);
                         addJavaObj(ifstr);
-                        inputFiles(k-1)=ifstr;
+                        dss = jinvoke(ddss,'getSpace',afile.Space);
+                        addJavaObj(dss);
+                        jinvoke(t_conf,'addInputFile',ifstr, dss);
                     end
-
-                    jinvoke(t_conf,'setInputFiles',inputFiles);
-                    jinvoke(t_conf,'setInputFilesThere',%t);
-                    dss = jinvoke(ddss,'getSource',Tasks(j,i).InputSource)
-                    jinvoke(t_conf,'setInputSource',dss);
-                    jremove(dss);
-                end                
-            end
+                end
             jremove(t_conf);
         end        
     end
@@ -449,26 +463,19 @@ function initOutputFiles(task_configs,solve_config,opt,Tasks,NN,MM)
     for i=1:NN       
         for j=1:MM
             t_conf = task_configs(i-1,j-1);
-            if ~isempty(Tasks(j,i).OutputFiles) then
-                filelist = Tasks(j,i).OutputFiles;
-                ilen = length(filelist);
-                if ilen > 0 then
-                    outputFiles = jarray('java.lang.String', ilen);
-                    addJavaObj(outputFiles);
-                    for k=1:ilen
-                        filename = filelist(k);
-                        ofstr = jnewInstance(String,strsubst(filename,'\','/'));
-                        addJavaObj(ofstr);
-                        outputFiles(k-1)=ofstr;
-                    end
-
-                    jinvoke(t_conf,'setOutputFiles',outputFiles);
-                    jinvoke(t_conf,'setOutputFilesThere',%t);
-                    dss = jinvoke(ddss,'getSource',Tasks(j,i).OutputSource);
-                    jinvoke(t_conf,'setOutputSource',dss);
-                    jremove(dss);
-                end
-            end
+            // Output Files
+                        ilen = size(Tasks(j,i).OutputFiles);
+                            if ilen > 0 then
+                                filelist = Tasks(j,i).OutputFiles;
+                                for k=1:ilen
+                                    afile = filelist(k);
+                                    ifstr = jnewInstance(String,afile.Path);
+                                    addJavaObj(ifstr);
+                                    dss = jinvoke(ddss,'getSpace',afile.Space);
+                                    addJavaObj(dss);
+                                    jinvoke(t_conf,'addOutputFile',ifstr, dss);
+                                end
+                            end
             jremove(t_conf);
         end
     end
@@ -476,22 +483,22 @@ function initOutputFiles(task_configs,solve_config,opt,Tasks,NN,MM)
 endfunction
 
 // Initialize Task Config Input Parameters
-function [outVarFiles, inputscript, mainScript,taskFilesToClean] = initParameters(task_configs,solve_config,opt,Tasks,pa_dir,fs,NN,MM,taskFilesToClean) 
-    
-    variableInFileBaseName = ['ScilabPAsolveVarIn_' string(SOLVEid)];
-    variableOutFileBaseName = ['ScilabPAsolveVarOut_' string(SOLVEid)];
+function [outVarFiles, inputscript, mainScript,taskFilesToClean] = initParameters(task_configs,solve_config,opt,Tasks,pa_dir, subdir,fs,NN,MM,taskFilesToClean)
+
+    variableInFileBaseName = 'ScilabPAsolveVarIn_' + string(SOLVEid);
+    variableOutFileBaseName = 'ScilabPAsolveVarOut_' + string(SOLVEid);
     outVarFiles = list(NN);  
-    
+    curr_dir = pwd();
     for i=1:NN       
         for j=1:MM
             t_conf = task_configs(i-1,j-1);
             // Params
             argi = Tasks(j,i).Params;
             if opt.TransferVariables
-                inVarFN = strcat([variableInFileBaseName, indToFile([i j]), '.dat']);
-                outVarFN = strcat([variableOutFileBaseName, indToFile([i j]), '.dat']);
-                inVarFP = strcat([pa_dir, fs, inVarFN]);
-                outVarFP = strcat([pa_dir, fs, outVarFN]);
+                inVarFN = variableInFileBaseName + indToFile([i j]) + '.dat';
+                outVarFN = variableOutFileBaseName + indToFile([i j])+ '.dat';
+                inVarFP = pa_dir + fs + inVarFN;
+                outVarFP = pa_dir + fs + outVarFN;
                 // Creating input parameters mat files
                 fd=mopen(inVarFP,'wb'); 
                 inl = argi;
@@ -506,12 +513,12 @@ function [outVarFiles, inputscript, mainScript,taskFilesToClean] = initParameter
                 warning('on')
                 mclose(fd);
 
-                jinvoke(t_conf,'setInputVariablesFileName',inVarFN);
-                jinvoke(t_conf,'setOutputVariablesFileName',outVarFN);
+                jinvoke(t_conf,'setInputVariablesFile',subdir, inVarFN);
+                jinvoke(t_conf,'setOutputVariablesFile',curr_dir, subdir, outVarFN);
                 if j > 1 & Tasks(j,i).Compose
-                    cinVarFN = strcat([variableOutFileBaseName,indToFile([i j-1]),'.dat']);
+                    cinVarFN = variableOutFileBaseName + indToFile([i j-1]) +'.dat';
                     cinVarFP = pa_dir+fs+cinVarFN;                    
-                    jinvoke(t_conf,'setComposedInputVariablesFileName',cinVarFN);                    
+                    jinvoke(t_conf,'setComposedInputVariablesFile',subdir, cinVarFN);
                 end
                 outVarFiles(i) = outVarFP;
                 taskFilesToClean(i)=lstcat(taskFilesToClean(i), list(inVarFP));
@@ -525,7 +532,7 @@ function [outVarFiles, inputscript, mainScript,taskFilesToClean] = initParameter
             else
                 inputscript = createInputScript(argi);
             end 
-            
+
             jinvoke(t_conf,'setInputScript',inputscript);
 
             //mainScript = createMainScript(Func, opt);
@@ -580,7 +587,7 @@ function initOtherTCAttributes(NN,MM, task_configs, Tasks)
                 jinvoke(t_conf,'setStaticScript',Tasks(j,i).Static);
                 jinvoke(t_conf,'setCustomScriptParams',Tasks(j,i).ScriptParams);
             end   
-            
+
             // Topology
             if Tasks(j,i).NbNodes > 1 then
                 if ~(type(Tasks(j,i).Topology) == 10)
@@ -627,6 +634,7 @@ endfunction
 function mainScript = createMainScript(funcName, opt)
     debugv = opt.Debug;
     if debugv == 1
+
         //mainScript = strcat(['mode(3)';ascii(31);'out=';funcName;'(in)';ascii(31);ascii(30);'output = sci2exp(output,''''output'''',0)';ascii(31);'disp(out)']);
         mainScript = strcat(['mode(3)';ascii(31);'out=';funcName;'(in)';ascii(31);'disp(out)']);
     else

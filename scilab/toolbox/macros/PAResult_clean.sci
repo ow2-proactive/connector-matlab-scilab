@@ -4,19 +4,19 @@ function PAResult_clean(R)
     end
     if ~jinvoke(R.cleaned,'get')
         warning('off')
-        setf = R.cleanFileSet;
-        for i=1:length(setf)
-            mdelete(setf(i));
-        end
-        setd = R.cleanDirSet;
-        for i=1:length(setd)
-            d=ls(setd(i));
+       // setf = R.cleanFileSet;
+        //for i=1:length(setf)
+        //    mdelete(setf(i));
+        //end
+        dirToClean = R.cleanDir;
+        //for i=1:length(setd)
+            d=ls(dirToClean);
             if (getos() == "Linux") & size(d,1) == 2
-                rmdir(setd(i));
+                rmdir(dirToClean);
             elseif (getos() == "Windows") & size(d,1) == 0
-                rmdir(setd(i));
+                rmdir(dirToClean);
             end
-        end
+        //end
         //sched = PAScheduler;
         //sched.PATaskRepository(R.jobid, R.taskid, 'received');
         jinvoke(R.cleaned,'set',%t);

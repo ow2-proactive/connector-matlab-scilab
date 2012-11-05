@@ -1,4 +1,4 @@
-function jobs = PAconnect(url, credpath)
+function PAconnect(url, credpath)
 % PAconnect connects to the ProActive scheduler
 %
 % Syntax
@@ -11,10 +11,6 @@ function jobs = PAconnect(url, credpath)
 %       url - url of the scheduler
 %       credpath - path to the login credential file
 %
-% Ouputs
-%
-%       jobs - id of jobs that were not terminated at matlab's previous
-%       shutdown
 %
 % Description
 %
@@ -155,7 +151,7 @@ end
 end
 
 function deployJVM(sched,opt,url)
-deployer = org.ow2.proactive.scheduler.ext.matsci.client.embedded.util.StandardJVMSpawnHelper.getInstance();
+deployer = org.ow2.proactive.scheduler.ext.matlab.client.embedded.util.MatlabJVMSpawnHelper.getInstance();
 home = getenv('JAVA_HOME');
 fs=filesep();
 if length(home) > 0
@@ -179,6 +175,10 @@ jarsjava = javaArray('java.lang.String', length(jars));
 for i=1:length(jars)
     jarsjava(i) = java.lang.String([dist_lib_dir filesep jars{i}]);
 end
+options = opt.JvmArguments;
+for i=1:length(options)
+     deployer.addJvmOption(options{i});
+end
 deployer.setMatSciDir(matsci_dir);
 deployer.setSchedulerURI(url);
 deployer.setDebug(opt.Debug);
@@ -186,7 +186,7 @@ deployer.setClasspathEntries(jarsjava);
 deployer.setProActiveConfiguration(opt.ProActiveConfiguration);
 deployer.setLog4JFile(opt.Log4JConfiguration);
 deployer.setPolicyFile(opt.SecurityFile);
-deployer.setClassName('org.ow2.proactive.scheduler.ext.matsci.middleman.MiddlemanDeployer');
+deployer.setClassName('org.ow2.proactive.scheduler.ext.matlab.middleman.MatlabMiddlemanDeployer');
 
 if exist(opt.DisconnectedModeFile,'file')
     load(opt.DisconnectedModeFile, 'rmiport');
@@ -200,7 +200,7 @@ itfs = pair.getX();
 PAoptions('RmiPort',pair.getY());
 solver = deployer.getMatlabEnvironment();
 sched.PAgetsolver(solver);
-registry = deployer.getRegistry();
+registry = deployer.getDSRegistry();
 sched.PAgetDataspaceRegistry(registry);
 jvmint = deployer.getJvmInterface();
 sched.PAgetJVMInterface(jvmint);
@@ -249,28 +249,7 @@ function dataspaces(sched,opt)
 % Dataspace Handler
 registry = sched.PAgetDataspaceRegistry();
 registry.init('MatlabInputSpace', 'MatlabOutputSpace', opt.Debug);
-if exist(opt.DisconnectedModeFile,'file')
-    % We load the job database, wether there was a problem with
-    % reconnecting to the Dataspace handler or not
-    try
-        sched = PAScheduler;
-        sched.PATaskRepository('load');
-        jobs = sched.PATaskRepository('uncomplete');
-        if length(jobs) > 0
-            str='';
-            for i=1:length(jobs)
-                str = [ str ' ' jobs{i}];
-            end
-            disp(['The following jobs were uncomplete before last matlab shutdown : ' str ]);
-        end
-    catch ME
-        disp('There was a problem retrieving previous jobs.');
-        disp(getReport(ME));
-        if exist(opt.DisconnectedModeFile,'file')
-            delete(opt.DisconnectedModeFile);
-        end
-    end
-end
+
 end
 
 

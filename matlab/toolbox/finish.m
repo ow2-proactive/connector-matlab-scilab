@@ -37,46 +37,14 @@
 opt = PAoptions();
 try
     sched = PAScheduler;
-    
 
     solver = sched.PAgetsolver();
     if strcmp(class(solver),'double')
         return;
     end    
-    jobs = sched.PATaskRepository('uncomplete');
 
-    if opt.EnableDisconnectedMode && length(jobs) > 0
-        msg = ['The following tasks have not been retrieved : ' 10];
-        for i = 1:length(jobs)
-            msg = [msg 'Job ' jobs{i} ' : '];
-            tsks = sched.PATaskRepository(jobs{i},'toreceive');
-            for j = 1:length(tsks)
-                msg = [msg tsks{j} ' '];
-            end
-            msg = [msg 10];
-        end
-        msg = [msg 'Do you want to enable disconnected mode ?'];
-        button = questdlg(msg,'Disconnect','Yes','No','Yes');
-        if strcmp(button, 'Yes')
-            sched.dumpState();
-            return;        
-        end
-    end
-
-    alljobs = sched.PATaskRepository('alljobs');
-    % it might be faster to clean dirs before files
-    for i = 1:length(alljobs)
-        sched.PAaddDirToClean(alljobs{i});
-    end
-    for i = 1:length(alljobs)
-        sched.PAaddFileToClean(alljobs{i});
-    end
     jvm = sched.PAgetJVMInterface();
-    jvm.shutdown();    
-
-    if exist(opt.DisconnectedModeFile,'file')
-        delete(opt.DisconnectedModeFile);
-    end
+    jvm.shutdown();
 
 catch ME
     disp('There was a problem during the finish script. Displaying the error during 10 seconds...');
@@ -84,9 +52,6 @@ catch ME
         disp(getReport(ME));
     elseif isa(ME, 'java.lang.Throwable')
         ME.printStackTrace();
-    end
-    if exist(opt.DisconnectedModeFile,'file')
-        delete(opt.DisconnectedModeFile);
     end
     pause(10);
 end

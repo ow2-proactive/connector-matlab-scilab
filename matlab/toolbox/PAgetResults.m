@@ -76,24 +76,20 @@ solver = sched.PAgetsolver();
 if strcmp(class(solver),'double')
     error('connexion to the scheduler is not established');
 end
-jinfo = sched.PATaskRepository(jobid, 'jobinfo');
-if isnumeric(jinfo) && isempty(jinfo)
-    error(['PAgetResults::Unknown job : ' jobid]);
-end
+trep = org.ow2.proactive.scheduler.ext.matlab.client.embedded.MatlabTaskRepository.getInstance();
+
+jinfo = trep.getInfo(jobid);
 
 disp(['Retrieving results of job ' jobid]);
-opt = PAoptions();
-if opt.CleanAllTempFilesDirectly
-    tsks = sched.PATaskRepository(jobid, 'toreceive');
-    if length(tsks) == 0
-        error(['Results of job ' num2str(jobid) ' not available, please set CleanAllTempFilesDirectly and RemoveJobAfterRetrieve to false in order to retrieve the results of a job from the current matlab session.']); 
-    end
-end
-alltasks = sched.PATaskRepository(jobid, 'alltasks');
-solver = sched.PAgetsolver();
-solver.retrieve(jinfo);
-for j=1:length(alltasks)
-    taskinfo = sched.PATaskRepository(jobid, alltasks{j}, 'taskinfo');
-    res(j)=PAResult(taskinfo);
-    sched.PAaddDirToClean(jobid, taskinfo.cleanDirSet);
+
+ftn = jinfo.getFinalTasksNamesAsList();
+dir_to_clean = char(jinfo.getDirToClean();
+tnit = ftn.iterator();
+for i=1:ftn.size()
+    taskinfo.cleanDir = dir_to_clean;
+    out_path = jinfo.getOutputVariablePathWithIndex(i-1);
+    taskinfo.outFile = char(out_path);
+    taskinfo.jobid = jobid;
+    taskinfo.taskid = char(tnit.next());
+    res(i)=PAResult(taskinfo);
 end

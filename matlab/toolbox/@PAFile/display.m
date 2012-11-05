@@ -34,13 +34,61 @@
 %   * ################################################################
 %   * $$PROACTIVE_INITIAL_DEV$$
 %   */
+function display(P)
 
-function res = PAgetNode(varargin)
-mlock
-persistent node
-if nargin == 1
-    node = varargin{1};
-elseif nargin ~= 0
-        error('two many arguments');    
+s = size(P);
+for j = 1:s(2)
+        dp(P(j), inputname(1), j)
 end
-res = node;
+
+end
+
+function dp(X,name,l)
+if isequal(get(0,'FormatSpacing'),'compact')
+    if length(name) > 0
+        disp([name '('  num2str(l) ')' ' =']);
+    end
+    dp2(X.Path,'Path')
+    dp2(X.Space,'Space')
+else
+    disp(' ')
+    if length(name) > 0
+        disp([name '('  num2str(l) ')' ' =']);
+        disp(' ');
+    end
+    dp2(X.Path,'Path')
+    dp2(X.Space,'Space')
+end
+end
+
+function dp2(Y,name)
+if isnumeric(Y) && isempty(Y)
+    return;
+end
+spacing=get(0,'FormatSpacing');
+format compact
+if iscell(Y)
+    T = evalc('disp(Y);');
+    disp(['    ' name ': ' strtrim(T)]);
+elseif isa(Y,'function_handle')
+    disp(['    ' name ':       @' char(Y)]);
+elseif islogical(Y)
+    if Y
+        disp(['    ' name ':       true']);    
+    else
+        disp(['    ' name ':       false']);
+    end
+elseif isnumeric(Y) && ~isempty(Y)
+    disp(['    ' name ': ' num2str(Y)]);
+else
+    try 
+    disp(['    ' name ': ' char(Y)]);
+catch
+    disp(['    ' name ': ']);
+    disp(Y);
+end
+    
+end
+
+set(0,'FormatSpacing',spacing);
+end

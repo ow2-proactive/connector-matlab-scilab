@@ -47,7 +47,7 @@ public class DummyDSSource {
 
     }
 
-    public DSSource getSource(String str) {
-        return DSSource.getSource(str);
+    public DSSource getSpace(String str) {
+        return DSSource.getSpace(str);
     }
 }

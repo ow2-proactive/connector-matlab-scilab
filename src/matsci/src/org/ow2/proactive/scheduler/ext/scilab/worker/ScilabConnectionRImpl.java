@@ -85,6 +85,8 @@ public class ScilabConnectionRImpl implements ScilabConnection {
 
     PASolveScilabTaskConfig tconfig;
 
+    IOTools.LoggingThread lt1;
+
     public ScilabConnectionRImpl() {
 
     }
@@ -173,7 +175,6 @@ public class ScilabConnectionRImpl implements ScilabConnection {
 
         process = createScilabProcess("PAMain.sce");
 
-        IOTools.LoggingThread lt1;
         if (debug) {
             lt1 = new IOTools.LoggingThread(process, "[SCILAB Engine]", System.out, System.err, outDebug,
                 null, null, null);
@@ -187,6 +188,7 @@ public class ScilabConnectionRImpl implements ScilabConnection {
         t1.start();
 
         int exitValue = process.waitFor();
+        lt1.goon = false;
         if (exitValue != 0) {
             throw new ScilabInitException("Scilab process exited with code : " + exitValue);
         }

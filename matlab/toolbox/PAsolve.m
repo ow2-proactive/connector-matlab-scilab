@@ -129,8 +129,6 @@ end
 % Checking the parameters
 [Tasks, NN, MM]=parseParams(varargin{:});
 
-
-
 sched = PAScheduler;
 % Get the solver from memory
 solver = sched.PAgetsolver();
@@ -138,157 +136,186 @@ if strcmp(class(solver),'double')
     error('A connection to the ProActive scheduler must be established in order to use PAsolve, see PAconnect.');
 end
 
+PAensureConnected();
+
 
 opt = PAoptions;
-solve_config = org.ow2.proactive.scheduler.ext.matlab.common.data.PASolveMatlabGlobalConfig();
-task_config = javaArray('org.ow2.proactive.scheduler.ext.matlab.common.data.PASolveMatlabTaskConfig', NN,MM);
-for i=1:NN
-    for j=1:MM
-        task_config(i,j)= org.ow2.proactive.scheduler.ext.matlab.common.data.PASolveMatlabTaskConfig();
-    end
-end
-
-% Checking all functions
-[funcDatabase,allfuncs] = initFunctions(Tasks,task_config, NN, MM,sched);
 
 
-% Temp directories
-[globalFilesToClean,taskFilesToClean,pa_dir,curr_dir,fs,subdir] = initDirectories(opt,solve_config,NN,solveid);
 
-% Initializing data spaces
-initDS(opt,sched,solve_config,curr_dir);
+trepository = org.ow2.proactive.scheduler.ext.matlab.client.embedded.MatlabTaskRepository.getInstance();
 
-% Initialize Remote functions
-[keepaliveFunctionName,checktoolboxesFunctionName]= initRemoteFunctions(solve_config);
 
-% Transfering the environment
-if opt.TransferEnv
-    envMatName = ['MatlabEnv_' num2str(solveid) '.mat'];
-    envFilePath = [pa_dir fs envMatName];
+% we check if there was a previously recorded job
+recordedJobInfo = trepository.getNextJob();
+if ~isjava(recordedJobInfo)
 
-    % saving caller workspace and global variables
-    local_varlist = evalin('caller', 'whos();');
-
-    local_names = {local_varlist.name};
-    local_types = {local_varlist.class};
-
-    [local_names,local_types] = filternames(local_names, local_types);
-    
-    % additional processing for specific types
-    for i=1:length(local_names)
-        if evalin('caller', ['iscom(' local_names{i} ');'])
-            local_types{i} = 'com';
-        elseif evalin('caller', ['isjava(' local_names{i} ');'])
-            local_types{i} = 'java';
-        elseif evalin('caller', ['isinterface(' local_names{i} ');'])
-            local_types{i} = 'interface';
+    solve_config = org.ow2.proactive.scheduler.ext.matlab.common.data.PASolveMatlabGlobalConfig();
+    task_config = javaArray('org.ow2.proactive.scheduler.ext.matlab.common.data.PASolveMatlabTaskConfig', NN,MM);
+    for i=1:NN
+        for j=1:MM
+            task_config(i,j)= org.ow2.proactive.scheduler.ext.matlab.common.data.PASolveMatlabTaskConfig();
         end
     end
 
-    global_varlist = whos('global');
-    global_names = {global_varlist.name};
-    global_types = {global_varlist.class};
+    % Checking all functions
+    [funcDatabase,allfuncs] = initFunctions(Tasks,task_config, NN, MM,sched);
 
-    [global_names,global_types] = filternames(global_names, global_types);
 
-    local_names_mod = cellfun(@(x) ['''' x ''','] ,local_names,'UniformOutput',false);
-    local_names_str = cell2mat(local_names_mod);
-    if opt.Debug
-        disp(['Saving caller vars :' local_names_str ' in ' envFilePath]);
-    end
-    evalin('caller', ['save(''' envFilePath  ''',' local_names_str '''' opt.TransferMatFileOptions ''')']);
+    % Temp directories
+    [globalFilesToClean,taskFilesToClean,pa_dir,curr_dir,fs,subdir] = initDirectories(opt,solve_config,NN,solveid);
 
-    global_names_mod = cellfun(@(x) [' ' x] ,global_names,'UniformOutput',false);
-    global_names_str = cell2mat(global_names_mod);
+    % Initializing data spaces
+    initDS(opt,sched,solve_config,curr_dir);
 
-    global_names_mod2 = cellfun(@(x) ['''' x ''','] ,global_names,'UniformOutput',false);
-    global_names_str2 = cell2mat(global_names_mod2);
+    % Initialize Remote functions
+    [keepaliveFunctionName,checktoolboxesFunctionName]= initRemoteFunctions(solve_config);
 
-    eval(['global' global_names_str]);
-    
-    for i=1:length(global_names)
-        if eval(['iscom(' global_names{i} ');'])
-            global_types{i} = 'com';
-        elseif eval(['isjava(' global_names{i} ');'])
-            global_types{i} = 'java';
-        elseif eval(['isinterface(' global_names{i} ');'])
-            global_types{i} = 'interface';
+    % Transfering the environment
+    if opt.TransferEnv
+        envMatName = ['MatlabPASolveEnv_' num2str(solveid) '.mat'];
+        envFilePath = [pa_dir fs envMatName];
+
+        % saving caller workspace and global variables
+        local_varlist = evalin('caller', 'whos();');
+
+        local_names = {local_varlist.name};
+        local_types = {local_varlist.class};
+
+        [local_names,local_types] = filternames(local_names, local_types);
+
+        % additional processing for specific types
+        for i=1:length(local_names)
+            if evalin('caller', ['iscom(' local_names{i} ');'])
+                local_types{i} = 'com';
+            elseif evalin('caller', ['isjava(' local_names{i} ');'])
+                local_types{i} = 'java';
+            elseif evalin('caller', ['isinterface(' local_names{i} ');'])
+                local_types{i} = 'interface';
+            end
         end
+
+        global_varlist = whos('global');
+        global_names = {global_varlist.name};
+        global_types = {global_varlist.class};
+
+        [global_names,global_types] = filternames(global_names, global_types);
+
+        local_names_mod = cellfun(@(x) ['''' x ''','] ,local_names,'UniformOutput',false);
+        local_names_str = cell2mat(local_names_mod);
+        if opt.Debug
+            disp(['Saving caller vars :' local_names_str ' in ' envFilePath]);
+        end
+        evalin('caller', ['save(''' envFilePath  ''',' local_names_str '''' opt.TransferMatFileOptions ''')']);
+
+        global_names_mod = cellfun(@(x) [' ' x] ,global_names,'UniformOutput',false);
+        global_names_str = cell2mat(global_names_mod);
+
+        global_names_mod2 = cellfun(@(x) ['''' x ''','] ,global_names,'UniformOutput',false);
+        global_names_str2 = cell2mat(global_names_mod2);
+
+        eval(['global' global_names_str]);
+
+        for i=1:length(global_names)
+            if eval(['iscom(' global_names{i} ');'])
+                global_types{i} = 'com';
+            elseif eval(['isjava(' global_names{i} ');'])
+                global_types{i} = 'java';
+            elseif eval(['isinterface(' global_names{i} ');'])
+                global_types{i} = 'interface';
+            end
+        end
+
+        if opt.Debug
+            disp(['Saving global vars :' global_names_str ' in ' envFilePath]);
+        end
+        eval(['save(''' envFilePath  ''',' global_names_str2 ' ''-append'',''' opt.TransferMatFileOptions ''')']);
+
+
+        globalNames = javaArray('java.lang.String', length(global_names));
+        for i=1:length(global_names)
+            globalNames(i) = java.lang.String(global_names{i});
+        end
+
+        solve_config.setEnvMatFile(subdir, envMatName, globalNames)
+
+        % globalFilesToClean=[globalFilesToClean {envFilePath}];
+    else
+        local_names = {};
+        local_types = {};
+        global_names = {};
+        global_types = {};
     end
-    
-    if opt.Debug
-        disp(['Saving global vars :' global_names_str ' in ' envFilePath]);
+
+    % Transfering source files
+    [funcDatabase,taskFilesToClean] = initTransferSource(opt,fs,solveid,funcDatabase,sched,allfuncs,...
+        NN,MM,Tasks,keepaliveFunctionName,checktoolboxesFunctionName,taskFilesToClean,task_config,pa_dir,subdir, local_names,local_types, global_names, global_types);
+
+    % Init Input Files
+    [taskFilesToClean] = initInputFiles(NN,MM,Tasks,opt,fs,taskFilesToClean,task_config);
+
+    % Init Output Files
+    [taskFilesToClean] = initOutputFiles(NN,MM,Tasks,opt,subdir,pa_dir,taskFilesToClean,task_config);
+
+    % Init Other attributes
+    initOtherTCAttributes(NN,MM, task_config, Tasks);
+
+    % Init Parameters
+    [input,main,taskFilesToClean,outVarFiles]=initParameters(solveid,NN,MM,Tasks,opt,taskFilesToClean,task_config,allfuncs,pa_dir,subdir,fs);
+
+    % Init Solve Config
+    initSolveConfig(solve_config,opt,sched);
+
+    % Send the task list to the scheduler
+
+     if ~PAisConnected()
+         schedUrl = solver.getSchedulerURL();
+         error(['This Scilab session was disconnected from the scheduler at ' char(schedUrl) ', please contact the scheduler administrators and reconnect using PAconnect']);
+     end
+
+    jobinfo = solver.solve(solve_config, task_config);
+
+    % if null is returned there was a connection problem, we reconnect and retry
+    if ~isjava(jobinfo)
+        PAensureConnected();
+        jobinfo = solver.solve(solve_config, task_config);
+        % outputs = PAsolve(varargin);
     end
-    eval(['save(''' envFilePath  ''',' global_names_str2 ' ''-append'',''' opt.TransferMatFileOptions ''')']);
 
-    solve_config.setEnvMatFileName(envMatName);
+    jid = char(jobinfo.getJobId());
+    disp(['Job submitted : ' jid]);
+    trepository.addJob(jobinfo);
 
-    globalNames = javaArray('java.lang.String', length(global_names));
-    for i=1:length(global_names)
-        globalNames(i) = java.lang.String(global_names{i});
-    end
-
-    solve_config.setEnvGlobalNames(globalNames);
-
-    globalFilesToClean=[globalFilesToClean {envFilePath}];
 else
-    local_names = {};
-    local_types = {};
-    global_names = {};
-    global_types = {};
+    solve_config = recordedJobInfo.getGlobalConfig();
+    task_configs = recordedJobInfo.getTaskConfigs();
+
+
+    jobinfo = solver.solve(solve_config, task_config);
+     % if null is returned there was a connection problem, we reconnect and retry
+     if ~isjava(jobinfo)
+         PAensureConnected();
+         jobinfo = solver.solve(solve_config, task_config);
+         % outputs = PAsolve(varargin);
+     end
+
+     jid = char(jobinfo.getJobId());
+     disp(['Job recalled : ' jid]);
 end
 
-% Transfering source files
-[funcDatabase,taskFilesToClean] = initTransferSource(opt,fs,solveid,funcDatabase,sched,allfuncs,...
-    NN,MM,Tasks,keepaliveFunctionName,checktoolboxesFunctionName,taskFilesToClean,task_config,pa_dir, local_names,local_types, global_names, global_types);
-
-% Init Input Files
-[taskFilesToClean] = initInputFiles(NN,MM,Tasks,opt,fs,taskFilesToClean,task_config,subdir,pa_dir);
-
-% Init Output Files
-[taskFilesToClean] = initOutputFiles(NN,MM,Tasks,opt,subdir,pa_dir,taskFilesToClean,task_config);
-
-% Init Other attributes
-initOtherTCAttributes(NN,MM, task_config, Tasks);
-
-% Init Parameters
-[input,main,taskFilesToClean,outVarFiles]=initParameters(solveid,NN,MM,Tasks,opt,taskFilesToClean,task_config,allfuncs,pa_dir,fs);
-
-% Init Solve Config
-initSolveConfig(solve_config,opt,sched);
-
-% Send the task list to the scheduler
-
- if ~PAisConnected()
-     schedUrl = solver.getSchedulerURL();
-     error(['This Scilab session was disconnected from the scheduler at ' char(schedUrl) ', please contact the scheduler administrators and reconnect using PAconnect']);
- end
-
-jobinfo = solver.solve(solve_config, task_config);
-
-jid = char(jobinfo.getJobId());
-disp(['Job submitted : ' jid]);
-
-sched.PAaddDirToClean(jid, pa_dir);
+dir_to_clean = char(jobinfo.getDirToClean());
 
 ftn = jobinfo.getFinalTaskNames();
-sched.PATaskRepository(jid, jobinfo);
 tnit = ftn.iterator();
 for i=1:NN
-    taskinfo.cleanFileSet = taskFilesToClean{i};
-    taskinfo.cleanDirSet = {pa_dir};
-    taskinfo.outFile = outVarFiles{i};
+    % taskinfo.cleanFileSet = taskFilesToClean{i};
+    taskinfo.cleanDir = dir_to_clean;
+    % taskinfo.cleanDirSet = {pa_dir};
+    out_path = jobinfo.getOutputVariablePathWithIndex(i-1);
+    taskinfo.outFile = char(out_path);
     taskinfo.jobid = jid;
     taskinfo.taskid = char(tnit.next());
-    sched.PATaskRepository(jid, taskinfo.taskid, taskinfo);
     results(i)=PAResult(taskinfo);
-    for j=1:length(taskFilesToClean{i})
-        sched.PAaddFileToClean(jid, taskFilesToClean{i}{j});
-    end
-end
-
-if opt.AutomaticDump
-    sched.dumpState();
 end
 
 end
@@ -442,11 +469,6 @@ else
     pa_dir = [opt.CustomDataspacePath fs subdir fs num2str(solveid)];
 end
 
-subDirNames = javaArray('java.lang.String', 2);
-subDirNames(1) = java.lang.String(subdir);
-subDirNames(2) = java.lang.String(num2str(solveid));
-
-solve_config.setTempSubDirNames(subDirNames);
 
 globalFilesToClean = {};
 taskFilesToClean=cell(1,NN);
@@ -455,6 +477,8 @@ for i=1:NN
 end
 
 subdir = [subdir '/' num2str(solveid)];
+solve_config.setJobSubDirPath(subdir);
+solve_config.setDirToClean(pa_dir);
 end
 
 % Initialize Data Spaces
@@ -489,6 +513,7 @@ end
 
 % Initialize Global PASolve Config
 function initSolveConfig(solve_config,opt,sched)
+curr_dir = pwd();
 solve_config.setJobName(opt.JobName);
 solve_config.setJobDescription(opt.JobDescription);
 solve_config.setDebug(opt.Debug);
@@ -500,6 +525,11 @@ solve_config.setMatFileOptions(opt.TransferMatFileOptions);
 solve_config.setLicenseServerUrl(opt.LicenseServerURL);
 solve_config.setFork(opt.Fork);
 solve_config.setRunAsMe(opt.RunAsMe);
+solve_config.setSharedPushPublicUrl(opt.SharedPushPublicUrl);
+solve_config.setSharedPullPublicUrl(opt.SharedPullPublicUrl);
+solve_config.setSharedPushPrivateUrl(opt.SharedPushPrivateUrl);
+solve_config.setSharedPullPrivateUrl(opt.SharedPullPrivateUrl);
+solve_config.setJobDirectoryFullPath(curr_dir);
 solve_config.setNbExecutions(opt.NbTaskExecution);   
 solve_config.setWindowsStartupOptionsAsString(opt.WindowsStartupOptions);
 solve_config.setLinuxStartupOptionsAsString(opt.LinuxStartupOptions);
@@ -531,7 +561,6 @@ if ischar(opt.CustomScript)
     solve_config.setCustomScriptParams(opt.CustomScriptParams);
 end
 solve_config.setCheckMatSciStatic(opt.CheckMatSciScriptStatic);
-solve_config.setZipSourceFiles(true);
 solve_config.setUseMatlabControl(opt.UseMatlabControl);
 solve_config.setWorkerTimeoutStart(opt.WorkerTimeoutStart);
 end
@@ -539,7 +568,7 @@ end
 
 
 % Initialize task config for Transfer source (zip function used)
-function [funcDatabase,taskFilesToClean] = initTransferSource(opt, fs, solveid,funcDatabase,sched,allfuncs, NN, MM,Tasks,keepaliveFunctionName,checktoolboxesFunctionName,taskFilesToClean,task_config,pa_dir, local_names,local_types, global_names, global_types)
+function [funcDatabase,taskFilesToClean] = initTransferSource(opt, fs, solveid,funcDatabase,sched,allfuncs, NN, MM,Tasks,keepaliveFunctionName,checktoolboxesFunctionName,taskFilesToClean,task_config,pa_dir,subdir, local_names,local_types, global_names, global_types)
 sourceZipBaseName = ['MatlabPAsolveSrc_' num2str(solveid)];
 
 
@@ -640,9 +669,9 @@ for i=1:NN
             end
         end
         [zFN zFP]=buildZiplist(allfuncs(i,j).s,[i j],envziplist,paramziplist);
-
-        task_config(i,j).setSourceZipFileName(zFN);
-        taskFilesToClean{i}=[taskFilesToClean{i} {zFP}];
+        sourceZip = org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveZippedFile(subdir,zFN);
+        task_config(i,j).addSourceFile(sourceZip);
+        % taskFilesToClean{i}=[taskFilesToClean{i} {zFP}];
 
     end
 end
@@ -650,26 +679,21 @@ end
 
 
 % Initialize Task Config Input Files
-function [taskFilesToClean] = initInputFiles(NN,MM,Tasks,opt,fs,taskFilesToClean,task_config,subdir,pa_dir)
+function [taskFilesToClean] = initInputFiles(NN,MM,Tasks,opt,fs,taskFilesToClean,task_config)
 for i=1:NN
     for j=1:MM
         ilen = length(Tasks(j,i).InputFiles);
         if ilen > 0
-            inputFiles = javaArray('java.lang.String', ilen);            
-
             filelist = Tasks(j,i).InputFiles;
             for k=1:ilen
-
-                if isAbsolute(filelist{k})
-                    error([filelist{k} ' is an absolute pathname, please use a relative pathname that is a decendant of the current directory.']);
+                afile = filelist(k);
+                if isAbsolute(afile.Path)
+                    error([afile.Path ' is an absolute pathname, please use a relative pathname that is a decendant of the current directory.']);
                 end
-                inputFiles(k)=java.lang.String(strrep(filelist{k},'\','/'));
-
-            end            
-
-            task_config(i,j).setInputFiles(inputFiles);
-            task_config(i,j).setInputFilesThere(true);
-            task_config(i,j).setInputSource(org.ow2.proactive.scheduler.ext.matsci.common.data.DSSource.getSource(Tasks(j,i).InputSource));
+                ifstr = java.lang.String(afile.Path);
+                dss = org.ow2.proactive.scheduler.ext.matsci.common.data.DSSource.getSpace(afile.Space);
+                task_config(i,j).addInputFile(ifstr, dss);
+            end
         end
     end
 
@@ -686,37 +710,33 @@ for i=1:NN
         filelist = Tasks(j,i).OutputFiles;
         noutput = length(filelist);
         if noutput > 0
-            outputFiles = javaArray('java.lang.String', noutput);            
 
             %outputZipName = [outputZipBaseName indTofile([i j]) '.zip'];
             %outputZipPath = [subdir '/' outputZipName];
 
             for k=1:noutput
-                filename = filelist{k};
-                if isAbsolute(filename)
-                    error([filename ' is an absolute pathname, invalid for output files.']);
+                aFile = filelist(k);
+                if isAbsolute(aFile.Path)
+                    error([aFile.Path ' is an absolute pathname, invalid for output files.']);
                 end
-
-                
-                outputFiles(k)=java.lang.String(strrep(filename,'\','/'));
+                ifstr = java.lang.String(afile.Path);
+                dss = org.ow2.proactive.scheduler.ext.matsci.common.data.DSSource.getSpace(afile.Space);
+                task_config(i,j).addOutputFile(ifstr, dss);
                 
             end            
-            task_config(i,j).setOutputFiles(outputFiles);
-            task_config(i,j).setOutputFilesThere(true);
-            task_config(i,j).setOutputSource(org.ow2.proactive.scheduler.ext.matsci.common.data.DSSource.getSource(Tasks(j,i).OutputSource));
         end
     end
 end
 end
 
 % Initialize Task Config Input Parameters
-function [input,main,taskFilesToClean,outVarFiles]=initParameters(solveid,NN,MM,Tasks,opt,taskFilesToClean,task_config,allfuncs,pa_dir,fs)
+function [input,main,taskFilesToClean,outVarFiles]=initParameters(solveid,NN,MM,Tasks,opt,taskFilesToClean,task_config,allfuncs,pa_dir,subdir,fs)
 
 input = 'i=0;';
 
 variableInFileBaseName = ['MatlabPAsolveVarIn_' num2str(solveid)];
 variableOutFileBaseName = ['MatlabPAsolveVarOut_' num2str(solveid)];
-
+curr_dir = pwd();
 outVarFiles = cell(1,NN);
 for i=1:NN
     for j=1:MM
@@ -749,10 +769,10 @@ for i=1:NN
         if j < MM
             taskFilesToClean{i}=union(taskFilesToClean{i}, {outVarFP});
         end
-        task_config(i,j).setInputVariablesFileName(inVarFN);
-        task_config(i,j).setOutputVariablesFileName(outVarFN);
+        task_config(i,j).setInputVariablesFile(subdir,inVarFN);
+        task_config(i,j).setOutputVariablesFile(curr_dir,subdir,outVarFN);
         if j > 1 && Tasks(j,i).Compose
-            task_config(i,j).setComposedInputVariablesFileName([variableOutFileBaseName indToFile([i j-1]) '.mat']);
+            task_config(i,j).setComposedInputVariablesFile(subdir,[variableOutFileBaseName indToFile([i j-1]) '.mat']);
         end
 
         % The last task in the chain contains the final output
@@ -776,7 +796,11 @@ for i=1:NN
             end
             main = [main 'in' num2str(length(argi))];
         end
-        main = [main ');'];
+        if opt.Debug
+            main = [main ')'];
+        else
+            main = [main ');'];
+        end
         task_config(i,j).setInputScript(input);
         task_config(i,j).setMainScript(main);
 

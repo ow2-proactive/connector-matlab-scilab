@@ -66,9 +66,9 @@ endfunction
 
 function deployJVM(opt,uri)
     global ('PA_matsci_dir','PA_solver', 'PA_dsregistry', 'PA_jvminterface')
-    jimport org.ow2.proactive.scheduler.ext.matsci.client.embedded.util.StandardJVMSpawnHelper;
+    jimport org.ow2.proactive.scheduler.ext.scilab.client.embedded.util.ScilabJVMSpawnHelper;
     jimport java.lang.String;    
-    deployer = jinvoke(StandardJVMSpawnHelper,'getInstance');
+    deployer = jinvoke(ScilabJVMSpawnHelper,'getInstance');
     addJavaObj(deployer);
     home = getenv('JAVA_HOME');
     fs=filesep();
@@ -95,6 +95,10 @@ function deployJVM(opt,uri)
         jarsjava(i-1) = jartmp;
         addJavaObj(jartmp);
     end
+    options = opt.JvmArguments;
+    for i=1:size(options,1)
+         jinvoke(deployer,'addJvmOption',options(i).entries);
+    end
     jinvoke(deployer,'setSchedulerURI', uri);
     jinvoke(deployer,'setMatSciDir', matsci_dir);
     jinvoke(deployer,'setDebug',opt.Debug);
@@ -102,7 +106,7 @@ function deployJVM(opt,uri)
     jinvoke(deployer,'setProActiveConfiguration',opt.ProActiveConfiguration);
     jinvoke(deployer,'setLog4JFile',opt.Log4JConfiguration);
     jinvoke(deployer,'setPolicyFile',opt.SecurityFile);
-    jinvoke(deployer,'setClassName','org.ow2.proactive.scheduler.ext.matsci.middleman.MiddlemanDeployer');
+    jinvoke(deployer,'setClassName','org.ow2.proactive.scheduler.ext.scilab.middleman.ScilabMiddlemanDeployer');
 
 
     rmiport = opt.RmiPort;
@@ -115,7 +119,7 @@ function deployJVM(opt,uri)
     PAoptions('RmiPort',port);    
     PA_solver = jinvoke(deployer,'getScilabEnvironment');    
 
-    PA_dsregistry = jinvoke(deployer,'getRegistry');    
+    PA_dsregistry = jinvoke(deployer,'getDSRegistry');
 
     PA_jvminterface = jinvoke(deployer,'getJvmInterface');
         
@@ -125,7 +129,7 @@ endfunction
 
 function login(credpath)
     global ('PA_solver')
-    jimport org.ow2.proactive.scheduler.ext.matsci.client.embedded.util.StandardJVMSpawnHelper;
+    jimport org.ow2.proactive.scheduler.ext.scilab.client.embedded.util.ScilabJVMSpawnHelper;
     // Logging in
     if ~jinvoke(PA_solver,'isLoggedIn') then
         disp('Please enter login/password');
@@ -137,7 +141,7 @@ function login(credpath)
                 error('PAconnect::Authentication error');
             end
         else
-            deployer = jinvoke(StandardJVMSpawnHelper,'getInstance');
+            deployer = jinvoke(ScilabJVMSpawnHelper,'getInstance');
             addJavaObj(deployer);
             jinvoke(deployer,'startLoginGUI');
             while ~jinvoke(PA_solver,'isLoggedIn') & jinvoke(deployer,'getNbAttempts') <= 3

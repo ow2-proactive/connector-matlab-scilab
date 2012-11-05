@@ -4,13 +4,13 @@ function a=%c_i_PATsk(i1,b,a)
     elseif i1 == 'Func' then
         a.Func = b;
     elseif i1 == 'InputFiles' then
-        a.InputFiles = list(b);
-    elseif i1 == 'InputSource' then
-        a.InputSource = convstr(b,'l');
+         c=PAFiles(1);
+         c(1).Name=b;
+         a.InputFiles=c;
     elseif i1 == 'OutputFiles' then
-        a.OutputFiles = list(b);
-    elseif i1 == 'OutputSource' then
-        a.OutputSource = convstr(b,'l');
+        c=PAFiles(1);
+        c(1).Name=b;
+        a.OutputFiles=c;
     elseif i1 == 'SelectionScript' then
         a.SelectionScript = b;
     elseif i1 == 'ScriptParams' then

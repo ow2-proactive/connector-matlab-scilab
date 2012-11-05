@@ -34,43 +34,44 @@
 %   * ################################################################
 %   * $$PROACTIVE_INITIAL_DEV$$
 %   */
-function varargout = PAaddDirToClean(varargin)
-mlock
-persistent dirsperjob
-if exist('dirsperjob','var') == 1 && isstruct(dirsperjob)
-else
-    dirsperjob.a = [];
-end
-if nargin == 2
-    key = ['j' char(varargin{1})];
-    if ~isfield(dirsperjob, key)
-        if iscell(varargin{2})
-            dirsperjob.(key) = varargin{2};
-        else
-            dirsperjob.(key) = {varargin{2}};
-        end
-    else
-        if iscell(varargin{2})
-            dirsperjob.(key) = union(dirsperjob.(key),varargin{2});
-        else
-            dirsperjob.(key) = union(dirsperjob.(key),{varargin{2}});
-        end
-    end
-elseif nargin == 1
-    key = ['j' char(varargin{1})];
-    if isfield(dirsperjob, key)
-        dirs = dirsperjob.(key);
-        warning('off')
-        for i=1:length(dirs)
-            if exist(dirs{i},'dir')
-                try
-                    rmdir(dirs{i},'s');
-                catch
+function varargout = subsref(this,S)
+
+val{1}=this;
+for i=1:length(S)
+    s=S(i);
+    switch s.type
+        case '.'
+            sz=size(val{i});
+            for l=1:sz(1)
+                for m=1:sz(2)
+                    Z=val{i}(l,m);
+                    val{i+1}{(l-1)*sz(2)+m} = builtin('subsref', Z, s);
                 end
             end
+        case '()'
+            %j=s.subs{1};
+            K.type='()';
+            K.subs=s.subs;
+            val{i+1} = builtin('subsref', val{i}, K);
+        otherwise
+            error([s.type ,' not supported'])
+    end
+end
+n = numel(val{i});
+if n > 1
+    %length(varargout) > 1 && nargout <= 1
+    if iscell(val{i+1})
+        varargout = cell(1,n);
+        for j = 1 : n
+            varargout{j} = val{i+1}{j};
         end
-        warning('on')
+    else
+        varargout = { val{i+1} };
     end
 else
-    error('Wrong number of arguments');
+    if iscell(val{i+1})
+        varargout = {val{i+1}{1}};
+    else
+        varargout = {val{i+1}};
+    end
 end

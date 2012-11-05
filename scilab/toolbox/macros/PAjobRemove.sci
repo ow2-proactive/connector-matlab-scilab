@@ -5,7 +5,12 @@ function PAjobRemove(jobid)
     end
     if or(type(jobid)==[1 5 8]) then
         jobid = string(jobid);
-    end        
-    txt = jinvoke(PA_solver,'jobRemove',jobid);    
+    end
+    try
+        txt = jinvoke(PA_solver,'jobRemove',jobid);
+    catch
+        PAensureConnected();
+        txt = jinvoke(PA_solver,'jobRemove',jobid);
+    end
     printf('%s\n',txt);
 endfunction

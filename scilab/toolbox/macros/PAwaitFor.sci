@@ -20,11 +20,17 @@ function val_k=PAwaitFor(l,timeout)
             jimport java.lang.Integer;
             if argn(2) == 2                
                 tout = jinvoke(Integer,'parseInt',string(timeout));
-                unrei = jinvoke(PA_solver,'waitAll',jobid,taskids, tout);    
             else
                 tout = jinvoke(Integer,'parseInt',string(-1));
-                unrei = jinvoke(PA_solver,'waitAll',jobid,taskids, tout); 
             end
+            try
+                unrei = jinvoke(PA_solver,'waitAll',jobid,taskids, tout);
+            catch
+                // if an exception occur, it means the RMI stub is lost
+                PAensureConnected();
+                unrei = jinvoke(PA_solver,'waitAll',jobid,taskids, tout);
+            end
+
             answers = jinvoke(unrei,'get');
         end
 

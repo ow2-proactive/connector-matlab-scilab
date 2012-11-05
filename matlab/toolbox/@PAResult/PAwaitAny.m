@@ -119,10 +119,18 @@ if isempty(indList)
 end
 
 if exist('timeout','var') == 1
-    unrei = solver.waitAny(jobid,taskids,java.lang.Integer(timeout));
+    tout = java.lang.Integer(timeout);
 else
-    unrei = solver.waitAny(jobid,taskids,java.lang.Integer(-1));
+    tout = java.lang.Integer(-1);
 end
+try
+    unrei = solver.waitAny(jobid,taskids,tout);
+catch
+    PAensureConnected();
+    unrei = solver.waitAny(jobid,taskids,tout);
+end
+
+
 pair = unrei.get();
 ind=pair.getY();
 

@@ -71,7 +71,12 @@ for i=1:s(1)
         taskids.add(R.taskid);                
     end
 end
-unrei = solver.areAwaited(jobid, taskids);
+try
+    unrei = solver.areAwaited(jobid, taskids);
+catch
+     PAensureConnected();
+     unrei = solver.areAwaited(jobid, taskids);
+end
 answers = unrei.get();
 for i=1:s(1)
     for j=1:s(2)        

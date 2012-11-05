@@ -7,15 +7,15 @@ function a=%s_i_PATsk(i1,b,a)
         end
     elseif i1 == 'InputFiles' then
         if isempty(b) then
-            a.InputFiles = list();
+            a.InputFiles = PAFiles();
         else
-            error('InputFiles must be a list, a string or null');
+            error('InputFiles must be a PAFiles object, a PAFile object or null');
         end      
      elseif i1 == 'OutputFiles' then
         if isempty(b) then
-            a.OutputFiles = list();
+            a.OutputFiles = PAFiles();
         else
-            error('OutputFiles must be a list, a string or null');
+            error('OutputFiles must be a PAFiles object, a PAFile object or null');
         end    
      elseif i1 == 'Sources' then
         if isempty(b) then
