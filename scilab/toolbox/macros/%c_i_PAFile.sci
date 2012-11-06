@@ -4,6 +4,6 @@ function a=%c_i_PAFile(i1,b,a)
     elseif i1 == 'Space' then
         a.Space = convstr(b,'l');
     else
-        error('Type mismatch, '+i1+' doesn''t expects a string');
+        error('Unknown attribute : '+i1);
     end
 endfunction

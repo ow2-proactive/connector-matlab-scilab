@@ -64,7 +64,7 @@ function resultSet(R)
 
         jimport org.ow2.proactive.scheduler.ext.scilab.client.embedded.ScilabTaskRepository;
         repository = jinvoke(ScilabTaskRepository,'getInstance');
-        jinvoke(repository,'addReceived',R.jobid, R.taskid);
+        jinvoke(repository,'receivedTask',R.jobid, R.taskid);
         tf = jinvoke(repository,'allReceived',R.jobid)
         jremove(repository);
         opt = PAoptions();

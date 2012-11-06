@@ -5,11 +5,11 @@ function a=%c_i_PATsk(i1,b,a)
         a.Func = b;
     elseif i1 == 'InputFiles' then
          c=PAFiles(1);
-         c(1).Name=b;
+         c(1).Path=b;
          a.InputFiles=c;
     elseif i1 == 'OutputFiles' then
         c=PAFiles(1);
-        c(1).Name=b;
+        c(1).Path=b;
         a.OutputFiles=c;
     elseif i1 == 'SelectionScript' then
         a.SelectionScript = b;
