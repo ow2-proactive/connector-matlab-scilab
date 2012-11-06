@@ -48,6 +48,7 @@ import org.objectweb.proactive.core.body.request.BlockingRequestQueue;
 import org.objectweb.proactive.core.body.request.BlockingRequestQueueImpl;
 import org.objectweb.proactive.core.body.request.Request;
 import org.objectweb.proactive.core.body.request.RequestFilter;
+import org.objectweb.proactive.core.config.CentralPAPropertyRepository;
 import org.objectweb.proactive.core.node.NodeException;
 import org.ow2.proactive.authentication.crypto.CredData;
 import org.ow2.proactive.authentication.crypto.Credentials;
@@ -517,6 +518,15 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
     protected void reconnect() {
         boolean joined = false;
         printLog("Connection to " + schedulerURL + " lost, trying to reconnect.", true, true);
+
+        // if we are connected, we will try to disconnect, we use a timeout as it can happen that this disconnect
+        // call blocks forever
+
+        long old_timeout = CentralPAPropertyRepository.PA_FUTURE_SYNCHREQUEST_TIMEOUT.getValue();
+
+        // 5 sec is an acceptable timeout
+        CentralPAPropertyRepository.PA_FUTURE_SYNCHREQUEST_TIMEOUT.setValue(5000);
+
         try {
             sched_proxy.disconnect();
         } catch (Exception e) {
@@ -528,6 +538,8 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         } catch (Exception e) {
             // we ignore any exception
         }
+        CentralPAPropertyRepository.PA_FUTURE_SYNCHREQUEST_TIMEOUT.setValue(old_timeout);
+
         while (!joined) {
             joined = this.join(schedulerURL);
             try {
