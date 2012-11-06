@@ -65,6 +65,20 @@ public class ScilabMiddlemanDeployer extends MiddlemanDeployer {
      */
     protected MatSciEnvironment rmistub_paenv_Scilab;
 
+    protected ScilabMiddlemanDeployer() {
+        super();
+    }
+
+    public static MiddlemanDeployer getInstance() {
+        if (instance == null) {
+            instance = new ScilabMiddlemanDeployer();
+        }
+        if (!(instance instanceof ScilabMiddlemanDeployer)) {
+            throw new IllegalStateException(instance.getClass() + " is not expected");
+        }
+        return instance;
+    }
+
     protected void init() throws Exception {
         paenv_Scilab = new AOScilabEnvironment(debug);
         super.init(paenv_Scilab);
@@ -102,7 +116,7 @@ public class ScilabMiddlemanDeployer extends MiddlemanDeployer {
     }
 
     public static void main(String[] args) throws Exception {
-        ScilabMiddlemanDeployer dep = new ScilabMiddlemanDeployer();
+        ScilabMiddlemanDeployer dep = (ScilabMiddlemanDeployer) ScilabMiddlemanDeployer.getInstance();
         dep.setPort(Integer.parseInt(System.getProperty("rmi.port")));
         dep.setDebug(Boolean.parseBoolean(args[0]));
 

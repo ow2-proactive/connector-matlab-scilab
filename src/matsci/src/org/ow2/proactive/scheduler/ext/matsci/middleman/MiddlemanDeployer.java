@@ -76,9 +76,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public abstract class MiddlemanDeployer {
 
-    public MiddlemanDeployer() {
-
-    }
+    protected static MiddlemanDeployer instance;
 
     /**
      * Standalone objects
@@ -116,6 +114,22 @@ public abstract class MiddlemanDeployer {
 
     final protected ExecutorService tpe = Executors.newFixedThreadPool(1, tf);
 
+    protected MiddlemanDeployer() {
+
+    }
+
+    public static MiddlemanDeployer getInstance() {
+        if (instance == null) {
+            throw new IllegalStateException("instance should have already been initialized by subclass");
+        }
+        return instance;
+    }
+
+    /**
+     * This hook monitors both a network connection problem with the PAMR router and a router restart. In the first case,
+     * it will simply reconnect to the router after the network is reachable again, in the second case, it will restart everything
+     * on this JVM and reinitialize the connection to the new router
+     */
     protected void PAMRHook() {
         try {
             PAMRRemoteObjectFactory f = (PAMRRemoteObjectFactory) AbstractRemoteObjectFactory
@@ -265,6 +279,11 @@ public abstract class MiddlemanDeployer {
         tpe.submit(new MainRunnable());
     }
 
+    /**
+     * Initializes the dataspace registry and JVM interface
+     * @param env
+     * @throws Exception
+     */
     protected void init(MatSciEnvironment env) throws Exception {
         reg = new AODataspaceRegistry();
         itf = new MatSciJVMProcessInterfaceImpl(env);
@@ -272,17 +291,33 @@ public abstract class MiddlemanDeployer {
         registry = LocateRegistry.createRegistry(port);
     }
 
+    /**
+     * Starts the RMI and ProActive objects
+     * @throws Exception
+     */
     protected void start() throws Exception {
         activate();
         exportAll();
         rebindAll();
     }
 
+    /**
+     * Restart the RMI and ProActive objects
+     * @throws Exception
+     */
     protected void restart() throws Exception {
         unexportAll();
         terminateAO();
         cleanContext();
         start();
+    }
+
+    /**
+     * Public interface to restart, this method is asynchronous
+     */
+    public void restartAll() {
+        // We rebind all our active objects
+        tpe.submit(new RestartRunnable());
     }
 
     public int getPort() {

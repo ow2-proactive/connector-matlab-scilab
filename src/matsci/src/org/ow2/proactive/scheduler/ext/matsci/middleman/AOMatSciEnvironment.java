@@ -412,6 +412,9 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
             } catch (PermissionException e) {
                 throw new PASchedulerException(e, PASchedulerExceptionType.PermissionException);
             } catch (AlreadyConnectedException e) {
+                // This very nasty error occur when trying to reconnect to the scheduler, in that case, we have no other
+                // choice than to restart all proactive on this machine
+                MiddlemanDeployer.getInstance().restartAll();
                 throw new PASchedulerException(e, PASchedulerExceptionType.AlreadyConnectedException);
             } catch (LoginException e) {
                 throw new PASchedulerException(e, PASchedulerExceptionType.LoginException);
@@ -519,6 +522,11 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         } catch (Exception e) {
             // this should never occur
             printLog(e);
+        }
+        try {
+            scheduler.disconnect();
+        } catch (Exception e) {
+            // we ignore any exception
         }
         while (!joined) {
             joined = this.join(schedulerURL);

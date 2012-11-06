@@ -65,6 +65,16 @@ public class MatlabMiddlemanDeployer extends MiddlemanDeployer {
      */
     protected MatSciEnvironment rmistub_paenv_matlab;
 
+    public static MiddlemanDeployer getInstance() {
+        if (instance == null) {
+            instance = new MatlabMiddlemanDeployer();
+        }
+        if (!(instance instanceof MatlabMiddlemanDeployer)) {
+            throw new IllegalStateException(instance.getClass() + " is not expected");
+        }
+        return instance;
+    }
+
     protected void init() throws Exception {
         paenv_matlab = new AOMatlabEnvironment(debug);
         super.init(paenv_matlab);
@@ -97,7 +107,7 @@ public class MatlabMiddlemanDeployer extends MiddlemanDeployer {
     }
 
     public static void main(String[] args) throws Exception {
-        MatlabMiddlemanDeployer dep = new MatlabMiddlemanDeployer();
+        MatlabMiddlemanDeployer dep = (MatlabMiddlemanDeployer) MatlabMiddlemanDeployer.getInstance();
         dep.setPort(Integer.parseInt(System.getProperty("rmi.port")));
         dep.setDebug(Boolean.parseBoolean(args[0]));
 
