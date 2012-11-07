@@ -52,6 +52,8 @@ import java.util.TreeSet;
  * @author The ProActive Team
  */
 public class MatSciClientJobInfo implements Serializable {
+
+    private static final long serialVersionUID = 11;
     /**
      * Id if the job
      */

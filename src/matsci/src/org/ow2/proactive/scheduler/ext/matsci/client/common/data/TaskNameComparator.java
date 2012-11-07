@@ -47,6 +47,8 @@ import java.util.Comparator;
  */
 public class TaskNameComparator implements Comparator<String>, Serializable {
 
+    private static final long serialVersionUID = 11;
+
     public TaskNameComparator() {
 
     }

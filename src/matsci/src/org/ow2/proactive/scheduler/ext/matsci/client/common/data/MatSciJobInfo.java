@@ -51,6 +51,8 @@ import java.util.*;
  */
 public class MatSciJobInfo<R> implements Serializable {
 
+    private static final long serialVersionUID = 11;
+
     /**
      * Id if the job
      */
