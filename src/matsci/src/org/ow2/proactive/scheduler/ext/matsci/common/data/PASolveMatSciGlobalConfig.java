@@ -100,6 +100,11 @@ public class PASolveMatSciGlobalConfig implements Serializable {
     protected String sharedPullPrivateUrl = null;
 
     /**
+     * Do we use automatic transfer in proxy ?
+     */
+    protected boolean sharedAutomaticTransfer = true;
+
+    /**
      * Directory storing the files used by the job (used only with the scheduler proxy and the shared space)
      */
     protected String jobDirectoryFullPath = null;
@@ -422,6 +427,14 @@ public class PASolveMatSciGlobalConfig implements Serializable {
 
     public void setSharedPullPrivateUrl(String sharedPullPrivateUrl) {
         this.sharedPullPrivateUrl = sharedPullPrivateUrl;
+    }
+
+    public boolean isSharedAutomaticTransfer() {
+        return sharedAutomaticTransfer;
+    }
+
+    public void setSharedAutomaticTransfer(boolean sharedAutomaticTransfer) {
+        this.sharedAutomaticTransfer = sharedAutomaticTransfer;
     }
 
     public String getJobDirectoryFullPath() {

@@ -210,6 +210,11 @@ endfunction
     inputs(j).check = 'urlcheck';
     inputs(j).trans = 'id';
     j=j+1;
+    inputs(j).name = 'SharedAutomaticTransfer';
+    inputs(j).default = %t;
+    inputs(j).check = 'logcheck';
+    inputs(j).trans = 'logtrans';
+    j=j+1;
     inputs(j).name = 'RemoveJobAfterRetrieve';
     inputs(j).default = %f;
     inputs(j).check = 'logcheck';

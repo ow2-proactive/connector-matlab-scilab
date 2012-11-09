@@ -64,9 +64,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.*;
 
 
 /**
@@ -86,6 +84,8 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
     public static final int MAX_NB_OF_DATA_TRANSFER_THREADS = 20;
 
     private static final String TASKID_DIR_DEFAULT_NAME = "TASKID";
+
+    private static final String CLZN = "[" + MatSciSchedulerProxy.class.getSimpleName() + "] ";
 
     /**
      * Thread factory for data transfer operations
@@ -189,7 +189,7 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
         } catch (FileSystemException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            logger.error("Could nnot create Default FileSystem Manager", e);
+            logger.error(CLZN + "Could nnot create Default FileSystem Manager", e);
         }
     }
 
@@ -198,7 +198,9 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
      *
      * @return instance of the proxy
      * @throws org.objectweb.proactive.ActiveObjectCreationException
+     *
      * @throws org.objectweb.proactive.core.node.NodeException
+     *
      */
     public static synchronized MatSciSchedulerProxy getActiveInstance() throws ActiveObjectCreationException,
             NodeException {
@@ -396,11 +398,11 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
      */
     public void discardAllJobs() {
         awaitedJobs.clear();
-        logger.info("Proxy's database has been reseted.");
+        logger.info(CLZN + "Proxy's database has been reseted.");
         try {
             recMan.commit();
         } catch (IOException e) {
-            logger.error("Exception occured while closing connection to status file:", e);
+            logger.error(CLZN + "Exception occured while closing connection to status file:", e);
         }
     }
 
@@ -433,10 +435,10 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
             try {
                 recMan.commit();
             } catch (IOException e) {
-                logger.error("Exception occured while closing connection to status file:", e);
+                logger.error(CLZN + "Exception occured while closing connection to status file:", e);
             }
         } else {
-            logger.warn("Job " + jobID + " is not handled by the proxy.");
+            logger.warn(CLZN + "Job " + jobID + " is not handled by the proxy.");
         }
     }
 
@@ -494,7 +496,7 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
 
         if (((push_url == null) || (push_url.equals(""))) && ((pull_url == null) || (pull_url.equals("")))) {
             logger
-                    .warn("For the job " + job.getId() +
+                    .warn(CLZN + "For the job " + job.getId() +
                         " no push or pull urls are defined. No data will be transfered for this job from the local machine ");
             return super.submit(job);
         }
@@ -603,7 +605,8 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
 
             pull_url_updated = pull_url + "/" + outputFolder;
             String outputSpace_url_updated = outputSpace_url + "/" + outputFolder;
-            logger.debug("Output space of job " + job.getName() + " will be " + outputSpace_url_updated);
+            logger.debug(CLZN + "Output space of job " + job.getName() + " will be " +
+                outputSpace_url_updated);
 
             createFolder(pull_url_updated);
 
@@ -696,7 +699,7 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
             fo.delete(Selectors.SELECT_ALL);
             fo.delete();
         } catch (Exception e) {
-            logger.debug("Error in removeJobIO push for job " + job.getName());
+            logger.debug(CLZN + "Error in removeJobIO push for job " + job.getName());
         }
         String pull_url_updated = pull_url + "/" + newFolderName;
         fo = fsManager.resolveFile(pull_url_updated);
@@ -704,7 +707,7 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
             fo.delete(Selectors.SELECT_ALL);
             fo.delete();
         } catch (Exception e) {
-            logger.debug("Error in removeJobIO pull for job " + job.getName());
+            logger.debug(CLZN + "Error in removeJobIO pull for job " + job.getName());
         }
     }
 
@@ -713,7 +716,7 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
         FileObject fo = fsManager.resolveFile(fUri);
         fo.createFolder();
 
-        logger.debug("Created remote folder: " + fUri);
+        logger.debug(CLZN + "Created remote folder: " + fUri);
     }
 
     protected String createNewFolderName() {
@@ -749,12 +752,16 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
         // folder before throwing an exception
         FileObject remoteFolder = fsManager.resolveFile(push_URL);
         FileObject localfolder = fsManager.resolveFile(localInputFolderPath);
-        logger.debug("Pushing files for job " + job.getName() + " from " + localfolder + " to " +
-            remoteFolder);
+        String jname = job.getName();
+        logger
+                .debug(CLZN + "Pushing files for job " + jname + " from " + localfolder + " to " +
+                    remoteFolder);
+
+        List<DataTransferProcessor> transferCallables = new ArrayList<DataTransferProcessor>();
 
         TaskFlowJob tfj = job;
         for (Task t : tfj.getTasks()) {
-            logger.debug("Pushing files for task " + t.getName());
+            logger.debug(CLZN + "Pushing files for task " + t.getName());
             List<InputSelector> inputFileSelectors = t.getInputFilesList();
             //create the selector
             MatSciDSFileSelector fileSelector = new MatSciDSFileSelector();
@@ -767,26 +774,39 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
                     fileSelector.addExcludes(Arrays.asList(fs.getExcludes()));
 
                 //We should check if a pattern exist in both includes and excludes. But that would be a user mistake.
-
-                try {
-                    logger.debug("Trying to push from " + localfolder + " with selector " + fs);
-                    if (logger.isDebugEnabled()) {
-                        FileObject[] fos = remoteFolder.findFiles(fileSelector);
-                        for (FileObject fo : fos) {
-                            logger.debug("Found " + fo.getName());
-                        }
-                    }
-                    remoteFolder.copyFrom(localfolder, fileSelector);
-                } catch (FileSystemException fse) {
-                    logger.error("Could not copy input files for task " + t.getName() + " with selector " +
-                        fs.toString());
-                    throw fse;
-                }
             }
-
+            DataTransferProcessor dtp = new DataTransferProcessor(localfolder, remoteFolder, tfj.getName(), t
+                    .getName(), fileSelector);
+            transferCallables.add(dtp);
         }
 
-        logger.debug("Finished push operation from " + localfolder + " to " + remoteFolder);
+        List<Future<Boolean>> futures = null;
+        try {
+            futures = tpe.invokeAll(transferCallables);
+        } catch (InterruptedException e) {
+            logger.error(CLZN + "Interrupted while transferring files of job " + jname, e);
+            throw new RuntimeException(e);
+        }
+        for (int i = 0; i < futures.size(); i++) {
+            Future<Boolean> answer = futures.get(i);
+            String tname = tfj.getTasks().get(i).getName();
+            try {
+                if (!answer.get()) {
+                    throw new RuntimeException("Files of task " + tname + " for job " + jname +
+                        " could not be transferred");
+                }
+            } catch (InterruptedException e) {
+                logger.error(CLZN + "Interrupted while transferring files of task " + tname + " for job " +
+                    jname, e);
+                throw new RuntimeException(e);
+            } catch (ExecutionException e) {
+                logger.error(CLZN + "Exception occured while transferring files of task " + tname +
+                    " for job " + jname, e);
+                throw new RuntimeException(e);
+            }
+        }
+
+        logger.debug(CLZN + "Finished push operation from " + localfolder + " to " + remoteFolder);
         return true;
     }
 
@@ -855,7 +875,7 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
 
             localfolderFO = fsManager.resolveFile(localFolder);
         } catch (FileSystemException e) {
-            logger.error("Could not retrieve data for job " + jobId, e);
+            logger.error(CLZN + "Could not retrieve data for job " + jobId, e);
             throw new IllegalStateException("Could not retrieve data for job " + jobId, e);
         }
 
@@ -875,8 +895,8 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
         }
 
         if (logger.isDebugEnabled()) {
-            logger.debug("Looking at files in " + sourceUrl + " with " + fileSelector.getIncludes() + "-" +
-                fileSelector.getExcludes());
+            logger.debug(CLZN + "Looking at files in " + sourceUrl + " with " + fileSelector.getIncludes() +
+                "-" + fileSelector.getExcludes());
             boolean goon = true;
             int cpt = 0;
             FileObject[] fos = null;
@@ -895,21 +915,21 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
 
             if (fos != null && fos.length > 0) {
                 for (FileObject fo : fos) {
-                    logger.debug("Found " + fo.getName());
+                    logger.debug(CLZN + "Found " + fo.getName());
                 }
             } else {
-                logger.warn("Couldn't find " + fileSelector.getIncludes() + "-" + fileSelector.getExcludes() +
-                    " in " + sourceUrl);
+                logger.warn(CLZN + "Couldn't find " + fileSelector.getIncludes() + "-" +
+                    fileSelector.getExcludes() + " in " + sourceUrl);
             }
         }
         if (awaitedjob.isAutomaticTransfer()) {
             DataTransferProcessor dtp = new DataTransferProcessor(remotePullFolderFO, localfolderFO, jobId,
                 t_name, fileSelector);
-            tpe.submit(dtp);
+            tpe.submit((Runnable) dtp);
         } else {
-            logger.debug("Copying files from " + sourceUrl + " to " + destUrl);
+            logger.debug(CLZN + "Copying files from " + sourceUrl + " to " + destUrl);
             localfolderFO.copyFrom(remotePullFolderFO, fileSelector);
-            logger.debug("Finished copying files from " + sourceUrl + " to " + destUrl);
+            logger.debug(CLZN + "Finished copying files from " + sourceUrl + " to " + destUrl);
             // ok we can remove the task
             removeAwaitedTask(jobId, t_name);
         }
@@ -1024,8 +1044,8 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
         try {
             this.recMan.commit();
         } catch (IOException e) {
-            logger.error("Could not save status file after adding job on awaited jobs list " + aj.getJobId(),
-                    e);
+            logger.error(CLZN + "Could not save status file after adding job on awaited jobs list " +
+                aj.getJobId(), e);
         }
     }
 
@@ -1041,7 +1061,7 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
         if (aj == null) {
             throw new IllegalArgumentException("Job " + id + " not in the awaited list");
         }
-        logger.debug("Removing knowledge of job " + id);
+        logger.debug(CLZN + "Removing knowledge of job " + id);
 
         String pull_URL = aj.getPullURL();
 
@@ -1054,14 +1074,14 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
             remotePullFolder = fsManager.resolveFile(pull_URL);
             remotePushFolder = fsManager.resolveFile(pushUrl);
         } catch (Exception e) {
-            logger.error("Could not remove data for job " + id, e);
+            logger.error(CLZN + "Could not remove data for job " + id, e);
             return;
         }
         if (aj.isIsolateTaskOutputs()) {
             try {
                 remotePullFolder = remotePullFolder.getParent();
             } catch (FileSystemException e) {
-                logger.error("Could not get the parent of folder " + remotePullFolder, e);
+                logger.error(CLZN + "Could not get the parent of folder " + remotePullFolder, e);
             }
         }
 
@@ -1071,7 +1091,7 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
             if (!remotePullFolder.getParent().equals(remotePushFolder.getParent()))
                 foldersToDelete.add(remotePushFolder.getParent());
         } catch (FileSystemException e) {
-            logger.warn("Data in folders " + pull_URL + " and " + pushUrl +
+            logger.warn(CLZN + "Data in folders " + pull_URL + " and " + pushUrl +
                 " cannot be deleted due to an unexpected error ", e);
             e.printStackTrace();
         }
@@ -1082,12 +1102,12 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
                 url = fo.getURL().toString();
 
                 if (!logger.isTraceEnabled()) {
-                    logger.debug("Deleting directory " + url);
+                    logger.debug(CLZN + "Deleting directory " + url);
                     fo.delete(Selectors.SELECT_ALL);
                     fo.delete();
                 }
             } catch (FileSystemException e) {
-                logger.warn("Could not delete temporary files at location " + url + " .");
+                logger.warn(CLZN + "Could not delete temporary files at location " + url + " .");
             }
         }
 
@@ -1096,7 +1116,7 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
         try {
             this.recMan.commit();
         } catch (IOException e) {
-            logger.error("Could not save status file after removing job " + id, e);
+            logger.error(CLZN + "Could not save status file after removing job " + id, e);
         }
     }
 
@@ -1117,7 +1137,7 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
             throw new IllegalArgumentException("Task " + tname + " from Job " + id +
                 " not in the awaited list");
         }
-        logger.debug("Removing knowledge of task " + tname + " from job " + id);
+        logger.debug(CLZN + "Removing knowledge of task " + tname + " from job " + id);
         if (aj.isIsolateTaskOutputs() && at.getTaskId() != null) {
             // If the output data as been isolated in a dedicated folder we can delete it.
 
@@ -1130,11 +1150,11 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
             try {
                 remotePullFolder = fsManager.resolveFile(pull_URL);
                 String url = remotePullFolder.getURL().toString();
-                logger.debug("Deleting directory " + remotePullFolder);
+                logger.debug(CLZN + "Deleting directory " + remotePullFolder);
                 remotePullFolder.delete(Selectors.SELECT_ALL);
                 remotePullFolder.delete();
             } catch (Exception e) {
-                logger.warn("Could not remove data for task " + tname + " of job " + id, e);
+                logger.warn(CLZN + "Could not remove data for task " + tname + " of job " + id, e);
             }
 
         }
@@ -1150,9 +1170,8 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
         try {
             this.recMan.commit();
         } catch (IOException e) {
-            logger
-                    .error("Could not save status file after removing task Task " + tname + " from Job" + id,
-                            e);
+            logger.error(CLZN + "Could not save status file after removing task Task " + tname + " from Job" +
+                id, e);
         }
 
     }
@@ -1194,14 +1213,14 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
                     } catch (NotConnectedException e) {
                         e.printStackTrace();
                     } catch (UnknownJobException e) {
-                        logger.error("Could not retrieve output data for job " + id +
+                        logger.error(CLZN + "Could not retrieve output data for job " + id +
                             " because this job is not known by the Scheduler. \n ", e);
                     } catch (UnknownTaskException e) {
-                        logger.error("Could not retrieve output data for task " + tname + " of job " + id +
-                            " because this task is not known by the Scheduler. \n ", e);
+                        logger.error(CLZN + "Could not retrieve output data for task " + tname + " of job " +
+                            id + " because this task is not known by the Scheduler. \n ", e);
                     } catch (Exception e) {
-                        logger.error("Unexpected error while getting the output data for task " + tname +
-                            " of job " + id, e);
+                        logger.error(CLZN + "Unexpected error while getting the output data for task " +
+                            tname + " of job " + id, e);
                     }
                 }
             }
@@ -1213,15 +1232,17 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
         } catch (NotConnectedException e) {
             logger
                     .error(
-                            "A connection error occured while trying to download output data of Job " +
+                            CLZN +
+                                "A connection error occured while trying to download output data of Job " +
                                 id +
                                 ". This job will remain in the list of awaited jobs. Another attempt to dowload the output data will be made next time the application is initialized. ",
                             e);
         } catch (UnknownJobException e) {
-            logger.error("Could not retrieve output data for job " + id +
+            logger.error(CLZN + "Could not retrieve output data for job " + id +
                 " because this job is not known by the Scheduler. \n ", e);
             logger
-                    .warn("Job  " +
+                    .warn(CLZN +
+                        "Job  " +
                         id +
                         " will be removed from the known job list. The system will not attempt again to retrieve data for this job. You could try to manually copy the data from the location  " +
                         awaitedJob.getPullURL());
@@ -1229,7 +1250,8 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
         } catch (PermissionException e) {
             logger
                     .error(
-                            "Could not retrieve output data for job " +
+                            CLZN +
+                                "Could not retrieve output data for job " +
                                 id +
                                 " because you don't have permmission to access this job. You need to use the same connection credentials you used for submitting the job.  \n Another attempt to dowload the output data for this job will be made next time the application is initialized. ",
                             e);
@@ -1256,22 +1278,22 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
         JobStatus status = ((NotificationData<JobInfo>) notification).getData().getStatus();
         switch (status) {
             case KILLED: {
-                logger.debug("The job " + id + "has been killed.");
+                logger.debug(CLZN + "The job " + id + "has been killed.");
                 removeAwaitedJob(id.toString());
                 break;
             }
             case FINISHED: {
-                logger.debug("The job " + id + " is finished.");
+                logger.debug(CLZN + "The job " + id + " is finished.");
                 //removeAwaitedJob(id.toString());
                 break;
             }
             case CANCELED: {
-                logger.debug("The job " + id + " is canceled.");
+                logger.debug(CLZN + "The job " + id + " is canceled.");
                 removeAwaitedJob(id.toString());
                 break;
             }
             case FAILED: {
-                logger.debug("The job " + id + " is failed.");
+                logger.debug(CLZN + "The job " + id + " is failed.");
                 //removeAwaitedJob(id.toString());
                 break;
             }
@@ -1307,8 +1329,8 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
         try {
             recMan.commit();
         } catch (IOException e) {
-            logger.error("Could not save status file after updateTask notification for job " + id + " task " +
-                tname);
+            logger.error(CLZN + "Could not save status file after updateTask notification for job " + id +
+                " task " + tname);
         }
 
         switch (status) {
@@ -1316,34 +1338,34 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
             case NOT_RESTARTED:
             case NOT_STARTED:
             case SKIPPED: {
-                logger.debug("The task " + tname + " from job " + id +
+                logger.debug(CLZN + "The task " + tname + " from job " + id +
                     " couldn't start. No data will be transfered");
                 removeAwaitedTask(id.toString(), tname);
                 break;
             }
             case FINISHED: {
-                logger.debug("The task " + tname + " from job " + id + " is finished.");
+                logger.debug(CLZN + "The task " + tname + " from job " + id + " is finished.");
                 if (aj.isAutomaticTransfer()) {
-                    logger.debug("Transfering data for finished task " + tname + " from job " + id);
+                    logger.debug(CLZN + "Transfering data for finished task " + tname + " from job " + id);
                     try {
                         pullDataInternal(aj, id.toString(), tname, aj.getLocalOutputFolder());
                     } catch (FileSystemException e) {
-                        logger.error("Error while handling data for finished task " + tname + " for job " +
-                            id + ", task will be removed");
+                        logger.error(CLZN + "Error while handling data for finished task " + tname +
+                            " for job " + id + ", task will be removed");
                         removeAwaitedTask(id.toString(), tname);
                     }
                 }
                 break;
             }
             case FAULTY: {
-                logger.debug("The task " + tname + " from job " + id + " is faulty.");
+                logger.debug(CLZN + "The task " + tname + " from job " + id + " is faulty.");
                 if (aj.isAutomaticTransfer()) {
-                    logger.debug("Transfering data for failed task " + tname + " from job " + id);
+                    logger.debug(CLZN + "Transfering data for failed task " + tname + " from job " + id);
                     try {
                         pullDataInternal(aj, id.toString(), tname, aj.getLocalOutputFolder());
                     } catch (FileSystemException e) {
-                        logger.error("Error while handling data for finished task " + tname + " for job " +
-                            id + ", task will be removed");
+                        logger.error(CLZN + "Error while handling data for finished task " + tname +
+                            " for job " + id + ", task will be removed");
                         removeAwaitedTask(id.toString(), tname);
                     }
                 }
@@ -1357,12 +1379,14 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
     /**
      * Handles the transfer of data asynchronously
      */
-    private class DataTransferProcessor implements Runnable {
+    private class DataTransferProcessor implements Runnable, Callable<Boolean> {
         private FileObject source;
         private FileObject dest;
         private String jobId;
         private String taskName;
         private FileSelector fileSelector;
+        private String sourceUrl;
+        private String destUrl;
 
         /**
          * @param source source folder
@@ -1379,35 +1403,36 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
             this.taskName = tname;
         }
 
+        protected void transfer() throws Exception {
+            sourceUrl = source.getURL().toString();
+            destUrl = dest.getURL().toString();
+            logger.debug(CLZN + "Copying files of task " + taskName + " of job " + jobId + " from " + source +
+                " to " + dest);
+            if (logger.isDebugEnabled()) {
+
+                FileObject[] fos = source.findFiles(fileSelector);
+                for (FileObject fo : fos) {
+                    logger.debug(CLZN + "Found " + fo.getName());
+                }
+
+            }
+            dest.copyFrom(source, fileSelector);
+            logger.debug(CLZN + "Finished copying files of task " + taskName + " of job " + jobId + " from " +
+                source + " to " + dest);
+        }
+
         @Override
         public void run() {
-
-            String sourceUrl = "NOT YET DEFINED";
-            String destUrl = "NOT YET DEFINED";
             try {
-                sourceUrl = source.getURL().toString();
-                destUrl = dest.getURL().toString();
-
-                logger.debug("Copying files of task " + taskName + " of job " + jobId + " from " + source +
-                    " to " + dest);
-                if (logger.isDebugEnabled()) {
-
-                    FileObject[] fos = source.findFiles(fileSelector);
-                    for (FileObject fo : fos) {
-                        logger.debug("Found " + fo.getName());
-                    }
-
-                }
-                dest.copyFrom(source, fileSelector);
-                logger.debug("Finished copying files of task " + taskName + " of job " + jobId + " from " +
-                    source + " to " + dest);
+                transfer();
 
             } catch (Exception e) {
-                logger.error("An error occured while copying files of task " + taskName + " of job " + jobId +
-                    " from " + source + " to " + dest, e);
+                logger.error(CLZN + "An error occured while copying files of task " + taskName + " of job " +
+                    jobId + " from " + source + " to " + dest, e);
 
                 logger
-                        .warn("Task " +
+                        .warn(CLZN +
+                            "Task " +
                             taskName +
                             " of job " +
                             jobId +
@@ -1429,5 +1454,17 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
             }
         }
 
+        @Override
+        public Boolean call() throws Exception {
+            try {
+                transfer();
+            } catch (Exception e) {
+                logger.error(CLZN + "An error occured while copying files of task " + taskName + " of job " +
+                    jobId + " from " + source + " to " + dest, e);
+                throw e;
+            }// catch
+
+            return true;
+        }
     }
 }

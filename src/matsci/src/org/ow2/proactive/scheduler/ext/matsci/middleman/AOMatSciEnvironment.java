@@ -402,10 +402,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                 loggedin = true;
                 this.oldCred = creds;
 
-                this.sched_proxy.addEventListener(stubOnThis, true, SchedulerEvent.JOB_RUNNING_TO_FINISHED,
-                        SchedulerEvent.JOB_PENDING_TO_FINISHED, SchedulerEvent.KILLED,
-                        SchedulerEvent.SHUTDOWN, SchedulerEvent.SHUTTING_DOWN, SchedulerEvent.STOPPED,
-                        SchedulerEvent.RESUMED, SchedulerEvent.TASK_RUNNING_TO_FINISHED);
+                this.sched_proxy.addEventListener(stubOnThis);
 
                 status = scheduler.getStatus();
             } catch (NotConnectedException e) {
@@ -1166,7 +1163,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
     }
 
     /**
-     * Updates the result of a task, using the information retrived from the scheduler
+     * Updates the result of a task, using the information retrieved from the scheduler
      *
      * @param mainException if an exception occurred globally, such as a job killed
      * @param res           result object received from the scheduler
@@ -1216,11 +1213,9 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
             } else {
                 jinfo.setException(tname, new PASchedulerException(ex));
             }
-
         } else {
             if (!intermediate) {
                 // Normal success
-
                 R computedResult = null;
                 try {
                     computedResult = (R) res.value();
@@ -1237,26 +1232,28 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                 }
             }
         }
-        if (jinfo.getConf().getSharedPushPublicUrl() != null) {
-            try {
-                sched_proxy.pullData("" + jid, tname, null);
-            } catch (FileSystemException e) {
-                throw new PASchedulerException("Exception Occured while transfering results of task " +
-                    tname + " from job " + jid, e);
+        if (jinfo.getConf().getSharedPullPublicUrl() != null) {
+            if (jinfo.getConf().isSharedAutomaticTransfer()) {
+                // do nothing this will be handled by the callback
+            } else {
+                try {
+                    sched_proxy.pullData("" + jid, tname, null);
+                } catch (FileSystemException e) {
+                    throw new PASchedulerException("Exception Occured while transfering results of task " +
+                        tname + " from job " + jid, e);
+                }
+                jinfo.addReceivedTask(tname);
+                Pair<Integer, Integer> ids = MatSciJobInfo.computeIdsFromTName(tname);
+                tasksReceived.get(jid).set(ids.getX(), ids.getY(), true);
+                putJobInfo(jid, jinfo);
+                //System.out.println("Job "+jid+" : "+tasksReceived.get(jid));
+                try {
+                    recMan.commit();
+                } catch (IOException e) {
+                    printLog(e, true, true);
+                }
             }
         }
-
-        jinfo.addReceivedTask(tname);
-        Pair<Integer, Integer> ids = MatSciJobInfo.computeIdsFromTName(tname);
-        tasksReceived.get(jid).set(ids.getX(), ids.getY(), true);
-        putJobInfo(jid, jinfo);
-        //System.out.println("Job "+jid+" : "+tasksReceived.get(jid));
-        try {
-            recMan.commit();
-        } catch (IOException e) {
-            printLog(e, true, true);
-        }
-
     }
 
     /**
@@ -1479,17 +1476,11 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                 TaskResult tres = null;
 
                 try {
-                    boolean doThing = true;
-                    while (doThing) {
-                        try {
-                            tres = scheduler.getTaskResult("" + jid, tnm);
-                            doThing = false;
-                        } catch (ProActiveRuntimeException re) {
-                            stubOnThis.ensureConnection();
-                            return;
-                        }
-                    }
-
+                    tres = scheduler.getTaskResult("" + jid, tnm);
+                } catch (ProActiveRuntimeException re) {
+                    // we have been disconnected from the scheduler
+                    stubOnThis.ensureConnection();
+                    return;
                 } catch (NotConnectedException e) {
                     // If this happens, it means either a bug, or that the scheduler has been restarted clean, between
                     // the moment that the notification sent and it has been handled
@@ -1524,12 +1515,35 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
 
     @Override
     public void pullDataFinished(String jobId, String taskName, String localFolderPath) {
-        // TODO implement the proxy's automaticTransfer mode
+        Long jid = Long.parseLong(jobId);
+        MatSciJobInfo jinfo = getJobInfo(jid);
+        jinfo.addReceivedTask(taskName);
+        Pair<Integer, Integer> ids = MatSciJobInfo.computeIdsFromTName(taskName);
+        tasksReceived.get(jid).set(ids.getX(), ids.getY(), true);
+        putJobInfo(jid, jinfo);
+        //System.out.println("Job "+jid+" : "+tasksReceived.get(jid));
+        try {
+            recMan.commit();
+        } catch (IOException e) {
+            printLog(e, true, true);
+        }
     }
 
     @Override
     public void pullDataFailed(String jobId, String taskName, String remoteFolder_URL, Throwable t) {
-        // TODO implement the proxy's automaticTransfer mode
+        Long jid = Long.parseLong(jobId);
+        MatSciJobInfo jinfo = getJobInfo(jid);
+        jinfo.setException(taskName, t);
+        jinfo.addReceivedTask(taskName);
+        Pair<Integer, Integer> ids = MatSciJobInfo.computeIdsFromTName(taskName);
+        tasksReceived.get(jid).set(ids.getX(), ids.getY(), true);
+        putJobInfo(jid, jinfo);
+        //System.out.println("Job "+jid+" : "+tasksReceived.get(jid));
+        try {
+            recMan.commit();
+        } catch (IOException e) {
+            printLog(e, true, true);
+        }
     }
 
     /**********************************************************************************************************/

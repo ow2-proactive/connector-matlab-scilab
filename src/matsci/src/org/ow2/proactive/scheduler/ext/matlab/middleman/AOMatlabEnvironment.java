@@ -509,7 +509,7 @@ public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResu
             try {
                 if (pushUrl != null) {
                     sjid = sched_proxy.submit(job, config.getJobDirectoryFullPath(), pushUrl, config
-                            .getJobDirectoryFullPath(), pullUrl, false, false);
+                            .getJobDirectoryFullPath(), pullUrl, false, config.isSharedAutomaticTransfer());
                 } else {
                     sjid = sched_proxy.submit(job);
                 }

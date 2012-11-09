@@ -287,6 +287,7 @@ function initSolveConfig(solve_config,opt)
     jinvoke(solve_config, 'setSharedPullPublicUrl', opt.SharedPullPublicUrl);
     jinvoke(solve_config, 'setSharedPushPrivateUrl', opt.SharedPushPrivateUrl);
     jinvoke(solve_config, 'setSharedPullPrivateUrl', opt.SharedPullPrivateUrl);
+    jinvoke(solve_config, 'setSharedAutomaticTransfer', opt.SharedAutomaticTransfer);
     jinvoke(solve_config, 'setJobDirectoryFullPath',curr_dir);
     jinvoke(solve_config,'setPriority',opt.Priority);    
     jinvoke(solve_config,'setNbExecutions',opt.NbTaskExecution);   

@@ -529,6 +529,7 @@ solve_config.setSharedPushPublicUrl(opt.SharedPushPublicUrl);
 solve_config.setSharedPullPublicUrl(opt.SharedPullPublicUrl);
 solve_config.setSharedPushPrivateUrl(opt.SharedPushPrivateUrl);
 solve_config.setSharedPullPrivateUrl(opt.SharedPullPrivateUrl);
+solve_config.setAutomaticTransfer(opt.SharedAutomaticTransfer);
 solve_config.setJobDirectoryFullPath(curr_dir);
 solve_config.setNbExecutions(opt.NbTaskExecution);   
 solve_config.setWindowsStartupOptionsAsString(opt.WindowsStartupOptions);
