@@ -349,12 +349,14 @@ public abstract class MiddlemanDeployer {
             PAMRHook();
             try {
                 init();
-            } catch (Exception e) {
+            } catch (Throwable e) {
+                e.printStackTrace();
                 throw new RuntimeException(e);
             }
             try {
                 start();
-            } catch (Exception e) {
+            } catch (Throwable e) {
+                e.printStackTrace();
                 throw new RuntimeException(e);
             }
         }
