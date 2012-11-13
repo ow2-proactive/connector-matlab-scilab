@@ -59,9 +59,9 @@ for p = 1:numFrames
     T(1,p).Compose = false;
     T(1,p).Params = {['images_low' '/' fileNames{p}]};
     T(1,p).Func = @mytransform;
-    T(1,p).InputFiles = {['images_low' '/' fileNames{p}]};
+    T(1,p).InputFiles = ['images_low' '/' fileNames{p}];
     [pathstr, name, ext] = fileparts(fileNames{p});
-    T(1,p).OutputFiles = {['images_low' '/' 'New_' name '.pgm']};
+    T(1,p).OutputFiles = ['images_low' '/' 'New_' name '.pgm'];
     T(1,p).Description = ['Image recogition' num2str(p)];
     [pathstr, name, ext] = fileparts(mfilename('fullpath'));
 end

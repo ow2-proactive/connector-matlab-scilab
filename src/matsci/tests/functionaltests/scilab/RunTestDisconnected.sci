@@ -30,14 +30,18 @@ try
     ok = %t;
     disp('saving ok file');
     cd(oldpwd);
+    warning('off');
     save('ok.tst',ok);
+    warning('on');
 catch
     disp(lasterror());
 
     sleep(1000);
     ok = %f;
     cd(oldpwd);
+    warning('off');
     save('ko.tst',ok);
+    warning('on');
 end
 global('PA_jvminterface');
 jinvoke(PA_jvminterface,'shutdown');

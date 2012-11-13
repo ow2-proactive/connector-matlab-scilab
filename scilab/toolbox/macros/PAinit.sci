@@ -52,6 +52,7 @@ function [] = PAinit()
     // Call the native JNI connection to the Scheduler classes
     //initEmbedded();
 
+    jremove(File);
     PA_initialized = 1;
 
 endfunction

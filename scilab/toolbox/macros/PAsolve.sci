@@ -27,10 +27,13 @@ function outputs = PAsolve(varargin)
 
 
     gc_clz=jimport('org.ow2.proactive.scheduler.ext.scilab.common.PASolveScilabGlobalConfig',%f);
+    addJavaObj(gc_clz);
     jimport org.ow2.proactive.scheduler.ext.scilab.common.PASolveScilabTaskConfig;
-    jimport org.ow2.proactive.scheduler.ext.common.util.FileUtils;    
+    addJavaObj(PASolveScilabTaskConfig);
+    jimport org.ow2.proactive.scheduler.ext.common.util.FileUtils;
+    addJavaObj(FileUtils);
     jimport org.ow2.proactive.scheduler.ext.scilab.client.embedded.ScilabTaskRepository;   
-
+    addJavaObj(ScilabTaskRepository);
     repository = jinvoke(ScilabTaskRepository,'getInstance');
     addJavaObj(repository);
 
@@ -132,7 +135,6 @@ function outputs = PAsolve(varargin)
         taskinfo.jobid = jid;
 
         taskinfo.taskid = ftn(i);
-        taskinfo.sid = SOLVEid;        
 
         results(i)=PAResult(taskinfo);
     end
@@ -191,7 +193,6 @@ endfunction
 function [taskFilesToClean,pa_dir,curr_dir,fs,subdir] = initDirectories(opt,solve_config,NN,solveid)
     jimport java.io.File;
     jimport java.lang.String;
-    //addJavaObj(File);   
     curr_dir = pwd();
     fs=filesep();
     curr_dir_java = jnewInstance(File,curr_dir);
@@ -235,6 +236,8 @@ function [taskFilesToClean,pa_dir,curr_dir,fs,subdir] = initDirectories(opt,solv
     subdir = subdir + '/' + string(solveid);
     jinvoke(solve_config,'setJobSubDirPath',subdir);
     jinvoke(solve_config,'setDirToClean',pa_dir);
+    jremove(File);
+    jremove(String);
 endfunction
 
 // Initialize Data Spaces
@@ -275,7 +278,6 @@ endfunction
 // Setting PAsolveConfig properties
 function initSolveConfig(solve_config,opt)
     jimport java.net.URL;
-    //addJavaObj(URL);
     curr_dir = pwd();
     jinvoke(solve_config,'setJobName',opt.JobName);
     jinvoke(solve_config,'setJobDescription',opt.JobDescription);
@@ -324,13 +326,12 @@ function initSolveConfig(solve_config,opt)
     jinvoke(solve_config,'setCheckMatSciStatic',opt.CheckMatSciScriptStatic);
 
     jinvoke(solve_config,'setWorkerTimeoutStart',opt.WorkerTimeoutStart);
-
+    jremove(URL);
 endfunction
 
 // Initialize Task Config source files to be transferred
 function taskFilesToClean = initTransferSource(task_configs,solve_config,opt,Tasks, solveid,taskFilesToClean, pa_dir, subdir,fs,NN,MM)
     jimport java.lang.String;
-    //addJavaObj(String);
     for i=1:NN       
         for j=1:MM
             t_conf = task_configs(i-1,j-1);
@@ -391,6 +392,7 @@ function taskFilesToClean = initTransferSource(task_configs,solve_config,opt,Tas
             jremove(t_conf);
         end
     end
+    jremove(String);
 endfunction
 
 function initTransferEnv(locals,globals,solve_config,opt,solveid,taskFilesToClean, pa_dir, subdir,fs)
@@ -423,6 +425,7 @@ function initTransferEnv(locals,globals,solve_config,opt,solveid,taskFilesToClea
             addJavaObj(name);
         end
         jinvoke(solve_config,'setEnvMatFile',subdir, envMatName, globalNames);
+        jremove(String);
     end
 endfunction
 
@@ -431,7 +434,6 @@ function initInputFiles(task_configs,solve_config,opt,Tasks,NN,MM)
     jimport java.lang.String;
     jimport org.ow2.proactive.scheduler.ext.matsci.common.data.DummyDSSource;
     ddss = jnewInstance(DummyDSSource);
-    //addJavaObj(String);
     for i=1:NN       
         for j=1:MM
             t_conf = task_configs(i-1,j-1);
@@ -452,6 +454,8 @@ function initInputFiles(task_configs,solve_config,opt,Tasks,NN,MM)
         end        
     end
     jremove(ddss);
+    jremove(DummyDSSource);
+    jremove(String);
 endfunction
 
 
@@ -481,6 +485,8 @@ function initOutputFiles(task_configs,solve_config,opt,Tasks,NN,MM)
         end
     end
     jremove(ddss);
+    jremove(DummyDSSource);
+    jremove(String);
 endfunction
 
 // Initialize Task Config Input Parameters
@@ -561,7 +567,6 @@ endfunction
 
 function initOtherTCAttributes(NN,MM, task_configs, Tasks)
     jimport java.net.URL;
-    //addJavaObj(URL);
     for i=1:NN       
         for j=1:MM
             t_conf = task_configs(i-1,j-1);
@@ -601,6 +606,7 @@ function initOtherTCAttributes(NN,MM, task_configs, Tasks)
             jremove(t_conf);
         end
     end
+    jremove(URL);
 endfunction
 
 function nm=indToFile(ind)

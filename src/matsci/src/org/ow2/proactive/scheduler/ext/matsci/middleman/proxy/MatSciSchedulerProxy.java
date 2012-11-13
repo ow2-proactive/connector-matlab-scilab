@@ -100,7 +100,7 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
     /**
      * Default name of the file used to persist the list of jobs
      */
-    protected static final String DEFAULT_STATUS_FILENAME = "SchedulerProxyUIWithDSupport";
+    public static final String DEFAULT_STATUS_FILENAME = "MatSciSchedulerProxy";
 
     protected static String sessionName = DEFAULT_STATUS_FILENAME;
 

@@ -45,7 +45,7 @@ public class TestObjectArguments extends AbstractMatlabTest {
     @org.junit.Test
     public void run() throws Throwable {
 
-        runCommand("TestObjectArguments", 10);
+        runCommand("TestObjectArguments", 5);
 
     }
 }

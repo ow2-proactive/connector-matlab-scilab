@@ -53,6 +53,8 @@ function [val_k,index]=PAwaitAny(l,timeout)
         jremove(unrei);
         jremove(pair);
         jremove(taskids);
+        jremove(ArrayList);
+        jremove(Integer);
 
     else        
         error('Expected argument of type PAResL, received '+typeof(l))

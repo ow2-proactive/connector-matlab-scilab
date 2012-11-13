@@ -32,6 +32,7 @@ function val_k=PAwaitFor(l,timeout)
             end
 
             answers = jinvoke(unrei,'get');
+            jremove(Integer);
         end
 
         val_k=list();
@@ -65,6 +66,7 @@ function val_k=PAwaitFor(l,timeout)
             jremove(unrei);
         end
         jremove(taskids);
+        jremove(ArrayList);
 
     else        
         error('Expected argument of type PAResL, received '+typeof(l))

@@ -1235,24 +1235,18 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         if (jinfo.getConf().getSharedPullPublicUrl() != null) {
             if (jinfo.getConf().isSharedAutomaticTransfer()) {
                 // do nothing this will be handled by the callback
-            } else {
-                try {
-                    sched_proxy.pullData("" + jid, tname, null);
-                } catch (FileSystemException e) {
-                    throw new PASchedulerException("Exception Occured while transfering results of task " +
-                        tname + " from job " + jid, e);
-                }
-                jinfo.addReceivedTask(tname);
-                Pair<Integer, Integer> ids = MatSciJobInfo.computeIdsFromTName(tname);
-                tasksReceived.get(jid).set(ids.getX(), ids.getY(), true);
-                putJobInfo(jid, jinfo);
-                //System.out.println("Job "+jid+" : "+tasksReceived.get(jid));
-                try {
-                    recMan.commit();
-                } catch (IOException e) {
-                    printLog(e, true, true);
-                }
+                return;
             }
+        }
+        jinfo.addReceivedTask(tname);
+        Pair<Integer, Integer> ids = MatSciJobInfo.computeIdsFromTName(tname);
+        tasksReceived.get(jid).set(ids.getX(), ids.getY(), true);
+        putJobInfo(jid, jinfo);
+        //System.out.println("Job "+jid+" : "+tasksReceived.get(jid));
+        try {
+            recMan.commit();
+        } catch (IOException e) {
+            printLog(e, true, true);
         }
     }
 
@@ -1690,6 +1684,10 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                 List<Integer> lines = MatSciJobInfo.computeLinesFromTNames(tnames);
                 //printLog("lines :"+lines);
                 boolean ok = tasksReceived.get(jid).areLinesTrue(lines);
+                if (debug) {
+                    printLog("TaskReceived:" + tasksReceived.get(jid));
+                    printLog("ok:" + ok);
+                }
                 //printLog("bitset:"+tasksReceived.get(jid));
                 //printLog("ok :"+ok);
                 if (to || ok) {

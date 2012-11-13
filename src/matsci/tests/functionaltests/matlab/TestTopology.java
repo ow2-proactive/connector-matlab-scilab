@@ -45,7 +45,7 @@ public class TestTopology extends AbstractMatlabTest {
     @org.junit.Test
     public void run() throws Throwable {
 
-        runCommand("TestTopology", 10);
+        runCommand("TestTopology", 5);
 
     }
 }

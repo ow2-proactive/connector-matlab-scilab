@@ -51,6 +51,7 @@ function [val_k,err]=PAResult_PAwaitFor(R,RaL)
         end        
         jinvoke(R.iserror,'set',%t);
         resultSet(R);
+        jremove(StackTraceUtil);
         errormessage = 'PAResult:PAwaitFor Internal Error while executing '+R.taskid;
     end    
     jremove(RaL);
@@ -67,6 +68,7 @@ function resultSet(R)
         jinvoke(repository,'receivedTask',R.jobid, R.taskid);
         tf = jinvoke(repository,'allReceived',R.jobid)
         jremove(repository);
+        jremove(ScilabTaskRepository);
         opt = PAoptions();
         if opt.RemoveJobAfterRetrieve & tf then
             PAjobRemove(R.jobid);
