@@ -37,7 +37,7 @@
 package functionaltests.scilab;
 
 /**
- * TestBasic
+ * TestBasic this test the basic Scilab toolbox functionalities PAsolve, PAwaitFor, PAwaitAny, user errors
  *
  * @author The ProActive Team
  */

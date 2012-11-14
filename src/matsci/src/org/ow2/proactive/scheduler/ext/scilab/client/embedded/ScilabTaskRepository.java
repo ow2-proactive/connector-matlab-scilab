@@ -63,6 +63,7 @@ public class ScilabTaskRepository extends MatSciTaskRepository {
             init();
 
         } catch (IOException e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }

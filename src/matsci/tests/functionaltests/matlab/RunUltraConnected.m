@@ -1,4 +1,4 @@
-function ok=RunTestDisconnected(url, cred, tlbx_home, nbiter,index, testfunction, runAsMe)
+function ok=RunTestDisconnected(url, cred, tlbx_home, nbiter, testfunction, runAsMe)
 
 fs = filesep();
 addpath(tlbx_home);
@@ -10,10 +10,14 @@ save('start.tst','ok');
 PAoptions('Debug',true);
 try
     PAconnect(url, cred);
+    ok = true;
+    disp('saving connect file');
+    cd(oldpwd);
+    save('connect.tst','ok');
     if runAsMe == 1
         PAoptions('RunAsMe',true);
     end
-    eval([testfunction '(' num2str(nbiter) ',' num2str(index) ');']);
+    eval([testfunction '(' num2str(nbiter) ');']);
     ok = true;
     disp('saving ok file');
     cd(oldpwd);
@@ -26,6 +30,7 @@ catch ME
     cd(oldpwd);
     save('ko.tst','ok');
 end
+
 exit();
 end
 

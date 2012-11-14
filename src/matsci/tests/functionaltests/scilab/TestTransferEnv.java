@@ -37,7 +37,7 @@
 package functionaltests.scilab;
 
 /**
- * TestTransferEnv
+ * TestTransferEnv this tests the TransferEnv option to allow the transfer of the local workspace to the remote scilab engine
  *
  * @author ProActive team
  */

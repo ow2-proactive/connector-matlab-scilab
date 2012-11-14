@@ -37,7 +37,7 @@
 package functionaltests.scilab;
 
 /**
- * TestTopology
+ * TestTopology this tests custom Topology requirements in PATasks
  *
  * @author ProActive team
  */

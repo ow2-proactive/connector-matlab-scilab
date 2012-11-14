@@ -34,28 +34,21 @@
  */
 package functionaltests.scilab;
 
-import jdbm.PrimaryHashMap;
-import jdbm.RecordManager;
-import jdbm.RecordManagerFactory;
 import org.ow2.proactive.scheduler.ext.common.util.IOTools;
-import org.ow2.proactive.scheduler.ext.matsci.client.embedded.MatSciTaskRepository;
-import org.ow2.proactive.scheduler.ext.matsci.middleman.AOMatSciEnvironment;
 import org.ow2.proactive.scheduler.ext.scilab.client.embedded.ScilabTaskRepository;
 import org.ow2.proactive.scheduler.ext.scilab.middleman.AOScilabEnvironment;
 
 import java.io.File;
-import java.io.IOException;
 
 import static junit.framework.Assert.assertTrue;
 
 
 /**
- * TestDisconnected this test tests the PAbeginSession and PAendSession functions : creating a disconnected session, where
- * results are being kept across scilab crashes until the computation reach the PAendSession
+ * TestGetResults this test tests the PAgetResults function (getting results of previous scilab session)
  *
  * @author The ProActive Team
  */
-public class TestDisconnected extends AbstractScilabTest {
+public class TestGetResults extends AbstractScilabTest {
 
     static final int NB_ITER = 5;
 
@@ -67,9 +60,8 @@ public class TestDisconnected extends AbstractScilabTest {
         start();
 
         for (int i = 1; i <= NB_ITER; i++) {
-            runCommand(NB_ITER, i, "TestDisconnected");
+            runCommand(NB_ITER, i, "TestGetResults");
         }
-
     }
 
     protected void runCommand(int nb_iter, int index, String functionName) throws Exception {

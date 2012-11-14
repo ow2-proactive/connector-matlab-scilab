@@ -37,7 +37,7 @@
 package functionaltests.scilab;
 
 /**
- * TestSelectionScripts
+ * TestSelectionScripts this tests custom SelectionScripts in PATasks
  *
  * @author ProActive team
  */
