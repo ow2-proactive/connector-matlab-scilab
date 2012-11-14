@@ -37,6 +37,7 @@
 package org.ow2.proactive.scheduler.ext.matsci.client.embedded.util;
 
 import org.ow2.proactive.scheduler.ext.common.util.IOTools;
+import org.ow2.proactive.scheduler.ext.common.util.StackTraceUtil;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.data.Pair;
 
 import java.io.*;
@@ -46,7 +47,9 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -63,10 +66,12 @@ public abstract class StandardJVMSpawnHelper {
     protected final static String LOG4J_OPTION = "-Dlog4j.configuration=file:";
     protected final static String PA_CONFIGURATION_OPTION = "-Dproactive.configuration=";
 
+    private static final SimpleDateFormat ISO8601FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:sss");
+
     /**
      * Timeout used to deploy the JVM (times 50ms)
      */
-    protected static int TIMEOUT = 1200;
+    protected static int TIMEOUT = 60000;
 
     /**
      * Default classpath (classpath of the current JVM)
@@ -176,6 +181,8 @@ public abstract class StandardJVMSpawnHelper {
      */
     protected PrintStream outDebug;
 
+    protected File logFile;
+
     /**
      * Minimum RMI port number
      */
@@ -187,6 +194,28 @@ public abstract class StandardJVMSpawnHelper {
     private static final int MAX_PORT_NUMBER = 9999;
 
     protected StandardJVMSpawnHelper() {
+    }
+
+    protected void printLog(String message) {
+        Date d = new Date();
+        final String log2 = "[" + ISO8601FORMAT.format(d) + "][" + this.getClass().getSimpleName() + "] " +
+            message;
+        if (outDebug != null) {
+            outDebug.println(log2);
+            outDebug.flush();
+        }
+
+    }
+
+    protected void printLog(Throwable ex) {
+        Date d = new Date();
+        final String log2 = "[" + ISO8601FORMAT.format(d) + "][" + this.getClass().getSimpleName() + "] " +
+            StackTraceUtil.getStackTrace(ex);
+        if (outDebug != null) {
+            outDebug.println(log2);
+            outDebug.flush();
+        }
+
     }
 
     public void setMatSciDir(String matSciDir) {
@@ -310,12 +339,12 @@ public abstract class StandardJVMSpawnHelper {
     public void updateAllStubs(boolean keepTrying) {
         boolean stubsFound = false;
         Exception lasterr = null;
-        int cpt = 0;
         String lastMessage = "NO MESSAGE";
+        long total_waited = 0;
         do {
-            cpt++;
-
+            long begin_millis = System.currentTimeMillis();
             try {
+
                 Registry registry = LocateRegistry.getRegistry(rmi_port);
 
                 updateStubs(registry);
@@ -323,20 +352,28 @@ public abstract class StandardJVMSpawnHelper {
 
             } catch (Exception e) {
                 lasterr = e;
-                if (debug && !e.getMessage().equals(lastMessage)) {
-                    e.printStackTrace(outDebug);
+                if (!e.getMessage().equals(lastMessage)) {
+                    printLog(e);
                     lastMessage = e.getMessage();
                 }
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException e1) {
-                    e1.printStackTrace();
-                    break;
+                long middle_millis = System.currentTimeMillis();
+                long required_wait = 100 - (middle_millis - begin_millis);
+                if (required_wait > 0) {
+                    try {
+                        Thread.sleep(required_wait);
+                    } catch (InterruptedException e1) {
+                        printLog(e1);
+                        break;
+                    }
                 }
             }
-        } while (!stubsFound && keepTrying && cpt < TIMEOUT);
-        if (cpt >= TIMEOUT) {
-            throw new RuntimeException("Timeout occured when trying to update stubs", lasterr);
+            long end_millis = System.currentTimeMillis();
+            total_waited += (end_millis - begin_millis);
+        } while (!stubsFound && keepTrying && total_waited < TIMEOUT);
+        if (total_waited >= TIMEOUT) {
+            throw new RuntimeException(
+                "Timeout occured when trying to update stubs, errors have been written in file : " + logFile,
+                lasterr);
         }
     }
 
@@ -355,19 +392,28 @@ public abstract class StandardJVMSpawnHelper {
 
             boolean av = false;
 
-            File logFile = new File(tmpPath, "" + this.getClass().getSimpleName() + ".log");
+            logFile = new File(tmpPath, "" + this.getClass().getSimpleName() + ".log");
             if (!logFile.exists()) {
 
                 logFile.createNewFile();
 
             }
 
+            System.out.println("log file in use : " + logFile);
+
             outDebug = new PrintStream(new BufferedOutputStream(new FileOutputStream(logFile, true)));
+            printLog("Starting Deployment of Middleman");
             updateAllStubs(false);
             boolean stubsFound = !stubs.isEmpty();
+            if (stubsFound) {
+                printLog("Found existing Middleman JVM");
+            }
 
             if (stubsFound && oldSchedulerURI != null && !oldSchedulerURI.equals(newSchedulerURI)) {
                 // We force the old MiddlemanJVM to die and be replaced by a new one
+                if (stubsFound) {
+                    printLog("Killing exsting JVM because of scheduler url change");
+                }
                 shutdown();
                 Thread.sleep(1000);
                 stubsFound = false;
@@ -378,6 +424,9 @@ public abstract class StandardJVMSpawnHelper {
             if (stubsFound) {
                 return new Pair<HashMap<String, Object>, Integer>(stubs, rmi_port);
             }
+            if (stubsFound) {
+                printLog("No existing JVM found, create a new one");
+            }
 
             do {
                 av = available(rmi_port);
@@ -387,6 +436,7 @@ public abstract class StandardJVMSpawnHelper {
 
                     }
                     System.out.println("Port " + rmi_port + " in use, trying port " + new_rmi_port);
+                    printLog("Port " + rmi_port + " in use, trying port " + new_rmi_port);
                     rmi_port = new_rmi_port;
                 }
             } while (!av);
@@ -437,6 +487,8 @@ public abstract class StandardJVMSpawnHelper {
                 } else {
                     System.err.println("Warning : Can't find directory " + cd + ", using " +
                         new File(".").getAbsolutePath() + " instead.");
+                    printLog("Warning : Can't find directory " + cd + ", using " +
+                        new File(".").getAbsolutePath() + " instead.");
                 }
             }
 
@@ -450,16 +502,16 @@ public abstract class StandardJVMSpawnHelper {
             if (debug) {
                 System.out.println("Running Java command :");
                 System.out.println(cmd);
+                printLog("Running Java command :");
+                printLog(cmd.toString());
             }
             Process process = pb.start();
+            printLog("JVM process started");
 
             IOTools.LoggingThread lt1;
-            if (debug) {
-                lt1 = new IOTools.LoggingThread(process, "[MIDDLEMAN]", System.out, System.err, outDebug);
 
-            } else {
-                lt1 = new IOTools.LoggingThread(process, "[MIDDLEMAN]", System.out, System.err);
-            }
+            lt1 = new IOTools.LoggingThread(process, "[MIDDLEMAN]", System.out, System.err, outDebug);
+
             Thread t1 = new Thread(lt1, "MIDDLEMAN");
             t1.setDaemon(true);
             t1.start();

@@ -68,6 +68,18 @@ public class ScilabJVMSpawnHelper extends MatSciJVMSpawnHelper {
     protected ScilabJVMSpawnHelper() {
         super();
         itfNames.add(STUB_NAME);
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if (jvmitf != null) {
+                    try {
+                        jvmitf.shutdown();
+                    } catch (Exception e) {
+
+                    }
+                }
+            }
+        }));
     }
 
     public static ScilabJVMSpawnHelper getInstance() {
