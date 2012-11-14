@@ -23,6 +23,7 @@ function tf=PAisAwaited(l)
         jremove(answers);
         jremove(unrei);
         jremove(taskids);
+        jremove(ArrayList);
     else
         error('Expected argument of type PAResL, received '+typeof(l))
     end

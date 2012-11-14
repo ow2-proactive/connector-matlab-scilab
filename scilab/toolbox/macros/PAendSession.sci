@@ -5,6 +5,7 @@ function [tf] = PAendSession()
     repository = jinvoke(ScilabTaskRepository,'getInstance');
     jinvoke(repository, 'endSession');
     jremove(repository);
+    jremove(ScilabTaskRepository);
     pair = jinvoke(PA_solver, 'endSession');
     tf = jinvoke(pair,'getX');
     message = jinvoke(pair,'getY');

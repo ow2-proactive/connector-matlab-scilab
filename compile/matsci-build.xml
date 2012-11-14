@@ -369,6 +369,12 @@
             <property name="scilabbin" value="-Dscilab.bin.noPathSpecified"/>
         </else>
     </if>
+    <if name="scilab.test.leaks">
+        <property name="testLeaks_mode" value="-Dscilab.test.leaks"/>
+        <else>
+            <property name="testLeaks_mode" value="-Dscilab.test.noLeaks"/>
+        </else>
+    </if>
     <if name="matlab.bin.path">
         <property name="matlabbin" value="-Dmatlab.bin.path=${matlab.bin.path}"/>
         <else>
@@ -437,6 +443,8 @@
                 <jvmarg value="${adminpassword}"/>
                 <jvmarg value="${forkas_method}"/>
                 <jvmarg value="${scilabbin}"/>
+                <jvmarg value="${matlabbin}"/>
+                <jvmarg value="${testLeaks_mode}"/>
 
                 <classpath>
                     <additionalClasspath/>

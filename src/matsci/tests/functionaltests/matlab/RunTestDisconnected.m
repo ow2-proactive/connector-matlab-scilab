@@ -1,4 +1,4 @@
-function ok=RunUnitTest(url, cred, tlbx_home, nbiter, testfunction, runAsMe)
+function ok=RunTestDisconnected(url, cred, tlbx_home, nbiter,index, testfunction, runAsMe)
 
 fs = filesep();
 addpath(tlbx_home);
@@ -13,7 +13,7 @@ try
     if runAsMe == 1
         PAoptions('RunAsMe',true);
     end
-    eval([testfunction '(' num2str(nbiter) ');']);
+    eval([testfunction '(' num2str(nbiter) ',' num2str(index) ');']);
     ok = true;
     disp('saving ok file');
     cd(oldpwd);
@@ -26,6 +26,12 @@ catch ME
     cd(oldpwd);
     save('ko.tst','ok');
 end
+sched = PAScheduler;
+itf = sched.PAgetJVMInterface();
+itf.shutdown();
+pause(1);
 ok = true
 exit();
 end
+
+

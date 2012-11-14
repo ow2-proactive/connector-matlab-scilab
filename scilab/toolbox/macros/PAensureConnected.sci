@@ -15,6 +15,7 @@ function PAensureConnected()
         PA_dsregistry = jinvoke(deployer,'getDSRegistry');
         PA_jvminterface = jinvoke(deployer,'getJvmInterface');
         jremove(deployer);
+        jremove(ScilabJVMSpawnHelper);
         sleep(2000);
         PAensureConnected();
 

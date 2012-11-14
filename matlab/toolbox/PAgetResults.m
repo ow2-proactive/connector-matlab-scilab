@@ -83,7 +83,7 @@ jinfo = trep.getInfo(jobid);
 disp(['Retrieving results of job ' jobid]);
 
 ftn = jinfo.getFinalTasksNamesAsList();
-dir_to_clean = char(jinfo.getDirToClean();
+dir_to_clean = char(jinfo.getDirToClean());
 tnit = ftn.iterator();
 for i=1:ftn.size()
     taskinfo.cleanDir = dir_to_clean;

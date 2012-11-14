@@ -13,5 +13,5 @@ function tf=PAResult_PAisAwaited(l)
     jremove(answers);
     jremove(unrei);
     jremove(taskids);
-
+    jremove(ArrayList);
 endfunction

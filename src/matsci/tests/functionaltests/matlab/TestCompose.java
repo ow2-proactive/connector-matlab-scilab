@@ -45,7 +45,7 @@ public class TestCompose extends AbstractMatlabTest {
     @org.junit.Test
     public void run() throws Throwable {
 
-        runCommand("TestCompose", 10);
+        runCommand("TestCompose", 5);
 
     }
 }

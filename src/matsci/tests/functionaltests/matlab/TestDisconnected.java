@@ -32,7 +32,7 @@
  *
  *  * $$PROACTIVE_INITIAL_DEV$$
  */
-package functionaltests.scilab;
+package functionaltests.matlab;
 
 import jdbm.PrimaryHashMap;
 import jdbm.RecordManager;
@@ -40,11 +40,10 @@ import jdbm.RecordManagerFactory;
 import org.ow2.proactive.scheduler.ext.common.util.IOTools;
 import org.ow2.proactive.scheduler.ext.matsci.client.embedded.MatSciTaskRepository;
 import org.ow2.proactive.scheduler.ext.matsci.middleman.AOMatSciEnvironment;
-import org.ow2.proactive.scheduler.ext.scilab.client.embedded.ScilabTaskRepository;
-import org.ow2.proactive.scheduler.ext.scilab.middleman.AOScilabEnvironment;
+import org.ow2.proactive.scheduler.ext.matlab.client.embedded.MatlabTaskRepository;
+import org.ow2.proactive.scheduler.ext.matlab.middleman.AOMatlabEnvironment;
 
 import java.io.File;
-import java.io.IOException;
 
 import static junit.framework.Assert.assertTrue;
 
@@ -54,15 +53,10 @@ import static junit.framework.Assert.assertTrue;
  *
  * @author The ProActive Team
  */
-public class TestDisconnected extends AbstractScilabTest {
-
+public class TestDisconnected extends AbstractMatlabTest {
     static final int NB_ITER = 5;
 
     static final String TMPDIR = System.getProperty("java.io.tmpdir");
-
-    File middlemanJobFile = new File(TMPDIR, AOScilabEnvironment.MIDDLEMAN_JOBS_FILE_NAME);
-
-    File scilabJobFile = new File(TMPDIR, ScilabTaskRepository.SCILAB_EMBEDDED_JOBS_FILE_NAME);
 
     @org.junit.Test
     public void run() throws Throwable {
@@ -77,27 +71,30 @@ public class TestDisconnected extends AbstractScilabTest {
     protected void runCommand(int nb_iter, int index) throws Exception {
 
         ProcessBuilder pb = new ProcessBuilder();
-        pb.directory(sci_tb_home);
+        pb.directory(mat_tb_home);
         pb.redirectErrorStream(true);
         int runAsMe = 0;
 
         if (System.getProperty("proactive.test.runAsMe") != null) {
             runAsMe = 1;
         }
-        if (System.getProperty("scilab.bin.path") != null) {
-            pb.command(System.getProperty("scilab.bin.path"), "-nw", "-f", (new File(test_home + fs +
-                "RunTestDisconnected.sci")).getCanonicalPath(), "-args", schedURI.toString(), credFile
-                    .toString(), "" + nb_iter, "" + index, "TestDisconnected", "" + runAsMe);
+        if (System.getProperty("matlab.bin.path") != null) {
+            pb.command(System.getProperty("matlab.bin.path"), "-nodesktop", "-nosplash", "-r", "addpath('" +
+                test_home + "');RunTestDisconnected('" + schedURI.toString() + "','" + credFile.toString() +
+                "','" + mat_tb_home + "'," + nb_iter + "," + index + ",'" + "TestDisconnected" + "'," +
+                runAsMe + ");");
         } else {
-            pb.command("scilab", "-nw", "-f", (new File(test_home + fs + "RunTestDisconnected.sci"))
-                    .getCanonicalPath(), "-args", schedURI.toString(), credFile.toString(), "" + nb_iter, "" +
-                index, "TestDisconnected", "" + runAsMe);
+            pb.command("matlab", "-nodesktop", "-nosplash", "-r", "addpath('" + test_home +
+                "');RunTestDisconnected('" + schedURI.toString() + "','" + credFile.toString() + "','" +
+                mat_tb_home + "'," + nb_iter + "," + index + ",'" + "TestDisconnected" + "'," + runAsMe +
+                ");");
         }
         System.out.println("Running command : " + pb.command());
 
-        File okFile = new File(sci_tb_home + fs + "ok.tst");
-        File koFile = new File(sci_tb_home + fs + "ko.tst");
-        File reFile = new File(sci_tb_home + fs + "re.tst");
+        File okFile = new File(mat_tb_home + fs + "ok.tst");
+        File koFile = new File(mat_tb_home + fs + "ko.tst");
+        File reFile = new File(mat_tb_home + fs + "re.tst");
+        File startFile = new File(mat_tb_home + fs + "start.tst");
 
         if (okFile.exists()) {
             okFile.delete();
@@ -108,6 +105,9 @@ public class TestDisconnected extends AbstractScilabTest {
         }
         if (reFile.exists()) {
             reFile.delete();
+        }
+        if (startFile.exists()) {
+            startFile.delete();
         }
 
         Process p = pb.start();
@@ -121,10 +121,12 @@ public class TestDisconnected extends AbstractScilabTest {
         //ProcessResult pr = IOTools.blockingGetProcessResult(p, 580000);
 
         int code = p.waitFor();
-        if (reFile.exists()) {
-            // we restart in case of JIMS loading bug
-            runCommand(nb_iter, index);
-            return;
+        while (!startFile.exists()) {
+            Thread.sleep(100);
+        }
+
+        while (!okFile.exists() && !koFile.exists()) {
+            Thread.sleep(100);
         }
 
         if (index < nb_iter) {

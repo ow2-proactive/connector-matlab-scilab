@@ -69,7 +69,10 @@ function deployJVM(opt,uri)
     jimport org.ow2.proactive.scheduler.ext.scilab.client.embedded.util.ScilabJVMSpawnHelper;
     jimport java.lang.String;    
     deployer = jinvoke(ScilabJVMSpawnHelper,'getInstance');
+    addJavaObj(String);
+    addJavaObj(ScilabJVMSpawnHelper);
     addJavaObj(deployer);
+
     home = getenv('JAVA_HOME');
     fs=filesep();
     if length(home) > 0

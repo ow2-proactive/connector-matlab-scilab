@@ -529,6 +529,7 @@ solve_config.setSharedPushPublicUrl(opt.SharedPushPublicUrl);
 solve_config.setSharedPullPublicUrl(opt.SharedPullPublicUrl);
 solve_config.setSharedPushPrivateUrl(opt.SharedPushPrivateUrl);
 solve_config.setSharedPullPrivateUrl(opt.SharedPullPrivateUrl);
+solve_config.setSharedAutomaticTransfer(opt.SharedAutomaticTransfer);
 solve_config.setJobDirectoryFullPath(curr_dir);
 solve_config.setNbExecutions(opt.NbTaskExecution);   
 solve_config.setWindowsStartupOptionsAsString(opt.WindowsStartupOptions);
@@ -686,12 +687,12 @@ for i=1:NN
         if ilen > 0
             filelist = Tasks(j,i).InputFiles;
             for k=1:ilen
-                afile = filelist(k);
-                if isAbsolute(afile.Path)
-                    error([afile.Path ' is an absolute pathname, please use a relative pathname that is a decendant of the current directory.']);
+                aFile = filelist(k);
+                if isAbsolute(aFile.Path)
+                    error([aFile.Path ' is an absolute pathname, please use a relative pathname that is a decendant of the current directory.']);
                 end
-                ifstr = java.lang.String(afile.Path);
-                dss = org.ow2.proactive.scheduler.ext.matsci.common.data.DSSource.getSpace(afile.Space);
+                ifstr = java.lang.String(aFile.Path);
+                dss = org.ow2.proactive.scheduler.ext.matsci.common.data.DSSource.getSpace(aFile.Space);
                 task_config(i,j).addInputFile(ifstr, dss);
             end
         end
@@ -719,8 +720,8 @@ for i=1:NN
                 if isAbsolute(aFile.Path)
                     error([aFile.Path ' is an absolute pathname, invalid for output files.']);
                 end
-                ifstr = java.lang.String(afile.Path);
-                dss = org.ow2.proactive.scheduler.ext.matsci.common.data.DSSource.getSpace(afile.Space);
+                ifstr = java.lang.String(aFile.Path);
+                dss = org.ow2.proactive.scheduler.ext.matsci.common.data.DSSource.getSpace(aFile.Space);
                 task_config(i,j).addOutputFile(ifstr, dss);
                 
             end            

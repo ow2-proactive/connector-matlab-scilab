@@ -43,9 +43,13 @@ import org.ow2.proactive.authentication.crypto.Credentials;
 import org.ow2.proactive.scheduler.common.SchedulerAuthenticationInterface;
 import org.ow2.proactive.scheduler.common.SchedulerConnection;
 import org.ow2.proactive.scheduler.ext.common.util.IOTools;
+import org.ow2.proactive.scheduler.ext.matlab.client.embedded.MatlabTaskRepository;
+import org.ow2.proactive.scheduler.ext.matlab.middleman.AOMatlabEnvironment;
+import org.ow2.proactive.scheduler.ext.matsci.middleman.proxy.MatSciSchedulerProxy;
 import org.ow2.tests.FunctionalTest;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.net.InetAddress;
 import java.net.URI;
 import java.security.PublicKey;
@@ -75,6 +79,8 @@ public class AbstractMatlabTest extends FunctionalTest {
     private String adminName = "demo";
     private String adminPwd = "demo";
 
+    static final String TMPDIR = System.getProperty("java.io.tmpdir");
+
     protected void init() throws Exception {
 
         mat_tb_home = new File(System.getProperty("pa.matlab.home")).getCanonicalFile();
@@ -88,6 +94,30 @@ public class AbstractMatlabTest extends FunctionalTest {
 
         schedURI = new URI("rmi://" + localhost + ":" + CentralPAPropertyRepository.PA_RMI_PORT.getValue() +
             "/");
+
+        // delete all db files
+        File[] dbJobFiles = new File(TMPDIR).listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                if (name.startsWith(AOMatlabEnvironment.MIDDLEMAN_JOBS_FILE_NAME)) {
+                    return true;
+                } else if (name.startsWith(MatlabTaskRepository.MATLAB_EMBEDDED_JOBS_FILE_NAME)) {
+                    return true;
+                } else if (name.startsWith(MatSciSchedulerProxy.DEFAULT_STATUS_FILENAME)) {
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        for (File f : dbJobFiles) {
+            try {
+                System.out.println("Deleting " + f);
+                f.delete();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
     }
 
@@ -134,6 +164,7 @@ public class AbstractMatlabTest extends FunctionalTest {
 
         File okFile = new File(mat_tb_home + fs + "ok.tst");
         File koFile = new File(mat_tb_home + fs + "ko.tst");
+        File startFile = new File(mat_tb_home + fs + "start.tst");
 
         if (okFile.exists()) {
             okFile.delete();
@@ -141,6 +172,9 @@ public class AbstractMatlabTest extends FunctionalTest {
 
         if (koFile.exists()) {
             koFile.delete();
+        }
+        if (startFile.exists()) {
+            startFile.delete();
         }
 
         Process p = pb.start();
@@ -153,6 +187,15 @@ public class AbstractMatlabTest extends FunctionalTest {
         //ProcessResult pr = IOTools.blockingGetProcessResult(p, 580000);
 
         p.waitFor();
+        // sometimes a matlab laucher is used and it returns immediately, the waitFor will not be of use and we need to wait
+        // for files to be created
+        while (!startFile.exists()) {
+            Thread.sleep(100);
+        }
+
+        while (!okFile.exists() && !koFile.exists()) {
+            Thread.sleep(100);
+        }
 
         assertTrue(testName + " passed", okFile.exists());
     }

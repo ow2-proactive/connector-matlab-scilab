@@ -37,15 +37,24 @@
 package functionaltests.scilab;
 
 import functionaltests.SchedulerTStarter;
+import jdbm.PrimaryHashMap;
+import jdbm.RecordManager;
+import jdbm.RecordManagerFactory;
 import org.objectweb.proactive.core.config.CentralPAPropertyRepository;
 import org.ow2.proactive.authentication.crypto.CredData;
 import org.ow2.proactive.authentication.crypto.Credentials;
 import org.ow2.proactive.scheduler.common.SchedulerAuthenticationInterface;
 import org.ow2.proactive.scheduler.common.SchedulerConnection;
 import org.ow2.proactive.scheduler.ext.common.util.IOTools;
+import org.ow2.proactive.scheduler.ext.matsci.client.embedded.MatSciTaskRepository;
+import org.ow2.proactive.scheduler.ext.matsci.middleman.AOMatSciEnvironment;
+import org.ow2.proactive.scheduler.ext.matsci.middleman.proxy.MatSciSchedulerProxy;
+import org.ow2.proactive.scheduler.ext.scilab.client.embedded.ScilabTaskRepository;
+import org.ow2.proactive.scheduler.ext.scilab.middleman.AOScilabEnvironment;
 import org.ow2.tests.FunctionalTest;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.net.InetAddress;
 import java.net.URI;
 import java.security.PublicKey;
@@ -72,8 +81,13 @@ public class AbstractScilabTest extends FunctionalTest {
 
     String localhost;
 
+    int testLeak = 0;
+    File leakFile = new File(".");
+
     private String adminName = "demo";
     private String adminPwd = "demo";
+
+    static final String TMPDIR = System.getProperty("java.io.tmpdir");
 
     protected void init() throws Exception {
 
@@ -88,6 +102,30 @@ public class AbstractScilabTest extends FunctionalTest {
 
         schedURI = new URI("rmi://" + localhost + ":" + CentralPAPropertyRepository.PA_RMI_PORT.getValue() +
             "/");
+
+        // delete all db files
+        File[] dbJobFiles = new File(TMPDIR).listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                if (name.startsWith(AOScilabEnvironment.MIDDLEMAN_JOBS_FILE_NAME)) {
+                    return true;
+                } else if (name.startsWith(ScilabTaskRepository.SCILAB_EMBEDDED_JOBS_FILE_NAME)) {
+                    return true;
+                } else if (name.startsWith(MatSciSchedulerProxy.DEFAULT_STATUS_FILENAME)) {
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        for (File f : dbJobFiles) {
+            try {
+                System.out.println("Deleting " + f);
+                f.delete();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
     }
 
@@ -162,14 +200,21 @@ public class AbstractScilabTest extends FunctionalTest {
         if (System.getProperty("proactive.test.runAsMe") != null) {
             runAsMe = 1;
         }
+        if (System.getProperty("scilab.test.leaks") != null) {
+            testLeak = 1;
+            leakFile = new File(test_home + fs + "JIMS.log");
+            if (leakFile.exists()) {
+                leakFile.delete();
+            }
+        }
         if (System.getProperty("scilab.bin.path") != null) {
             pb.command(System.getProperty("scilab.bin.path"), "-nw", "-f", (new File(test_home + fs +
                 "RunUnitTest.sci")).getCanonicalPath(), "-args", schedURI.toString(), credFile.toString(),
-                    "" + nb_iter, testName, "" + runAsMe);
+                    "" + nb_iter, testName, "" + runAsMe, "" + testLeak, "" + leakFile);
         } else {
             pb.command("scilab", "-nw", "-f", (new File(test_home + fs + "RunUnitTest.sci"))
                     .getCanonicalPath(), "-args", schedURI.toString(), credFile.toString(), "" + nb_iter,
-                    testName, "" + runAsMe);
+                    testName, "" + runAsMe, "" + testLeak, "" + leakFile);
         }
         return pb;
     }
@@ -177,6 +222,7 @@ public class AbstractScilabTest extends FunctionalTest {
     protected void runCommand(String testName, int nb_iter) throws Exception {
         // Start the scheduler
         start();
+
         ProcessBuilder pb = initCommand(testName, nb_iter);
         System.out.println("Running command : " + pb.command());
 
@@ -212,5 +258,11 @@ public class AbstractScilabTest extends FunctionalTest {
         }
 
         assertTrue(testName + " passed", okFile.exists());
+
+        if (testLeak == 1) {
+            File outFile = new File(test_home + fs + "JIMS.out");
+            JIMSLogsParser parser = new JIMSLogsParser(leakFile, outFile);
+            assertTrue("No leak found in " + outFile + " and " + leakFile, parser.testok());
+        }
     }
 }
