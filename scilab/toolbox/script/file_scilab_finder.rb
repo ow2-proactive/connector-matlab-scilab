@@ -5,7 +5,7 @@ begin
 	import org.ow2.proactive.scheduler.ext.scilab.worker.util.ScilabFinder
 rescue Exception => e
   puts e.message + "\n" + e.backtrace.join("\n")
-  raise java.lang.RuntimeException.new(e.message + "\n" + e.backtrace.join("\n"))
+  raise java.lang.RuntimeException.new("Cannot load Scilab library from the scheduler addons directory, make sure it is properly installed. Detailed error message :\n"+e.message + "\n" + e.backtrace.join("\n"))
 end
 
 
