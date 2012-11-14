@@ -1758,7 +1758,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
 
     protected class SchedulerPinger implements Runnable {
 
-        private static final int KEEP_ALIVE_TIME = 120000;
+        private static final int KEEP_ALIVE_TIME = 20000;
 
         /**
          * we use a private Schuduler connection because two different thread cannot use the same scheduler connection

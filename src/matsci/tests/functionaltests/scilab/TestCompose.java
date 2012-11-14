@@ -37,7 +37,7 @@
 package functionaltests.scilab;
 
 /**
- * TestCompose
+ * TestCompose this test tests the Compose feature in PATasks chains
  *
  * @author ProActive team
  */

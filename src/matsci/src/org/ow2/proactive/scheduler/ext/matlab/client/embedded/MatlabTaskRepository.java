@@ -60,6 +60,7 @@ public class MatlabTaskRepository extends MatSciTaskRepository {
             recMan = RecordManagerFactory.createRecordManager(MATLAB_EMBEDDED_JOBS_FILE.getCanonicalPath());
             init();
         } catch (IOException e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }

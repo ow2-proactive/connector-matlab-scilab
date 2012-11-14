@@ -37,7 +37,7 @@
 package functionaltests.scilab;
 
 /**
- * TestMultipleSubmit
+ * TestMultipleSubmit this tests that the user can asynchronously do several PAsolve in a row without blocking or error
  *
  * @author ProActive team
  */

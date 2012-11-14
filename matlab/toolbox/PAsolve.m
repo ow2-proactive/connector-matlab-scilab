@@ -291,11 +291,11 @@ else
     task_configs = recordedJobInfo.getTaskConfigs();
 
 
-    jobinfo = solver.solve(solve_config, task_config);
+    jobinfo = solver.solve(solve_config, task_configs);
      % if null is returned there was a connection problem, we reconnect and retry
      if ~isjava(jobinfo)
          PAensureConnected();
-         jobinfo = solver.solve(solve_config, task_config);
+         jobinfo = solver.solve(solve_config, task_configs);
          % outputs = PAsolve(varargin);
      end
 
@@ -308,9 +308,7 @@ dir_to_clean = char(jobinfo.getDirToClean());
 ftn = jobinfo.getFinalTaskNames();
 tnit = ftn.iterator();
 for i=1:NN
-    % taskinfo.cleanFileSet = taskFilesToClean{i};
     taskinfo.cleanDir = dir_to_clean;
-    % taskinfo.cleanDirSet = {pa_dir};
     out_path = jobinfo.getOutputVariablePathWithIndex(i-1);
     taskinfo.outFile = char(out_path);
     taskinfo.jobid = jid;

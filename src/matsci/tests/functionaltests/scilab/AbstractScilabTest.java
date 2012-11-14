@@ -148,6 +148,37 @@ public class AbstractScilabTest extends FunctionalTest {
         cred.writeToDisk(credFile.toString());
     }
 
+    protected void startCmdLine(String uri, File proactiveConf) throws Exception {
+        init();
+        SchedulerTStarter.startSchedulerCmdLine(false, proactiveConf);
+
+        SchedulerAuthenticationInterface auth = SchedulerConnection.waitAndJoin((uri != null) ? uri
+                : schedURI.toString());
+
+        PublicKey pubKey = auth.getPublicKey();
+        Credentials cred = null;
+        if (System.getProperty("proactive.test.login.user") != null) {
+            cred = Credentials.createCredentials(new CredData(
+                System.getProperty("proactive.test.login.user"), System
+                        .getProperty("proactive.test.password.user")), pubKey);
+        } else {
+            cred = Credentials.createCredentials(new CredData(adminName, adminPwd), pubKey);
+        }
+
+        cred.writeToDisk(credFile.toString());
+    }
+
+    protected void restartCmdLine(String uri, File proactiveConf) throws Exception {
+        SchedulerTStarter.killSchedulerCmdLine();
+        SchedulerTStarter.startSchedulerCmdLine(true, proactiveConf);
+        SchedulerAuthenticationInterface auth = SchedulerConnection.waitAndJoin((uri != null) ? uri
+                : schedURI.toString());
+    }
+
+    protected void killScheduler() {
+        SchedulerTStarter.killSchedulerCmdLine();
+    }
+
     @org.junit.Test
     public void run() throws Throwable {
         init();

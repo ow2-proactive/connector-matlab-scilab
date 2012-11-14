@@ -36,21 +36,30 @@
  */
 package functionaltests;
 
+import org.apache.commons.io.FileUtils;
 import org.objectweb.proactive.core.config.CentralPAPropertyRepository;
 import org.objectweb.proactive.utils.OperatingSystem;
+import org.ow2.proactive.authentication.crypto.CredData;
+import org.ow2.proactive.authentication.crypto.Credentials;
 import org.ow2.proactive.resourcemanager.RMFactory;
 import org.ow2.proactive.resourcemanager.authentication.RMAuthentication;
 import org.ow2.proactive.resourcemanager.core.properties.PAResourceManagerProperties;
 import org.ow2.proactive.resourcemanager.frontend.RMConnection;
 import org.ow2.proactive.scheduler.SchedulerFactory;
+import org.ow2.proactive.scheduler.common.Scheduler;
+import org.ow2.proactive.scheduler.common.SchedulerAuthenticationInterface;
 import org.ow2.proactive.scheduler.common.SchedulerConnection;
+import org.ow2.proactive.scheduler.common.exception.NotConnectedException;
+import org.ow2.proactive.scheduler.common.exception.PermissionException;
 import org.ow2.proactive.scheduler.core.properties.PASchedulerProperties;
 import org.ow2.proactive.scheduler.ext.common.util.IOTools;
+import org.ow2.proactive.scheduler.util.process.ProcessTreeKiller;
 import org.ow2.tests.ProActiveSetup2;
 
 import java.io.File;
 import java.io.Serializable;
 import java.net.URI;
+import java.util.HashMap;
 
 
 /**
@@ -61,14 +70,16 @@ import java.net.URI;
  */
 public class SchedulerTStarter implements Serializable {
 
-    protected String rmUsername = "demo";
-    protected String rmPassword = "demo";
+    protected static String rmUsername = "demo";
+    protected static String rmPassword = "demo";
 
     protected static String schedulerDefaultURL = "//Localhost/";
 
     private static final int DEFAULT_NUMBER_OF_NODES = 4;
     private static final int DEFAULT_NODE_TIMEOUT = 30 * 1000;
     private static int nodeTimeout = DEFAULT_NODE_TIMEOUT;
+
+    protected static Scheduler sched;
 
     private static Process p;
 
@@ -77,24 +88,35 @@ public class SchedulerTStarter implements Serializable {
     /**
      * Start a Scheduler and Resource Manager.
      */
-    public static void startSchedulerCmdLine() throws Exception {
+    public static void startSchedulerCmdLine(boolean restart, File proactiveConf) throws Exception {
 
         File schedHome = new File(System.getProperty("pa.scheduler.home")).getCanonicalFile();
         File rmHome = new File(System.getProperty("pa.rm.home")).getCanonicalFile();
+        if (proactiveConf != null) {
+            FileUtils.copyFile(proactiveConf, new File(schedHome, "config" + fs + "proactive" + fs +
+                "ProActiveConfiguration.xml"));
+        }
 
         System.out.println(schedHome);
 
         p = null;
+        ProcessBuilder pb = new ProcessBuilder();
         if (OperatingSystem.getOperatingSystem().equals(OperatingSystem.unix)) {
-            p = Runtime.getRuntime().exec(
-                    new String[] { "/bin/bash",
-                            schedHome + fs + "bin" + fs + "unix" + fs + "scheduler-start-clean" }, null,
-                    new File(schedHome + fs + "bin" + fs + "unix"));
+            pb.directory(new File(schedHome + fs + "bin" + fs + "unix"));
+            pb.command("/bin/bash", restart ? "scheduler-start" : "scheduler-start-clean",
+                    "-Dproactive.communication.protocol=pnp", "-Dproactive.pnp.port=9999");
+            pb.environment().put("SchedulerTStarter", "SchedulerTStarter");
+            p = pb.start();
+
         } else {
-            p = Runtime.getRuntime().exec(
-                    new String[] { "cmd.exe", "/c",
-                            schedHome + fs + "bin" + fs + "windows" + fs + "scheduler-start-clean.bat" },
-                    null, new File(schedHome + fs + "bin" + fs + "unix"));
+
+            pb.directory(new File(schedHome + fs + "bin" + fs + "windows"));
+
+            pb.command("cmd.exe", "/c", restart ? "scheduler-start.bat" : "scheduler-start-clean.bat",
+                    "-Dproactive.communication.protocol=pnp", "-Dproactive.pnp.port=9999");
+            pb.environment().put("SchedulerTStarter", "SchedulerTStarter");
+            p = pb.start();
+
         }
 
         IOTools.LoggingThread lt1 = new IOTools.LoggingThread(p, "[SchedulerTStarter]", System.out,
@@ -104,19 +126,25 @@ public class SchedulerTStarter implements Serializable {
         t1.start();
 
         // waiting the initialization
-        RMAuthentication rmAuth = RMConnection.waitAndJoin("rmi://localhost:" +
-            CentralPAPropertyRepository.PA_RMI_PORT.getValue() + "/");
+        RMAuthentication rmAuth = RMConnection.waitAndJoin("pnp://localhost:9999");
 
         System.out.println("RM successfully joined.");
 
-        SchedulerConnection.waitAndJoin("rmi://localhost:" +
-            CentralPAPropertyRepository.PA_RMI_PORT.getValue() + "/");
+        SchedulerConnection.waitAndJoin("pnp://localhost:9999");
         System.out.println("Scheduler successfully joined.");
 
     }
 
     public static void killSchedulerCmdLine() {
-        p.destroy();
+        HashMap<String, String> env = new HashMap<String, String>();
+        env.put("SchedulerTStarter", "SchedulerTStarter");
+        ProcessTreeKiller.get().kill(p, env);
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        //p.destroy();
     }
 
     /**
@@ -171,11 +199,20 @@ public class SchedulerTStarter implements Serializable {
             CentralPAPropertyRepository.PA_RMI_PORT.getValue() + "/"),
                 PASchedulerProperties.SCHEDULER_DEFAULT_POLICY.getValueAsString());
 
-        SchedulerConnection.waitAndJoin(schedulerDefaultURL);
+        SchedulerAuthenticationInterface itf = SchedulerConnection.waitAndJoin(schedulerDefaultURL);
         System.out.println("Scheduler successfully created at " + "rmi://localhost:" +
             CentralPAPropertyRepository.PA_RMI_PORT.getValue() + "/");
+        Credentials cred = Credentials.createCredentials(new CredData(rmUsername, rmPassword), itf
+                .getPublicKey());
+        sched = itf.login(cred);
         if (localnodes) {
             RMTHelper.getDefaultInstance().createLocalNodeSource();
+        }
+    }
+
+    public static void killScheduler() throws PermissionException, NotConnectedException {
+        if (sched != null) {
+            boolean killed = sched.kill();
         }
     }
 
