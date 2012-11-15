@@ -84,8 +84,10 @@ public class AbstractScilabTest extends FunctionalTest {
     int testLeak = 0;
     File leakFile = new File(".");
 
-    private String adminName = "demo";
-    private String adminPwd = "demo";
+    protected String adminName = "demo";
+    protected String adminPwd = "demo";
+
+    protected Credentials adminCredentials;
 
     static final String TMPDIR = System.getProperty("java.io.tmpdir");
 
@@ -146,6 +148,8 @@ public class AbstractScilabTest extends FunctionalTest {
         }
 
         cred.writeToDisk(credFile.toString());
+
+        adminCredentials = cred;
     }
 
     protected void startCmdLine(String uri, File proactiveConf) throws Exception {
@@ -166,6 +170,7 @@ public class AbstractScilabTest extends FunctionalTest {
         }
 
         cred.writeToDisk(credFile.toString());
+        adminCredentials = cred;
     }
 
     protected void restartCmdLine(String uri, File proactiveConf) throws Exception {
