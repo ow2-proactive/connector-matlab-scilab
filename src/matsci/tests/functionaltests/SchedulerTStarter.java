@@ -138,9 +138,17 @@ public class SchedulerTStarter implements Serializable {
     public static void killSchedulerCmdLine() {
         HashMap<String, String> env = new HashMap<String, String>();
         env.put("SchedulerTStarter", "SchedulerTStarter");
+        // we kill first the scheduler
+        ProcessTreeKiller.get().kill(p);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        // and eventually we kill remaining nodes
         ProcessTreeKiller.get().kill(p, env);
         try {
-            Thread.sleep(2000);
+            Thread.sleep(1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
