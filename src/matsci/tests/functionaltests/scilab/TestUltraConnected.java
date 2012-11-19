@@ -37,6 +37,9 @@ package functionaltests.scilab;
 import org.objectweb.proactive.api.PAActiveObject;
 import org.objectweb.proactive.core.util.wrapper.BooleanWrapper;
 import org.objectweb.proactive.core.util.wrapper.StringWrapper;
+import org.ow2.proactive.scheduler.common.Scheduler;
+import org.ow2.proactive.scheduler.common.SchedulerAuthenticationInterface;
+import org.ow2.proactive.scheduler.common.SchedulerConnection;
 import org.ow2.proactive.scheduler.ext.common.util.IOTools;
 
 import java.io.File;
@@ -150,6 +153,14 @@ public class TestUltraConnected extends AbstractScilabTest {
 
         for (int i = 0; i < nb_iter; i++) {
             Thread.sleep((25 + Math.round(10 * Math.random())) * 1000);
+            SchedulerAuthenticationInterface auth = SchedulerConnection.waitAndJoin(schedURI.toString());
+            Scheduler sched = auth.login(adminCredentials);
+            try {
+                sched.kill();
+            } catch (Exception e) {
+
+            }
+            Thread.sleep(1000);
             restartCmdLine("pnp://localhost:9999", proactiveConf);
         }
 

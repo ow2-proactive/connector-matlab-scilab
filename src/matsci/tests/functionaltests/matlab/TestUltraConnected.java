@@ -35,6 +35,9 @@
 package functionaltests.matlab;
 
 import functionaltests.scilab.AbstractScilabTest;
+import org.ow2.proactive.scheduler.common.Scheduler;
+import org.ow2.proactive.scheduler.common.SchedulerAuthenticationInterface;
+import org.ow2.proactive.scheduler.common.SchedulerConnection;
 import org.ow2.proactive.scheduler.ext.common.util.IOTools;
 
 import java.io.File;
@@ -148,6 +151,14 @@ public class TestUltraConnected extends AbstractMatlabTest {
 
         for (int i = 0; i < nb_iter + 2; i++) {
             Thread.sleep((60 + Math.round(10 * Math.random())) * 1000);
+            SchedulerAuthenticationInterface auth = SchedulerConnection.waitAndJoin(schedURI.toString());
+            Scheduler sched = auth.login(adminCredentials);
+            try {
+                sched.kill();
+            } catch (Exception e) {
+
+            }
+            Thread.sleep(1000);
             restartCmdLine("pnp://localhost:9999", proactiveConf);
         }
 
