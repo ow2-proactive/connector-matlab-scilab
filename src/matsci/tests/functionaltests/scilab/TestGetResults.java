@@ -34,6 +34,7 @@
  */
 package functionaltests.scilab;
 
+import org.apache.commons.io.FileUtils;
 import org.ow2.proactive.scheduler.ext.common.util.IOTools;
 import org.ow2.proactive.scheduler.ext.scilab.client.embedded.ScilabTaskRepository;
 import org.ow2.proactive.scheduler.ext.scilab.middleman.AOScilabEnvironment;
@@ -56,6 +57,11 @@ public class TestGetResults extends AbstractScilabTest {
 
     @org.junit.Test
     public void run() throws Throwable {
+        // remove sched DBs to ensure that job index starts at 1
+        File schedHome = new File(System.getProperty("pa.scheduler.home")).getCanonicalFile();
+        FileUtils.deleteDirectory(new File(schedHome, "RM_DB"));
+        FileUtils.deleteDirectory(new File(schedHome, "SCHEDULER_DB"));
+
         // Start the scheduler
         start();
 
