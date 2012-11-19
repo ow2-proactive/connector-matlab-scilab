@@ -153,7 +153,7 @@ public class TestUltraConnected extends AbstractScilabTest {
 
         for (int i = 0; i < nb_iter; i++) {
             Thread.sleep((25 + Math.round(10 * Math.random())) * 1000);
-            SchedulerAuthenticationInterface auth = SchedulerConnection.waitAndJoin(schedURI.toString());
+            SchedulerAuthenticationInterface auth = SchedulerConnection.waitAndJoin("pnp://localhost:9999");
             Scheduler sched = auth.login(adminCredentials);
             try {
                 sched.kill();
