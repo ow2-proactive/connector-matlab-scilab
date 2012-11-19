@@ -92,7 +92,7 @@ public class PASolveMatSciTaskConfig implements Serializable {
     /**
      * Is the custom selection script static ?
      */
-    private boolean staticScript = false;
+    private boolean customScriptStatic = false;
 
     /**
      * Parameters of the custom script
@@ -250,12 +250,12 @@ public class PASolveMatSciTaskConfig implements Serializable {
         this.customScriptUrl = customScriptUrl;
     }
 
-    public boolean isStaticScript() {
-        return staticScript;
+    public boolean isCustomScriptStatic() {
+        return customScriptStatic;
     }
 
-    public void setStaticScript(boolean staticScript) {
-        this.staticScript = staticScript;
+    public void setCustomScriptStatic(boolean customScriptStatic) {
+        this.customScriptStatic = customScriptStatic;
     }
 
     public String getCustomScriptParams() {

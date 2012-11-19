@@ -58,14 +58,12 @@ public class ScilabTaskRepository extends MatSciTaskRepository {
     public static final File SCILAB_EMBEDDED_JOBS_FILE = new File(TMPDIR, SCILAB_EMBEDDED_JOBS_FILE_NAME);
 
     private ScilabTaskRepository() {
-        try {
-            recMan = RecordManagerFactory.createRecordManager(SCILAB_EMBEDDED_JOBS_FILE.getCanonicalPath());
-            init();
+        init();
+    }
 
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        }
+    @Override
+    protected File getMatSciTaskRepFile() {
+        return new File(TMPDIR, SCILAB_EMBEDDED_JOBS_FILE_NAME);
     }
 
     public static MatSciTaskRepository getInstance() {

@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Disconnected mode:: Getting Started (ProActive Scheduler
+    <title>Disconnected/Fault Tolerant mode:: Getting Started (ProActive Scheduler
         Toolbox)</title>
     <link rel="stylesheet" href="docstyle.css" type="text/css">
     <meta name="generator" content="DocBook XSL Stylesheets V1.52.2">
@@ -35,7 +35,7 @@
     </tr>
 </table>
 
-<h2 class="title">Disconnected mode</h2>
+<h2 class="title">Disconnected/Fault Tolerant mode</h2>
 <table border="0" cellpadding="4" cellspacing="0" class="pagenavtable">
     <tr>
         <th>On this page&#8230;</th>
@@ -47,13 +47,22 @@
 
             <p><a href="proactive_disconnect.html#disconnect-3">Reconnecting and Retrieving previous job results</a></p>
 
+            <p><a href="proactive_disconnect.html#disconnect-4">Using fault-tolerant sessions</a></p>
+
             </td>
     </tr>
 </table>
 <a name="disconnect-1"></a>
 
 <h3 class="title">Introduction</h3>
-<p>In the previous chapter we saw how we can run complex matlab code remotely, and wait for the results produced. Sometimes, when tasks are really long and matlab licences scarce, it can be very convenient to close the local matlab session to avoid consuming a token or local processing resources. In this chapter, we will learn how to use the <b>Disconnected Mode</b> feature of <b>Matlab Connector Toolbox</b>.</p>
+<p>In the previous chapter we saw how we can run complex matlab code remotely, and wait for the results produced. Sometimes,
+    when tasks are really long and matlab licences scarce, it can be very convenient to close the local matlab session to
+    avoid consuming a token or local processing resources.</p>
+    <p>
+        It is as well important, when submitting a long serie of distributed
+    computations, that every intermediate result is kept and not lost if a Matlab crash occurs before the end.
+    <br><br>
+    In this chapter, we will learn how to use the <b>Disconnected/Fault Tolerant</b> mode of <b>Matlab Connector Toolbox</b>.</p>
 
 <a name="disconnect-2"></a>
 
@@ -65,32 +74,38 @@
 
 <p>In this example we will run a long list of factorial tasks and will close the matlab session:</p>
 <pre>>> res=PAsolve(@factorial,1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10)
-Job submitted : 15
-Awaited (J:15)
-Awaited (J:15)
-Awaited (J:15)
-Awaited (J:15)
-Awaited (J:15)
-Awaited (J:15)
-Awaited (J:15)
-Awaited (J:15)
-Awaited (J:15)
-Awaited (J:15)
-Awaited (J:15)
-Awaited (J:15)
-Awaited (J:15)
-Awaited (J:15)
-Awaited (J:15)
-Awaited (J:15)
-Awaited (J:15)
-Awaited (J:15)
-Awaited (J:15)
-Awaited (J:15)
+Job submitted : 4
+Awaited (J:4)
+Awaited (J:4)
+Awaited (J:4)
+Awaited (J:4)
+Awaited (J:4)
+Awaited (J:4)
+Awaited (J:4)
+Awaited (J:4)
+Awaited (J:4)
+Awaited (J:4)
+Awaited (J:4)
+Awaited (J:4)
+Awaited (J:4)
+Awaited (J:4)
+Awaited (J:4)
+Awaited (J:4)
+Awaited (J:4)
+Awaited (J:4)
+Awaited (J:4)
+Awaited (J:4)
+>>
 >> exit</pre>
 <p>At this point a popup window will appear, asking if we want to enable disconnected mode, with the list of jobs unfinished.</p>
 <p><img src="Disconnected.png" alt="Disconnected mode popup"></p>
-<p>We can focus on other works while the job is computed, but with a limitation: we cannot turn off the computer as the local DataSpace is still used by the job to produce input and output files. An alternative exists though, we can use a Custom Dataspace as explained in chapter <a href="proactive_options.html#options-2">The PAoptions.ini file</a> to even allow turning off the computer !</p>
-
+<p>We can focus on other works while the job is computed, but with a limitation: we cannot turn off the computer as the
+    workers will try to transfer output data to the local computer when they terminate.</p>
+<p>
+    An alternative exists though, we can use a <b>Shared Dataspace</b> as explained in chapter <a href="proactive_options.html#options-2">The PAoptions.ini file</a>
+    to allow a completely disconnected mode. In the Shared Dataspace mode, all data will be kept in a cached space on the
+    scheduler and it will not be necessary the leave the local computer on. It is also safer to use the Shared Dataspace
+    mode when in an environment where network disconnections can occur.</p>
 
 
 <a name="disconnect-3"></a>
@@ -102,37 +117,47 @@ Awaited (J:15)
 <h3 class="title">Reconnecting and Retrieving previous job results</h3>
 
 <p>When we restart the matlab session, we will need to reconnect to ProActive Scheduler in order to receive the job results. The <b>PAconnect</b> function will display the list of jobs that were unfinished at last session. We will then use the function <b>PAgetResults</b> to receive the results :</p>
-<pre>>> PAconnect('rmi://pendule:1099/')
+<pre>>> PAconnect('rmi://192.168.1.187:1099/')
+log file in use : C:\Users\fviale\AppData\Local\Temp\MatlabJVMSpawnHelper.log
+The following jobs were uncomplete before last matlab shutdown :  4
 Connection successful, please enter login/password
-Login succesful
-Reconnecting to existing dataspace handler, please wait...
-The following jobs were uncomplete before last matlab shutdown :  15
+Login successful
 
 ans =
 
-    '15'
+    '4'
 
->> res=PAgetResults(15)
-Retrieving results of job 15
-
-[ Thu Jan 13 02:21:20 CET 2011 ][pendule OUT]
-[ Thu Jan 13 02:21:20 CET 2011 ][pendule OUT]
+>> res=PAgetResults(4)
+Retrieving results of job 4
+Job 4: Task 0_0
+[2012-11-16 18:35:016 precision][MatlabExecutable]
+[2012-11-16 18:35:016 precision][MatlabExecutable]
 
 
 res =
 
      1
 
-
-[ Thu Jan 13 02:21:14 CET 2011 ][pendule OUT]
-[ Thu Jan 13 02:21:14 CET 2011 ][pendule OUT]
+Job 4: Task 1_0
+[2012-11-16 18:34:031 precision][MatlabExecutable]
+[2012-11-16 18:34:031 precision][MatlabExecutable]
 
 
 res =
 
      2
+
+Job 4: Task 2_0
+[2012-11-16 18:35:030 precision][MatlabExecutable]
+[2012-11-16 18:35:030 precision][MatlabExecutable]
+
+
+res =
+
+     6
 ...</pre>
-<p>The previous output has been stripped for clarity. Sometimes it can be complicated to remember to which computation is associated the JobID, but it is possible to read the <b>jobid</b> attribute from the <b>PAresult</b> object right after submitting via PAsolve (non-blocking call) :</p>
+<p>The previous output has been stripped for clarity. Please note that only the jobs from the last matlab session will be kept this way and be accessible via PAgetResults, jobs from previous sessions will be unavailable.
+    Sometimes it can be complicated to remember to which computation is associated the JobID, but it is possible to read the <b>jobid</b> attribute from the <b>PAresult</b> object right after submitting via PAsolve (non-blocking call) :</p>
 <pre>>> res2=PAsolve(@factorial,1,2,3,4,5)
 Job submitted : 16
 Awaited (J:16)
@@ -166,11 +191,216 @@ ans =
 ans =
 
 16</pre>
-<p>This allows for example to store the job id into a mat file and automate the retrieval of results avec reconnection.</p>
+<p>This allows for example to store the job id into a mat file and automate the retrieval of results.<br>
+    But it is also possible to fully automate the disconnected mode with Fault-tolerant sessions, as described in next chapter.</p>
 
-
+<a name="disconnect-4"></a>
+<p class="pagenavlink">
+    <script language="Javascript">updateSectionId("disconnect-4");</script>
+    <script language="Javascript">addTopOfPageButtons();</script>
+    <a href="#top_of_page">Back to Top</a></p>
+<h3 class="title">Using fault-tolerant sessions</h3>
 <a name="bottom_of_page"></a>
+<p>
+    The idea behind fault-tolerant sessions is that when submitting a long serie of PAsolve computations (lasting several hours,
+    days, ...), with post-processing of intermediate results and resubmission of additional PAsolve computations,  any problem occurring (network disconnection, crash
+    of the matlab program) can compromise the overall computation. It will be often necessary to restart the computation from zero.</p>
+<p>
+    A ProActive fault tolerant-session records automatically every step of the computation. Any intermediate result will be kept in a database.
+    If Matlab crashes, or the user simply exits Matlab, all already retrieved results will be available at the next Matlab session.</p>
+<p>
+    The user will simply have to resubmit the same serie of PAsolve calls, no new ProActive Scheduler job will be resubmitted
+    which have already been submitted in a previous session. Calls to PAwaitFor for results which have already been retrieved
+    will be instantaneous.</p>
+<p>It is thus important not to modify the parameters, the order, or the code of the functions used. Generally
+    speaking, if the serie of computations is executed via a long Matlab script, then the same script must be rerun at the next
+    session and it will very quickly reach the point it was before the crash.
+</p>
+<p>Establishment of fault tolerant sessions is done via the function <b>PAbeginSession</b> and <b>PAendSession</b>:</p>
+<p><b>PAbeginSession</b> starts the initial fault-tolerant sesssion or reload an already started fault-tolerant session. Only one fault-tolerant session can be active at a time.</p>
+<p><b>PAendSession</b> stops the fault-tolerant session when the long computation is finished</p>
+<p><u>Example of use :</u></p>
+<p><b>1)</b> we start the session using PAbeginSession and do some computations, after a while matlab crashes:</p>
+<pre>>> PAbeginSession()
+Started Recording Session at Fri Nov 16 19:26:20 CET 2012
 
+ans =
+
+     1
+
+>> res=PAsolve(@factorial,1,2,3,4,5)
+Job submitted : 5
+Awaited (J:5)
+Awaited (J:5)
+Awaited (J:5)
+Awaited (J:5)
+Awaited (J:5)
+>> val = PAwaitFor(res)
+Job 5: Task 0_0
+[2012-11-16 19:27:033 precision][MatlabExecutable]
+
+Job 5: Task 1_0
+[2012-11-16 19:27:033 precision][MatlabExecutable]
+
+Job 5: Task 2_0
+[2012-11-16 19:27:033 precision][MatlabExecutable]
+
+Job 5: Task 3_0
+[2012-11-16 19:27:044 precision][MatlabExecutable]
+
+Job 5: Task 4_0
+[2012-11-16 19:27:033 precision][MatlabExecutable]
+
+
+val =
+
+    [1]    [2]    [6]    [24]    [120]
+
+>> res2=PAsolve(@factorial,1,2,3,4,5)
+Job submitted : 6
+Awaited (J:6)
+Awaited (J:6)
+Awaited (J:6)
+Awaited (J:6)
+Awaited (J:6)
+>> exit % simulate matlab crash
+</pre>
+<p><b>2)</b> After the crash, we start over Matlab and issue the same serie of commands (the PAwaitFor calls become instantaneous):</p>
+<pre>>> PAconnect('rmi://192.168.1.187:1099/')
+log file in use : C:\Users\fviale\AppData\Local\Temp\MatlabJVMSpawnHelper.log
+The following jobs were uncomplete before last matlab shutdown :  6
+Connection successful, please enter login/password
+[2012-11-19 14:21:043 precision][MIDDLEMAN]Logging to org.slf4j.impl.Log4jLoggerAdapter(org.mortbay.log) via org.mortbay.log.Slf4jLog
+[2012-11-19 14:21:043 precision][MIDDLEMAN]jetty-6.1.x
+[2012-11-19 14:21:044 precision][MIDDLEMAN]Started SelectChannelConnector@0.0.0.0:3092
+[2012-11-19 14:21:044 precision][MIDDLEMAN]Remote Object Factory provider <pamr, class org.objectweb.proactive.extensions.pamr.remoteobject.PAMRRemoteObjectFactory> found
+[2012-11-19 14:21:044 precision][MIDDLEMAN]Remote Object Factory provider <pnp, class org.objectweb.proactive.extensions.pnp.PNPRemoteObjectFactory> found
+[2012-11-19 14:21:044 precision][MIDDLEMAN]Remote Object Factory provider <pnps, class org.objectweb.proactive.extensions.pnpssl.PNPSslRemoteObjectFactory> found
+[2012-11-19 14:21:044 precision][MIDDLEMAN]Remote Object Factory provider <pamrd, class org.objectweb.proactive.extensions.pamrd.PAMRDRemoteObjectFactorySPI$PAMRDRemoteObjectFactory> found
+[2012-11-19 14:21:044 precision][MIDDLEMAN]Remote Object Factory provider <amqp, class org.objectweb.proactive.extensions.amqp.remoteobject.AMQPRemoteObjectFactory> found
+[2012-11-19 14:21:044 precision][MIDDLEMAN]Remote Object Factory provider <amqp-federation, class org.objectweb.proactive.extensions.amqp.federation.AMQPFederationRemoteObjectFactory> found
+[2012-11-19 14:21:044 precision][MIDDLEMAN]Remote Object Factory provider <rmissl, class org.objectweb.proactive.extra.rmissl.RmiSslRemoteObjectFactory> found
+[2012-11-19 14:21:045 precision][MIDDLEMAN]Detected an existing RMI Registry on port 1099
+Login successful
+
+ans =
+
+    '6'
+
+>> PAbeginSession()
+Recalled Recorded Session at Fri Nov 16 19:26:20 CET 2012
+
+ans =
+
+     1
+
+>> res=PAsolve(@factorial,1,2,3,4,5)
+Job recalled : 5
+Job 5: Task 0_0
+[2012-11-16 19:27:033 precision][MatlabExecutable]
+
+
+res =
+
+     1
+
+Job 5: Task 1_0
+[2012-11-16 19:27:033 precision][MatlabExecutable]
+
+
+res =
+
+     2
+
+Job 5: Task 2_0
+[2012-11-16 19:27:033 precision][MatlabExecutable]
+
+
+res =
+
+     6
+
+Job 5: Task 3_0
+[2012-11-16 19:27:044 precision][MatlabExecutable]
+
+
+res =
+
+    24
+
+Job 5: Task 4_0
+[2012-11-16 19:27:033 precision][MatlabExecutable]
+
+
+res =
+
+   120
+
+>> val = PAwaitFor(res)
+
+val =
+
+    [1]    [2]    [6]    [24]    [120]
+
+>> res2=PAsolve(@factorial,1,2,3,4,5)
+Job recalled : 6
+Job 6: Task 0_0
+[2012-11-16 19:28:043 precision][MatlabExecutable]
+
+
+res2 =
+
+     1
+
+Job 6: Task 1_0
+[2012-11-16 19:28:044 precision][MatlabExecutable]
+
+
+res2 =
+
+     2
+
+Job 6: Task 2_0
+[2012-11-16 19:28:043 precision][MatlabExecutable]
+
+
+res2 =
+
+     6
+
+Job 6: Task 3_0
+[2012-11-16 19:28:055 precision][MatlabExecutable]
+
+
+res2 =
+
+    24
+
+Job 6: Task 4_0
+[2012-11-16 19:28:043 precision][MatlabExecutable]
+
+
+res2 =
+
+   120
+
+>> val2 = PAwaitFor(res2)
+
+val2 =
+
+    [1]    [2]    [6]    [24]    [120]
+
+>>
+</pre>
+<p><b>3)</b> finally, we call PAendSession() to exit the fault-tolerant session :</p>
+<pre>>> PAendSession()
+Ended Recording Session started at Fri Nov 16 19:26:20 CET 2012
+
+ans =
+
+     1
+
+</pre>
 <p class="pagenavlink">
     <script language="Javascript">updateSectionId("bottom_of_page");</script>
     <script language="Javascript">addTopOfPageButtons();</script>

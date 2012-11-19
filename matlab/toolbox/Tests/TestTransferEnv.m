@@ -45,14 +45,29 @@ end
 if ~exist('nbiter', 'var')
     nbiter = 1;
 end
+opt=PAoptions();
+old = opt.TransferEnv;
+PAoptions('TransferEnv', true);
 for kk=1:nbiter
     disp('-------------------------------------');
     disp(['------------------------Iteration '  num2str(kk)]);
     disp('...... Testing PAsolve with Transfer Env');
-    disp('..........................1 PAwaitFor');
-    opt=PAoptions();
-    old = opt.TransferEnv;
-    PAoptions('TransferEnv', true);
+    disp('..........................1 Local');
+
+        % declaring toto as a local variable that will be transfered
+        toto = dummy('toto');
+        resl = PAsolve(@transferenvfunc2,'ok');
+        val=PAwaitFor(resl,timeout)
+        if val
+            disp('..........................1 ......OK');
+            ok=true;
+            msg = [];
+        else
+            disp('..........................1 ......KO');
+            ok=false;
+            msg = 'TestTransferEnv::wrong value for val, error occured remotely';
+        end
+    disp('..........................2 Local + Global');
     % declaring toto as a local variable that will be transfered
     toto = dummy('toto');
     % declaring totoGlobal in a subfunction as a global variable (and thus not
@@ -61,16 +76,17 @@ for kk=1:nbiter
     resl = PAsolve(@transferenvfunc,'ok');
     val=PAwaitFor(resl,timeout)
     if val
-        disp('..........................1 ......OK');
+        disp('..........................2 ......OK');
         ok=true;
         msg = [];
     else
-        disp('..........................1 ......KO');
+        disp('..........................2 ......KO');
         ok=false;
         msg = 'TestTransferEnv::wrong value for val, error occured remotely';
     end
-    PAoptions('TransferEnv', old);
+
 end
+PAoptions('TransferEnv', old);
 end
 
 function out=declareGlobal()

@@ -297,6 +297,10 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
 
     public AOMatSciEnvironment(boolean debug) {
         this.debug = debug;
+        loadDB();
+    }
+
+    protected void loadDB() {
         try {
             recMan = RecordManagerFactory.createRecordManager(getMidlemanJobsFile().getCanonicalPath());
             allJobs = recMan.hashMap(MIDDLEMAN_JOBS_RECORD_NAME);
@@ -335,6 +339,20 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                 recMan.commit();
             } catch (IOException e) {
                 printLog(e, true, true);
+            }
+        } catch (IOError e) {
+            // we track invalid class exceptions
+            if (e.getCause() instanceof InvalidClassException) {
+                try {
+                    recMan.close();
+                } catch (IOException e1) {
+                    printLog(e, true, true);
+                }
+                recMan = null;
+                cleanDataBase();
+                loadDB();
+            } else {
+                throw e;
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -693,6 +711,32 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         try {
             recMan.close();
         } catch (Throwable e) {
+        }
+    }
+
+    protected void cleanDataBase() {
+        if (recMan != null) {
+            throw new IllegalStateException("Connection to a DB is established, cannot clean it");
+        }
+        // delete all db files
+        File[] dbJobFiles = new File(TMPDIR).listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                if (name.startsWith(getMidlemanJobsFile().getName())) {
+                    return true;
+                } else if (name.startsWith(MatSciSchedulerProxy.DEFAULT_STATUS_FILENAME)) {
+                    return true;
+                }
+                return false;
+            }
+        });
+        for (File f : dbJobFiles) {
+            try {
+                System.out.println("Deleting " + f);
+                f.delete();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 

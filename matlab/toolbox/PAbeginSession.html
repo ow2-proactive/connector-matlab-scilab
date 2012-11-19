@@ -1,0 +1,57 @@
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+    <link rel="stylesheet" href="helpwin.css">
+    <title>MATLAB File Help: PAbeginSession</title>
+</head>
+<body>
+<!--Single-page help-->
+<table border="0" cellspacing="0" width="100%">
+    <tr class="subheader">
+        <td class="headertitle">MATLAB File Help: PAbeginSession</td>
+        <td class="subheader-left"><a href="matlab:open PAbeginSession">View code for PAbeginSession</a></td>
+        <td class="subheader-right"><a href="matlab:helpwin">Default Topics</a></td>
+    </tr>
+</table>
+<div class="title">PAbeginSession</div>
+<div class="helptext"><pre><!--helptext -->  <span class="helptopic">PAbeginSession</span> starts a fault-tolerant PAsolve session.
+ 
+  Syntax
+ 
+        &gt;&gt; <span class="helptopic">PAbeginSession</span>();
+ 
+  Description
+ 
+        By calling <span class="helptopic">PAbeginSession</span>, we start a new fault-tolerant session. Multiple session cannot be started at the same time,
+        (i.e. only one session can be active at a time).
+        A fault-tolerant session means that every PAsolve call will be recorded and results received via PAwaitFor or PAwaitAny
+        will be remembered. If Matlab crashes in the middle of a session (or simply exits by the user's will), it will be possible
+        to restart the distributed computation at the point it was before the crash. In order to do that, simply call <span class="helptopic">PAbeginSession</span>()
+        after Matlab restart and resubmit the same computations. PAsolve calls which have already been submitted will not
+        be submitted again to the scheduler and will be linked to the previously submitted job. PAwaitFor calls which have
+        already completed in the previous session will return immediately with the correct results.
+        Function code, Parameters, Input/Output Files used during the previous session should NOT be changed (i.e. changes
+        will be ignored).
+        Multiple matlab crash/exits can occur in a row, simply reuse <span class="helptopic">PAbeginSession</span>() at each restart.
+        In order to finish a fault-tolerant session, PAendSession() must be called.
+ 
+  Example
+        &gt;&gt; <span class="helptopic">PAbeginSession</span>()
+        &gt;&gt; res1 = PAsolve(@longComputation1, param_1_1, param_1_2, param_1_3)
+        &gt;&gt; val1 = PAwaitFor(res1);
+        (...)
+        &gt;&gt; res1 = PAsolve(@longComputation2, param_2_1, param_2_2, param_2_3)
+        &gt;&gt; xxxx CRASH xxxxx
+        (... next matlab session ...)
+        &gt;&gt; <span class="helptopic">PAbeginSession</span>()
+        &gt;&gt; res1 = PAsolve(@longComputation1, param_1_1, param_1_2, param_1_3)
+        &gt;&gt; val1 = PAwaitFor(res1);  % Instantaneous !
+        &gt;&gt; res2 = PAsolve(@longComputation2, param_2_1, param_2_2, param_2_3)
+        &gt;&gt; val2 = PAwaitFor(res2);
+        (... etc ...)
+        &gt;&gt; PAendSession();</pre></div><!--after help --><!--seeAlso--><div class="footerlinktitle">See also</div><div class="footerlink">
+    <a href="matlab:doc PAendSession">PAendSession</a>, <a href="matlab:doc PAgetResults">PAgetResults</a>, <a href="matlab:doc PAsolve">PAsolve</a>, <a href="matlab:doc PAResult/PAwaitFor">PAResult/PAwaitFor</a>, <a href="matlab:doc PAResult/PAwaitAny">PAResult/PAwaitAny</a>
+</div>
+</body>
+</html>

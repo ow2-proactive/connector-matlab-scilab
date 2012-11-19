@@ -579,10 +579,21 @@ ans =
 <ul type="disc">
     <li><p><b>Func</b>:</p> the function to be executed in this task, i.e. @factorial.</li>
     <li><p><b>Params</b>: the parameters to the function, which can either be a single parameter or a cell array containing the function multiple parmaeters.</p></li>
-    <li><p><b>InputFiles</b>: the input files, given as a cell array of strings. Paths to the input files must be given relatively to the current directory and it is not allowed to refer to a file which is outside the current directory hierarchy (i.e. no '..').</p></li>
-    <li><p><b>OutputFiles</b>: the output files, given as a cell array of strings. Similarly the paths must be relative to the base directory of the remote matlab engine (which will be a subdirectory of the TEMP directory). The matlab function will have to create those files and all subdirectories relative to the base one.</p></li>
+    <li><p><b>InputFiles</b>: the input files, given as a PAFile array. Paths to the input files must be given relatively to the current directory and it is not allowed to refer to a file which is outside the current directory hierarchy (i.e. no '..').</p></li>
+    <li><p><b>OutputFiles</b>: the output files, given as a PAFile array. Similarly the paths must be relative to the base directory of the remote matlab engine (which will be a subdirectory of the TEMP directory). The matlab function will have to create those files and all subdirectories relative to the base one.</p></li>
     <li><p><b>Description</b>: a char array representing the task.</p></li>
     <li><p><b>SelectionScript</b>: a char array which defines an additional Selection Script to select resources (see ProActive Scheduler Manual).</p></li>
+    <li><p><b>Static</b>: a boolean which defines if the SelectionScript used should be static or dynamic, default to dynamic (see ProActive Scheduler Manual).</p></li>
+    <li><p><b>ScriptParams</b>:  a string containing the parameters of the custom script delimited by spaces.</p></li>
+    <li><p><b>NbNodes</b>:  an integer value which indicates the number of Scheduler Nodes necessary to run this task. This parameter is interesting in
+        case the Matlab engine is running in multithreaded mode to specify the number of processors necessary or if an external program is
+        called from the task, and this programs requires multiple processors and/or machines. </p></li>
+    <li><p><b>Topology</b>: a string parameter which affects how nodes will be chosen to meet the NbNodes required. The values possible are : 'arbitrary',
+        'bestProximity', 'thresholdProximity', 'singleHost', 'singleHostExclusive', 'multipleHostsExclusive', 'differentHostsExclusive'
+        Please refer to ProActive Scheduler manual for more information on these values.</p></li>
+    <li><p><b>ThresholdProximity</b>: an integer value which indicates the threshold
+        in case the 'thresholdProximity' is set on the Topology attribute. Please
+        refer to ProActive Scheduler manual for more information on this setting.</p></li>
     <li><p><b>Compose</b>: true or false. When composing tasks, is the result of the previous task given as first parameter of this one (see next chapter <a href="solve-6">Chaining Remote Tasks</a>) ?</p></li>
 </ul>
 <p>To illustrate the usage of <b>PATask</b>, we will define a simple Matlab function <b>factfile</b> which will read an integer from a mat file and will output the factorial of this integer to a second mat file</p>
@@ -596,8 +607,8 @@ ok=true;</pre>
 <pre>>> t=PATask(1,1);
 >> t.Func = @factfile;
 >> t.Params = {};
->> t.InputFiles={'factfile_in.m'};
->> t.OutputFiles={'factfile_out.m'};
+>> t.InputFiles='factfile_in.m';
+>> t.OutputFiles='factfile_out.m';
 >> t
 
 t(1,1) =

@@ -16,6 +16,8 @@ function [ok, msg]=TestGetResults(nb_iter,index, timeout)
     disp('---------------------------------------------');
     disp('...... Testing PAgetResults, iteration ' + string(index));
 
+    PAoptions('EnableDisconnectedPopup', %f);
+
     if index > 1
         resl = PAgetResults(index-1);
         tf = PAisAwaited(resl);

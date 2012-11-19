@@ -1,4 +1,4 @@
-function PAconnect(url, credpath)
+function jobs = PAconnect(url, credpath)
 % PAconnect connects to the ProActive scheduler
 %
 % Syntax
@@ -11,28 +11,28 @@ function PAconnect(url, credpath)
 %       url - url of the scheduler
 %       credpath - path to the login credential file
 %
+% Ouputs
+%
+%       jobs - id of jobs that were not terminated at matlab's previous
+%       shutdown
 %
 % Description
 %
 %       PAconnect connects to a running ProActive Scheduler by specifying its
 %       url. If the scheduler could be reached a popup window will appear, asking
-%       for login and password. An additional SSH key can also be provided when the user needs to execute remote task under one's identity (RunAsMe option). ProActive Scheduler features a full account
-%       management facility along with the possibility to synchronize to existing
-%       Windows or Linux accounts via LDAP.
-%       More information can be found inside Scheduler's manual chapter "Configure
-%       users authentication". If you haven't configured any account in the
-%       scheduler use, the default account login "demo", password "demo".
-%       You can as well encrypt credentials using the command line tool
-%       "create-cred" to automate the connection.
+%       for login and password. An additional SSH key can also be provided when the user needs to execute remote task under
+%       one's identity (RunAsMe option). ProActive Scheduler features a full account management facility along with the
+%       possibility to synchronize to existing Windows or Linux accounts via LDAP. More information can be found inside
+%       Scheduler's manual chapter "Configure users authentication". If you haven't configured any account in the scheduler
+%       use, the default account login "demo", password "demo".
+%       You can as well encrypt credentials using the command line tool "create-cred" to automate the connection.
 %
-%       PAconnect can also return the ids of PAsolve jobs that
-%       were still running at the end of the last Matlab session (Disconnected
-%       Mode). Results of these jobs can then be retrieved using
-%       PAgetResults.
+%       In case jobs from the last Matlab session were not complete before Matlab exited. It is possible to get their result
+%       using PAgetResults
 %
 % Example
 %
-%   jobs = PAconnect('rmi://scheduler:1099')
+%   PAconnect('rmi://scheduler:1099')
 %
 % See also
 %   PAsolve, PAgetResults
@@ -80,6 +80,7 @@ persistent PA_scheduler_URI
 
 sched = PAScheduler;
 opt = PAoptions();
+jobs = [];
 
 % Verify that proactive is already on the path or not
 p = javaclasspath('-all');
@@ -97,7 +98,7 @@ reconnected = false;
 % Test that the session is not already connected to a Scheduler, or that
 % the connection to it is failing
 tmpsolver = sched.PAgetsolver();
-if ~strcmp(class(tmpsolver), 'double') 
+if ~strcmp(class(tmpsolver), 'double')
     isJVMdeployed = 1;
     isConnected = 0;
     try
@@ -105,7 +106,7 @@ if ~strcmp(class(tmpsolver), 'double')
     catch
         isJVMdeployed = 0;
     end
-else 
+else
     isJVMdeployed = 0;
     isConnected = 0;
 end
@@ -125,20 +126,20 @@ if ~isJVMdeployed
 end
 if ~isConnected
     % joining the scheduler
-    solver = sched.PAgetsolver();    
+    solver = sched.PAgetsolver();
     ok = solver.join(url);
     if ~ok
         logPath = solver.getLogFilePath();
         error(['PAconnect::Error ProActive Scheduler cannot be contacted at URL ' url ', detailed error message has been logged to ' char(logPath)]);
     end
-    dataspaces(sched, opt);
+    jobs = dataspaces(sched, opt);
 else
     solver = tmpsolver;
 end
 
 if solver.isLoggedIn()
     error('This session is already connected to a scheduler.');
-end    
+end
 
 if exist('credpath', 'var')
     login(solver,sched, credpath);
@@ -177,7 +178,7 @@ for i=1:length(jars)
 end
 options = opt.JvmArguments;
 for i=1:length(options)
-     deployer.addJvmOption(options{i});
+    deployer.addJvmOption(options{i});
 end
 deployer.setMatSciDir(matsci_dir);
 deployer.setSchedulerURI(url);
@@ -188,11 +189,9 @@ deployer.setLog4JFile(opt.Log4JConfiguration);
 deployer.setPolicyFile(opt.SecurityFile);
 deployer.setClassName('org.ow2.proactive.scheduler.ext.matlab.middleman.MatlabMiddlemanDeployer');
 
-if exist(opt.DisconnectedModeFile,'file')
-    load(opt.DisconnectedModeFile, 'rmiport');
-else
-    rmiport = opt.RmiPort;
-end
+
+rmiport = opt.RmiPort;
+
 deployer.setRmiPort(rmiport);
 
 pair = deployer.deployOrLookup();
@@ -224,7 +223,7 @@ else
     attempts = 1;
     while ~loggedin && attempts <= 3
         [login,pwd,keyfile]=sched.logindlg('Title',msg);
-        try            
+        try
             solver.login(login,pwd,keyfile);
             loggedin = true;
         catch ME
@@ -239,17 +238,28 @@ else
         error('PAconnect::Authentication error');
     end
     sched.PAgetlogin(login);
+    
+end
+disp('Login successful');
 
 end
-disp('Login succesful');
 
-end
-
-function dataspaces(sched,opt)
+function jobs = dataspaces(sched,opt)
 % Dataspace Handler
+jobs = [];
 registry = sched.PAgetDataspaceRegistry();
 registry.init('MatlabInputSpace', 'MatlabOutputSpace', opt.Debug);
-
+trepository = org.ow2.proactive.scheduler.ext.matlab.client.embedded.MatlabTaskRepository.getInstance();
+notReceived = trepository.notYetReceived();
+if ~notReceived.isEmpty()
+    msg = ['The following jobs were uncomplete before last matlab shutdown : '];
+    for j = 0:notReceived.size()-1
+        jid = char(notReceived.get(j));
+        msg = [msg ' ' jid];
+        jobs{j+1} = jid;
+    end
+    disp(msg);
+end
 end
 
 

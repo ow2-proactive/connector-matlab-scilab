@@ -14,7 +14,7 @@
 % 
 % Description
 %
-%       PAgetResults is used to retrieve results of a PAsolve call from a
+%       PAgetResults is used to retrieve results of a PAsolve call from the
 %       previous Matlab session (Disconnected mode).
 %       The array of objects returned is the same returned by
 %       the initial call to PAsolve during the previous session. Calls to
@@ -25,7 +25,6 @@
 %        >> res = PAgetResults('1')
 %
 % See also
-%
 %       PAsolve, PAResult/PAwaitFor, PAResult/PAwaitAny
 
 % /*

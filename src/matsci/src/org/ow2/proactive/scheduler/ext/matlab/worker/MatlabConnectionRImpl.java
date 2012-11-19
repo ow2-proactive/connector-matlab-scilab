@@ -187,12 +187,12 @@ public class MatlabConnectionRImpl implements MatlabConnection {
             }
         }
 
-        if (paconfig.getLicenseServerUrl() != null) {
+        if (paconfig.getLicenseSaverURL() != null) {
             try {
-                this.lclient = new LicenseSaverClient(paconfig.getLicenseServerUrl());
+                this.lclient = new LicenseSaverClient(paconfig.getLicenseSaverURL());
             } catch (ProActiveException e) {
                 throw new MatlabInitException(new UnreachableLicenseProxyException(
-                    "License Proxy Server at url " + paconfig.getLicenseServerUrl() +
+                    "License Proxy Server at url " + paconfig.getLicenseSaverURL() +
                         " could not be contacted.", e));
             }
         }
@@ -405,8 +405,8 @@ public class MatlabConnectionRImpl implements MatlabConnection {
                 lclient.notifyLicenseStatus(tconfig.getRid(), ack);
             } catch (Exception e) {
                 throw new UnreachableLicenseProxyException(
-                    "Error while sending ack to License Proxy Server at url " +
-                        paconfig.getLicenseServerUrl(), e);
+                    "Error while sending ack to License Proxy Server at url " + paconfig.getLicenseSaverURL(),
+                    e);
             }
         }
     }

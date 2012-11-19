@@ -73,6 +73,10 @@ public class PASolveEnvFile extends PASolveFile {
     }
 
     public void setEnvGlobalNames(String[] envGlobalNames) {
-        this.envGlobalNames = Arrays.asList(envGlobalNames);
+        if (envGlobalNames != null) {
+            this.envGlobalNames = Arrays.asList(envGlobalNames);
+        } else {
+            this.envGlobalNames = new ArrayList<String>();
+        }
     }
 }

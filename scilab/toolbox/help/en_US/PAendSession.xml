@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<refentry version="5.0-subset Scilab" xml:id="PAendSession" xml:lang="en"
+          xmlns="http://docbook.org/ns/docbook"
+          xmlns:xlink="http://www.w3.org/1999/xlink"
+          xmlns:svg="http://www.w3.org/2000/svg"
+          xmlns:ns3="http://www.w3.org/1999/xhtml"
+          xmlns:mml="http://www.w3.org/1998/Math/MathML"
+          xmlns:db="http://docbook.org/ns/docbook">
+  <info>
+    <pubdate>$LastChangedDate: 2011-09-21 18:41:39 +0100$</pubdate>
+  </info>
+
+  <refnamediv>
+    <refname>PAendSession</refname>
+
+    <refpurpose>ends a persistent PAsolve session.</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <title>Calling Sequence</title>
+
+    <synopsis>PAendSession()</synopsis>
+  </refsynopsisdiv>
+
+  <refsection>
+    <title>Description</title>
+
+
+    <para><emphasis>PAbeginSession</emphasis> ends a persistent PAsolve session, previously started using PAbeginSession.</para>
+  </refsection>
+
+
+
+    <refsection>
+        <title>See Also</title>
+        <simplelist type="inline">
+            <member>
+                <link linkend="PAbeginSession">PAbeginSession</link>
+            </member>
+             <member>
+                <link linkend="PAgetResults">PAgetResults</link>
+            </member>
+        </simplelist>
+    </refsection>
+
+  <refsection>
+    <title>Authors</title>
+
+    <simplelist type="vert">
+      <member>The ProActive Team, Fabien Viale</member>
+    </simplelist>
+  </refsection>
+</refentry>

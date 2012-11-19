@@ -240,11 +240,6 @@ endfunction
     inputs(j).check = 'listcheck';
     inputs(j).trans = 'stringtocell';
     j=j+1;
-    inputs(j).name = 'TransferVariables';
-    inputs(j).default = %t;
-    inputs(j).check = 'logcheck';
-    inputs(j).trans = 'logtrans';
-    j=j+1;
     inputs(j).name = 'CustomDataspaceURL';
     inputs(j).default = [];
     inputs(j).check = 'urlcheck';
@@ -295,7 +290,7 @@ endfunction
     inputs(j).check = 'ischarornull';
     inputs(j).trans = 'id';
     j=j+1;
-    inputs(j).name = 'CheckMatSciScriptStatic';
+    inputs(j).name = 'FindMatSciScriptStatic';
     inputs(j).default = %t;
     inputs(j).check = 'logcheck';
     inputs(j).trans = 'logtrans';
@@ -361,6 +356,11 @@ endfunction
     inputs(j).check = 'ischar';
     inputs(j).trans = 'id';
     j=j+1;
+    inputs(j).name = 'EnableDisconnectedPopup';
+    inputs(j).default = %t;
+    inputs(j).check = 'logcheck';
+    inputs(j).trans = 'logtrans';
+    j=j+1;
     inputs(j).name = 'RmiPort';
     inputs(j).default = 1111;
     inputs(j).check = 'charornum';
@@ -380,11 +380,6 @@ endfunction
     inputs(j).default = 6000;
     inputs(j).check = 'charornum';
     inputs(j).trans = 'charornumtrans';
-    //    j=j+1;
-    //    inputs(j).name = 'DisconnectedModeFile';
-    //    inputs(j).default = strcat(['$HOME$', fs, '.PAsolveTmp.dat']);
-    //    inputs(j).check = 'ischarornull';
-    //    inputs(j).trans = 'conftrans';
 
     inlength = j; 
 

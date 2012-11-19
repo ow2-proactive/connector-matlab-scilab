@@ -1,6 +1,7 @@
-function [] = PAconnect(uri,credpath)
+function jobs = PAconnect(uri,credpath)
 
     global ('PA_initialized', 'PA_connected','PA_solver', 'PA_scheduler_URI')
+    jobs = [];
     initJavaStack();
     if ~exists('PA_initialized') | PA_initialized ~= 1
         PAinit();
@@ -46,7 +47,7 @@ function [] = PAconnect(uri,credpath)
             logPath = jinvoke(PA_solver,'getLogFilePath');
             error('PAConnect::Error wile connecting to ' + uri +', detailed error message has been logged to ' + logPath);
         end
-        dataspaces(opt);
+        jobs = dataspaces(opt);
         disp(strcat(['Connection successful to ', uri]));
     end
                                                    
@@ -160,9 +161,26 @@ function login(credpath)
 
 endfunction
 
-function dataspaces(opt)
+function jobs = dataspaces(opt)
     global ('PA_dsregistry')    
     jinvoke(PA_dsregistry, 'init','ScilabInputSpace', 'ScilabOutputSpace', opt.Debug);
+    jimport org.ow2.proactive.scheduler.ext.scilab.client.embedded.ScilabTaskRepository;
+    repository = jinvoke(ScilabTaskRepository,'getInstance');
+    notReceived = jinvoke(repository, 'notYetReceived');
+    jobs = [];
+    if ~jinvoke(notReceived, 'isEmpty')
+          jobs = list();
+          msg = 'The following jobs were uncomplete before last scilab shutdown : ';
+          for j = 0:jinvoke(notReceived, 'size')-1
+                  jid = jinvoke(notReceived, 'get', j);
+                  msg = msg + ' ' + jid;
+                  jobs(j+1) = jid;
+          end
+          disp(msg);
+    end
+    jremove(notReceived);
+    jremove(repository);
+    jremove(ScilabTaskRepository);
 endfunction
 
 function initJavaStack()
