@@ -58,7 +58,7 @@
 <p>PAsolve can be configured using various options. It can be done either:</p>
 
 <ul type="disc">
-    <li><p><b>Statically</b> by editing a file called <b>PAoptions.ini</b> which will be loaded when the toolbox is loaded.</p></li>
+    <li><p><b>Statically</b> by editing the file <b>MatlabConnector/toolbox/config/PAoptions.ini</b> which will be loaded when the toolbox is loaded.</p></li>
     <li><p><b>Dynamically</b> by calling the <b>PAoptions</b> function which will affect every subsequent PAsolve calls.</p></li>
 </ul>
 
@@ -73,39 +73,23 @@
 
 <p>The <b>PAoptions.ini</b> file is located inside the ProActive Scheduler release at the following location :</p>
 <pre>Matlab_Connector/toolbox/config/PAoptions.ini</pre>
-<p>It contains, among others, the following options (see the PAoptions.ini file or the <a href="matlab:doc PAoptions">PAoptions</a> function for an up-to-date list):</p>
+<p>It contains many options which controls how PAsolve behave, we will detail a few important ones (see the PAoptions.ini file or the <a href="matlab:doc PAoptions">PAoptions</a> function for the full list):</p>
 <ul type="disc">
     <li><p><b>JobName</b>: Name of the job that will be submitted to the Scheduler</p></li>
     <li><p><b>JobDescription</b>: Description of the job that will be submitted to the scheduler</p></li>
     <li><p><b>Debug</b>: activate this option if any problem occurs and you want Matlab Connector Toolbox to run in debug mode (with verbose output)</p></li>
-    <li><p><b>TransferEnv</b>: this option is by default set to off. It allows the workspace where the PAsolve call is done to be automatically transfered to the remote matlab engines. Global variables are transferred but not local variables existing in workspaces higher than the current one. The options <b>EnvExcludeList</b> and <b>EnvExcludeTypeList</b> control the name and type of variables that should be excluded from the transfer.</p></li>
-    <li><p><b>LicenseServerURL</b>: this very important option is the address of the proxy server which, if installed, acts as a proxy to the FlexNET server. The proxy server ensures that Matlab or toolboxes license tokens are available before any remote Matlab tasks starts. The scheduling of the task will be delayed until the tokens are available. The License Saver Proxy is not distributed with ProActive Toolbox and must be downloaded separately. See <a href="http://www.activeeon.com">http://www.activeeon.com</a> for availablity and download. </p></li>
+    <li><p><b>TransferEnv</b>: this important option is by default set to off. If set to on, it allows the automatic transfer of the workspace where the PAsolve call is done to the remote matlab engines. Global variables are transferred but not local variables existing in workspaces higher than the current one. The options <b>EnvExcludeList</b> and <b>EnvExcludeTypeList</b> control the name and type of variables that should be excluded from the transfer.</p></li>
+    <li><p><b>LicenseSaverURL</b>: this very important option is the address of the proxy server which, if installed, acts as a proxy to the FlexNET server. The proxy server ensures that Matlab or toolboxes license tokens are available before any remote Matlab tasks starts. The scheduling of the task will be delayed until the tokens are available. The License Saver Proxy is not distributed with ProActive Toolbox and must be downloaded separately. See <a href="http://www.activeeon.com">http://www.activeeon.com</a> for availablity and download. </p></li>
     <li><p><b>CustomDataspaceURL</b> and <b>CustomDataspacePath</b>: by default these options are not set. Dataspaces are a ProActive internal mechanism allowing a shared file system between hosts. The mechanism allows the automatic transfer of files between the local matlab session and the remote engines. <b>Matlab Connector Toolbox</b> has an internal automatic Dataspace creation. But sometimes, one would like to rely on an external Dataspace such as a ftp server. This Dataspace MUST be accessible from the local file system in order to work with <b>Matlab Connector Toolbox</b>.The <b>CustomDataspaceURL</b> option gives the Universally accessible URL of this dataspace and the <b>CustomDataspacePath</b> gives the path to access this dataspace from the local file system. </p></li>
+    <li><p><b>SharedPushPublicUrl</b>, <b>SharedPullPublicUrl</b>, <b>SharedPushPrivateUrl</b>, <b>SharedPullPrivateUrl</b></p>: similarly to the CustomDataspaceURL option, these URLS define the addresses of the Shared DataSpaces (if the scheduler is configured to deploy them). Shared Dataspaces are used as "Cache" DataSpaces, the Matlab connector toolbox will push its input files to the SharedPushPublicUrl and pull the output files from the SharedPullPublicUrl. Private urls will be used by the workers to access the files.</p></li>
     <li><p><b>VersionPref</b>, <b>VersionMin</b>, <b>VersionMax</b> and <b>VersionRej</b>: these options allow the user to define which version of Matlab should/should not be used. In an heterogeneous environment, several versions of matlab can be available simultaneously on the network. These options ensures that the submitted matlab code will meet the correct matlab version. It is the responsibility of the user to find which versions are/are not compatible with the code.</p></li>
     <li><p><b>VersionPref</b>: is the preferred version to use. It won't prevent another version to be used if the preferred version is not available.It is set automatically to the version of the local matlab session, but can be as well user defined via this option.</p></li>
     <li><p><b>VersionMin</b> and <b>VersionMax</b>: is the minimum/maximum version to use. It is set by default to the minimum/maximum version supported.</p></li>
     <li><p><b>VersionRej</b>: is a list of versions to be rejected. It is set by default to the versions for which the ptolemy java2matlab interface has not been compiled (and thus are not supported). These versions are all "a" releases matlab2007a, matlab2008a, etc...</p></li>
-    <li><p><b>TransferMatFileOptions</b>: this is the options used by the toolbox when generating mat files (in TransferEnv). By default, it is set to '-v7'</p></li>
     <li><p><b>Fork</b>: this option is set by default to off. It means the tasks will be executed (on remote hosts) in a separate Java Virtual Machine process.</p></li>
     <li><p><b>RunAsMe</b>: this option is set by default to off. It means the tasks will be executed (on remote hosts) under the account of the currently logged user.</p></li>
     <li><p><b>Priority</b>: this option is the priority of jobs created inside the ProActive Scheduler by PAsolve calls. Default to "Normal"</p></li>
-    <li><p><b>AutomaticDump</b>:  the current state of the PAsolve job database will be systematically saved at each PAsolve call. At a price of a slight slowing down of PAsolve calls, it allows to keep the database information in case
-                the local Matlab session crashes. Thus, after restarting Matlab, all the previous session jobs results can be retrieved via PAgetResults.</p></li>
     <li><p><b>RemoveJobAfterRetrieve</b>: automatically removes the job from the scheduler after all results of the job have been retrieved.</p></li>
-    <li><p><b>FindMatlabScript</b>: this option sets the script used to find matlab on the remote host. Changing the script means modifying the toolbox internal behavior and is therefore not recommended.</p></li>
-    <li><p><b>MatlabReservationScript</b>: this option sets the script used to reserve a matlab token (and eventually toolboxes tokens) prior to run matlab code on the remote engine. Again, changing the script means modifying the toolbox internal behavior and is therefore not recommended. Eventually the script itself could be edited to add checks for toolboxes that are not supported by Matlab Connector Toolbox : simulink, control system, fixedpoint, images, neural networks, optimization, pde, robust, signal, spline, stats, symbolic, system identification, virtual reality, simulink control design, simulink stateflow, compiler.</p></li>
-    <li><p><b>CustomScript</b>: In addition to FindMatlabScript and MatlabReservationScript a custom selection script can be added to select only specific resources, such as matlab engine running only on Windows, or from a specific set of machines. The options <b>CustomScriptStatic</b> and <b>CustomScriptParams</b> control, respectively, if the script is static and the script parameters.</p></li>
-    <li><p><b>ProActiveJars</b> and <b>EmbeddedJars</b>: libraries used by Matlab Connector Toolbox (internal use only).</p></li>
-    <li><p><b>ProActiveConfiguration</b>: path to ProActive Configuration file (internal).</p></li>
-    <li><p><b>Log4JConfiguration</b>: path to log4j configuration file (internal).</p></li>
-    <li><p><b>SecurityFile</b>: path to java security configuration file (internal).</p></li>
-    <li><p><b>RmiPort</b>: default RMI port used when deploying the middleman JVM (internal).</p></li>
-    <li><p><b>JvmTimeout</b>: default timeout used when deploying the middleman JVM (internal).</p></li>
-    <li><p><b>DisconnectedModeFile</b>: path to a file used by Matlab Connector Toolbox disconnected mode.</p></li>
-    <li><p><b>UseMatlabControl</b>: do we use the MatlabControl framework (internal).</p></li>
-    <li><p><b>CleanAllTempFilesDirectly</b>: do we clean the temporary files after all results of a PAsolve
-                call are received (default), or do we wait until Matlab terminates
-                to allow PAgetResults calls for this job. (internal).</p></li>
 </ul>
 
 
@@ -133,86 +117,47 @@ a =
      5
 
 >> r=PAsolve(@testenv,{})
-Job submitted : 11
-Awaited (J:11)
+Job submitted : 4
+Awaited (J:4)
 >> r.val
-[ Thu Jan 13 01:11:35 CET 2011 ][pendule OUT]
-[ Thu Jan 13 01:11:35 CET 2011 ][pendule OUT]
-[ Thu Jan 13 01:11:35 CET 2011 ][pendule OUT]
-[ Thu Jan 13 01:11:35 CET 2011 ][pendule OUT]
-[ Thu Jan 13 01:11:35 CET 2011 ][pendule OUT]
-[ Thu Jan 13 01:11:36 CET 2011 ][pendule OUT]>> Warning: Element(s) of array '' do not match the current constructor
-[ Thu Jan 13 01:11:36 CET 2011 ][pendule OUT]         definition for class 'PAResult'.  The element(s) have been converted
-[ Thu Jan 13 01:11:36 CET 2011 ][pendule OUT]         to structures.
-[ Thu Jan 13 01:11:36 CET 2011 ][pendule OUT]Warning: Could not find appropriate function on path loading function handle
-[ Thu Jan 13 01:11:36 CET 2011 ][pendule OUT]/home/fviale/eclipse_workspace/Matlab_Scilab_Connector/matlab/toolbox/@PAResult/PAResult.m>PAResult/accessResult
-[ Thu Jan 13 01:11:36 CET 2011 ][pendule OUT]Warning: Could not find appropriate function on path loading function handle
-[ Thu Jan 13 01:11:36 CET 2011 ][pendule OUT]/home/fviale/eclipse_workspace/Matlab_Scilab_Connector/matlab/toolbox/@PAResult/PAResult.m>PAResult/accessResult
-[ Thu Jan 13 01:11:36 CET 2011 ][pendule OUT]Warning: Could not find appropriate function on path loading function handle
-[ Thu Jan 13 01:11:36 CET 2011 ][pendule OUT]/home/fviale/eclipse_workspace/Matlab_Scilab_Connector/matlab/toolbox/@PAResult/PAResult.m>PAResult/accessResult
-[ Thu Jan 13 01:11:36 CET 2011 ][pendule OUT]Warning: Could not find appropriate function on path loading function handle
-[ Thu Jan 13 01:11:36 CET 2011 ][pendule OUT]/home/fviale/eclipse_workspace/Matlab_Scilab_Connector/matlab/toolbox/@PAResult/PAResult.m>PAResult/accessResult
-[ Thu Jan 13 01:11:36 CET 2011 ][pendule OUT]Warning: Could not find appropriate function on path loading function handle
-[ Thu Jan 13 01:11:36 CET 2011 ][pendule OUT]/home/fviale/eclipse_workspace/Matlab_Scilab_Connector/matlab/toolbox/@PAResult/PAResult.m>PAResult/accessResult
-[ Thu Jan 13 01:11:36 CET 2011 ][pendule OUT]Warning: Could not determine the fields for class PAResult by calling the
-[ Thu Jan 13 01:11:36 CET 2011 ][pendule OUT]         constructor with no input arguments.  The object res has been
-[ Thu Jan 13 01:11:36 CET 2011 ][pendule OUT]         converted to a structure.  To eliminate the conversion create
-[ Thu Jan 13 01:11:36 CET 2011 ][pendule OUT]         an object of class PAResult before calling LOAD.
-[ Thu Jan 13 01:11:36 CET 2011 ][pendule OUT]Warning: Could not find appropriate function on path loading function handle
-[ Thu Jan 13 01:11:36 CET 2011 ][pendule OUT]/home/fviale/eclipse_workspace/Matlab_Scilab_Connector//matlab/toolbox/@PAResult/PAResult.m>PAResult/accessResult
-[ Thu Jan 13 01:11:36 CET 2011 ][pendule OUT]Warning: Could not determine the fields for class PAResult by calling the
-[ Thu Jan 13 01:11:36 CET 2011 ][pendule OUT]         constructor with no input arguments.  The object r has been
-[ Thu Jan 13 01:11:36 CET 2011 ][pendule OUT]         converted to a structure.  To eliminate the conversion create
-[ Thu Jan 13 01:11:36 CET 2011 ][pendule OUT]         an object of class PAResult before calling LOAD.
-[ Thu Jan 13 01:11:36 CET 2011 ][pendule OUT]
-[ Thu Jan 13 01:11:36 CET 2011 ][pendule OUT]
-[ Thu Jan 13 01:11:36 CET 2011 ][pendule OUT]
-[ Thu Jan 13 01:11:36 CET 2011 ][pendule OUT]
-[ Thu Jan 13 01:11:36 CET 2011 ][pendule OUT]
-[ Thu Jan 13 01:11:36 CET 2011 ][pendule OUT]
-[ Thu Jan 13 01:11:36 CET 2011 ][pendule OUT]
-[ Thu Jan 13 01:11:36 CET 2011 ][pendule OUT]
-[ Thu Jan 13 01:11:36 CET 2011 ][pendule OUT]
+Job 4: Task 0_0
+[2012-11-19 18:54:058 precision][MatlabExecutable]
 
 
 ans =
 
-   120</pre>
+   120
 
-<p>The warnings displayed shows the variables that the remote matlab engine couldn't load properly. These variables are the PAResult variables used in the examples. We ignore these warnings as the PAResult has no meaning in the remote engines. If now, we reset the TransferEnv option to false and try to execute testenv, we will receive the following error:</p>
-<pre>>> PAoptions('TransferEnv',false);
+>> </pre>
+
+<p>If now, we reset the TransferEnv option to false and try to execute testenv, we will receive the following error:</p>
+<pre> >> PAoptions('TransferEnv',false);
 >> r=PAsolve(@testenv,{})
-Job submitted : 12
-Awaited (J:12)
+Job submitted : 5
+Awaited (J:5)
 >> r.val
-[ Thu Jan 13 01:20:11 CET 2011 ][pendule OUT]
-[ Thu Jan 13 01:20:11 CET 2011 ][pendule OUT]
-[ Thu Jan 13 01:20:12 CET 2011 ][pendule OUT]
-[ Thu Jan 13 01:20:12 CET 2011 ][pendule OUT]
-[ Thu Jan 13 01:20:12 CET 2011 ][pendule ERR]??? Error using ==> evalin
-[ Thu Jan 13 01:20:12 CET 2011 ][pendule ERR]Undefined function or variable 'a'.
-[ Thu Jan 13 01:20:12 CET 2011 ][pendule ERR]
-[ Thu Jan 13 01:20:12 CET 2011 ][pendule ERR]Error in ==> testenv at 2
-[ Thu Jan 13 01:20:12 CET 2011 ][pendule ERR]a=evalin('caller', 'a');
-[ Thu Jan 13 01:20:12 CET 2011 ][pendule ERR]
-[ Thu Jan 13 01:20:12 CET 2011 ][pendule ERR]??? Error using ==> save
-[ Thu Jan 13 01:20:12 CET 2011 ][pendule ERR]Variable 'out' not found.
-[ Thu Jan 13 01:20:12 CET 2011 ][pendule ERR]
-[ Thu Jan 13 01:20:12 CET 2011 ][pendule OUT]
-[ Thu Jan 13 01:20:12 CET 2011 ][pendule OUT]
-[ Thu Jan 13 01:20:12 CET 2011 ][pendule OUT]
-[ Thu Jan 13 01:20:12 CET 2011 ][pendule OUT]
-[ Thu Jan 13 01:20:12 CET 2011 ][pendule OUT]
-[ Thu Jan 13 01:20:12 CET 2011 ][pendule OUT]
-[ Thu Jan 13 01:20:12 CET 2011 ][pendule OUT]
-[ Thu Jan 13 01:20:12 CET 2011 ][pendule OUT]
-[ Thu Jan 13 01:20:12 CET 2011 ][pendule OUT]
+Job 5: Task 0_0
+[2012-11-19 18:57:000 precision][MatlabExecutable] Error occured in .
+Error using ==> evalin
+Undefined function or variable 'a'.
 
-??? Error using ==> PAResult.PAwaitFor at 99
-Error during remote script execution
+Error in ==> testenv at 2
+a=evalin('caller', 'a');
 
-Error in ==> PAResult.subsref at 47
-                    val{i+1} = PAwaitFor(val{i});</pre>
+Error in ==> PAMain at 9
+out = testenv();
+
+
+
+Warning: PAResult:PAwaitFor Error during remote script execution
+> In PAResult.PAwaitFor at 141
+  In PAResult.subsref at 47
+
+ans =
+
+     []
+
+>> </pre>
 <p>Indeed the remote execution of the testenv function couldn't find in its caller workspace the variable "a" !</p>
 
 <a name="options-4"></a>

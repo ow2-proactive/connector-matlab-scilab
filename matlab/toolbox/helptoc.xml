@@ -41,6 +41,7 @@
                 <tocitem target="proactive_disconnect.html#disconnect-1">Introduction</tocitem>
                 <tocitem target="proactive_disconnect.html#disconnect-2">Exiting Matlab before a job completion</tocitem>
                 <tocitem target="proactive_disconnect.html#disconnect-3">Reconnecting and Retrieving previous job results</tocitem>
+                <tocitem target="proactive_disconnect.html#disconnect-4">Using fault-tolerant sessions</tocitem>
             </tocitem>
             <tocitem target="proactive_options.html">Configuring PAsolve behavior and Debugging
                 <tocitem target="proactive_options.html#options-1">Introduction</tocitem>

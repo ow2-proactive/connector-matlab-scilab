@@ -214,7 +214,9 @@ if ~isjava(recordedJobInfo)
         global_names_mod2 = cellfun(@(x) ['''' x ''','] ,global_names,'UniformOutput',false);
         global_names_str2 = cell2mat(global_names_mod2);
 
-        eval(['global' global_names_str]);
+        if length(global_names_str) > 0
+             eval(['global' global_names_str]);
+        end
 
         for i=1:length(global_names)
             if eval(['iscom(' global_names{i} ');'])
@@ -226,16 +228,22 @@ if ~isjava(recordedJobInfo)
             end
         end
 
-        if opt.Debug
+        if opt.Debug && length(global_names_str) > 0
             disp(['Saving global vars :' global_names_str ' in ' envFilePath]);
         end
-        eval(['save(''' envFilePath  ''',' global_names_str2 ' ''-append'',''' opt.TransferMatFileOptions ''')']);
-
-
-        globalNames = javaArray('java.lang.String', length(global_names));
-        for i=1:length(global_names)
-            globalNames(i) = java.lang.String(global_names{i});
+        if length(global_names_str2) > 0
+            eval(['save(''' envFilePath  ''',' global_names_str2 ' ''-append'',''' opt.TransferMatFileOptions ''')']);
         end
+
+        globalNames = [];
+
+        if length(global_names) > 0
+            globalNames = javaArray('java.lang.String', length(global_names));
+            for i=1:length(global_names)
+                globalNames(i) = java.lang.String(global_names{i});
+            end
+        end
+
 
         solve_config.setEnvMatFile(subdir, envMatName, globalNames)
 
@@ -520,7 +528,7 @@ solve_config.setLogin(lgin);
 solve_config.setPriority(opt.Priority);
 solve_config.setTransferEnv(opt.TransferEnv);
 solve_config.setMatFileOptions(opt.TransferMatFileOptions);
-solve_config.setLicenseServerUrl(opt.LicenseServerURL);
+solve_config.setLicenseSaverURL(opt.LicenseSaverURL);
 solve_config.setFork(opt.Fork);
 solve_config.setRunAsMe(opt.RunAsMe);
 solve_config.setSharedPushPublicUrl(opt.SharedPushPublicUrl);
@@ -540,7 +548,7 @@ solve_config.setVersionPref(opt.VersionPref);
 solve_config.setVersionRejAsString(opt.VersionRej);
 solve_config.setVersionMin(opt.VersionMin);
 solve_config.setVersionMax(opt.VersionMax);
-solve_config.setCheckMatSciUrl(opt.FindMatlabScript);
+solve_config.setFindMatSciScriptUrl(opt.FindMatlabScript);
 solve_config.setCheckLicenceScriptUrl(opt.MatlabReservationScript);
 if ischar(opt.CustomScript)
     select = opt.CustomScript;
@@ -559,7 +567,7 @@ if ischar(opt.CustomScript)
     solve_config.setCustomScriptStatic(opt.CustomScriptStatic);
     solve_config.setCustomScriptParams(opt.CustomScriptParams);
 end
-solve_config.setCheckMatSciStatic(opt.CheckMatSciScriptStatic);
+solve_config.setFindMatSciScriptStatic(opt.FindMatSciScriptStatic);
 solve_config.setUseMatlabControl(opt.UseMatlabControl);
 solve_config.setWorkerTimeoutStart(opt.WorkerTimeoutStart);
 end
@@ -617,7 +625,9 @@ envziplist={};
 if opt.TransferEnv
     global_names_mod = cellfun(@(x) [' ' x] ,global_names,'UniformOutput',false);
     global_names_str = cell2mat(global_names_mod);
-    eval(['global' global_names_str]);
+    if length(global_names_str) > 0
+        eval(['global' global_names_str]);
+    end
 
     for i=1:(length(local_names)+length(global_names))
         if i <= length(local_names)
@@ -826,7 +836,7 @@ for i=1:NN
             else
                 task_config(i,j).setCustomScriptUrl(select);
             end
-            task_config(i,j).setStaticScript(Tasks(j,i).Static);
+            task_config(i,j).setCustomScriptStatic(Tasks(j,i).Static);
             task_config(i,j).setCustomScriptParams(Tasks(j,i).ScriptParams);
         end
         if Tasks(j,i).NbNodes > 1

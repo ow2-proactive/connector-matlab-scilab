@@ -144,7 +144,7 @@ public class PASolveMatSciGlobalConfig implements Serializable {
     /**
      * url of the selection script used to check Matlab or Scilab installation
      */
-    protected String checkMatSciUrl = null;
+    protected String FindMatSciScriptUrl = null;
 
     /**
      * url of a custom selection script, if any
@@ -219,7 +219,7 @@ public class PASolveMatSciGlobalConfig implements Serializable {
     /**
      * Is check MatSci Script static
      */
-    protected boolean checkMatSciStatic = true;
+    protected boolean findMatSciScriptStatic = true;
 
     /**
      * timeout used to start Matlab/Scilab worker processes (*10ms)
@@ -291,12 +291,12 @@ public class PASolveMatSciGlobalConfig implements Serializable {
         this.outputSpaceURL = outputSpaceURL;
     }
 
-    public String getCheckMatSciUrl() {
-        return checkMatSciUrl;
+    public String getFindMatSciScriptUrl() {
+        return FindMatSciScriptUrl;
     }
 
-    public void setCheckMatSciUrl(String checkMatSciUrl) {
-        this.checkMatSciUrl = checkMatSciUrl;
+    public void setFindMatSciScriptUrl(String FindMatSciScriptUrl) {
+        this.FindMatSciScriptUrl = FindMatSciScriptUrl;
     }
 
     public String getCustomScriptUrl() {
@@ -573,12 +573,12 @@ public class PASolveMatSciGlobalConfig implements Serializable {
         this.workerTimeoutStart = workerTimeoutStart;
     }
 
-    public boolean isCheckMatSciStatic() {
-        return checkMatSciStatic;
+    public boolean isFindMatSciScriptStatic() {
+        return findMatSciScriptStatic;
     }
 
-    public void setCheckMatSciStatic(boolean checkMatSciScriptStatic) {
-        this.checkMatSciStatic = checkMatSciScriptStatic;
+    public void setFindMatSciScriptStatic(boolean findMatSciScriptStatic) {
+        this.findMatSciScriptStatic = findMatSciScriptStatic;
     }
 
     public String getDirToClean() {

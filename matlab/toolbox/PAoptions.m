@@ -54,18 +54,30 @@
 %               Comma separated list of object types which should be
 %               excluded from the workspace when transferring the
 %               environment (TransferEnv)
-%   AutomaticDump     true | false | 'on' | 'off'
-%               If this option is set to true, the current state of the
-%               PAsolve job database will be systematically saved at each
-%               PAsolve call. At a price of a slight slowing down of PAsolve
-%               calls, it allows to keep the database information in case
-%               the local Matlab session crashes. Thus, after restarting
-%               Matlab, all the previous session jobs results can be
-%               retrieved via PAgetResults.
 %
 %   NbTaskExecution         integer >= 1
 %               Defines how many times a task can be executed (in case of error),
 %               it defaults to 2, to limit accidental crash of the remote engine due to memory limitations
+%
+%   Fork        true | false | 'on' | 'off'
+%               Runs the tasks in a separate JVM process
+%
+%   RunAsMe     true | false | 'on' | 'off'
+%               Runs the tasks under the account of the current user, default to 'off'
+%
+%   RemoveJobAfterRetrieve     true | false | 'on' | 'off'
+%               Removes the job automatically after all results have been
+%               retrieved. If the options is "off", the job is removed at the end of the
+%               matlab session, or manually via PAjobRemove. default to
+%               'on'
+%
+%   LicenseSaverURL           char
+%               URL of the FlexNet LicenseSaver proxy. The LicenseSaver must be downloaded, installed and run separately
+%               from the scheduler or from ProActive Matlab toolbox. Please send an email contact@activeeon.com .
+%               The License Saver interacts with an existing FlexNet server to grab information about available Matlab and
+%               Matlab toolboxes tokens. A Matlab task running inside ProActive Scheduler and connected to a LicenseSaver
+%               will use tokens only when available, and will remain pending if no token is available.
+%               If this configuration option is empty, no license check will be done.
 %
 %   CustomDataspaceURL        char
 %               URL of the dataspace (both input and output) to expose, if
@@ -81,26 +93,19 @@
 %               corresponds on the file system to /user/myserver/.../root
 %               then this path must be specified in CustomDataspacePath.
 %
+%   SharedPushPublicUrl, SharedPullPublicUrl, SharedPushPrivateUrl, SharedPullPrivateUrl and SharedAutomaticTransfer    char & boolean
+%               those url are those used by the Shared DataSpace on the scheduler (if it's activated on the scheduler).
+%               The Push urls define the spaces where task input files are pushed to. The Pull urls are the spaces from
+%               which task output files are pulled. The public urls are accessible from anywhere, the private urls are
+%               accessible only by worker nodes. Contact the scheduler administrator to know these values. Both url (public and private)
+%               can be equal, but if the infrastucture allows it, it is more efficient to use a file url as private,
+%               the computing nodes will then access the space directly via a shared file system like NFS
+%               The option SharedAutomaticTransfer is an internal option and should not be modified.
 %
 %   TransferMatFileOptions    char
-%               If TranferEnv or TransferVariables is set to on, tells which options are used to save the local environment
+%               If TranferEnv is set to on, tells which options are used to save the local environment
 %               See the "save" command for more information. Default to
 %               '-v7'
-%
-%   Fork        true | false | 'on' | 'off'
-%               Runs the tasks in a separate JVM process
-%
-%   RunAsMe     true | false | 'on' | 'off'
-%               Runs the tasks under the account of the current user, default to 'off'
-%
-%   RemoveJobAfterRetrieve     true | false | 'on' | 'off'
-%               Removes the job automatically after all results have been
-%               retrieved. If the options is "off", the job is removed at the end of the
-%               matlab session, or manually via PAjobRemove. default to
-%               'on'
-%
-%   LicenceServerURL  char
-%               URL of the FlexNet proxy server. If empty, no license check will be done
 %
 %   VersionPref       char
 %               Determines the matlab version preferred to use by the worker, e.g. 7.5
@@ -118,6 +123,12 @@
 %               Priority used by default for jobs submitted with PAsolve,
 %               default to 'Normal'
 %
+%   WindowsStartupOptions   char
+%               Options given to matlab worker processes started on windows operating systems
+%
+%   LinuxStartupOptions     char
+%               Options given to matlab worker processes started on linux operating systems
+%
 %   CustomScript
 %               url or path of a user-defined selection script used in
 %               addition to (before) FindMatlabScript and MatlabReservationScript
@@ -131,7 +142,7 @@
 %               a string containing the parameters of the custom script
 %               delimited by spaces.
 %
-%   FindMatlabScript
+%   FindMatlabScript and FindMatSciScriptStatic
 %               url or path of selection script used to find matlab
 %               (internal)
 %
@@ -160,16 +171,18 @@
 %   JvmTimeout
 %               default timeout used when deploying the middleman JVM (internal)
 %
-%   DisconnectedModeFile
-%               path to disconnected mode temporary file (internal)
+%   JvmArguments
+%               Optional JVM arguments for the middleman JVM (internal)
 %
 %   UseMatlabControl
-%               Internal : do we use the MatlabControl framework
+%               do we use the MatlabControl framework ? (internal)
 %
-%   CleanAllTempFilesDirectly
-%               do we clean the temporary files after all results of a PAsolve 
-%               call are received (default), or do we wait until Matlab terminates 
-%               to allow PAgetResults calls for this job. (internal)
+%   EnableDisconnectedPopup
+%               a popup will appear when the matlab session finishes and some jobs are uncomplete (internal)
+%
+%   WorkerTimeoutStart
+%               Timeout used to start the matlab engine (*10ms) (internal)
+%
 %
 
 %
@@ -280,7 +293,7 @@ inputs(j).default = false;
 inputs(j).check = logcheck;
 inputs(j).trans = logtrans;
 j=j+1;
-inputs(j).name = 'LicenseServerURL';
+inputs(j).name = 'LicenseSaverURL';
 inputs(j).default = [];
 inputs(j).check = urlcheck;
 inputs(j).trans = id;
@@ -345,11 +358,6 @@ inputs(j).default = '';
 inputs(j).check = listcheck;
 inputs(j).trans = listtrans;
 j=j+1;
-inputs(j).name = 'AutomaticDump';
-inputs(j).default = false;
-inputs(j).check = logcheck;
-inputs(j).trans = logtrans;
-j=j+1;
 inputs(j).name = 'CustomDataspaceURL';
 inputs(j).default = [];
 inputs(j).check = urlcheck;
@@ -410,7 +418,7 @@ inputs(j).default = [];
 inputs(j).check = ischarornull;
 inputs(j).trans = id;
 j=j+1;
-inputs(j).name = 'CheckMatSciScriptStatic';
+inputs(j).name = 'FindMatSciScriptStatic';
 inputs(j).default = true;
 inputs(j).check = logcheck;
 inputs(j).trans = logtrans;
@@ -460,13 +468,13 @@ inputs(j).default = ['$MATSCI$' filesep 'config' filesep 'security.java.policy-c
 inputs(j).check = @ischar;
 inputs(j).trans = conftrans;
 j=j+1;
-inputs(j).name = 'DisconnectedModeFile';
-inputs(j).default = ['$HOME$' filesep '.PAsolveTmp.mat'];
-inputs(j).check = @ischar;
-inputs(j).trans = conftrans;
-j=j+1;
 inputs(j).name = 'UseMatlabControl';
 inputs(j).default = false;
+inputs(j).check = logcheck;
+inputs(j).trans = logtrans;
+j=j+1;
+inputs(j).name = 'EnableDisconnectedPopup';
+inputs(j).default = true;
 inputs(j).check = logcheck;
 inputs(j).trans = logtrans;
 j=j+1;

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<refentry version="5.0-subset Scilab" xml:id="PAbeginSession" xml:lang="en"
+          xmlns="http://docbook.org/ns/docbook"
+          xmlns:xlink="http://www.w3.org/1999/xlink"
+          xmlns:svg="http://www.w3.org/2000/svg"
+          xmlns:ns3="http://www.w3.org/1999/xhtml"
+          xmlns:mml="http://www.w3.org/1998/Math/MathML"
+          xmlns:db="http://docbook.org/ns/docbook">
+  <info>
+    <pubdate>$LastChangedDate: 2011-09-21 18:41:39 +0100$</pubdate>
+  </info>
+
+  <refnamediv>
+    <refname>PAbeginSession</refname>
+
+    <refpurpose>starts a persistent PAsolve session.</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <title>Calling Sequence</title>
+
+    <synopsis>PAbeginSession()</synopsis>
+  </refsynopsisdiv>
+
+  <refsection>
+    <title>Description</title>
+
+
+    <para>By calling <emphasis>PAbeginSession</emphasis>, we start a new fault-tolerant session. Multiple session cannot be started at the same time,
+        (i.e. only one session can be active at a time). A fault-tolerant session means that every PAsolve call will be recorded and results received via PAwaitFor or PAwaitAny
+         will be remembered. If Scilab crashes in the middle of a session (or simply exits by the user's will), it will be possible to restart the distributed computation at the point it was before the crash. In order to do that, simply call PAbeginSession()
+        after Scilab restart and resubmit the same computations. PAsolve calls which have already been submitted will not be submitted again to the scheduler and will be linked to the previously submitted job. PAwaitFor calls which have
+        already completed in the previous session will return immediately with the correct results. Function code, Parameters, Input/Output Files used during the previous session should NOT be changed (i.e. changes
+        will be ignored). Multiple Scilab crash/exits can occur in a row, simply reuse PAbeginSession() at each restart.
+         In order to finish a fault-tolerant session, PAendSession() must be called.</para>
+  </refsection>
+
+
+
+    <refsection>
+        <title>See Also</title>
+        <simplelist type="inline">
+            <member>
+                <link linkend="PAendSession">PAendSession</link>
+            </member>
+             <member>
+                <link linkend="PAgetResults">PAgetResults</link>
+            </member>
+        </simplelist>
+    </refsection>
+
+  <refsection>
+    <title>Authors</title>
+
+    <simplelist type="vert">
+      <member>The ProActive Team, Fabien Viale</member>
+    </simplelist>
+  </refsection>
+</refentry>

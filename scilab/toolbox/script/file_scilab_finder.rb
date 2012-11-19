@@ -1,16 +1,18 @@
 include Java
 import java.lang.System
 begin
-	import org.ow2.proactive.scheduler.ext.scilab.worker.util.ScilabEngineConfig
-	import org.ow2.proactive.scheduler.ext.scilab.worker.util.ScilabFinder
+  import org.ow2.proactive.scheduler.ext.scilab.worker.util.ScilabEngineConfig
+  import org.ow2.proactive.scheduler.ext.scilab.worker.util.ScilabFinder
 rescue Exception => e
-  puts e.message + "\n" + e.backtrace.join("\n")
-  raise java.lang.RuntimeException.new("Cannot load Scilab library from the scheduler addons directory, make sure it is properly installed. Detailed error message :\n"+e.message + "\n" + e.backtrace.join("\n"))
+  # The exit variable will be used to display the error which occured at startup inside the debug log file.
+  # The node will not be selected and no error message will be thrown to the use (check the debug log for that)
+  $exit = "Cannot load Scilab library from the scheduler addons directory, make sure it is properly installed. Detailed error message : \n"
+  $exit = $exit + e.message + "\n" + e.backtrace.join("\n")
+  #raise java.lang.RuntimeException.new("Cannot load Scilab library from the scheduler addons directory, make sure it is properly installed. Detailed error message :\n"+e.message + "\n" + e.backtrace.join("\n"))nd
 end
 
-
 module JavaIO
-    include_package "java.io"
+  include_package "java.io"
 end
 
 $selected = false
@@ -18,9 +20,13 @@ begin
 
   if defined?($args)
 
-    begin
-      nodeName = ScilabEngineConfig.getNodeName()
-    rescue
+    if !defined?($exit)
+      begin
+        nodeName = ScilabEngineConfig.getNodeName()
+      rescue
+        nodeName = "DummyNode"
+      end
+    else
       nodeName = "DummyNode"
     end
 
@@ -49,34 +55,37 @@ begin
     while cpt < $args.size
       case $args[cpt]
         when "versionPref"
-          versionPref  = $args[cpt+1]
+          versionPref = $args[cpt+1]
         when "versionMin"
-          versionMin  = $args[cpt+1]
+          versionMin = $args[cpt+1]
         when "versionMax"
-          versionMax  = $args[cpt+1]
+          versionMax = $args[cpt+1]
         when "versionRej"
-            versionRej = $args[cpt+1]
+          versionRej = $args[cpt+1]
 
       end
       cpt += 2
     end
 
-    begin
+    if !defined?($exit)
+      begin
+        cf = ScilabFinder.getInstance().findMatSci(versionPref, versionRej, versionMin, versionMax, debug)
+      rescue JavaIO::FileNotFoundException => fnfe
+        puts fnfe.message
+      rescue Exception => e
+        puts e.message + "\n" + e.backtrace.join("\n")
+      end
 
-      cf = ScilabFinder.getInstance().findMatSci(versionPref, versionRej, versionMin, versionMax,debug)
-    rescue JavaIO::FileNotFoundException => fnfe
-      puts fnfe.message
-    rescue Exception => e
-      puts e.message + "\n" + e.backtrace.join("\n")
-    end
-
-    if (cf == nil)
-      puts "KO"
-      $selected = false
+      if (cf == nil)
+        puts "KO"
+        $selected = false
+      else
+        puts cf
+        ScilabEngineConfig.setCurrentConfiguration(cf)
+        $selected = true
+      end
     else
-      puts cf
-      ScilabEngineConfig.setCurrentConfiguration(cf)
-      $selected = true
+      puts $exit
     end
   end
 rescue Exception => e

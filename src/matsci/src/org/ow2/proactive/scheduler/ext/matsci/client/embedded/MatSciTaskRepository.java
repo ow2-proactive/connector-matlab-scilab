@@ -36,11 +36,12 @@ package org.ow2.proactive.scheduler.ext.matsci.client.embedded;
 
 import jdbm.PrimaryHashMap;
 import jdbm.RecordManager;
+import jdbm.RecordManagerFactory;
 import org.ow2.proactive.scheduler.ext.common.util.FileUtils;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.PASessionState;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.data.MatSciClientJobInfo;
 
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -107,28 +108,70 @@ public abstract class MatSciTaskRepository {
     }
 
     protected void init() {
-        // we load the list of standard jobs
-        jobs = recMan.hashMap(EMBEDDED_JOBS_RECORD_NAME);
-
-        // we load the list of recorded jobs
-        recordedJobs = recMan.hashMap(EMBEDDED_RECORDEDJOBS_RECORD_NAME);
-        mappingSeqToJobID = recMan.hashMap(EMBEDDED_SEQTOJOBID_RECORD_NAME);
-
-        // we clear the jobs of the n-2 session, if any
-        lastJobs = recMan.hashMap(EMBEDDED_LASTJOBS_RECORD_NAME);
-        cleanOldJobs();
-        // after this cleaning the jobs remaining are only the ones from last session, so we record their ids and replace
-        // lastJobs accordingly
-        lastJobs.clear();
-        for (Long id : jobs.keySet()) {
-            lastJobs.put(id, id);
-        }
         try {
+            recMan = RecordManagerFactory.createRecordManager(getMatSciTaskRepFile().getCanonicalPath());
+            // we load the list of standard jobs
+            jobs = recMan.hashMap(EMBEDDED_JOBS_RECORD_NAME);
+
+            // we load the list of recorded jobs
+            recordedJobs = recMan.hashMap(EMBEDDED_RECORDEDJOBS_RECORD_NAME);
+            mappingSeqToJobID = recMan.hashMap(EMBEDDED_SEQTOJOBID_RECORD_NAME);
+
+            // we clear the jobs of the n-2 session, if any
+            lastJobs = recMan.hashMap(EMBEDDED_LASTJOBS_RECORD_NAME);
+            cleanOldJobs();
+            // after this cleaning the jobs remaining are only the ones from last session, so we record their ids and replace
+            // lastJobs accordingly
+            lastJobs.clear();
+            for (Long id : jobs.keySet()) {
+                lastJobs.put(id, id);
+            }
+
             recMan.commit();
+
+        } catch (IOError e) {
+            if (e.getCause() instanceof InvalidClassException) {
+                try {
+                    recMan.close();
+                } catch (IOException e1) {
+                    e.printStackTrace();
+                }
+                recMan = null;
+                cleanDB();
+                init();
+            } else {
+                throw e;
+            }
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
+
+    protected void cleanDB() {
+        if (recMan != null) {
+            throw new IllegalStateException("Connection to a DB is established, cannot clean it");
+        }
+        // delete all db files
+        File[] dbJobFiles = new File(TMPDIR).listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                if (name.startsWith(getMatSciTaskRepFile().getName())) {
+                    return true;
+                }
+                return false;
+            }
+        });
+        for (File f : dbJobFiles) {
+            try {
+                System.out.println("Deleting " + f);
+                f.delete();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    abstract protected File getMatSciTaskRepFile();
 
     public MatSciClientJobInfo getNextJob() {
         Long jid = mappingSeqToJobID.get(currentSequenceIndex);
@@ -181,6 +224,16 @@ public abstract class MatSciTaskRepository {
             throw new IllegalArgumentException(jid + " is unknown.");
         }
         return jinfo.allReceived();
+    }
+
+    public ArrayList<String> notYetReceived() {
+        ArrayList<String> notReceived = new ArrayList<String>();
+        for (Long jid : jobs.keySet()) {
+            if (!allReceived("" + jid)) {
+                notReceived.add("" + jid);
+            }
+        }
+        return notReceived;
     }
 
     public MatSciClientJobInfo getInfo(String jobid) {

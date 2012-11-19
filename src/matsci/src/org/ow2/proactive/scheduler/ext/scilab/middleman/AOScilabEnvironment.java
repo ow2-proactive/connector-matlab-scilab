@@ -392,7 +392,8 @@ public class AOScilabEnvironment extends AOMatSciEnvironment<Boolean, ScilabResu
                         }
                         try {
 
-                            sscript = new SelectionScript(url, params, !taskConfigs[i][j].isStaticScript());
+                            sscript = new SelectionScript(url, params, !taskConfigs[i][j]
+                                    .isCustomScriptStatic());
 
                         } catch (InvalidScriptException e1) {
                             throw new PASchedulerException(e1);
@@ -400,7 +401,7 @@ public class AOScilabEnvironment extends AOMatSciEnvironment<Boolean, ScilabResu
                         schedulerTask.addSelectionScript(sscript);
 
                         printLog("Task " + tname + ":" + " using task custom script (" +
-                            (taskConfigs[i][j].isStaticScript() ? "static" : "dynamic") + ") " + url +
+                            (taskConfigs[i][j].isCustomScriptStatic() ? "static" : "dynamic") + ") " + url +
                             " with params : " + params);
                     }
 
@@ -428,18 +429,18 @@ public class AOScilabEnvironment extends AOMatSciEnvironment<Boolean, ScilabResu
                         }
                         schedulerTask.addSelectionScript(sscript);
                         printLog("Task " + tname + ":" + " using global custom script (" +
-                            (taskConfigs[i][j].isStaticScript() ? "static" : "dynamic") + ") " + url +
+                            (taskConfigs[i][j].isCustomScriptStatic() ? "static" : "dynamic") + ") " + url +
                             " with params : " + params);
                     }
 
-                    URL url1 = new URL(config.getCheckMatSciUrl());
+                    URL url1 = new URL(config.getFindMatSciScriptUrl());
 
                     SelectionScript sscript = null;
                     try {
                         sscript = new SelectionScript(url1, new String[] { "versionPref",
                                 config.getVersionPref(), "versionRej", config.getVersionRejAsString(),
                                 "versionMin", config.getVersionMin(), "versionMax", config.getVersionMax() },
-                            !config.isCheckMatSciStatic());
+                            !config.isFindMatSciScriptStatic());
                     } catch (InvalidScriptException e1) {
                         throw new PASchedulerException(e1);
                     }

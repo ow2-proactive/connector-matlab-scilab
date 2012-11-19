@@ -304,7 +304,7 @@ function initSolveConfig(solve_config,opt)
     jinvoke(solve_config,'setVersionRejAsString',opt.VersionRej);
     jinvoke(solve_config,'setVersionMin',opt.VersionMin);
     jinvoke(solve_config,'setVersionMax',opt.VersionMax);
-    jinvoke(solve_config,'setCheckMatSciUrl',opt.FindScilabScript);
+    jinvoke(solve_config,'setFindMatSciScriptUrl',opt.FindScilabScript);
     if ischar(opt.CustomScript)
         selects = opt.CustomScript
         try
@@ -323,7 +323,7 @@ function initSolveConfig(solve_config,opt)
         jinvoke(solve_config,'setCustomScriptStatic',opt.CustomScriptStatic);
         jinvoke(solve_config,'setCustomScriptParams',opt.CustomScriptParams);
     end
-    jinvoke(solve_config,'setCheckMatSciStatic',opt.CheckMatSciScriptStatic);
+    jinvoke(solve_config,'setFindMatSciScriptStatic',opt.FindMatSciScriptStatic);
 
     jinvoke(solve_config,'setWorkerTimeoutStart',opt.WorkerTimeoutStart);
     jremove(URL);
@@ -501,44 +501,41 @@ function [outVarFiles, inputscript, mainScript,taskFilesToClean] = initParameter
             t_conf = task_configs(i-1,j-1);
             // Params
             argi = Tasks(j,i).Params;
-            if opt.TransferVariables
-                inVarFN = variableInFileBaseName + indToFile([i j]) + '.dat';
-                outVarFN = variableOutFileBaseName + indToFile([i j])+ '.dat';
-                inVarFP = pa_dir + fs + inVarFN;
-                outVarFP = pa_dir + fs + outVarFN;
-                // Creating input parameters mat files
-                fd=mopen(inVarFP,'wb'); 
-                inl = argi;
-                if length(inl) == 0
-                    inl=list(%t);
-                end
-                warning('off')
-                for k=1:length(inl)
-                    execstr('in'+string(k)+'=inl(k);');
-                    execstr('save(fd,in'+string(k)+')');
-                end
-                warning('on')
-                mclose(fd);
+            inVarFN = variableInFileBaseName + indToFile([i j]) + '.dat';
+            outVarFN = variableOutFileBaseName + indToFile([i j])+ '.dat';
+            inVarFP = pa_dir + fs + inVarFN;
+            outVarFP = pa_dir + fs + outVarFN;
+            // Creating input parameters mat files
+            fd=mopen(inVarFP,'wb');
+            inl = argi;
+            if length(inl) == 0
+                inl=list(%t);
+            end
+            warning('off')
+            for k=1:length(inl)
+                execstr('in'+string(k)+'=inl(k);');
+                execstr('save(fd,in'+string(k)+')');
+            end
+            warning('on')
+            mclose(fd);
 
-                jinvoke(t_conf,'setInputVariablesFile',subdir, inVarFN);
-                jinvoke(t_conf,'setOutputVariablesFile',curr_dir, subdir, outVarFN);
-                if j > 1 & Tasks(j,i).Compose
-                    cinVarFN = variableOutFileBaseName + indToFile([i j-1]) +'.dat';
-                    cinVarFP = pa_dir+fs+cinVarFN;                    
-                    jinvoke(t_conf,'setComposedInputVariablesFile',subdir, cinVarFN);
-                end
-                outVarFiles(i) = outVarFP;
-                taskFilesToClean(i)=lstcat(taskFilesToClean(i), list(inVarFP));
-                //if j < MM
-                // because of disconnected mode, the final out is handled
-                //differently
-                taskFilesToClean(i)=lstcat(taskFilesToClean(i), list(outVarFP));
-                //end
+            jinvoke(t_conf,'setInputVariablesFile',subdir, inVarFN);
+            jinvoke(t_conf,'setOutputVariablesFile',curr_dir, subdir, outVarFN);
+            if j > 1 & Tasks(j,i).Compose
+                cinVarFN = variableOutFileBaseName + indToFile([i j-1]) +'.dat';
+                cinVarFP = pa_dir+fs+cinVarFN;
+                jinvoke(t_conf,'setComposedInputVariablesFile',subdir, cinVarFN);
+            end
+            outVarFiles(i) = outVarFP;
+            taskFilesToClean(i)=lstcat(taskFilesToClean(i), list(inVarFP));
+            //if j < MM
+            // because of disconnected mode, the final out is handled
+            //differently
+            taskFilesToClean(i)=lstcat(taskFilesToClean(i), list(outVarFP));
+            //end
 
-                inputscript = 'i=0';
-            else
-                inputscript = createInputScript(argi);
-            end 
+            inputscript = 'i=0';
+
 
             jinvoke(t_conf,'setInputScript',inputscript);
 
@@ -590,7 +587,7 @@ function initOtherTCAttributes(NN,MM, task_configs, Tasks)
                 else
                     jinvoke(t_conf,'setCustomScriptUrl',selects);
                 end
-                jinvoke(t_conf,'setStaticScript',Tasks(j,i).Static);
+                jinvoke(t_conf,'setCustomScriptStatic',Tasks(j,i).Static);
                 jinvoke(t_conf,'setCustomScriptParams',Tasks(j,i).ScriptParams);
             end   
 

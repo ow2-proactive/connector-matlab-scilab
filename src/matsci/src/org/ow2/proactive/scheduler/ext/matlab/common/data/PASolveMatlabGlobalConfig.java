@@ -61,7 +61,7 @@ public class PASolveMatlabGlobalConfig extends PASolveMatSciGlobalConfig {
     /**
      * URL of the license server proxy
      */
-    private String licenseServerUrl = null;
+    private String licenseSaverURL = null;
 
     /**
      * Name of the matlab function used to keep checked out tokens alive. This function is executed periodically by matlab.
@@ -97,12 +97,12 @@ public class PASolveMatlabGlobalConfig extends PASolveMatSciGlobalConfig {
         this.matFileOptions = matFileOptions;
     }
 
-    public String getLicenseServerUrl() {
-        return licenseServerUrl;
+    public String getLicenseSaverURL() {
+        return licenseSaverURL;
     }
 
-    public void setLicenseServerUrl(String licenseServerUrl) {
-        this.licenseServerUrl = licenseServerUrl;
+    public void setLicenseSaverURL(String licenseSaverURL) {
+        this.licenseSaverURL = licenseSaverURL;
     }
 
     public String getKeepaliveCallbackFunctionName() {

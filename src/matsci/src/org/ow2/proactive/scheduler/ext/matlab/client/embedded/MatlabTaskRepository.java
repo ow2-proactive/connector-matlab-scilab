@@ -56,13 +56,12 @@ public class MatlabTaskRepository extends MatSciTaskRepository {
     public static final File MATLAB_EMBEDDED_JOBS_FILE = new File(TMPDIR, MATLAB_EMBEDDED_JOBS_FILE_NAME);
 
     private MatlabTaskRepository() {
-        try {
-            recMan = RecordManagerFactory.createRecordManager(MATLAB_EMBEDDED_JOBS_FILE.getCanonicalPath());
-            init();
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        }
+        init();
+    }
+
+    @Override
+    protected File getMatSciTaskRepFile() {
+        return new File(TMPDIR, MATLAB_EMBEDDED_JOBS_FILE_NAME);
     }
 
     public static MatSciTaskRepository getInstance() {

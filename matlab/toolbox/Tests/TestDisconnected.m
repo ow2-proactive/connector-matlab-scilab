@@ -12,6 +12,8 @@ function [ok, msg]=TestDisconnected(nb_iter,index, timeout)
     disp('---------------------------------------------');
     disp(['...... Testing Disconnected mode, iteration ' num2str(index)]);
 
+    PAoptions('EnableDisconnectedPopup', false);
+
     PAbeginSession();
     for i=1:index-1
         resl = PAsolve(@myWait,1,2,3,4);

@@ -83,12 +83,12 @@
                 </para>
             </listitem>
             <listitem>
-                <para><emphasis>EnvExcludeList</emphasis>: controls witch variables should not be copied when using
+                <para><emphasis>EnvExcludeList</emphasis>: controls witch variables should NOT be copied when using
                     TransferEnv, by listing their names (Comma separated list).
                 </para>
             </listitem>
             <listitem>
-                <para><emphasis>EnvExcludeTypeList</emphasis>: controls witch variable types should not be copied when
+                <para><emphasis>EnvExcludeTypeList</emphasis>: controls witch variable types should NOT  be copied when
                     using TransferEnv (Comma separated list).
                 </para>
             </listitem>
@@ -99,13 +99,24 @@
             </listitem>
             <listitem>
                 <para><emphasis>RunAsMe</emphasis>: enables running the Scilab task as the user provided when connecting
-                    to the scheduler (implies Fork mode).
+                    to the scheduler (implies Fork mode). Depending on which RunAsMe mode is configured on the scheduler,
+                    it might be necessary to provide additional credential information when connecting via PAconnect.
                 </para>
             </listitem>
             <listitem>
-                <para><emphasis>RemoveJobAfterRetrieve</emphasis>: when set to "on", every PAsolve job will be removed
-                    from the scheduler after results have been retrieved. If set to "off", the job can be removed using
-                    the PAjobRemove function. Defaults to "on".
+                <para><emphasis>SharedPushPublicUrl, SharedPullPublicUrl, SharedPushPrivateUrl, SharedPullPrivateUrl and SharedAutomaticTransfer</emphasis>:
+                    those url are those used by the Shared DataSpace on the scheduler (if it's activated on the scheduler).
+                    The Push urls define the spaces where task input files are pushed to. The Pull urls are the spaces from
+                    which task output files are pulled. The public urls are accessible from anywhere, the private urls are
+                    accessible only by worker nodes. Contact the scheduler administrator to know these values. Both url (public and private)
+                    can be equal, but if the infrastucture allows it, it is more efficient to use a file url as private,
+                    the computing nodes will then access the space directly via a shared file system like NFS
+                    The option SharedAutomaticTransfer is an internal option and should not be modified.
+                </para>
+            </listitem>
+            <listitem>
+                <para><emphasis>RemoveJobAfterRetrieve</emphasis>: Removes the job automatically from the scheduler after all
+                    results have been retrieved. If not the job is removed at the end of the scilab session, or manually via PAjobRemove. default to 'on'
                 </para>
             </listitem>
             <listitem>
@@ -119,8 +130,8 @@
                     and<emphasis>CustomDataspacePath</emphasis>: by default these options are not set. Dataspaces are a
                     ProActive internal mechanism allowing a shared file system between hosts. The mechanism allows the
                     automatic transfer of files between the local scilab session and the remote engines. ProActive
-                    Toolbox has an internal automatic Dataspace creation. But sometimes, one would like to rely on an
-                    external Dataspace such as a ftp server. This Dataspace MUST be accessible from the local file
+                    Toolbox has an internal automatic Dataspace creation, or can be used in conjunction with a Shared Dataspace (see above).
+                    But sometimes, one would like to rely on an external Dataspace such as a ftp server. This Dataspace MUST be accessible from the local file
                     system in order to work with Scilab Connector Toolbox.The CustomDataspaceURL option gives the
                     Universally accessible URL of this dataspace and the CustomDataspacePath gives the path to access
                     this dataspace from the local file system.
@@ -167,6 +178,10 @@
                 </para>
             </listitem>
             <listitem>
+                <para><emphasis>FindMatSciScriptStatic</emphasis>: (Internal) defines the way the FindScilabScript script behave
+                </para>
+            </listitem>
+            <listitem>
                 <para><emphasis>CustomScript</emphasis>: with this option, a custom selection script can be provided for
                     every jobs launched via PAsolve.
                 </para>
@@ -183,7 +198,7 @@
             </listitem>
             <listitem>
                 <para>
-                    <emphasis>EmbeddedJars</emphasis>
+                    <emphasis>PathJars</emphasis>, <emphasis>EmbeddedJars</emphasis>
                     and<emphasis>ProActiveJars</emphasis>: libraries used by Scilab Connector Toolbox (internal use
                     only)
                 </para>
@@ -209,6 +224,18 @@
                 <para><emphasis>JvmTimeout</emphasis>: default timeout used when deploying the middleman JVM (internal).
                 </para>
             </listitem>
+            <listitem>
+                <para><emphasis>JvmArguments</emphasis>: optional JVM arguments to the middleman JVM (internal).
+                </para>
+            </listitem>
+            <listitem>
+                <para><emphasis>WorkerTimeoutStart</emphasis>: Timeout used to start the scilab engine (*10ms) (internal).
+                </para>
+            </listitem>
+            <listitem>
+                <para><emphasis>EnableDisconnectedPopup</emphasis>: a popup will appear when the matlab session finishes and some jobs are uncomplete (internal).
+                </para>
+            </listitem>
         </itemizedlist>
     </refsection>
 
@@ -222,7 +249,6 @@
    TimeStamp: %f
    TransferSource: %t
    KeepEngine: %f
-   TransferVariables: %t
    CustomDataspaceURL: [0x0 constant]
    CustomDataspacePath: [0x0 constant]
    VersionPref: "5.3.0"

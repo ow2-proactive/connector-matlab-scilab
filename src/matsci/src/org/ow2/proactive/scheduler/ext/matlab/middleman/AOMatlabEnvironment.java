@@ -408,7 +408,8 @@ public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResu
 
                         try {
 
-                            sscript = new SelectionScript(url, params, !taskConfigs[i][j].isStaticScript());
+                            sscript = new SelectionScript(url, params, !taskConfigs[i][j]
+                                    .isCustomScriptStatic());
 
                         } catch (InvalidScriptException e1) {
                             throw new PASchedulerException(e1);
@@ -416,7 +417,7 @@ public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResu
                         schedulerTask.addSelectionScript(sscript);
 
                         printLog("Task " + tname + ":" + " using task custom script (" +
-                            (taskConfigs[i][j].isStaticScript() ? "static" : "dynamic") + ") " + url +
+                            (taskConfigs[i][j].isCustomScriptStatic() ? "static" : "dynamic") + ") " + url +
                             " with params : " + params);
                     }
 
@@ -445,12 +446,12 @@ public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResu
                         schedulerTask.addSelectionScript(sscript);
 
                         printLog("Task " + tname + ":" + " using global custom script (" +
-                            (taskConfigs[i][j].isStaticScript() ? "static" : "dynamic") + ") " + url +
+                            (taskConfigs[i][j].isCustomScriptStatic() ? "static" : "dynamic") + ") " + url +
                             " with params : " + params);
 
                     }
 
-                    URL url1 = new URL(config.getCheckMatSciUrl());
+                    URL url1 = new URL(config.getFindMatSciScriptUrl());
 
                     SelectionScript sscript = null;
                     try {
@@ -458,7 +459,7 @@ public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResu
                         sscript = new SelectionScript(url1, new String[] { "" + config.isDebug(),
                                 "versionPref", config.getVersionPref(), "versionRej",
                                 config.getVersionRejAsString(), "versionMin", config.getVersionMin(),
-                                "versionMax", config.getVersionMax() }, !config.isCheckMatSciStatic());
+                                "versionMax", config.getVersionMax() }, !config.isFindMatSciScriptStatic());
                     } catch (InvalidScriptException e1) {
                         throw new PASchedulerException(e1);
                     }
@@ -466,7 +467,7 @@ public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResu
 
                     // The selection script that checks for MATLAB license and toolboxes
                     // if a license server is specified
-                    if (config.getLicenseServerUrl() != null) {
+                    if (config.getLicenseSaverURL() != null) {
                         URL url3 = new URL(config.getCheckLicenceScriptUrl());
 
                         sscript = null;
@@ -475,7 +476,7 @@ public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResu
                         taskConfigs[i][j].setRid(aoid + "_" + lastGenJobId + "_" + tname);
                         paramsList.add(taskConfigs[i][j].getRid());
                         paramsList.add(config.getLogin());
-                        paramsList.add(config.getLicenseServerUrl());
+                        paramsList.add(config.getLicenseSaverURL());
                         if (taskConfigs[i][j].getToolboxesUsed() != null) {
                             paramsList.addAll(Arrays.asList(taskConfigs[i][j].getToolboxesUsed()));
                         } else {

@@ -48,6 +48,10 @@ ProActive features Java Parallel Programming seamlessly integrated with Scheduli
                 <para>Allow automatic source transfer, data file transfer, and other configurable options.
                  </para>
             </listitem>
+            <listitem>
+                <para>Allow fault-tolerant/disconnected sessions where intermediate results are persistent.
+                </para>
+            </listitem>
         </itemizedlist>
   </refsection>
     <refsection>
