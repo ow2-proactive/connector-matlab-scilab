@@ -56,7 +56,7 @@ import static junit.framework.Assert.assertFalse;
  */
 public class TestUltraConnected extends AbstractScilabTest {
 
-    static final int NB_ITER = 3;
+    static final int NB_ITER = 2;
 
     static final String TMPDIR = System.getProperty("java.io.tmpdir");
 
@@ -151,16 +151,9 @@ public class TestUltraConnected extends AbstractScilabTest {
         }
         // we are now connected to a scheduler, we will randomly restart the scheduler a nb_iter number of times
 
-        for (int i = 0; i < nb_iter; i++) {
-            Thread.sleep((25 + Math.round(10 * Math.random())) * 1000);
-            SchedulerAuthenticationInterface auth = SchedulerConnection.waitAndJoin("pnp://localhost:9999");
-            Scheduler sched = auth.login(adminCredentials);
-            try {
-                sched.kill();
-            } catch (Exception e) {
+        for (int i = 0; i < nb_iter + 1; i++) {
+            Thread.sleep((10 + Math.round(10 * Math.random())) * 1000);
 
-            }
-            Thread.sleep(1000);
             restartCmdLine("pnp://localhost:9999", proactiveConf);
         }
 

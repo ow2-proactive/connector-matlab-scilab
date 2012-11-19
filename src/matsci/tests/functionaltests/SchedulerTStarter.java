@@ -142,7 +142,7 @@ public class SchedulerTStarter implements Serializable {
         // and eventually we kill remaining nodes
         ProcessTreeKiller.get().kill(p, env);
         try {
-            Thread.sleep(1000);
+            Thread.sleep(3000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
