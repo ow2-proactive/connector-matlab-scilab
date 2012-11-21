@@ -1674,8 +1674,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
 
         // we clear the service to avoid dirty pending requests
         service.flushAll();
-        // we block the communications because a getTask request might still be coming from a worker created just before the master termination
-        body.blockCommunication();
+
         // we finally terminate the master
         body.terminate();
     }

@@ -287,6 +287,9 @@ public class ScilabExecutable extends JavaExecutable {
         // Create a temp dir in the root dir of the local space
         this.localSpaceRootDir = new File(new URI(dsURI));
         this.tempSubDir = new File(this.localSpaceRootDir, paconfig.getJobSubDirOSPath()).getCanonicalFile();
+        if (!tempSubDir.exists()) {
+            tempSubDir.mkdirs();
+        }
 
         this.tempSubDirRel = paconfig.getJobSubDirPortablePath();
 
