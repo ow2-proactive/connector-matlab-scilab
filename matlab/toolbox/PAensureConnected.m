@@ -1,4 +1,3 @@
-function PAensureConnected()
 % PAensureConnected makes sure that we are connected to the ProActive Scheduler.
 %
 % Syntax
