@@ -230,9 +230,10 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
 
     /**
      * This method forcefully terminates the activity of the proxy
-     * This method should not be called via a proactive stub
+     * This method should not be called via the proactive stub of the proxy but rather via the static instance
      */
     public void terminateFast() {
+
         // if the service thread is locked on a user-level Thread.sleep() :
         serviceThread.interrupt();
         // destroy the request queue
@@ -251,6 +252,7 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
                 throw new RuntimeException(e);
             }
         }
+
         if (recMan != null) {
             try {
                 recMan.close();
@@ -958,8 +960,15 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
      * @param eventType the type of the event received.
      */
     public void schedulerStateUpdatedEvent(SchedulerEvent eventType) {
-        for (SchedulerEventListener l : eventListeners) {
-            l.schedulerStateUpdatedEvent(eventType);
+        Iterator<ISchedulerEventListenerExtended> it = eventListeners.iterator();
+        while (it.hasNext()) {
+            ISchedulerEventListenerExtended l = it.next();
+            try {
+                l.schedulerStateUpdatedEvent(eventType);
+            } catch (Exception e) {
+                // if an exception occurs we remove the listener
+                it.remove();
+            }
         }
 
     }
@@ -971,8 +980,15 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
      * @param job the newly submitted job.
      */
     public void jobSubmittedEvent(JobState job) {
-        for (SchedulerEventListener l : eventListeners) {
-            l.jobSubmittedEvent(job);
+        Iterator<ISchedulerEventListenerExtended> it = eventListeners.iterator();
+        while (it.hasNext()) {
+            ISchedulerEventListenerExtended l = it.next();
+            try {
+                l.jobSubmittedEvent(job);
+            } catch (Exception e) {
+                // if an exception occurs we remove the listener
+                it.remove();
+            }
         }
     }
 
@@ -987,8 +1003,15 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
      */
     public void jobStateUpdatedEvent(NotificationData<JobInfo> notification) {
         updateJob(notification);
-        for (SchedulerEventListener l : eventListeners) {
-            l.jobStateUpdatedEvent(notification);
+        Iterator<ISchedulerEventListenerExtended> it = eventListeners.iterator();
+        while (it.hasNext()) {
+            ISchedulerEventListenerExtended l = it.next();
+            try {
+                l.jobStateUpdatedEvent(notification);
+            } catch (Exception e) {
+                // if an exception occurs we remove the listener
+                it.remove();
+            }
         }
     }
 
@@ -1004,8 +1027,15 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
     @Override
     public void taskStateUpdatedEvent(NotificationData<TaskInfo> notification) {
         updateTask(notification);
-        for (SchedulerEventListener l : eventListeners) {
-            l.taskStateUpdatedEvent(notification);
+        Iterator<ISchedulerEventListenerExtended> it = eventListeners.iterator();
+        while (it.hasNext()) {
+            ISchedulerEventListenerExtended l = it.next();
+            try {
+                l.taskStateUpdatedEvent(notification);
+            } catch (Exception e) {
+                // if an exception occurs we remove the listener
+                it.remove();
+            }
         }
 
     }
@@ -1017,8 +1047,15 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
      *                     to the change.
      */
     public void usersUpdatedEvent(NotificationData<UserIdentification> notification) {
-        for (SchedulerEventListener l : eventListeners) {
-            l.usersUpdatedEvent(notification);
+        Iterator<ISchedulerEventListenerExtended> it = eventListeners.iterator();
+        while (it.hasNext()) {
+            ISchedulerEventListenerExtended l = it.next();
+            try {
+                l.usersUpdatedEvent(notification);
+            } catch (Exception e) {
+                // if an exception occurs we remove the listener
+                it.remove();
+            }
         }
     }
 
@@ -1439,8 +1476,15 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
                             " will be removed from the known task list. The system will not attempt again to retrieve data for this task. You could try to manually copy the data from the location  " +
                             sourceUrl);
 
-                for (ISchedulerEventListenerExtended l : eventListeners) {
-                    l.pullDataFailed(jobId, taskName, sourceUrl, e);
+                Iterator<ISchedulerEventListenerExtended> it = eventListeners.iterator();
+                while (it.hasNext()) {
+                    ISchedulerEventListenerExtended l = it.next();
+                    try {
+                        l.pullDataFailed(jobId, taskName, sourceUrl, e);
+                    } catch (Exception e1) {
+                        // if an exception occurs we remove the listener
+                        it.remove();
+                    }
                 }
                 stubOnThis.removeAwaitedTask(jobId, taskName);
                 return;
@@ -1449,8 +1493,15 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
 
             stubOnThis.removeAwaitedTask(jobId, taskName);
 
-            for (ISchedulerEventListenerExtended l : eventListeners) {
-                l.pullDataFinished(jobId, taskName, destUrl);
+            Iterator<ISchedulerEventListenerExtended> it = eventListeners.iterator();
+            while (it.hasNext()) {
+                ISchedulerEventListenerExtended l = it.next();
+                try {
+                    l.pullDataFinished(jobId, taskName, destUrl);
+                } catch (Exception e1) {
+                    // if an exception occurs we remove the listener
+                    it.remove();
+                }
             }
         }
 

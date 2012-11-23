@@ -776,6 +776,11 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
      * This method tries to terminate the active object with
      */
     public void terminateFast() {
+
+        // fix for MSC-207 : BodyTerminatedException occurs when reconnecting to a PAMR router
+        // We remove this AO from the list of listeners of the proxy
+        sched_proxy_root.removeEventListener(stubOnThis);
+        // we kill the proxy
         sched_proxy_root.terminateFast();
         // if the service thread is locked on a user-level Thread.sleep() :
         serviceThread.interrupt();
