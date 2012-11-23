@@ -285,6 +285,7 @@ function initSolveConfig(solve_config,opt)
     jinvoke(solve_config,'setTransferEnv',opt.TransferEnv);
     jinvoke(solve_config,'setFork',opt.Fork);
     jinvoke(solve_config,'setRunAsMe',opt.RunAsMe);
+    jinvoke(solve_config, 'setToolboxPath', opt.MatSciDir);
     jinvoke(solve_config, 'setSharedPushPublicUrl', opt.SharedPushPublicUrl);
     jinvoke(solve_config, 'setSharedPullPublicUrl', opt.SharedPullPublicUrl);
     jinvoke(solve_config, 'setSharedPushPrivateUrl', opt.SharedPushPrivateUrl);

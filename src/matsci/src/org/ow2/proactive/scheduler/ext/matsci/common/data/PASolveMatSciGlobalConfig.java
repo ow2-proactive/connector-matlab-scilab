@@ -80,6 +80,11 @@ public class PASolveMatSciGlobalConfig implements Serializable {
     protected boolean runAsMe = false;
 
     /**
+     * The root directory of the toolbox
+     */
+    protected String toolboxPath = null;
+
+    /**
      * Push URL of the Scheduler's shared space, seen by the Matlab/Scilab client
      */
     protected String sharedPushPublicUrl = null;
@@ -395,6 +400,14 @@ public class PASolveMatSciGlobalConfig implements Serializable {
 
     public void setRunAsMe(boolean runAsMe) {
         this.runAsMe = runAsMe;
+    }
+
+    public String getToolboxPath() {
+        return toolboxPath;
+    }
+
+    public void setToolboxPath(String toolboxPath) {
+        this.toolboxPath = toolboxPath;
     }
 
     public String getSharedPushPublicUrl() {

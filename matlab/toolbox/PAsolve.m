@@ -531,6 +531,7 @@ solve_config.setMatFileOptions(opt.TransferMatFileOptions);
 solve_config.setLicenseSaverURL(opt.LicenseSaverURL);
 solve_config.setFork(opt.Fork);
 solve_config.setRunAsMe(opt.RunAsMe);
+solve_config.setToolboxPath(opt.MatSciDir);
 solve_config.setSharedPushPublicUrl(opt.SharedPushPublicUrl);
 solve_config.setSharedPullPublicUrl(opt.SharedPullPublicUrl);
 solve_config.setSharedPushPrivateUrl(opt.SharedPushPrivateUrl);

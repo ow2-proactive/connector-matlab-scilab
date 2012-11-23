@@ -29,7 +29,7 @@ try {
     versionMin = null;
     versionMax = null;
     versionRej = null;
-    while (cpt < args.length)
+    while (cpt < args.length) {
         switch (args[cpt]) {
             case "versionPref":
                 versionPref = args[cpt + 1];
@@ -44,9 +44,8 @@ try {
                 versionRej = args[cpt + 1];
                 break;
         }
-    end
-    cpt += 2
-    end
+        cpt += 2;
+    }
     try {
         cf = MatlabFinder.getInstance().findMatSci(versionPref, versionRej, versionMin, versionMax, debug);
     }

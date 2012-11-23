@@ -151,8 +151,8 @@ public abstract class MatSciTaskRepository {
         if (recMan != null) {
             throw new IllegalStateException("Connection to a DB is established, cannot clean it");
         }
-        // delete all db files
-        File[] dbJobFiles = new File(TMPDIR).listFiles(new FilenameFilter() {
+        // delete all db files (we use the parent dir of the DB file, as TMP dir is different for scilab
+        File[] dbJobFiles = getMatSciTaskRepFile().getParentFile().listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
                 if (name.startsWith(getMatSciTaskRepFile().getName())) {
