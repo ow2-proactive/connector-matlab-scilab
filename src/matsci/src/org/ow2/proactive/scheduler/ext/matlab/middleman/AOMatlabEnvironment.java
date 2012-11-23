@@ -263,11 +263,8 @@ public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResu
                     if (config.isRunAsMe()) {
                         schedulerTask.setRunAsMe(true);
 
-                        // Get the SCHEDULER_HOME/extensions/matlab/script/ directory
                         final StringBuilder scriptsDir = new StringBuilder();
-                        // we run the middleman JVM in the toolbox root directory
-                        String matscihome = new File(".").getAbsolutePath();
-                        scriptsDir.append(matscihome);
+                        scriptsDir.append(config.getToolboxPath());
                         scriptsDir.append(File.separator);
                         scriptsDir.append("script");
                         scriptsDir.append(File.separator);
