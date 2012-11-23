@@ -318,6 +318,10 @@ public class MatlabExecutable extends JavaExecutable {
         this.localSpaceRootDir = new File(new URI(dsURI)).getCanonicalFile();
         this.tempSubDir = new File(this.localSpaceRootDir, paconfig.getJobSubDirOSPath()).getCanonicalFile();
 
+        if (!tempSubDir.exists()) {
+            tempSubDir.mkdirs();
+        }
+
         this.tempSubDirRel = paconfig.getJobSubDirPortablePath();
 
         // Set the local space of the global configuration
