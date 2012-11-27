@@ -78,7 +78,12 @@ public enum MatSciJobStatus implements java.io.Serializable {
      * Nothing can be done anymore on this job expect read execution informations
      * such as output, time, etc...
      */
-    KILLED("Killed");
+    KILLED("Killed"),
+
+    /**
+     * The job is unknown by the scheduler..
+     */
+    UNKNOWN("Unknown");
 
     /** The textual definition of the status */
     private String definition;

@@ -241,6 +241,8 @@ public abstract class MiddlemanDeployer {
                         initialValueSet = false;
                         System.out.println("[MiddlemanDeployer] Reconnected with PAMR router with new ID : " +
                             agent.getAgentID());
+                        System.out
+                                .println("A lot of error messages will be displayed, this is due to the reconnection process.");
                         new_agent_id = agent.getAgentID().getId();
                         // We rebind all our active objects
                         tpe.submit(new RestartRunnable());
@@ -296,6 +298,7 @@ public abstract class MiddlemanDeployer {
      * @throws Exception
      */
     protected void start() throws Exception {
+        System.out.println("[MiddlemanDeployer] Starting Middleman JVM");
         activate();
         exportAll();
         rebindAll();
@@ -306,8 +309,12 @@ public abstract class MiddlemanDeployer {
      * @throws Exception
      */
     protected void restart() throws Exception {
+        System.out.println("[MiddlemanDeployer] Cleaning Middleman JVM");
+        unbindAll();
         unexportAll();
+        System.out.println("[MiddlemanDeployer] RMI stubs unexported");
         terminateAO();
+        System.out.println("[MiddlemanDeployer] AOs Terminated");
         cleanContext();
         start();
     }
@@ -440,6 +447,11 @@ public abstract class MiddlemanDeployer {
     protected void terminateAO() throws Exception {
         reg.terminateFast();
         itf.terminateFast();
+    }
+
+    protected void unbindAll() throws Exception {
+        registry.unbind(DataspaceRegistry.class.getName());
+        registry.unbind(MatSciJVMProcessInterface.class.getName());
     }
 
     protected void unexportAll() throws Exception {

@@ -44,6 +44,7 @@ import org.objectweb.proactive.*;
 import org.objectweb.proactive.api.PAActiveObject;
 import org.objectweb.proactive.core.ProActiveException;
 import org.objectweb.proactive.core.ProActiveRuntimeException;
+import org.objectweb.proactive.core.ProActiveTimeoutException;
 import org.objectweb.proactive.core.body.request.BlockingRequestQueue;
 import org.objectweb.proactive.core.body.request.BlockingRequestQueueImpl;
 import org.objectweb.proactive.core.body.request.Request;
@@ -529,46 +530,75 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
 
     /**
      * This method tries forcefully to reconnect to a lost scheduler, it will not stop until it could reconnect
+     * Many different scenarios can lead to the execution of this method, this is why it is complex to understand
      */
     protected void reconnect() {
         boolean joined = false;
         printLog("Connection to " + schedulerURL + " lost, trying to reconnect.", true, true);
 
-        // if we are connected, we will try to disconnect, we use a timeout as it can happen that this disconnect
-        // call blocks forever
+        // we set a timeout for all ProActive synchronous calls. The reason behind this is that we can be in a situation
+        // where the PAMR router failed and when this happens all ProActive calls block forever. By putting a timeout we
+        // ensure that we will not be waiting forever and can react
 
         long old_timeout = CentralPAPropertyRepository.PA_FUTURE_SYNCHREQUEST_TIMEOUT.getValue();
 
-        // 5 sec is an acceptable timeout
-        CentralPAPropertyRepository.PA_FUTURE_SYNCHREQUEST_TIMEOUT.setValue(5000);
-
+        // 10 sec is an acceptable timeout
+        CentralPAPropertyRepository.PA_FUTURE_SYNCHREQUEST_TIMEOUT.setValue(10000);
         try {
-            sched_proxy.disconnect();
-        } catch (Exception e) {
-            // this should never occur
-            printLog(e);
-        }
-        try {
-            scheduler.disconnect();
-        } catch (Exception e) {
-            // we ignore any exception
-        }
-        CentralPAPropertyRepository.PA_FUTURE_SYNCHREQUEST_TIMEOUT.setValue(old_timeout);
-
-        while (!joined) {
-            joined = this.join(schedulerURL);
             try {
-                Thread.sleep(reconnectionSleep);
-                reconnectionSleep = reconnectionSleep * 2;
-                if (reconnectionSleep > MAX_RECONNECTION_SLEEP) {
-                    reconnectionSleep = MAX_RECONNECTION_SLEEP;
+                sched_proxy.disconnect();
+            } catch (ProActiveTimeoutException e) {
+                // if a proactive timeout occurs, either it is a normal timeout (in that case we ignore it ) or it's a timeout
+                // due to a PAMR router failure. In the latter case, we must do a Thread.sleep in order to allow Thread.interrupt
+                // coming from the terminateFast method to occur
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e1) {
+                    // If we are interrupted by the terminateFast method, we exit the reconnection loop with an Exception
+                    // clients of the middleman JVM will this way be notified that the ActiveObjects have been restarted
+                    // and that they need to call reconnect again
+                    printLog(e1);
+                    throw new RuntimeException(e1);
                 }
-            } catch (InterruptedException e) {
+            } catch (Exception e) {
+                // we ignore any random exception
                 printLog(e);
-                return;
             }
-        }
+            try {
+                scheduler.disconnect();
+            } catch (ProActiveTimeoutException e) {
+                // see above comment
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e1) {
+                    printLog(e1);
+                    throw new RuntimeException(e1);
+                }
 
+            } catch (Exception e) {
+                // we ignore any random exception
+            }
+
+            while (!joined) {
+                try {
+                    joined = this.join(schedulerURL);
+                } catch (ProActiveTimeoutException e) {
+                    // see above comment
+                }
+                try {
+                    Thread.sleep(reconnectionSleep);
+                    reconnectionSleep = reconnectionSleep * 2;
+                    if (reconnectionSleep > MAX_RECONNECTION_SLEEP) {
+                        reconnectionSleep = MAX_RECONNECTION_SLEEP;
+                    }
+                } catch (InterruptedException e) {
+                    printLog(e);
+                    throw new RuntimeException(e);
+                }
+            }
+        } finally {
+            CentralPAPropertyRepository.PA_FUTURE_SYNCHREQUEST_TIMEOUT.setValue(old_timeout);
+        }
         initLogin(oldCred);
         printLog("Reconnected to " + schedulerURL + " synchronizing jobs...", true, true);
         syncAll();
@@ -724,8 +754,6 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
             public boolean accept(File dir, String name) {
                 if (name.startsWith(getMidlemanJobsFile().getName())) {
                     return true;
-                } else if (name.startsWith(MatSciSchedulerProxy.DEFAULT_STATUS_FILENAME)) {
-                    return true;
                 }
                 return false;
             }
@@ -773,7 +801,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
     }
 
     /**
-     * This method tries to terminate the active object with
+     * This method tries to terminate the active object forcefully
      */
     public void terminateFast() {
 
@@ -979,8 +1007,11 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
      * {@inheritDoc}
      */
     public String jobRemove(String jid) throws PASchedulerException {
-        if (state == PASessionState.REPLAYING) {
-            return "Currently in Replaying mode, skipped removal of job " + jid;
+        Long id = Long.parseLong(jid);
+        if (recordedJobs.containsKey(id)) {
+            return "[WARNING] job " +
+                jid +
+                " is being recorded and cannot be removed, set PAoption RemoveJobAfterRetrieve to false in order to disable automatic removal.";
         }
         ensureConnection();
         ByteArrayOutputStream baos = redirectStreams();
@@ -1104,7 +1135,19 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                     stubOnThis.ensureConnection();
                     return;
                 } catch (UnknownJobException uje) {
-                    printLog("[WARNING] : job " + jid + " is unknown, maybe it has been removed?", true, true);
+                    if (recordedJobs.containsKey(jid)) {
+                        printLog(
+                                "[SEVERE] job " + jid +
+                                    " which is recorded by the MatSciConnector is unknown by the scheduler, maybe it has been removed?",
+                                true, true);
+                    } else {
+                        printLog("[WARNING] : job " + jid + " is unknown, maybe it has been removed?", true,
+                                true);
+                    }
+                    // we update the job result only if the job is among our currentJobs list (i.e. waited by the user), otherwise it can be that the user simply removed a finished job
+                    if (currentJobs.contains(jid)) {
+                        updateJobResult(jid, null, MatSciJobStatus.UNKNOWN);
+                    }
                     return;
                 }
             }
@@ -1113,7 +1156,9 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         }
         if (jResult != null) {
             // full update if the job is finished
-            updateJobResult(jid, jResult, jResult.getJobInfo().getStatus());
+            updateJobResult(jid, jResult, MatSciJobStatus.getJobStatus(jResult.getJobInfo().getStatus()
+                    .toString()));
+            return;
         }
         // partial update otherwise
         TreeSet<String> tnames = jinfo.getTaskNames();
@@ -1154,34 +1199,39 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
 
     /**
      * updates the result of the given job, using the information received from the scheduler
+     * this method triggers the update of tasks only if the job was failed
      *
      * @param jid
      * @param jResult
      * @param status
      */
-    protected void updateJobResult(Long jid, JobResult jResult, JobStatus status) {
+    protected void updateJobResult(Long jid, JobResult jResult, MatSciJobStatus status) {
         // Getting the Job result from the Scheduler
         MatSciJobInfo jinfo = getJobInfo(jid);
         if (debug) {
             printLog("Updating results of job " + jid + " : " + status);
         }
-        jinfo.setStatus(MatSciJobStatus.getJobStatus(status.toString()));
+        jinfo.setStatus(status);
         jinfo.setJobFinished(true);
 
         Throwable mainException = null;
         if (schedulerKilled) {
             mainException = new IllegalStateException("The Scheduler has been killed.");
-        } else if (status == JobStatus.KILLED) {
+        } else if (status == MatSciJobStatus.KILLED) {
             mainException = new IllegalStateException("The Job " + jid + " has been killed.");
+        } else if (status == MatSciJobStatus.UNKNOWN) {
+            mainException = new IllegalStateException("The Job " + jid + " is unknown by the scheduler.");
         }
 
-        if (schedulerKilled || status == JobStatus.KILLED || status == JobStatus.CANCELED) {
+        if (schedulerKilled || status == MatSciJobStatus.KILLED || status == MatSciJobStatus.CANCELED ||
+            status == MatSciJobStatus.UNKNOWN) {
 
             int depth = jinfo.getDepth();
             // Getting the task results from the job result
             TreeMap<String, TaskResult> task_results = null;
 
             if (jResult != null) {
+                // if we received a valid jresult we update each individual task result
                 task_results = new TreeMap<String, TaskResult>(new TaskNameComparator());
                 task_results.putAll(jResult.getAllResults());
 
@@ -1204,6 +1254,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
 
                 }
             }
+            // This updates every task missing from the previous treatment (for example when the job was cancelled or killed)
             TreeSet<String> missinglist = jinfo.missingResults();
             for (String missing : missinglist) {
                 updateTaskResult(null, null, jid, missing);
@@ -1426,7 +1477,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                         return;
                     }
 
-                    updateJobResult(jid, null, JobStatus.KILLED);
+                    updateJobResult(jid, null, MatSciJobStatus.KILLED);
                 }
 
             case JOB_RUNNING_TO_FINISHED:
@@ -1449,7 +1500,9 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                                 jResult = scheduler.getJobResult("" + jid);
                                 doThing = false;
                             } catch (ProActiveRuntimeException re) {
+
                                 stubOnThis.ensureConnection();
+
                                 return;
                             }
                         }
@@ -1457,7 +1510,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                     } catch (SchedulerException e) {
                         e.printStackTrace();
                     }
-                    updateJobResult(jid, jResult, JobStatus.KILLED);
+                    updateJobResult(jid, jResult, MatSciJobStatus.KILLED);
                 } else {
                     if (debug) {
                         printLog("Received job " + jid + " finished event...");
@@ -1479,14 +1532,16 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                                 jResult = scheduler.getJobResult("" + jid);
                                 doThing = false;
                             } catch (ProActiveRuntimeException re) {
+
                                 stubOnThis.ensureConnection();
+
                                 return;
                             }
                         }
                     } catch (SchedulerException e) {
                         e.printStackTrace();
                     }
-                    updateJobResult(jid, jResult, info.getStatus());
+                    updateJobResult(jid, jResult, MatSciJobStatus.getJobStatus(info.getStatus().toString()));
                 }
                 break;
         }
@@ -1522,7 +1577,9 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                     tres = scheduler.getTaskResult("" + jid, tnm);
                 } catch (ProActiveRuntimeException re) {
                     // we have been disconnected from the scheduler
+
                     stubOnThis.ensureConnection();
+
                     return;
                 } catch (NotConnectedException e) {
                     // If this happens, it means either a bug, or that the scheduler has been restarted clean, between
