@@ -42,7 +42,7 @@ function [val_k,err]=PAResult_PAwaitFor(R,RaL)
         e = jinvoke(RaL,'getException');
         jimport org.ow2.proactive.scheduler.ext.common.util.StackTraceUtil;        
         exstr = jinvoke(StackTraceUtil,'getStackTrace',e);
-        bprintf('%s',exstr);
+        pa_printf('%s',exstr);
         
         try
             jremove(e);            
@@ -87,30 +87,14 @@ function printLogs(R,RaL,err)
         jremove(dummy); // append returns a StringBuilder object that must be freed
         logstr = jinvoke(R.logs,'toString');
         if ~isempty(logstr) then
-            bprintf('%s\n',logstr);
+            pa_printf('%s\n',logstr);
         end
         jinvoke(R.logsPrinted,'set',%t);
     elseif err
         logstr = jinvoke(R.logs,'toString');
         if ~isempty(logstr) then
-            bprintf('%s',logstr);
+            pa_printf('%s',logstr);
         end
     end    
 endfunction
 
-function bprintf(form, exstr)
-    exlen = length(exstr);
-    ilen = exlen;
-    llen = 0;
-    //disp(ilen);
-    while (ilen > 1000)
-  //      mprintf('%d %d\n',llen+1,llen+1000)
-        sstr = part(exstr,llen+1:llen+1000);
-        llen = llen + 1000;
-        ilen = ilen - 1000;
-        mprintf(form,sstr); 
-    end 
-//    mprintf('%d %d\n',llen+1,ilen)
-    sstr = part(exstr,llen+1:ilen);
-    mprintf(form+'\n',sstr);
-endfunction
