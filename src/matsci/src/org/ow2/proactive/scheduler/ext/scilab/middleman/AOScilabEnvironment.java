@@ -60,6 +60,7 @@ import org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveMatSciGlobalCon
 import org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveMatSciTaskConfig;
 import org.ow2.proactive.scheduler.ext.matsci.common.exception.MatSciTaskException;
 import org.ow2.proactive.scheduler.ext.matsci.middleman.AOMatSciEnvironment;
+import org.ow2.proactive.scheduler.ext.matsci.middleman.LogMode;
 import org.ow2.proactive.scheduler.ext.scilab.client.common.data.ScilabResultsAndLogs;
 import org.ow2.proactive.scheduler.ext.scilab.common.PASolveScilabGlobalConfig;
 import org.ow2.proactive.scheduler.ext.scilab.common.PASolveScilabTaskConfig;
@@ -155,7 +156,7 @@ public class AOScilabEnvironment extends AOMatSciEnvironment<Boolean, ScilabResu
         try {
             recMan.commit();
         } catch (IOException e) {
-            printLog(e, true, true);
+            printLog(e, LogMode.FILEANDOUTALWAYS);
         }
 
         if (jinfo.allServed()) {
@@ -510,7 +511,7 @@ public class AOScilabEnvironment extends AOMatSciEnvironment<Boolean, ScilabResu
             try {
                 recMan.commit();
             } catch (IOException e) {
-                printLog(e, true, true);
+                printLog(e, LogMode.FILEANDOUTALWAYS);
             }
 
             return jinfo.getClientJobInfo();

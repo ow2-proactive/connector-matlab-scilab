@@ -339,7 +339,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
             try {
                 recMan.commit();
             } catch (IOException e) {
-                printLog(e, true, true);
+                printLog(e, LogMode.FILEANDOUTALWAYS);
             }
         } catch (IOError e) {
             // we track invalid class exceptions
@@ -347,7 +347,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                 try {
                     recMan.close();
                 } catch (IOException e1) {
-                    printLog(e, true, true);
+                    printLog(e, LogMode.FILEANDOUTALWAYS);
                 }
                 recMan = null;
                 cleanDataBase();
@@ -534,7 +534,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
      */
     protected void reconnect() {
         boolean joined = false;
-        printLog("Connection to " + schedulerURL + " lost, trying to reconnect.", true, true);
+        printLog("Connection to " + schedulerURL + " lost, trying to reconnect.", LogMode.FILEANDOUTALWAYS);
 
         // we set a timeout for all ProActive synchronous calls. The reason behind this is that we can be in a situation
         // where the PAMR router failed and when this happens all ProActive calls block forever. By putting a timeout we
@@ -600,9 +600,9 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
             CentralPAPropertyRepository.PA_FUTURE_SYNCHREQUEST_TIMEOUT.setValue(old_timeout);
         }
         initLogin(oldCred);
-        printLog("Reconnected to " + schedulerURL + " synchronizing jobs...", true, true);
+        printLog("Reconnected to " + schedulerURL + " synchronizing jobs...", LogMode.FILEANDOUTALWAYS);
         syncAll();
-        printLog("jobs synchronized...", true, true);
+        printLog("jobs synchronized...", LogMode.FILEANDOUTALWAYS);
 
     }
 
@@ -706,7 +706,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         try {
             auth = SchedulerConnection.join(url);
         } catch (Exception e) {
-            printLog(e, false, true);
+            printLog(e, LogMode.FILEALWAYS);
             return false;
         }
         schedulerURL = url;
@@ -779,7 +779,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         try {
             recMan.commit();
         } catch (IOException e) {
-            printLog(e, true, true);
+            printLog(e, LogMode.FILEANDOUTALWAYS);
         }
     }
 
@@ -796,7 +796,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         try {
             recMan.commit();
         } catch (IOException e) {
-            printLog(e, true, true);
+            printLog(e, LogMode.FILEANDOUTALWAYS);
         }
     }
 
@@ -844,9 +844,9 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
     @Override
     public Pair<Boolean, String> beginSession() {
         currentSequenceIndex = 1;
-        if (debug) {
-            printLog("Start recording session");
-        }
+
+        printLog("Start recording session");
+
         if (mappingSeqToJobID.isEmpty()) {
             state = PASessionState.RECORDING;
             sessionStart = new Date();
@@ -873,7 +873,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
             try {
                 recMan.commit();
             } catch (IOException e) {
-                printLog(e, true, true);
+                printLog(e, LogMode.FILEANDOUTALWAYS);
             }
             if (sessionStart == null) {
                 sessionStart = sessions.get(0);
@@ -888,9 +888,9 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         if (state == PASessionState.NORMAL) {
             return new Pair<Boolean, String>(false, "Recording Session not started, please use beginSession");
         }
-        if (debug) {
-            printLog("End recording session");
-        }
+
+        printLog("End recording session");
+
         state = PASessionState.NORMAL;
         cleanRecordedJobs();
 
@@ -898,34 +898,19 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
     }
 
     protected void printLog(final String message) {
-        printLog(message, false, false);
+        printLog(message, LogMode.STD);
     }
 
-    protected void printLog(final String message, boolean forceOut, boolean forceFile) {
-        if (!debug && !forceOut && !forceFile) {
-            return;
-        }
-        if (debug) {
-            MatSciJVMProcessInterfaceImpl.printLog(this, message, true, true);
-        } else {
-            MatSciJVMProcessInterfaceImpl.printLog(this, message, forceOut, forceFile);
-        }
+    protected void printLog(final String message, LogMode mode) {
+        MatSciJVMProcessInterfaceImpl.printLog(this, message, mode, debug);
     }
 
     protected void printLog(final Throwable ex) {
-        printLog(ex, false, false);
+        printLog(ex, LogMode.STD);
     }
 
-    protected void printLog(final Throwable ex, boolean forceOut, boolean forceFile) {
-        if (!debug && !forceOut && !forceFile) {
-            return;
-        }
-        if (debug) {
-            MatSciJVMProcessInterfaceImpl.printLog(this, ex, true, true);
-        } else {
-            MatSciJVMProcessInterfaceImpl.printLog(this, ex, forceOut, forceFile);
-        }
-
+    protected void printLog(final Throwable ex, LogMode mode) {
+        MatSciJVMProcessInterfaceImpl.printLog(this, ex, mode, debug);
     }
 
     protected boolean isProActiveExeption(Exception e) {
@@ -1120,9 +1105,9 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
     protected void syncRetrieve(MatSciJobInfo jinfo) throws PASchedulerException {
         ensureConnection();
         Long jid = Long.parseLong(jinfo.getJobId());
-        if (debug) {
-            printLog("Sync updating results of job " + jid);
-        }
+
+        printLog("Sync updating results of job " + jid);
+
         //currentJobs.put(jid, jinfo);
         JobResult jResult = null;
         try {
@@ -1139,10 +1124,10 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                         printLog(
                                 "[SEVERE] job " + jid +
                                     " which is recorded by the MatSciConnector is unknown by the scheduler, maybe it has been removed?",
-                                true, true);
+                                LogMode.FILEANDOUTALWAYS);
                     } else {
-                        printLog("[WARNING] : job " + jid + " is unknown, maybe it has been removed?", true,
-                                true);
+                        printLog("[WARNING] : job " + jid + " is unknown, maybe it has been removed?",
+                                LogMode.FILEANDOUTALWAYS);
                     }
                     // we update the job result only if the job is among our currentJobs list (i.e. waited by the user), otherwise it can be that the user simply removed a finished job
                     if (currentJobs.contains(jid)) {
@@ -1152,7 +1137,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                 }
             }
         } catch (SchedulerException e) {
-            printLog(e, true, true);
+            printLog(e, LogMode.FILEANDOUTALWAYS);
         }
         if (jResult != null) {
             // full update if the job is finished
@@ -1208,9 +1193,9 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
     protected void updateJobResult(Long jid, JobResult jResult, MatSciJobStatus status) {
         // Getting the Job result from the Scheduler
         MatSciJobInfo jinfo = getJobInfo(jid);
-        if (debug) {
-            printLog("Updating results of job " + jid + " : " + status);
-        }
+
+        printLog("Updating results of job " + jid + " : " + status);
+
         jinfo.setStatus(status);
         jinfo.setJobFinished(true);
 
@@ -1235,9 +1220,8 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                 task_results = new TreeMap<String, TaskResult>(new TaskNameComparator());
                 task_results.putAll(jResult.getAllResults());
 
-                if (debug) {
-                    printLog("Updating job " + jResult.getName() + "(" + jid + ") tasks ");
-                }
+                printLog("Updating job " + jResult.getName() + "(" + jid + ") tasks ");
+
                 BitMatrix received = tasksReceived.get(jid);
 
                 // Iterating over the task results
@@ -1245,9 +1229,8 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                     Pair<Integer, Integer> ids = MatSciJobInfo.computeIdsFromTName(tname);
                     if (!received.get(ids.getX(), ids.getY())) {
                         TaskResult res = task_results.get(tname);
-                        if (debug) {
-                            printLog("Looking for result of task: " + tname);
-                        }
+
+                        printLog("Looking for result of task: " + tname);
 
                         updateTaskResult(mainException, res, jid, tname);
                     }
@@ -1281,6 +1264,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                 printLog("Looking for result of task " + tname + " for job " + jid);
             }
         }
+
         String logs = null;
         if (res != null) {
 
@@ -1346,7 +1330,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         try {
             recMan.commit();
         } catch (IOException e) {
-            printLog(e, true, true);
+            printLog(e, LogMode.FILEANDOUTALWAYS);
         }
     }
 
@@ -1625,7 +1609,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         try {
             recMan.commit();
         } catch (IOException e) {
-            printLog(e, true, true);
+            printLog(e, LogMode.FILEANDOUTALWAYS);
         }
     }
 
@@ -1642,7 +1626,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         try {
             recMan.commit();
         } catch (IOException e) {
-            printLog(e, true, true);
+            printLog(e, LogMode.FILEANDOUTALWAYS);
         }
     }
 
@@ -1876,11 +1860,11 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                 scheduler_itf_for_pinger = auth.login(oldCred);
             } catch (LoginException e) {
                 // should never occur
-                printLog(e, true, true);
+                printLog(e, LogMode.FILEANDOUTALWAYS);
                 return;
             } catch (AlreadyConnectedException e) {
                 // should never occur
-                printLog(e, true, true);
+                printLog(e, LogMode.FILEANDOUTALWAYS);
                 return;
             }
             while (true) {
