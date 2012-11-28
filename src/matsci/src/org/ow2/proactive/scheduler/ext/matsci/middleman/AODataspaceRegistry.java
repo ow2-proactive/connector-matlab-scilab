@@ -100,7 +100,7 @@ public class AODataspaceRegistry implements DataspaceRegistry, RunActive, InitAc
     }
 
     protected void printLog(final String message) {
-        MatSciJVMProcessInterfaceImpl.printLog(this, message, LogMode.FILEANDOUTALWAYS, debug);
+        MatSciJVMProcessInterfaceImpl.printLog(this, message, LogMode.FILEALWAYS, debug);
     }
 
     /**

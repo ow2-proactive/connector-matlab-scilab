@@ -39,6 +39,7 @@ package org.ow2.proactive.scheduler.ext.matsci.common.data;
 import java.io.File;
 import java.io.Serializable;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashSet;
 
 
@@ -234,8 +235,14 @@ public class PASolveMatSciGlobalConfig implements Serializable {
      */
     protected String dirToClean;
 
-    public PASolveMatSciGlobalConfig() {
+    /**
+     * Do we use the job classpath for Matlab/Scilab jars ?
+     */
+    protected boolean useJobClassPath = false;
 
+    protected ArrayList<String> workerJars = new ArrayList<String>();
+
+    public PASolveMatSciGlobalConfig() {
     }
 
     public String getJobName() {
@@ -384,6 +391,26 @@ public class PASolveMatSciGlobalConfig implements Serializable {
 
     public void setVersionMax(String versionMax) {
         this.versionMax = versionMax;
+    }
+
+    public boolean isUseJobClassPath() {
+        return useJobClassPath;
+    }
+
+    public void setUseJobClassPath(boolean useJobClassPath) {
+        this.useJobClassPath = useJobClassPath;
+    }
+
+    public ArrayList<String> getWorkerJars() {
+        return workerJars;
+    }
+
+    public void setWorkerJars(ArrayList<String> workerJars) {
+        this.workerJars = workerJars;
+    }
+
+    public void addWorkerJar(String jarname) {
+        this.workerJars.add(jarname);
     }
 
     public boolean isFork() {

@@ -88,7 +88,7 @@
                 </para>
             </listitem>
             <listitem>
-                <para><emphasis>EnvExcludeTypeList</emphasis>: controls witch variable types should NOT  be copied when
+                <para><emphasis>EnvExcludeTypeList</emphasis>: controls witch variable types should NOT be copied when
                     using TransferEnv (Comma separated list).
                 </para>
             </listitem>
@@ -99,24 +99,32 @@
             </listitem>
             <listitem>
                 <para><emphasis>RunAsMe</emphasis>: enables running the Scilab task as the user provided when connecting
-                    to the scheduler (implies Fork mode). Depending on which RunAsMe mode is configured on the scheduler,
+                    to the scheduler (implies Fork mode). Depending on which RunAsMe mode is configured on the
+                    scheduler,
                     it might be necessary to provide additional credential information when connecting via PAconnect.
                 </para>
             </listitem>
             <listitem>
-                <para><emphasis>SharedPushPublicUrl, SharedPullPublicUrl, SharedPushPrivateUrl, SharedPullPrivateUrl and SharedAutomaticTransfer</emphasis>:
-                    those url are those used by the Shared DataSpace on the scheduler (if it's activated on the scheduler).
-                    The Push urls define the spaces where task input files are pushed to. The Pull urls are the spaces from
-                    which task output files are pulled. The public urls are accessible from anywhere, the private urls are
-                    accessible only by worker nodes. Contact the scheduler administrator to know these values. Both url (public and private)
+                <para><emphasis>SharedPushPublicUrl, SharedPullPublicUrl, SharedPushPrivateUrl, SharedPullPrivateUrl and
+                    SharedAutomaticTransfer</emphasis>:
+                    those url are those used by the Shared DataSpace on the scheduler (if it's activated on the
+                    scheduler).
+                    The Push urls define the spaces where task input files are pushed to. The Pull urls are the spaces
+                    from
+                    which task output files are pulled. The public urls are accessible from anywhere, the private urls
+                    are
+                    accessible only by worker nodes. Contact the scheduler administrator to know these values. Both url
+                    (public and private)
                     can be equal, but if the infrastucture allows it, it is more efficient to use a file url as private,
                     the computing nodes will then access the space directly via a shared file system like NFS
                     The option SharedAutomaticTransfer is an internal option and should not be modified.
                 </para>
             </listitem>
             <listitem>
-                <para><emphasis>RemoveJobAfterRetrieve</emphasis>: Removes the job automatically from the scheduler after all
-                    results have been retrieved. If not the job is removed at the end of the scilab session, or manually via PAjobRemove. default to 'on'
+                <para><emphasis>RemoveJobAfterRetrieve</emphasis>: Removes the job automatically from the scheduler
+                    after all
+                    results have been retrieved. If not the job is removed at the end of the scilab session, or manually
+                    via PAjobRemove. default to 'on'
                 </para>
             </listitem>
             <listitem>
@@ -130,8 +138,10 @@
                     and<emphasis>CustomDataspacePath</emphasis>: by default these options are not set. Dataspaces are a
                     ProActive internal mechanism allowing a shared file system between hosts. The mechanism allows the
                     automatic transfer of files between the local scilab session and the remote engines. ProActive
-                    Toolbox has an internal automatic Dataspace creation, or can be used in conjunction with a Shared Dataspace (see above).
-                    But sometimes, one would like to rely on an external Dataspace such as a ftp server. This Dataspace MUST be accessible from the local file
+                    Toolbox has an internal automatic Dataspace creation, or can be used in conjunction with a Shared
+                    Dataspace (see above).
+                    But sometimes, one would like to rely on an external Dataspace such as a ftp server. This Dataspace
+                    MUST be accessible from the local file
                     system in order to work with Scilab Connector Toolbox.The CustomDataspaceURL option gives the
                     Universally accessible URL of this dataspace and the CustomDataspacePath gives the path to access
                     this dataspace from the local file system.
@@ -166,6 +176,13 @@
                 </para>
             </listitem>
             <listitem>
+                <para><emphasis>UseJobClassPath</emphasis>: With this options set to true, the toolbox will use the
+                    jobClassPath feature of the scheduler, when submitting jobs jar files necessary to the scilab
+                    workers will be copied at each task execution. It will not be necessary to put the jars in the
+                    addons directory, but it will introduce an overhead.
+                </para>
+            </listitem>
+            <listitem>
                 <para><emphasis>WindowsStartupOptions and LinuxStartupOptions</emphasis>: these options define the
                     startup options used to start the remote Scilab engine on Windows(or Linux). Default to "-nwni"
                     which allows scilab to start on machines without a display.
@@ -178,7 +195,8 @@
                 </para>
             </listitem>
             <listitem>
-                <para><emphasis>FindMatSciScriptStatic</emphasis>: (Internal) defines the way the FindScilabScript script behave
+                <para><emphasis>FindMatSciScriptStatic</emphasis>: (Internal) defines the way the FindScilabScript
+                    script behave
                 </para>
             </listitem>
             <listitem>
@@ -198,7 +216,8 @@
             </listitem>
             <listitem>
                 <para>
-                    <emphasis>PathJars</emphasis>, <emphasis>EmbeddedJars</emphasis>
+                    <emphasis>PathJars</emphasis>,<emphasis>EmbeddedJars</emphasis>,
+                    <emphasis>WorkerJars</emphasis>
                     and<emphasis>ProActiveJars</emphasis>: libraries used by Scilab Connector Toolbox (internal use
                     only)
                 </para>
@@ -229,11 +248,13 @@
                 </para>
             </listitem>
             <listitem>
-                <para><emphasis>WorkerTimeoutStart</emphasis>: Timeout used to start the scilab engine (*10ms) (internal).
+                <para><emphasis>WorkerTimeoutStart</emphasis>: Timeout used to start the scilab engine (*10ms)
+                    (internal).
                 </para>
             </listitem>
             <listitem>
-                <para><emphasis>EnableDisconnectedPopup</emphasis>: a popup will appear when the matlab session finishes and some jobs are uncomplete (internal).
+                <para><emphasis>EnableDisconnectedPopup</emphasis>: a popup will appear when the matlab session finishes
+                    and some jobs are uncomplete (internal).
                 </para>
             </listitem>
         </itemizedlist>

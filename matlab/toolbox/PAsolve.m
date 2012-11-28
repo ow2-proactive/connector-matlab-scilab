@@ -526,6 +526,7 @@ solve_config.setDebug(opt.Debug);
 lgin = sched.PAgetlogin();
 solve_config.setLogin(lgin);
 solve_config.setPriority(opt.Priority);
+solve_config.setUseJobClassPath(opt.UseJobClassPath);
 solve_config.setTransferEnv(opt.TransferEnv);
 solve_config.setMatFileOptions(opt.TransferMatFileOptions);
 solve_config.setLicenseSaverURL(opt.LicenseSaverURL);
@@ -571,6 +572,17 @@ end
 solve_config.setFindMatSciScriptStatic(opt.FindMatSciScriptStatic);
 solve_config.setUseMatlabControl(opt.UseMatlabControl);
 solve_config.setWorkerTimeoutStart(opt.WorkerTimeoutStart);
+jars = opt.WorkerJars;
+dist_lib_dir = opt.PathJars;
+for i=1:length(jars)
+    jarFullPath = [dist_lib_dir filesep jars{i}];
+    if ~exist(jarFullPath, 'file')
+        error(['Can''t locate worker jar at ''' jar_full_path '''']);
+    end
+    solve_config.addWorkerJar(jarFullPath);
+
+end
+
 end
 
 
