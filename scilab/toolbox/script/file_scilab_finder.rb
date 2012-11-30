@@ -72,6 +72,12 @@ class MatSciFinder
 
     # initialize log files and redirection stdout and stderr to those log files
     logFileJava = JavaIO::File.new(tmpPath, "FindScilab"+nodeName+".log");
+    if !logFileJava.exists()
+      logFileJava.createNewFile()
+      logFileJava.setReadable(true, false)
+      logFileJava.setWritable(true, false)
+    end
+
     @orig_stdout = $stdout
     @orig_stderr = $stderr
     foslog = JavaIO::FileOutputStream.new(logFileJava)

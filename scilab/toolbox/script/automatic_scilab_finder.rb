@@ -75,6 +75,13 @@ class MatSciFinder
 
     # initialize logs
     logFileJava = JavaIO::File.new(tmpPath, "AutomaticFindScilab"+nodeName+".log")
+    if !logFileJava.exists()
+      logFileJava.createNewFile()
+      logFileJava.setReadable(true, false)
+      logFileJava.setWritable(true, false)
+    end
+
+
     #logFile = File.new(logFileJava.toString(), "a");
     @orig_stdout = $stdout
     @orig_stderr = $stderr
@@ -282,22 +289,30 @@ class MatSciFinder
     pf = dirtosearch + File::SEPARATOR+ "scilab-*"
     Dir.glob(pf.to_s).each do |xx|
       puts "Analysing " + xx
-      x = File.basename(xx).to_s
-      conf = EngineConfig.new()
-      conf.version = x[7..x.length-1]
-      conf.home = xx.to_s.gsub("/", "\\")
-      conf.bindir = scilabBinDir()
-      conf.command = scilabCommandName()
-      if is64dir
-        conf.arch = "64"
-      else
-        conf.arch = "32"
-      end
-      answer = true
-      #puts conf
-      #puts @configs.index(conf)
-      if @configs.index(conf) == nil
-        @configs.push(conf)
+      begin
+        x = File.basename(xx).to_s
+        conf = EngineConfig.new()
+        conf.version = x[7..x.length-1]
+        conf.home = xx.to_s.gsub("/", "\\")
+        conf.bindir = scilabBinDir()
+        conf.command = scilabCommandName()
+        if is64dir
+          conf.arch = "64"
+        else
+          conf.arch = "32"
+        end
+        answer = true
+        #puts conf
+        #puts @configs.index(conf)
+        if @configs.index(conf) == nil
+          @configs.push(conf)
+          puts "Added " + conf.to_s
+        else
+          puts "Skipped already added " + conf.to_s
+        end
+      rescue Exception => e
+        puts e.message + "\n" + e.backtrace.join("\n")
+        puts "Error occurred, skipping ..."
       end
     end
     return answer
@@ -327,13 +342,13 @@ class MatSciFinder
     locate_res = `locate -b -e -r "^scilab$" -q`
     if $?.to_i == 0
       locate_res.each_line do |line|
-        answer = answer || findScilabUnixInLine(line)
+        answer = findScilabUnixInLine(line) || answer
       end
     end
     which_res = `which scilab 2>/dev/null`
     if $?.to_i == 0
       which_res.each_line do |line|
-        answer = answer || findScilabUnixInLine(line)
+        answer = findScilabUnixInLine(line) || answer
       end
     end
 
@@ -343,25 +358,49 @@ class MatSciFinder
   def findScilabUnixInLine(line)
     line = line.strip()
     answer = false
-
+    puts "Analysing " +line
     t0 = File.exist?(line)
+    if !t0
+      puts "doesn't exist"
+    end
     t1 = File.readable?(line)
-    t2 = File.executable?(line)
+    if !t1
+      puts "is not readable"
+    end
+    t2_1 = File.executable?(line)
+    jf = JavaIO::File.new(line)
+    t2_2 = jf.canExecute()
+    t2 = t2_1 || t2_2
+    if !t2
+      puts "cannot be executed"
+    end
     t3 = !File.directory?(line)
+    if !t3
+      puts "is a directory"
+    end
     if t0 && t1 && t2 && t3
       # ok this is a scilab executable !
-      conf = EngineConfig.new()
-      scilabfullbin = readlink!(line)
-      conf.home = File.dirname(File.dirname(scilabfullbin))
-      conf.bindir = scilabBinDir()
-      ver, arch = scilabVersion(scilabfullbin)
-      conf.version = ver
-      conf.command = scilabCommandName()
-      conf.arch = arch
-      if @configs.index(conf) == nil
-        @configs.push(conf)
+      begin
+        conf = EngineConfig.new()
+
+        scilabfullbin = readlink!(line)
+        conf.home = File.dirname(File.dirname(scilabfullbin))
+        conf.bindir = scilabBinDir()
+        ver, arch = scilabVersion(scilabfullbin)
+        conf.version = ver
+        conf.command = scilabCommandName()
+        conf.arch = arch
+        if @configs.index(conf) == nil
+          @configs.push(conf)
+          puts "Added " + conf.to_s
+        else
+          puts "Skipped already added " + conf.to_s
+        end
+        answer = true
+      rescue Exception => e
+        puts e.message + "\n" + e.backtrace.join("\n")
+        puts "Error occurred, skipping ..."
       end
-      answer = true
     end
     return answer
   end
@@ -369,6 +408,12 @@ class MatSciFinder
 
   def writeConfigs()
     if !@confFiles[0].exists() || @forceSearch
+      if !@confFiles[0].exists()
+        @confFiles[0].createNewFile()
+        @confFiles[0].setReadable(true, false)
+        @confFiles[0].setWritable(true, false)
+      end
+
       fos = JavaIO::FileOutputStream.new(@confFiles[0])
       confFileLock = fos.getChannel().lock(0, Long::MAX_VALUE, false)
       exception = false

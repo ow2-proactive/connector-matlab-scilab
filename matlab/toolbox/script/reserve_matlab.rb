@@ -57,6 +57,11 @@ class ReserveMatlab
     @tmpPath = System.getProperty("java.io.tmpdir");
 
     logFileJava = JavaIO::File.new(@tmpPath, "ReserveMatlab"+@nodeName+".log");
+    if !logFileJava.exists()
+      logFileJava.createNewFile()
+      logFileJava.setReadable(true, false)
+      logFileJava.setWritable(true, false)
+    end
     @orig_stdout = $stdout
     @orig_stderr = $stderr
     $stdout.reopen(logFileJava.toString(), "a")
