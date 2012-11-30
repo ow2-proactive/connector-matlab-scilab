@@ -45,7 +45,10 @@
 
             <p><a href="proactive_installation.html#installation-2">Downloading and Installing ProActive Scheduler</a></p>
 
-            <p><a href="proactive_installation.html#installation-3">Configuration of Remote Workers for Matlab</a>
+            <p><a href="proactive_installation.html#installation-3">Automatic Configuration of ProActive Scheduler for Matlab</a>
+            </p>
+
+            <p><a href="proactive_installation.html#installation-4">Manual Configuration of ProActive Scheduler for Matlab</a>
             </p>
 
 
@@ -88,12 +91,14 @@
 <p>IMPORTANT: According to your deployment infrastructure, ProActive Scheduler must be installed on :</p>
 <ol>
     <li><p>The host which will launch the <b>Scheduler</b>.</p></li>
-    <li><p>Each <b>worker host</b> used by the Scheduler.</p></li>
-    <li><p>Each <b>client host</b> which will connect to the Scheduler to submit matlab functions.</p></li>
+    <li><p>Each <b>worker host</b> used by the Scheduler to run matlab code.</p></li>
 </ol>
-<p>The prerequisite for using ProActive is a <b>Java Virtual Machine</b>. On the above list, machines of group 1 and 2 must have a Java Virtual Machine installed and available on the Path of either cmd.exe for Windows or sh for linux. For many ProActive features it is also necessary to define the environment variable JAVA_HOME to the installation directory of the Java Virtual Machine.</p>
+<p>The prerequisite for using the ProActive Scheduler is a <b>Java Virtual Machine</b>. On the above list, machines must
+    have a Java Virtual Machine installed and available on the Path of either cmd.exe for Windows or sh for linux. For many
+    ProActive features it is also necessary to define the environment variable JAVA_HOME to the installation directory of
+    the Java Virtual Machine.</p>
 
-<p>Complete configuration and installation of ProActive Scheduler is beyond the scope of this help, for more information, refer to:</p>
+<p>Complete configuration and installation of the ProActive Scheduler is beyond the scope of this help, for more information, refer to:</p>
 
 <p><a href="http://proactive.inria.fr/release-doc/Scheduling/multiple_html/index.html">ProActive Scheduler Manual</a></p>
 
@@ -102,16 +107,43 @@
 
 <a name="installation-3"></a>
 <p class="pagenavlink">
+    <script language="Javascript">updateSectionId("installation-3");</script>
+    <script language="Javascript">addTopOfPageButtons();</script>
+    <a href="#top_of_page">Back to Top</a></p>
+<h3 class="title">Automatic Configuration of ProActive Scheduler for Matlab</h3>
+
+<h4 class="title">Automatic Find of Matlab Installations</h4>
+<p>In the typical utilisation of the toolbox, no configuration of the worker host will be necessary for Matlab. When a matlab
+    task is waiting to be executed on a scheduler worker, a script will be executed to locate automatically matlab on the host.
+    The script will search for matlab in typical locations in both windows and linux environments and will write the matlab
+    installations found in a configuration file which will be stored on the host. If no matlab installation is found, then
+    the configuration file will be empty and the host will be assumed not to contain any matlab. Subsequent executions of
+    Matlab will reuse this configuration file to decide whether a matlab task can be executed on the host or not (though
+    it is possible to force a matlab research via execution options, see option <b>ForceMatlabSearch</b> in <a href="proactive_options.html">Configuring PAsolve behavior</a>).</p>
+
+<h4 class="title">Automatic Transfer of ProActive Matlab Connector Libraries to the ProActive Scheduler</h4>
+<p> When the Matlab Connector creates jobs understandable by the ProActive Scheduler, it will transfer along the ProActive
+    Matlab Connector libraries that will be used by the scheduler worker in order to create Matlab engines. Those libraries
+    are not installed in the ProActive Scheduler by default.
+    This transfer is done via the option <b>UseJobClassPath</b>. If this option is set to false, then no transfer will be done,
+    and the librairies will have to be copied manually on the scheduler server and workers installations.
+    </p>
+
+<a name="installation-4"></a>
+<p class="pagenavlink">
     <script language="Javascript">updateSectionId("installation-4");</script>
     <script language="Javascript">addTopOfPageButtons();</script>
     <a href="#top_of_page">Back to Top</a></p>
-<h3 class="title">Configuration of Remote Workers for Matlab</h3>
-<p>The content of the directory <b>Matlab_Connector/scheduler-plugin</b> (not the directory itself, only the content) must be copied
-    inside the <b>addons</b> directory of ProActive Scheduler, this must be done on every hosts that will be used as Matlab workers.</p>
-<p>Inside this folder there is also a specific configuration file which must be edited in order to tell the scheduler where to find a matlab installation. The configuration file is called <b>MatlabWorkerConfiguration.xml</b></p>
-<p>If the scheduler is installed in a single directory shared by all workers (via NFS for example), then only one MatlabWorkerConfiguration.xml file needs to be edited.
-    The syntax of the file allows to create a configuration for several machines, machine groups, and as well several matlab installations for the same machine.</p>
-
+<h3 class="title">Manual Configuration of ProActive Scheduler for Matlab</h3>
+<h4 class="title">Manual Configuration of Matlab Installations</h4>
+<p>It may happen though that on some hosts, Matlab is not installed in a typical location and the automatic script don't
+    manage to find it. In that case it will be necessary to write a Matlab configuration file manually.</p>
+<p>A sample configuration file is located inside the <b>Matlab_Connector/scheduler-plugin</b> folder under the name MatlabWorkerConfiguration.xml</p>
+<p>This file must be edited and put inside the <b>addons</b> directory of ProActive Scheduler. This must be done on ProActive Scheduler Server and on
+    every hosts that will be used as Matlab workers.</p>
+<p>If the scheduler is installed in a single directory shared by all workers (via NFS for example), then only one MatlabWorkerConfiguration.xml
+    file needs to be edited. The syntax of the file allows to create a configuration for several machine groups via wildcards
+    that will match a machine's hostname or ipaddress, and as well several matlab installations for the same machine.</p>
 <p>Here is an example of MatlabWorkerConfiguration.xml :</p>
 
 <pre>&lt;MatSciWorkerConfiguration&gt;
@@ -119,8 +151,9 @@
         &lt;matlab&gt;
             &lt;version&gt;7.9&lt;/version&gt;
             &lt;home&gt;C:\Program Files\MATLAB\R2009b&lt;/home&gt;
-            &lt;bindir&gt;bin&lt;/bindir&gt;
+            &lt;bindir&gt;bin\win64&lt;/bindir&gt;
             &lt;command&gt;matlab.exe&lt;/command&gt;
+            &lt;arch&gt;64&lt;/command&gt;
         &lt;/matlab&gt;
     &lt;/MachineGroup&gt;
 &lt;/MatSciWorkerConfiguration&gt;</pre>
@@ -132,8 +165,15 @@
     <li><p><b>home:</b> Full path to matlab home directory.</p></li>
     <li><p><b>bindir:</b> relative path to the directory where to find the matlab executable. On windows, it is mandatory to use the matlab executable under bin/win32 (bin/win64) and not the executable directly in the bin directory. On linux systems on the other hand, it's mandatory to use the executable in the bin directory.</p></li>
     <li><p><b>command:</b> matlab executable name.</p></li>
+    <li><p><b>arch:</b> matlab installation architecture (32 or 64).</p></li>
 </ul>
 <p>The file supports multiple matlab configurations on the same Host (i.e. multiple matlab versions), and Matlab Connector Toolbox allows to select specific matlab versions for a given job dynamically.</p>
+
+
+<h4 class="title">Manual Installation of ProActive Matlab Connector Libraries to the ProActive Scheduler</h4>
+<p>If the option <b>UseJobClassPath</b> is set to false, the content of the directory <b>Matlab_Connector/scheduler-plugin</b> (not the directory itself, only the content) must be copied
+    inside the <b>addons</b> directory of ProActive Scheduler and of every Matlab Worker which will be used as matlab workers.</p>
+
 
 <a name="bottom_of_page"></a>
 

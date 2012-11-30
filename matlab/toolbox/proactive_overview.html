@@ -73,6 +73,16 @@ ProActive features Java Parallel Programming seamlessly integrated with Scheduli
     <li><p>Allow automatic source transfer, data file transfer, transfer of local matlab workspace and other configurable options.</p></li>
     <li><p>Allow fault-tolerant/disconnected sessions where intermediate results are persistent.</p></li>
 </ul>
+<p>
+    In comparison with the <b><i>Matlab Parallel Computing Toolbox</i></b>, the ProActive Connector :</p>
+    <ul type="disc">
+        <li><p>don't offer SPMD features or distributed matrices.</p></li>
+        <li><p>don't offer a p-mode feature where interactive matlab sessions remain alive between executions.</p></li>
+        <li><p>allows the deployment of matlab instances on more than one machine and is in that sense like the Parallel
+            Computing Toolbox combined with the Distributed Computing Server.</p></li>
+        <li><p>works well with multiple matlab installations and heterogeneous operating systems.</p></li>
+        <li><p>add some extra features like fault-tolerant/disconnected sessions and resource selection.</p></li>
+    </ul>
 <a name="overview-2"></a>
 
 <p class="pagenavlink">
@@ -84,7 +94,7 @@ ProActive features Java Parallel Programming seamlessly integrated with Scheduli
 <p>Matlab Connector Toolbox is designed for both beginners
     and advanced users. There are basically two usage roles:</p>
 <ul type="disc">
-    <li><p>The <b>administrator</b>: responsible for the toolbox installation on every machines, and the administration of ProActive Scheduler.</p></li>
+    <li><p>The <b>administrator</b>: responsible for ProActive Scheduler installation on every machines, and the administration of ProActive Scheduler.</p></li>
     <li><p>The <b>toolbox user</b>: who will simply use the installed toolbox to run matlab code in parallel.</p></li>
 </ul>
 
@@ -102,7 +112,7 @@ ProActive features Java Parallel Programming seamlessly integrated with Scheduli
 <p>The basic requirement for the <b>toolbox user</b> is to be able to write standard Matlab code. A few aspects must be kept in mind while designing functions that will be run remotely :</p>
 <ul type="disc">
     <li><p>Any reference to a file must be done using relative paths, excluding any use of '..' from the current folder (any tree hierarchy higher than the current directory has no meaning remotely).</p></li>
-    <li><p>Files to be transferred to or from a remote worker must be declared explicitly through the InputFiles OutputFiles tasks information.</p></li>
+    <li><p>Files to be transferred to or from a remote worker must be declared explicitly through the InputFiles and OutputFiles tasks information.</p></li>
     <li><p>Paths must be written with a portable syntax (usage of filesep() is recommended).</p></li>
     <li><p>Functions of any number of input parameters are accepted but number of output parameters must be 1.</p></li>
     <li><p>Functions must be independent from each others executions. It is not possible to write tightly coupled code with inter-dependant communications.</p></li>
