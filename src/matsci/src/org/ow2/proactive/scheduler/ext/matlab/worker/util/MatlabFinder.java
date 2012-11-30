@@ -41,7 +41,6 @@ import org.ow2.proactive.scheduler.ext.matsci.worker.util.MatSciConfigurationPar
 import org.ow2.proactive.scheduler.ext.matsci.worker.util.MatSciEngineConfig;
 import org.ow2.proactive.scheduler.ext.matsci.worker.util.MatSciFinder;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 
 
@@ -69,23 +68,24 @@ public class MatlabFinder extends MatSciFinder {
      * Utility function to find Matlab
      */
     public MatSciEngineConfig findMatSci(String version_pref, String versionsRej, String versionMin,
-            String versionMax, boolean debug) throws Exception {
-        return findMatSci(version_pref, parseVersionRej(versionsRej), versionMin, versionMax, debug);
+            String versionMax, String versionArch, boolean debug) throws Exception {
+        return findMatSci(version_pref, parseVersionRej(versionsRej), versionMin, versionMax, versionArch,
+                debug);
     }
 
     /**
      * Utility function to find Matlab
      */
     public MatSciEngineConfig findMatSci(String version_pref, HashSet<String> versionsRej, String versionMin,
-            String versionMax, boolean debug) throws Exception {
-        ArrayList<MatSciEngineConfig> confs = null;
+            String versionMax, String versionArch, boolean debug) throws Exception {
+        HashSet<MatSciEngineConfig> confs = null;
 
         confs = MatSciConfigurationParser.getConfigs(debug, MatSciConfigurationParser.Type.matlab);
 
         if (confs == null)
             return null;
         MatSciEngineConfig answer = chooseMatSciConfig(confs, version_pref, versionsRej, versionMin,
-                versionMax, debug);
+                versionMax, versionArch, debug);
 
         return answer;
 

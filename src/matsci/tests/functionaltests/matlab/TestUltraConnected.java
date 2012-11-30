@@ -34,10 +34,6 @@
  */
 package functionaltests.matlab;
 
-import functionaltests.scilab.AbstractScilabTest;
-import org.ow2.proactive.scheduler.common.Scheduler;
-import org.ow2.proactive.scheduler.common.SchedulerAuthenticationInterface;
-import org.ow2.proactive.scheduler.common.SchedulerConnection;
 import org.ow2.proactive.scheduler.ext.common.util.IOTools;
 
 import java.io.File;

@@ -550,6 +550,8 @@ solve_config.setVersionPref(opt.VersionPref);
 solve_config.setVersionRejAsString(opt.VersionRej);
 solve_config.setVersionMin(opt.VersionMin);
 solve_config.setVersionMax(opt.VersionMax);
+solve_config.setVersionArch(opt.VersionArch);
+solve_config.setForceMatSciSearch(opt.ForceMatlabSearch);
 solve_config.setFindMatSciScriptUrl(opt.FindMatlabScript);
 solve_config.setCheckLicenceScriptUrl(opt.MatlabReservationScript);
 if ischar(opt.CustomScript)

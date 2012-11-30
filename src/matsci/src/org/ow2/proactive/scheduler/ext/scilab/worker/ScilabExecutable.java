@@ -257,7 +257,7 @@ public class ScilabExecutable extends JavaExecutable {
         if (conf == null) {
             conf = (ScilabEngineConfig) ScilabFinder.getInstance().findMatSci(paconfig.getVersionPref(),
                     paconfig.getVersionRej(), paconfig.getVersionMin(), paconfig.getVersionMax(),
-                    paconfig.isDebug());
+                    paconfig.getVersionArch(), paconfig.isDebug());
             if (conf == null) {
                 throw new IllegalStateException("No valid Scilab configuration found, aborting...");
             }

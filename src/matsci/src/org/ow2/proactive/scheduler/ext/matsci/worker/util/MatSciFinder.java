@@ -57,23 +57,31 @@ public abstract class MatSciFinder {
     private static MatSciFinder instance = null;
 
     public abstract MatSciEngineConfig findMatSci(String version_pref, HashSet<String> versionsRej,
-            String versionMin, String versionMax, boolean debug) throws Exception;
+            String versionMin, String versionMax, String versionArch, boolean debug) throws Exception;
 
-    protected MatSciEngineConfig chooseMatSciConfig(ArrayList<MatSciEngineConfig> configs,
-            String version_pref, Set<String> versionsRej, String versionMin, String versionMax, boolean debug) {
+    protected MatSciEngineConfig chooseMatSciConfig(HashSet<MatSciEngineConfig> configs, String version_pref,
+            Set<String> versionsRej, String versionMin, String versionMax, String versionArch, boolean debug) {
         List<MatSciEngineConfig> selected = new ArrayList<MatSciEngineConfig>();
         if (debug) {
             System.out.println("Choosing config with version_pref=" + version_pref + ", versionRej=" +
-                versionsRej + ", versionMin=" + versionMin + ", versionMax=" + versionMax);
+                versionsRej + ", versionMin=" + versionMin + ", versionMax=" + versionMax + ", versionArch=" +
+                versionArch);
         }
         for (MatSciEngineConfig conf : configs) {
             String version = conf.getVersion();
             if (debug) {
-                System.out.println("Version : " + version);
+                System.out.println("Version : " + version + "(" + conf.getArch() + ")");
             }
             if (versionsRej != null && !versionsRej.isEmpty() && versionsRej.contains(version)) {
                 if (debug) {
                     System.out.println("... rejected");
+                }
+                continue;
+            }
+            if (versionArch != null && !versionArch.equalsIgnoreCase("any") &&
+                !versionArch.equals(conf.getArch())) {
+                if (debug) {
+                    System.out.println("... architecture rejected");
                 }
                 continue;
             }

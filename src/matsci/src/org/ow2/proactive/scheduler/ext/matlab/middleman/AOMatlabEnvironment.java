@@ -466,10 +466,11 @@ public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResu
                     SelectionScript sscript = null;
                     try {
                         //System.out.println(config.getVersionPref());
-                        sscript = new SelectionScript(url1, new String[] { "" + config.isDebug(),
-                                "versionPref", config.getVersionPref(), "versionRej",
-                                config.getVersionRejAsString(), "versionMin", config.getVersionMin(),
-                                "versionMax", config.getVersionMax() }, !config.isFindMatSciScriptStatic());
+                        sscript = new SelectionScript(url1, new String[] { "forceSearch",
+                                "" + config.isForceMatSciSearch(), "versionPref", config.getVersionPref(),
+                                "versionRej", config.getVersionRejAsString(), "versionMin",
+                                config.getVersionMin(), "versionMax", config.getVersionMax(), "versionArch",
+                                config.getVersionArch() }, !config.isFindMatSciScriptStatic());
                     } catch (InvalidScriptException e1) {
                         throw new PASchedulerException(e1);
                     }
@@ -487,11 +488,10 @@ public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResu
                         paramsList.add(taskConfigs[i][j].getRid());
                         paramsList.add(config.getLogin());
                         paramsList.add(config.getLicenseSaverURL());
-                        if (taskConfigs[i][j].getToolboxesUsed() != null) {
-                            paramsList.addAll(Arrays.asList(taskConfigs[i][j].getToolboxesUsed()));
-                        } else {
-                            paramsList.addAll(Arrays.asList(config.getScriptParams()));
+                        if (taskConfigs[i][j].getToolboxesUsed() == null) {
+                            throw new IllegalStateException("No toolbox usage definition");
                         }
+                        paramsList.addAll(Arrays.asList(taskConfigs[i][j].getToolboxesUsed()));
                         scriptParams = paramsList.toArray(new String[paramsList.size()]);
                         try {
                             sscript = new SelectionScript(url3, scriptParams);

@@ -48,6 +48,8 @@ public interface MatSciEngineConfig extends Serializable {
 
     String getVersion();
 
+    String getArch();
+
     String getFullCommand();
 
 }

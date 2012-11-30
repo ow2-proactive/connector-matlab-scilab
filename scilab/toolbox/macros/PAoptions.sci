@@ -161,6 +161,8 @@ endfunction
     deff ("y=charornumtrans(x)","if isnumeric(x), y=x, else y=evstr(x), end","n");
 
     deff ("y=prioritycheck(x)","if ischar(x), y=ismember(x,{''Idle'', ''Lowest'', ''Low'', ''Normal'', ''High'', ''Highest''}), else y=%f, end","n")
+     deff ("y=versionarchcheck(x)","if ischar(x), y=ismember(x,{''any'', ''32'', ''64''}), else y=%f, end","n")
+
 
     deff ("y=id(x)","y=x","n");
 
@@ -269,6 +271,16 @@ endfunction
     inputs(j).default = [];
     inputs(j).check = 'versioncheck';
     inputs(j).trans = 'id';
+    j=j+1;
+    inputs(j).name = 'VersionArch';
+    inputs(j).default = 'any';
+    inputs(j).check = 'versionarchcheck';
+    inputs(j).trans = 'id';
+    j=j+1;
+    inputs(j).name = 'ForceScilabSearch';
+    inputs(j).default = %f;
+    inputs(j).check = 'logcheck';
+    inputs(j).trans = 'logtrans';
     j=j+1;
     inputs(j).name = 'FindScilabScript';
     inputs(j).default = '$MATSCI$' + fs +'script' + 'file_scilab_finder.rb';

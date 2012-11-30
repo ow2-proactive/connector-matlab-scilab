@@ -450,10 +450,11 @@ public class AOScilabEnvironment extends AOMatSciEnvironment<Boolean, ScilabResu
 
                     SelectionScript sscript = null;
                     try {
-                        sscript = new SelectionScript(url1, new String[] { "" + config.isDebug(),
-                                "versionPref", config.getVersionPref(), "versionRej",
-                                config.getVersionRejAsString(), "versionMin", config.getVersionMin(),
-                                "versionMax", config.getVersionMax() }, !config.isFindMatSciScriptStatic());
+                        sscript = new SelectionScript(url1, new String[] { "forceSearch",
+                                "" + config.isForceMatSciSearch(), "versionPref", config.getVersionPref(),
+                                "versionRej", config.getVersionRejAsString(), "versionMin",
+                                config.getVersionMin(), "versionMax", config.getVersionMax(), "versionArch",
+                                config.getVersionArch() }, !config.isFindMatSciScriptStatic());
                     } catch (InvalidScriptException e1) {
                         throw new PASchedulerException(e1);
                     }

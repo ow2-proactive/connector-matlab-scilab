@@ -141,6 +141,16 @@ public class PASolveMatSciGlobalConfig implements Serializable {
     protected String versionMax = null;
 
     /**
+     * Version architecture to use
+     */
+    protected String versionArch = null;
+
+    /**
+     * Do we force the automated research of Matlab/Scilab ?
+     */
+    protected boolean forceMatSciSearch = false;
+
+    /**
      * Transfers source to the remote engine
      */
     protected boolean transferEnv = false;
@@ -179,11 +189,6 @@ public class PASolveMatSciGlobalConfig implements Serializable {
      * matlab or scilab startup options on linux machines
      */
     private String[] linuxStartupOptions = null;
-
-    /**
-     * parameters of the
-     */
-    protected String[] scriptParams;
 
     /**
      * environment mat file (TransferEnv)
@@ -393,6 +398,22 @@ public class PASolveMatSciGlobalConfig implements Serializable {
         this.versionMax = versionMax;
     }
 
+    public String getVersionArch() {
+        return versionArch;
+    }
+
+    public void setVersionArch(String versionArch) {
+        this.versionArch = versionArch;
+    }
+
+    public boolean isForceMatSciSearch() {
+        return forceMatSciSearch;
+    }
+
+    public void setForceMatSciSearch(boolean forceMatSciSearch) {
+        this.forceMatSciSearch = forceMatSciSearch;
+    }
+
     public boolean isUseJobClassPath() {
         return useJobClassPath;
     }
@@ -525,14 +546,6 @@ public class PASolveMatSciGlobalConfig implements Serializable {
 
     public void setOutputSpaceName(String outputSpaceName) {
         this.outputSpaceName = outputSpaceName;
-    }
-
-    public String[] getScriptParams() {
-        return scriptParams;
-    }
-
-    public void setScriptParams(String[] scriptParams) {
-        this.scriptParams = scriptParams;
     }
 
     public void setLocalSpace(URI localSpaceURI) {

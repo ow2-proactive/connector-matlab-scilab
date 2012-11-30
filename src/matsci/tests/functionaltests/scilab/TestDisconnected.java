@@ -34,17 +34,9 @@
  */
 package functionaltests.scilab;
 
-import jdbm.PrimaryHashMap;
-import jdbm.RecordManager;
-import jdbm.RecordManagerFactory;
 import org.ow2.proactive.scheduler.ext.common.util.IOTools;
-import org.ow2.proactive.scheduler.ext.matsci.client.embedded.MatSciTaskRepository;
-import org.ow2.proactive.scheduler.ext.matsci.middleman.AOMatSciEnvironment;
-import org.ow2.proactive.scheduler.ext.scilab.client.embedded.ScilabTaskRepository;
-import org.ow2.proactive.scheduler.ext.scilab.middleman.AOScilabEnvironment;
 
 import java.io.File;
-import java.io.IOException;
 
 import static junit.framework.Assert.assertTrue;
 

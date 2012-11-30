@@ -3,10 +3,11 @@
     <MachineGroup hostname=".*"> <!-- This is a regular expression representing the machines targetted by this configuration, attributes can either be "hostname" or "ip" -->
         <scilab>
                <version>5.3.3</version>  <!-- The version of scilab (at least 5.3.0) -->
-               <home>/usr/local/scilab-5.3.3</home>  <!-- Scilab installation directory -->
+               <home>C:\Program Files (x86)\scilab-5.4.0</home>  <!-- Scilab installation directory -->
                <bindir>bin</bindir> <!-- Scilab bin directory (should not be changed) -->
-               <command>scilab</command>  <!-- Scilab executable name -->
-               <!-- Scilab executable name on windows: Scilex.exe -->
+               <command>Scilex.exe</command>  <!-- Scilab executable name -->
+               <arch>32</arch> <!-- Architecture 32 or 64 -->
+               <!-- Scilab executable name on linux : scilab , on windows: Scilex.exe -->
         </scilab>
     </MachineGroup>
 </MatSciWorkerConfiguration>

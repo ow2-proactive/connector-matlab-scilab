@@ -36,8 +36,6 @@ package functionaltests.scilab;
 
 import org.apache.commons.io.FileUtils;
 import org.ow2.proactive.scheduler.ext.common.util.IOTools;
-import org.ow2.proactive.scheduler.ext.scilab.client.embedded.ScilabTaskRepository;
-import org.ow2.proactive.scheduler.ext.scilab.middleman.AOScilabEnvironment;
 
 import java.io.File;
 

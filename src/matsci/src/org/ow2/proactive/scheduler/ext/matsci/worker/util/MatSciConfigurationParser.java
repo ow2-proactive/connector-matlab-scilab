@@ -46,8 +46,8 @@ import org.ow2.proactive.scheduler.ext.matsci.worker.properties.MatSciProperties
 import org.ow2.proactive.scheduler.ext.scilab.worker.util.ScilabEngineConfig;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Matcher;
 
@@ -63,19 +63,27 @@ public class MatSciConfigurationParser {
         matlab, scilab
     }
 
-    static final String DEFAULT_MATLAB_CONFIG_PATH = "addons/MatlabWorkerConfiguration.xml";
-
-    static final String DEFAULT_SCILAB_CONFIG_PATH = "addons/ScilabWorkerConfiguration.xml";
-
     static String HOSTNAME;
     static String IP;
+    static String TMPDIR;
+    static String FS;
+    static ArrayList<String> matlabConfigPaths;
+    static ArrayList<String> scilabConfigPaths;
 
     static {
         try {
+            matlabConfigPaths = new ArrayList<String>();
+            scilabConfigPaths = new ArrayList<String>();
             HOSTNAME = java.net.InetAddress.getLocalHost().getHostName();
             IP = java.net.InetAddress.getLocalHost().getHostAddress();
+            TMPDIR = System.getProperty("java.io.tmpdir");
+            FS = File.separator;
+            matlabConfigPaths.add(TMPDIR + FS + "MatlabWorkerConfiguration.xml");
+            matlabConfigPaths.add("addons/MatlabWorkerConfiguration.xml");
+            scilabConfigPaths.add(TMPDIR + FS + "ScilabWorkerConfiguration.xml");
+            scilabConfigPaths.add("addons/ScilabWorkerConfiguration.xml");
         } catch (Exception e) {
-
+            throw new RuntimeException(e);
         }
     }
 
@@ -84,125 +92,151 @@ public class MatSciConfigurationParser {
     static Document document;
     static Element racine;
 
-    public static ArrayList<MatSciEngineConfig> getConfigs(boolean debug, Type type) throws Exception {
+    public static HashSet<MatSciEngineConfig> getConfigs(boolean debug, Type type) throws Exception {
 
-        ArrayList<MatSciEngineConfig> configs = new ArrayList<MatSciEngineConfig>();
+        HashSet<MatSciEngineConfig> configs = new HashSet<MatSciEngineConfig>();
 
         File schedHome = MatSciProperties.findSchedulerHome();
-        String configFilePath = null;
+        ArrayList<String> configFilePaths = new ArrayList<String>();
         if (type.equals(Type.matlab)) {
-            configFilePath = MatSciProperties.MATLAB_WORKER_CONFIGURATION_FILE.getValueAsString();
+            String prop = MatSciProperties.MATLAB_WORKER_CONFIGURATION_FILE.getValueAsString();
+            if ((prop != null) && (prop.length() > 0)) {
+                configFilePaths.add(0, prop);
+            }
+            prop = System.getProperty(MatSciProperties.MATLAB_WORKER_CONFIGURATION_FILE.getKey());
+            if ((prop != null) && (prop.length() > 0)) {
+                configFilePaths.add(0, prop);
+            }
+            configFilePaths.addAll(matlabConfigPaths);
         } else {
-            configFilePath = MatSciProperties.SCILAB_WORKER_CONFIGURATION_FILE.getValueAsString();
-        }
-        if (configFilePath == null || "".equals(configFilePath)) {
-            // 2 - If not found check for property
-            if (type.equals(Type.matlab)) {
-                configFilePath = System.getProperty(MatSciProperties.MATLAB_WORKER_CONFIGURATION_FILE
-                        .getKey());
-            } else {
-                configFilePath = System.getProperty(MatSciProperties.SCILAB_WORKER_CONFIGURATION_FILE
-                        .getKey());
+            String prop = MatSciProperties.SCILAB_WORKER_CONFIGURATION_FILE.getValueAsString();
+            if ((prop != null) && (prop.length() > 0)) {
+                configFilePaths.add(0, prop);
             }
-
-            if (configFilePath == null || "".equals(configFilePath)) {
-                // 3 - If not defined use default config path relative to scheduler home
-                if (type.equals(Type.matlab)) {
-                    configFilePath = DEFAULT_MATLAB_CONFIG_PATH;
-                } else {
-                    configFilePath = DEFAULT_SCILAB_CONFIG_PATH;
-                }
+            prop = System.getProperty(MatSciProperties.SCILAB_WORKER_CONFIGURATION_FILE.getKey());
+            if ((prop != null) && (prop.length() > 0)) {
+                configFilePaths.add(0, prop);
             }
+            configFilePaths.addAll(scilabConfigPaths);
         }
-
         File configFile = null;
-        try {
+        for (String path : configFilePaths) {
+            configFile = new File(path);
+
             // Check if the config file exists at the specified path
-            configFile = new File(configFilePath);
-        } catch (Exception e) {
-            System.out.println("MatSciConfigurationParser.getConfigs() --> path " + configFilePath);
-            e.printStackTrace();
-        }
+            if (!configFile.isAbsolute()) {
+                configFile = new File(schedHome + File.separator + path);
+            }
 
-        if (!configFile.isAbsolute()) {
-            configFile = new File(schedHome + File.separator + configFilePath);
-        }
-
-        if (!configFile.exists() || !configFile.canRead()) {
-            throw new FileNotFoundException(configFile + " not found, aborting...");
-        }
-
-        if (debug) {
-            System.out.println("Parsing configuration file :" + configFile);
-        }
-
-        SAXBuilder sxb = new SAXBuilder();
-        Document document = sxb.build(configFile);
-        racine = document.getRootElement();
-
-        List<Element> machineGroups = racine.getChildren("MachineGroup");
-
-        for (Element machineGroup : machineGroups) {
-            if (matchesHost(machineGroup)) {
-                List<Element> listInstallations = null;
-
-                if (type.equals(Type.matlab)) {
-                    listInstallations = machineGroup.getChildren("matlab");
-                } else {
-                    listInstallations = machineGroup.getChildren("scilab");
+            if (!configFile.exists() || !configFile.canRead()) {
+                System.out.println(configFile + " not found, skipping...");
+                continue;
+            } else if (!configFile.getName().endsWith(".xml")) {
+                System.out.println(configFile + " : unrecognized extension, skipping...");
+                continue;
+            } else {
+                if (debug) {
+                    System.out.println("Parsing configuration file :" + configFile);
                 }
+            }
+            SAXBuilder sxb = new SAXBuilder();
+            Document document = sxb.build(configFile);
+            racine = document.getRootElement();
 
-                for (Element installation : listInstallations) {
+            List<Element> machineGroups = racine.getChildren("MachineGroup");
 
-                    String version = installation.getChild("version").getText();
-                    if ((version == null) || (version.trim().length() == 0)) {
-                        throw new IllegalArgumentException("In " + configFile +
-                            ", version element must not be empty");
-                    }
-                    version = version.trim();
-                    if (type.equals(Type.matlab)) {
-                        if (!version.matches("^[1-9][\\d]*\\.[\\d]+$")) {
-                            throw new IllegalArgumentException("In " + configFile +
-                                ", version element must match XX.xx, received : " + version);
-                        }
-                    } else {
-                        if (!version.matches("^([1-9][\\d]*\\.)*[\\d]+$")) {
-                            throw new IllegalArgumentException("In " + configFile +
-                                ", version element must match XX.xx.xx, received : " + version);
-                        }
-                    }
-                    String home = installation.getChild("home").getText();
-                    if ((home == null) || (home.trim().length() == 0)) {
-                        throw new IllegalArgumentException("In " + configFile +
-                            ", home element must not be empty");
-                    }
-
-                    home = home.trim().replaceAll("/", Matcher.quoteReplacement("" + os.fileSeparator()));
-                    File filehome = new File(home);
-                    checkDir(filehome, configFile);
-
-                    String bindir = installation.getChild("bindir").getText();
-                    if ((bindir == null) || (bindir.trim().length() == 0)) {
-                        throw new IllegalArgumentException("In " + configFile +
-                            ", bindir element must not be empty");
-                    }
-                    bindir = bindir.trim().replaceAll("/", Matcher.quoteReplacement("" + os.fileSeparator()));
-                    File filebin = new File(filehome, bindir.trim());
-                    checkDir(filebin, configFile);
-
-                    String command = installation.getChild("command").getText();
-                    if ((command == null) || (command.trim().length() == 0)) {
-                        throw new IllegalArgumentException("In " + configFile +
-                            ", command element must not be empty");
-                    }
-                    command = command.trim();
-                    File filecommand = new File(filebin, command);
-                    checkFile(filecommand, configFile, true);
+            for (Element machineGroup : machineGroups) {
+                if (matchesHost(machineGroup)) {
+                    List<Element> listInstallations = null;
 
                     if (type.equals(Type.matlab)) {
-                        configs.add(new MatlabEngineConfig(home, version, bindir, command));
+                        listInstallations = machineGroup.getChildren("matlab");
                     } else {
-                        configs.add(new ScilabEngineConfig(home, version, bindir, command));
+                        listInstallations = machineGroup.getChildren("scilab");
+                    }
+
+                    for (Element installation : listInstallations) {
+
+                        String version = installation.getChild("version").getText();
+                        if ((version == null) || (version.trim().length() == 0)) {
+                            System.out.println("In " + configFile + ", version element must not be empty");
+                            continue;
+                        }
+                        version = version.trim();
+                        if (type.equals(Type.matlab)) {
+                            if (!version.matches("^[1-9][\\d]*\\.[\\d]+$")) {
+                                System.out.println("In " + configFile +
+                                    ", version element must match XX.xx, received : " + version);
+                                continue;
+                            }
+                        } else {
+                            if (!version.matches("^([1-9][\\d]*\\.)*[\\d]+$")) {
+                                System.out.println("In " + configFile +
+                                    ", version element must match XX.xx.xx, received : " + version);
+                                continue;
+                            }
+                        }
+                        String home = installation.getChild("home").getText();
+                        if ((home == null) || (home.trim().length() == 0)) {
+                            System.out.println("In " + configFile + ", home element must not be empty");
+                            continue;
+                        }
+
+                        home = home.trim().replaceAll("/", Matcher.quoteReplacement("" + os.fileSeparator()));
+                        File filehome = new File(home);
+                        if (!checkDir(filehome, configFile)) {
+                            continue;
+                        }
+
+                        String bindir = installation.getChild("bindir").getText();
+                        if ((bindir == null) || (bindir.trim().length() == 0)) {
+                            System.out.println("In " + configFile + ", bindir element must not be empty");
+                            continue;
+                        }
+                        bindir = bindir.trim().replaceAll("/",
+                                Matcher.quoteReplacement("" + os.fileSeparator()));
+                        File filebin = new File(filehome, bindir);
+                        checkDir(filebin, configFile);
+
+                        String command = installation.getChild("command").getText();
+                        if ((command == null) || (command.trim().length() == 0)) {
+                            System.out.println("In " + configFile + ", command element must not be empty");
+                            continue;
+                        }
+                        command = command.trim();
+                        File filecommand = new File(filebin, command);
+                        if (!checkFile(filecommand, configFile, true)) {
+                            continue;
+                        }
+
+                        String arch = installation.getChild("arch").getText();
+                        if ((arch == null) || (arch.trim().length() == 0)) {
+                            System.out.println("In " + configFile + ", arch element must not be empty");
+                            continue;
+                        }
+                        arch = arch.trim();
+
+                        if (!(arch.equals("32") || arch.equals("64"))) {
+                            System.out.println("In " + configFile +
+                                ", arch element must be 32 or 64 received : " + arch);
+                            continue;
+                        }
+
+                        if (type.equals(Type.matlab)) {
+                            MatlabEngineConfig conf = new MatlabEngineConfig(home, version, bindir, command,
+                                arch);
+                            if (debug) {
+                                System.out.println("Found : " + conf);
+                            }
+                            configs.add(conf);
+                        } else {
+                            ScilabEngineConfig conf = new ScilabEngineConfig(home, version, bindir, command,
+                                arch);
+                            if (debug) {
+                                System.out.println("Found : " + conf);
+                            }
+                            configs.add(conf);
+                        }
                     }
                 }
             }
@@ -231,29 +265,42 @@ public class MatSciConfigurationParser {
 
     }
 
-    protected static void checkDir(File dir, File conf) {
+    protected static boolean checkDir(File dir, File conf) {
         if (!dir.exists()) {
             System.out.println("In " + conf + ", " + dir + " doesn't exist");
+            return false;
         }
         if (!dir.isDirectory()) {
             System.out.println("In " + conf + ", " + dir + " is not a directory");
+            return false;
         }
         if (!dir.canRead()) {
             // When using RunAsMe, we cannot be sure the current user has the right permissions
             System.out.println("In " + conf + ", " + dir + " is not readable");
+            return false;
         }
+        return true;
     }
 
-    protected static void checkFile(File file, File conf, boolean executable) throws Exception {
+    protected static boolean checkFile(File file, File conf, boolean executable) throws Exception {
         if (!file.exists()) {
             System.out.println("In " + conf + ", " + file + " doesn't exist");
+            return false;
         }
         if (!file.isFile()) {
             System.out.println("In " + conf + ", " + file + " is not a file");
+            return false;
         }
         if (!file.canRead()) {
             // When using RunAsMe, we cannot be sure the current user has the right permissions
             System.out.println("In " + conf + ", " + file + " is not readable");
+            return false;
         }
+        if (executable && !file.canExecute()) {
+            // When using RunAsMe, we cannot be sure the current user has the right permissions
+            System.out.println("In " + conf + ", " + file + " is not executable");
+            return false;
+        }
+        return true;
     }
 }

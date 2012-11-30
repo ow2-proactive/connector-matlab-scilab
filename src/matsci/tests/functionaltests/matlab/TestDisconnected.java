@@ -34,14 +34,7 @@
  */
 package functionaltests.matlab;
 
-import jdbm.PrimaryHashMap;
-import jdbm.RecordManager;
-import jdbm.RecordManagerFactory;
 import org.ow2.proactive.scheduler.ext.common.util.IOTools;
-import org.ow2.proactive.scheduler.ext.matsci.client.embedded.MatSciTaskRepository;
-import org.ow2.proactive.scheduler.ext.matsci.middleman.AOMatSciEnvironment;
-import org.ow2.proactive.scheduler.ext.matlab.client.embedded.MatlabTaskRepository;
-import org.ow2.proactive.scheduler.ext.matlab.middleman.AOMatlabEnvironment;
 
 import java.io.File;
 

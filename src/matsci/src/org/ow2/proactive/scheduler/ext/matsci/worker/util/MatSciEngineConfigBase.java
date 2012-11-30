@@ -47,15 +47,9 @@ import org.objectweb.proactive.core.UniqueID;
 public abstract class MatSciEngineConfigBase implements MatSciEngineConfig {
 
     protected static MatSciEngineConfigBase currentConf = null;
-    protected static MatSciEngineConfigBase lastConf = null;
 
     public static void setCurrentConfiguration(MatSciEngineConfigBase conf) {
-        lastConf = currentConf;
         currentConf = conf;
-    }
-
-    public static boolean hasChangedConf() {
-        return (lastConf != null) && (!lastConf.equals(currentConf));
     }
 
     public static MatSciEngineConfigBase getCurrentConfiguration() {

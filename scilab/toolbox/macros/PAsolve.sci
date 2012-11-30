@@ -306,6 +306,8 @@ function initSolveConfig(solve_config,opt)
     jinvoke(solve_config,'setVersionRejAsString',opt.VersionRej);
     jinvoke(solve_config,'setVersionMin',opt.VersionMin);
     jinvoke(solve_config,'setVersionMax',opt.VersionMax);
+    jinvoke(solve_config,'setVersionArch',opt.VersionArch);
+    jinvoke(solve_config,'setForceMatSciSearch',opt.ForceScilabSearch);
     jinvoke(solve_config,'setFindMatSciScriptUrl',opt.FindScilabScript);
     if ischar(opt.CustomScript)
         selects = opt.CustomScript

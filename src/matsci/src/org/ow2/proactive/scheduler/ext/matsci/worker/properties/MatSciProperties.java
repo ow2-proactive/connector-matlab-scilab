@@ -46,39 +46,55 @@ import java.util.Properties;
 
 /**
  * MatSciProperties contains all Matlab/Scilab connector properties.
- *
+ * <p/>
  * You must use provided methods in order to get the MatSci properties.
  *
  * @author The ProActiveTeam
  * @since ProActive 4.0
- *
- * $Id$
+ *        <p/>
+ *        $Id$
  */
 public enum MatSciProperties {
 
-    /** Scheduler home directory */
+    /**
+     * Scheduler home directory
+     */
     SCHEDULER_HOME("pa.scheduler.home", PropertyType.STRING),
 
-    /** Tells where to find matlab worker configuration file */
+    /**
+     * Tells where to find matlab worker configuration file
+     */
     MATLAB_WORKER_CONFIGURATION_FILE("pa.matlab.config.worker", PropertyType.STRING),
-    /** Tells where to find matlab worker configuration file */
+    /**
+     * Tells where to find matlab worker configuration file
+     */
     SCILAB_WORKER_CONFIGURATION_FILE("pa.scilab.config.worker", PropertyType.STRING);
 
     /* ***************************************************************************** */
     /* ***************************************************************************** */
     public static final String MATSCI_PROPERTIES_FILEPATH = "pa.matsci.properties.filepath";
-    /** Default properties file for the scheduler configuration */
+    /**
+     * Default properties file for the scheduler configuration
+     */
     private static final String DEFAULT_PROPERTIES_FILE = "addons/matlab_scilab_connector.ini";
 
     private static String properties_file = null;
-    /** to know if the file has been loaded or not */
+    /**
+     * to know if the file has been loaded or not
+     */
     private static boolean fileLoaded;
-    /** memory entity of the properties file. */
+    /**
+     * memory entity of the properties file.
+     */
     private static Properties prop = null;
 
-    /** Key of the specific instance. */
+    /**
+     * Key of the specific instance.
+     */
     private String key;
-    /** value of the specific instance. */
+    /**
+     * value of the specific instance.
+     */
     private PropertyType type;
 
     private static File schedHome = null;
@@ -86,7 +102,7 @@ public enum MatSciProperties {
     /**
      * Create a new instance of PASchedulerProperties
      *
-     * @param str the key of the instance.
+     * @param str  the key of the instance.
      * @param type the real java type of this instance.
      */
     MatSciProperties(String str, PropertyType type) {
@@ -133,9 +149,8 @@ public enum MatSciProperties {
      * It first check the filename argument :<br>
      * - if null  : default config file is used (first check if java property file exist)<br>
      * - if exist : use the filename argument to read configuration.<br>
-     *
+     * <p/>
      * Finally, if the selected file is a relative path, the file will be relative to the SCHEDULER_HOME property.
-     *
      */
     private static void init() {
         String propertiesPath;
@@ -209,7 +224,7 @@ public enum MatSciProperties {
 
     /**
      * Returns the string to be passed on the command line
-     *
+     * <p/>
      * The property surrounded by '-D' and '='
      *
      * @return the string to be passed on the command line
@@ -313,32 +328,37 @@ public enum MatSciProperties {
 
     public static File findSchedulerHome() throws Exception {
         if (schedHome == null) {
-            String homestr = null;
-            try {
-                homestr = ProActiveRuntimeImpl.getProActiveRuntime().getProActiveHome();
-            } catch (Exception e) {
-                // Try to locate dynamically for the location of the current class file
-                final String path = MatSciProperties.class.getProtectionDomain().getCodeSource()
-                        .getLocation().getPath();
-                final File f = new File(path);
-                File schedulerHome = null;
+            String pahome = System.getProperty("proactive.home");
+            if (pahome != null) {
+                schedHome = new File(pahome);
+            } else {
+                String homestr = null;
+                try {
+                    homestr = ProActiveRuntimeImpl.getProActiveRuntime().getProActiveHome();
+                } catch (Exception e) {
+                    // Try to locate dynamically for the location of the current class file
+                    final String path = MatSciProperties.class.getProtectionDomain().getCodeSource()
+                            .getLocation().getPath();
+                    final File f = new File(path);
+                    File schedulerHome = null;
 
-                // If the path contains 'classes' the scheduler home 2 parent dirs
-                if (path.contains("classes")) {
-                    schedulerHome = f.getParentFile().getParentFile();
-                } else { // means its in dist
-                    schedulerHome = f.getParentFile();
+                    // If the path contains 'classes' the scheduler home 2 parent dirs
+                    if (path.contains("classes")) {
+                        schedulerHome = f.getParentFile().getParentFile();
+                    } else { // means its in dist
+                        schedulerHome = f.getParentFile();
+                    }
+
+                    homestr = schedulerHome.getAbsolutePath();
+
+                    // Unable to locate dynamically the location of the scheduler home throw
+                    // exception to inform about the initial problem
+                    if (!(new File(homestr)).exists()) {
+                        throw e;
+                    }
                 }
-
-                homestr = schedulerHome.getAbsolutePath();
-
-                // Unable to locate dynamically the location of the scheduler home throw
-                // exception to inform about the initial problem
-                if (!(new File(homestr)).exists()) {
-                    throw e;
-                }
+                schedHome = new File(homestr);
             }
-            schedHome = new File(homestr);
         }
         return schedHome;
     }
