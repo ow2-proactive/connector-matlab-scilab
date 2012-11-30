@@ -486,7 +486,12 @@ public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResu
                         ArrayList<String> paramsList = new ArrayList<String>();
                         taskConfigs[i][j].setRid(aoid + "_" + lastGenJobId + "_" + tname);
                         paramsList.add(taskConfigs[i][j].getRid());
-                        paramsList.add(config.getLogin());
+                        if (config.getLogin() != null) {
+                            paramsList.add(config.getLogin());
+                        } else {
+                            paramsList.add(lastLogin);
+                        }
+
                         paramsList.add(config.getLicenseSaverURL());
                         if (taskConfigs[i][j].getToolboxesUsed() == null) {
                             throw new IllegalStateException("No toolbox usage definition");

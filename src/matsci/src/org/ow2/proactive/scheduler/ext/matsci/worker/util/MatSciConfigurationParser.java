@@ -129,10 +129,14 @@ public class MatSciConfigurationParser {
             }
 
             if (!configFile.exists() || !configFile.canRead()) {
-                System.out.println(configFile + " not found, skipping...");
+                if (debug) {
+                    System.out.println(configFile + " not found, skipping...");
+                }
                 continue;
             } else if (!configFile.getName().endsWith(".xml")) {
-                System.out.println(configFile + " : unrecognized extension, skipping...");
+                if (debug) {
+                    System.out.println(configFile + " : unrecognized extension, skipping...");
+                }
                 continue;
             } else {
                 if (debug) {

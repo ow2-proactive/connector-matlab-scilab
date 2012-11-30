@@ -3,6 +3,7 @@ function jobs = PAconnect(url, credpath)
 %
 % Syntax
 %
+%       PAconnect();
 %       PAconnect(url [,credpath]);
 %       jobs = PAconnect(url [,credpath]);
 %
@@ -18,14 +19,18 @@ function jobs = PAconnect(url, credpath)
 %
 % Description
 %
-%       PAconnect connects to a running ProActive Scheduler by specifying its
-%       url. If the scheduler could be reached a popup window will appear, asking
-%       for login and password. An additional SSH key can also be provided when the user needs to execute remote task under
-%       one's identity (RunAsMe option). ProActive Scheduler features a full account management facility along with the
-%       possibility to synchronize to existing Windows or Linux accounts via LDAP. More information can be found inside
+%       PAconnect connects to a running ProActive Scheduler by specifying its url. If the scheduler could be reached a popup
+%       window will appear, asking for login and password. An additional SSH key can also be provided when the user needs
+%       to execute remote task under one's identity (RunAsMe option). ProActive Scheduler features a full account management
+%       facility along with the possibility to synchronize to existing Windows or Linux accounts via LDAP. More information can be found inside
 %       Scheduler's manual chapter "Configure users authentication". If you haven't configured any account in the scheduler
 %       use, the default account login "demo", password "demo".
-%       You can as well encrypt credentials using the command line tool "create-cred" to automate the connection.
+%       You can as well encrypt credentials using the command line tool "create-cred" and provide the path to the credentials
+%       file with the parameter credpath. Or you can simply reuse automatically the same credentials and url that you used at
+%       last scheduler connection by using PAconnect() without parameter.
+%       PAconnect() without parameter can also be used to connect to a local ProActive scheduler deployed with the standard
+%       RMI protocol
+%
 %
 %       In case jobs from the last Matlab session were not complete before Matlab exited. It is possible to get their result
 %       using PAgetResults
@@ -111,7 +116,10 @@ else
     isConnected = 0;
 end
 
-if exist('PA_scheduler_URI','var') == 1 && ~strcmp(PA_scheduler_URI,url)
+if ~exist('url', 'var') == 1
+    url = [];
+end
+if exist('PA_scheduler_URI','var') == 1 && ~isempty(PA_scheduler_URI) && ~isempty(url) && ~strcmp(PA_scheduler_URI,url)
     % particular case when the scheduler uri changes, we redeploy everything
     isJVMdeployed = 0;
     isConnected = 0;
@@ -142,9 +150,9 @@ if solver.isLoggedIn()
 end
 
 if exist('credpath', 'var')
-    login(solver,sched, credpath);
+    login(solver, sched, url, credpath);
 else
-    login(solver, sched);
+    login(solver, sched, url);
 end
 
 
@@ -206,12 +214,19 @@ sched.PAgetJVMInterface(jvmint);
 
 end
 
-function login(solver, sched, credpath)
+function login(solver, sched, url, credpath)
 opt = PAoptions();
 % Logging in
 if exist('credpath', 'var')
     try
         solver.login(credpath);
+    catch ME
+        disp(getReport(ME));
+        error('PAconnect::Authentication error');
+    end
+elseif isempty(url) && solver.hasCredentialsStored()
+    try
+        solver.login([], [], []);
     catch ME
         disp(getReport(ME));
         error('PAconnect::Authentication error');

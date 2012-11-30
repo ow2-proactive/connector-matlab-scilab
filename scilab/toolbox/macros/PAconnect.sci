@@ -29,8 +29,10 @@ function jobs = PAconnect(uri,credpath)
         isJVMdeployed = 0;
         isConnected = 0;
     end
-    
-    if ~isempty(PA_scheduler_URI) & PA_scheduler_URI ~= uri then
+    if ~exists('uri')
+        uri = [];
+    end    
+    if ~isempty(PA_scheduler_URI) & ~isempty(uri)  & PA_scheduler_URI ~= uri then
         // particular case when the scheduler uri changes, we redeploy everything
         isJVMdeployed = 0;
         isConnected = 0;
@@ -53,9 +55,9 @@ function jobs = PAconnect(uri,credpath)
                                                    
     if ~jinvoke(PA_solver,'isLoggedIn')  
         if argn(2) == 2 then
-            login(credpath); 
+            login(uri,credpath); 
         else
-            login(); 
+            login(uri); 
         end
         PA_connected = 1;                             
     else
@@ -131,20 +133,28 @@ function deployJVM(opt,uri)
     disp('Connection to JVM successful');    
 endfunction
 
-function login(credpath)
+function login(uri,credpath)
     global ('PA_solver')
     jimport org.ow2.proactive.scheduler.ext.scilab.client.embedded.util.ScilabJVMSpawnHelper;
     // Logging in
     if ~jinvoke(PA_solver,'isLoggedIn') then
-        disp('Please enter login/password');
-        if argn(2) == 1
+       
+        if argn(2) == 2 
             try
                 jinvoke(PA_solver,'login',credpath);
             catch        
                 clearJavaStack();
                 error('PAconnect::Authentication error');
             end
+        elseif isempty(uri) & jinvoke(PA_solver,'hasCredentialsStored');
+             try
+                jinvoke(PA_solver,'login',[], [], []);
+            catch        
+                clearJavaStack();
+                error('PAconnect::Authentication error');
+            end
         else
+            disp('Please enter login/password');
             deployer = jinvoke(ScilabJVMSpawnHelper,'getInstance');
             addJavaObj(deployer);
             jinvoke(deployer,'startLoginGUI');

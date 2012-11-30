@@ -276,11 +276,6 @@ if ~isjava(recordedJobInfo)
 
     % Send the task list to the scheduler
 
-     if ~PAisConnected()
-         schedUrl = solver.getSchedulerURL();
-         error(['This Scilab session was disconnected from the scheduler at ' char(schedUrl) ', please contact the scheduler administrators and reconnect using PAconnect']);
-     end
-
     jobinfo = solver.solve(solve_config, task_config);
 
     % if null is returned there was a connection problem, we reconnect and retry
