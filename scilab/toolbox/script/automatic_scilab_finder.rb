@@ -1,6 +1,6 @@
 include Java
 
-#require 'c:\users\fviale\workspace\matlab_scilab_connector\lib\scheduling\jdom.jar'
+#require '/Users/fabienviale/eclipse_workspace/matlab_scilab_connector/lib/scheduling/jdom.jar'
 
 java_import org.jdom.input.SAXBuilder
 java_import org.jdom.Document
@@ -275,7 +275,7 @@ class MatSciFinder
       when :windows
         return findScilabWindows()
       when :macosx
-        return findScilabUnix()
+        return findScilabMac()
       when :linux
         return findScilabUnix()
       else
@@ -355,6 +355,24 @@ class MatSciFinder
     return answer
   end
 
+def findScilabMac()
+    answer = false
+    locate_res = `locate /Applications/*/scilab`
+    if $?.to_i == 0
+      locate_res.each_line do |line|
+        answer = findScilabMacInLine(line) || answer
+      end
+    end
+    which_res = `which scilab 2>/dev/null`
+    if $?.to_i == 0
+      which_res.each_line do |line|
+        answer = findScilabMacInLine(line) || answer
+      end
+    end
+
+    return answer
+  end
+
   def findScilabUnixInLine(line)
     line = line.strip()
     answer = false
@@ -390,6 +408,57 @@ class MatSciFinder
         conf.version = ver
         conf.command = scilabCommandName()
         conf.arch = arch
+        if @configs.index(conf) == nil
+          @configs.push(conf)
+          puts "Added " + conf.to_s
+        else
+          puts "Skipped already added " + conf.to_s
+        end
+        answer = true
+      rescue Exception => e
+        puts e.message + "\n" + e.backtrace.join("\n")
+        puts "Error occurred, skipping ..."
+      end
+    end
+    return answer
+  end
+
+def findScilabMacInLine(line)
+    line = line.strip()
+    answer = false
+    puts "Analysing " +line
+    t0 = File.exist?(line)
+    if !t0
+      puts "doesn't exist"
+    end
+    t1 = File.readable?(line)
+    if !t1
+      puts "is not readable"
+    end
+    t2_1 = File.executable?(line)
+    jf = JavaIO::File.new(line)
+    t2_2 = jf.canExecute()
+    t2 = t2_1 || t2_2
+    if !t2
+      puts "cannot be executed"
+    end
+    t3 = !File.directory?(line)
+    if !t3
+      puts "is a directory"
+    end
+    if t0 && t1 && t2 && t3
+      # ok this is a scilab executable !
+      begin
+        conf = EngineConfig.new()
+
+        scilabfullbin = readlink!(line)
+
+        conf.home = File.dirname(File.dirname(File.dirname(File.dirname(scilabfullbin))))
+        conf.bindir = scilabBinDir()
+        ver, arch = scilabVersion(scilabfullbin)
+        conf.version = ver
+        conf.command = scilabCommandName()
+        conf.arch = "64"
         if @configs.index(conf) == nil
           @configs.push(conf)
           puts "Added " + conf.to_s
@@ -503,9 +572,9 @@ class MatSciFinder
         end
       when :macosx
         if arch64?
-          "bin"
+          "Contents/MacOS/bin"
         else
-          "bin"
+          "Contents/MacOS/bin"
         end
       else
         raise "Unsupported os #{RbConfig::CONFIG['host_os']}"
