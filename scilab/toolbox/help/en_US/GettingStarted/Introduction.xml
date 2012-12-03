@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<refentry version="5.0-subset Scilab" xml:id="Introduction" xml:lang="en"
+          xmlns="http://docbook.org/ns/docbook"
+          xmlns:xlink="http://www.w3.org/1999/xlink"
+          xmlns:svg="http://www.w3.org/2000/svg"
+          xmlns:ns3="http://www.w3.org/1999/xhtml"
+          xmlns:mml="http://www.w3.org/1998/Math/MathML"
+          xmlns:db="http://docbook.org/ns/docbook">
+    <info>
+        <pubdate>$LastChangedDate: 2011-07-20 18:41:39 +0100 (mer., 20 july 2011)$</pubdate>
+    </info>
+    <refnamediv>
+        <refname>Introduction</refname>
+
+        <refpurpose>Introduction to the ProActive Toolbox</refpurpose>
+
+    </refnamediv>
+
+    <refsection>
+        <title>Introduction</title>
+
+
+        <para>
+            <emphasis>Scilab Connector Toolbox</emphasis>
+            is a Scilab toolbox designed to provide interaction with the<emphasis>ProActive Scheduler</emphasis>, part
+            of ProActive Parallel Suite.
+
+            <emphasis>ProActive Parallel Suite</emphasis>
+            is an innovative Open Source solution (OW2) for parallel, distributed, multi-core computing.
+
+            ProActive features Java Parallel Programming seamlessly integrated with Scheduling and Resource Management.
+            ProActive simplifies the programming and execution of parallel applications on Linux, Windows and Mac,
+            together with the management of resources such as Desktop, Servers, Clusters, Enterprise GRIDs and Clouds.
+
+            The objectives of Scilab Connector Toolbox are to provide you with tools that:
+        </para>
+        <itemizedlist>
+            <listitem>
+                <para>Allow you to run Scilab functions on remote computers.
+                </para>
+            </listitem>
+            <listitem>
+                <para>Do not block the local Scilab session while remote results are being produced.
+                </para>
+            </listitem>
+            <listitem>
+                <para>Allow you to seamlessly retrieve results when you need them, just as if the functions were run
+                    locally.
+                </para>
+            </listitem>
+            <listitem>
+                <para>Provide you detailed remote log/output information, altogether with errors if any occurred.
+                </para>
+            </listitem>
+            <listitem>
+                <para>Allow automatic source transfer, data file transfer, and other configurable options.
+                </para>
+            </listitem>
+            <listitem>
+                <para>Allow fault-tolerant/disconnected sessions where intermediate results are persistent.
+                </para>
+            </listitem>
+        </itemizedlist>
+    </refsection>
+    <refsection>
+        <title>Usage</title>
+        <para>Matlab Connector Toolbox is designed for both beginners
+            and advanced users. There are basically two usage roles:
+        </para>
+        <itemizedlist>
+            <listitem>
+                <para>The<emphasis>scheduler administrator</emphasis>: responsible for ProActive Scheduler installation
+                    on every machines, and the administration of ProActive Scheduler.
+                </para>
+            </listitem>
+            <listitem>
+                <para>The<emphasis>toolbox user</emphasis>: who will simply use the installed toolbox to run matlab code
+                    in parallel.
+                </para>
+            </listitem>
+        </itemizedlist>
+
+        <para>The basic requirements for the
+            <emphasis>administrator</emphasis>
+            is to have a standard Information Technology knowledge on windows or linux, for example:
+        </para>
+        <itemizedlist>
+            <listitem>
+                <para>Start programs on windows or linux using the command line shell (sh or bat).</para>
+            </listitem>
+            <listitem>
+                <para>Change environment variables on windows or linux.</para>
+            </listitem>
+            <listitem>
+                <para>Be confident with XML syntax.</para>
+            </listitem>
+            <listitem>
+                <para>Understand network protocols and principles.</para>
+            </listitem>
+            <listitem>
+                <para>Have a basic knowledge of Security principles such as asymetric key pairs, and accounts management
+                    frameworks such as Ldap.
+                </para>
+            </listitem>
+            <listitem>
+                <para>Have a basic knowledge of the Java Programming Language.</para>
+            </listitem>
+            <listitem>
+                <para>Have a basic knowledge of scripting languages such as Javascript, Python or Ruby.</para>
+            </listitem>
+        </itemizedlist>
+
+        <para>The basic requirement for the
+            <emphasis>toolbox user</emphasis>
+            is to be able to write standard Scilab code. A few aspects must be kept in mind while designing functions
+            that will be run remotely :
+        </para>
+        <itemizedlist>
+            <listitem>
+                <para>Any reference to a file must be done using relative paths, excluding any use of '..' from the
+                    current folder (any tree hierarchy higher than the current directory has no meaning remotely).
+                </para>
+            </listitem>
+            <listitem>
+                <para>Files to be transferred to or from a remote worker must be declared explicitly through the
+                    InputFiles and OutputFiles tasks information.
+                </para>
+            </listitem>
+            <listitem>
+                <para>Paths must be written with a portable syntax (usage of filesep() is recommended).</para>
+            </listitem>
+            <listitem>
+                <para>Functions of any number of input parameters are accepted but number of output parameters must be
+                    1.
+                </para>
+            </listitem>
+            <listitem>
+                <para>Functions must be independent from each others executions. It is not possible to write tightly
+                    coupled code with inter-dependant communications.
+                </para>
+            </listitem>
+        </itemizedlist>
+    </refsection>
+    <refsection>
+        <title>What are the current limitations of Scilab Connector Toolbox?</title>
+        <para>Known bugs and limitations are reported on ProActive Matlab/Scilab Connector's JIRA bug reporting tool:</para>
+        <para><emphasis>https://bugs.activeeon.com/browse/MSC</emphasis></para>
+
+
+
+
+    </refsection>
+    <refsection>
+        <title>See Also</title>
+        <simplelist type="inline">
+            <member>
+                <link linkend="Installation">Installation</link>
+            </member>
+            <member>
+                <link linkend="PAsolve">PAsolve</link>
+            </member>
+            <member>
+                <link linkend="PAconnect">PAconnect</link>
+            </member>
+        </simplelist>
+    </refsection>
+    <refsection>
+        <title>Authors</title>
+
+        <simplelist type="vert">
+            <member>The ProActive Team, Fabien Viale</member>
+        </simplelist>
+    </refsection>
+</refentry>

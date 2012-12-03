@@ -76,10 +76,10 @@
 </ul>
 <p>The commands to start ProActive Scheduler are located in SCHEDULING/bin/unix or SCHEDULING/bin/windows, depending on your Operating System. The following commands are present:</p>
 <ul type="disc">
-    <li><p><b>rm-start.sh(.bat)</b>: To start ProActive Resource Manager.</p></li>
-    <li><p><b>rm-start-clean.sh(.bat)</b>: To start ProActive Resource Manager with a clean database (first startup).</p></li>
-    <li><p><b>scheduler-start.sh(.bat)</b>: To start ProActive Scheduler.</p></li>
-    <li><p><b>scheduler-start-clean.sh(.bat)</b>: To start ProActive Scheduler with a clean database (first startup).</p></li>
+    <li><p><b>rm-start(.bat)</b>: To start an empty ProActive Resource Manager.</p></li>
+    <li><p><b>rm-start(.bat) -ln</b>: To start a ProActive Resource Manager with 4 local workers.</p></li>
+    <li><p><b>scheduler-start(.bat)</b>: To start ProActive Scheduler.</p></li>
+    <li><p><b>scheduler-start-gui(.bat)</b>: This starts the scheduler, the resource manager and all the web portals.</p></li>
 </ul>
 <p>The following sequence of commands (executed from SCHEDULING/bin/unix) will start a Resource Manager will 4 local Nodes(JVM) and a Scheduler. Although this trivial deployment is not meant to be a practical case, it is still a good way to test the framework and become familiar with ProActive.</p>
 <p>First the Resource Manager:</p>
@@ -105,6 +105,8 @@ Scheduler successfully created on rmi://pendule.inria.fr:1099/</pre>
 <p>From a matlab session, assuming that Matlab Connector Toolbox is already in Matlab path, run the following command (where PAconnect's argument is the url you received from the Scheduler starting command):</p>
 
 <pre>>> PAconnect('rmi://pendule.inria.fr:1099/');</pre>
+
+<p> you can also use the simplify syntax PAconnect(), it will automatically look for a scheduler deployed locally.</p>
 
 <p>A popup window will appear asking for a username and password. This username/password refers to the username and password of your account on ProActive Scheduler. ProActive Scheduler features a full account management facility along with the possibility to synchronize to existing Windows or Linux accounts via LDAP. More information can be found at <a href="http://proactive.inria.fr/release-doc/Scheduling/multiple_html/admin_manual.html#Scheduler_authentication">Scheduler Manual:Configure users authentication</a>.</p>
 <p>Here for this example we will use the default account with login <b>demo</b> and password <b>demo</b>.</p>
