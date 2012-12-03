@@ -1,0 +1,760 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<refentry version="5.0-subset Scilab" xml:id="Submitting" xml:lang="en"
+          xmlns="http://docbook.org/ns/docbook"
+          xmlns:xlink="http://www.w3.org/1999/xlink"
+          xmlns:svg="http://www.w3.org/2000/svg"
+          xmlns:ns3="http://www.w3.org/1999/xhtml"
+          xmlns:mml="http://www.w3.org/1998/Math/MathML"
+          xmlns:db="http://docbook.org/ns/docbook">
+    <info>
+        <pubdate>$LastChangedDate: 2011-07-20 18:41:39 +0100 (mer., 20 july 2011)$</pubdate>
+    </info>
+    <refnamediv>
+        <refname>Submitting</refname>
+
+        <refpurpose>Running Scilab functions remotely</refpurpose>
+
+    </refnamediv>
+
+    <refsection>
+        <title>Introduction</title>
+
+
+        <para>The three main actors of Scilab Connector Toolbox are the following functions and objects:</para>
+
+        <itemizedlist>
+            <listitem>
+                <para><link linkend="PAsolve">PAsolve</link>: It is the function used to run scilab code remotely. A
+                    call to PAsolve will create a Scilab job inside ProActive Scheduler. After the job is created, the
+                    PAsolve function will return, allowing the local Scilab session to continue while the results are
+                    being produced.
+                </para>
+            </listitem>
+            <listitem>
+                <para><link linkend="PAResult">PAResult</link>: this object is returned by the PAsolve
+                    function. PAsolve returns a vector of PAResult objects, whose size matches the number of parameters
+                    to the PAsolve function. The PAResult object defines a collection of methods which can be used to
+                    wait (block the local Scilab session) for specific results.
+                </para>
+            </listitem>
+            <listitem>
+                <para><link linkend="PATask">PATask</link>: this object allows to define complex tasks that
+                    can be given as parameters to PAsolve.
+                </para>
+            </listitem>
+        </itemizedlist>
+
+
+    </refsection>
+    <refsection>
+    <title>Simple parametric sweep</title>
+
+        <para>In this paragraph, we will explain how PAsolve should be called to evaluate remotely a scilab function. It is possible to do a single remote evaluation, but here we will use as example a multiple remote evaluation of the same function but with different parameters (parametric sweep). For this example, we will use the scilab function <literal>cosh</literal>, which has no practical use to be run remotely, but which will serve as a well-known example. After the scilab session is connected to the scheduler (explained in paragraph <link linkend="Startup">Connecting to a running ProActive Scheduler from Scilab</link>), enter the following command on the scilab prompt:</para>
+        <screen><![CDATA[-->res=PAsolve('cosh',1,2,3,4,5)
+
+ Job submitted : 1
+ res  =
+
+(1):
+Awaited (J:1)
+(2):
+Awaited (J:1)
+(3):
+Awaited (J:1)
+(4):
+Awaited (J:1)
+(5):
+Awaited (J:1)
+ ]]></screen>
+        <para>PAsolve is being called with a function handle to the scilab function "cosh". A list of parameters from 1 to 5 is being given. This means that remotely cosh(1), cosh(2),..., cosh(5) will be executed. The PAsolve call returns immediately, giving the ID of the job created (1) inside ProActive Scheduler and returning in the res variable an array of PAResult objects which display themselves as <emphasis>Awaited</emphasis> objects from job ID 1.</para>
+        <para>After a while, cosh results will be produced. It is possible to force Scilab to wait(block) for these results using a specific function call (explained in next section <emphasis>Receiving results</emphasis>). But here, we will simply evaluate the variable <literal>res</literal> until it displays itself as received :</para>
+        <screen><![CDATA[-->res
+ res  =
+
+Job 1: Task 0_0
+[ Tue Jan 11 14:27:33 CET 2011 ][pendule OUT]
+
+Job 1: Task 1_0
+[ Tue Jan 11 14:27:33 CET 2011 ][pendule OUT]
+
+Job 1: Task 2_0
+[ Tue Jan 11 14:27:33 CET 2011 ][pendule OUT]
+
+Job 1: Task 3_0
+[ Tue Jan 11 14:27:33 CET 2011 ][pendule OUT]
+
+Job 1: Task 4_0
+[ Tue Jan 11 14:27:33 CET 2011 ][pendule OUT]
+
+Job 1 removed.
+
+
+(1):
+
+    1.5430806
+(2):
+
+    3.7621957
+(3):
+
+    10.067662
+(4):
+
+    27.308233
+(5):
+
+    74.209949
+
+        ]]></screen>
+        <para>This output shows the remote outputs of the five executions cosh(1..5). Actually, this output is shown here for the example, in the real case, as the cosh function prints no output, there will be nothing displayed.</para>
+        <para>The remote outputs are displayed only once. They can be accessed later using the <literal>logs</literal> attribute of the PAResult task:</para>
+        <screen><![CDATA[-->res
+ res  =
+
+(1):
+
+    1.5430806
+(2):
+
+    3.7621957
+(3):
+
+    10.067662
+(4):
+
+    27.308233
+(5):
+
+    74.209949
+ ]]></screen>
+
+        <screen><![CDATA[res.logs
+ ans  =
+
+
+       ans(1)
+
+ Job 1: Task 0_0
+[ Tue Jan 11 14:27:33 CET 2011 ][pendule OUT]
+
+       ans(2)
+
+ Job 1: Task 1_0
+[ Tue Jan 11 14:27:33 CET 2011 ][pendule OUT]
+
+       ans(3)
+
+ Job 1: Task 2_0
+[ Tue Jan 11 14:27:33 CET 2011 ][pendule OUT]
+
+       ans(4)
+
+ Job 1: Task 3_0
+[ Tue Jan 11 14:27:33 CET 2011 ][pendule OUT]
+
+       ans(5)
+
+ Job 1: Task 4_0
+[ Tue Jan 11 14:27:33 CET 2011 ][pendule OUT]
+   ]]></screen>
+        
+        <para>We've been through a few examples of how to use PAsolve with the scilab function cosh, but in general, scilab functions are very fast and rarely need to be run remotely. Complex user-defined functions, on the other hand, can really benefit from parallel computing. We will explain in the next section <emphasis>Parametric sweep with user code</emphasis>, how to run user functions remotely.</para>
+
+    </refsection>
+    <refsection>
+        <title>Parametric sweep with user code</title>
+
+
+        <para>In this chapter, we will create user-defined scilab functions that we will try to run remotely. Here are the two functions that we will write:</para>
+        <itemizedlist>
+            <listitem><para>A function called <literal>helloworld</literal> which will not compute anything but will try to display remotely the message "Hello World!".</para></listitem>
+            <listitem><para>A function called <literal>makeerror</literal> which will produce a scilab error remotely.</para></listitem>
+        </itemizedlist>
+        <para>Here is how the <literal>helloworld.sci</literal> file is defined :</para>
+        <screen><![CDATA[function ok=helloworld()
+    disp('HelloWorld');
+    ok=%t;
+endfunction]]></screen>
+
+        <para>Here is the PAsolve execution of <literal>helloworld</literal>:</para>
+        <screen><![CDATA[res=PAsolve('helloworld',list(),list(),list())
+
+ Job submitted : 3
+ res  =
+
+(1):
+Awaited (J:3)
+(2):
+Awaited (J:3)
+(3):
+Awaited (J:3)
+
+-->res
+ res  =
+
+Job 3: Task 0_0
+[2012-12-03 16:22:045 precision][SCILAB] HelloWorld
+
+
+Job 3: Task 1_0
+[2012-12-03 16:22:045 precision][SCILAB] HelloWorld
+
+
+Job 3: Task 2_0
+[2012-12-03 16:22:045 precision][SCILAB] HelloWorld
+
+
+Job 3 removed.
+
+
+(1):
+
+  T
+(2):
+
+  T
+(3):
+
+  T
+ ]]></screen>
+        <para>You see in this example how the HelloWorld string is displayed on the remote engines and appears in the job logs. Please note that we didn't do anything particular to transfer the definition of the helloworld function to the remote scilab engine. In reality, this is done seamlessly by the ProActive toolbox: the toolbox automatically transfers the source code of the function used.
+            But all other user-functions used by this function must be specified via a specific syntax (see the following section <emphasis></emphasis>).</para>
+        <para>Note as well the syntax of the call PAsolve('helloworld',list(),list(),list()), which says that we call helloworld with no parameter (an empty list).</para>
+        <para>If helloworld had more than one parameter, we would as well use a list to hold the parameters such as PAsolve('multparam',list(param_1_1,param_1_2,..param_1_k),...,list(param_n_1,param_n_2,..param_n_k)). This would call the k-parameter function "multparam" n-times.</para>
+        <para>In the case where the function requires a single parameter which is a list, the following syntax should be used : PAsolve('onelistfunc',list(listparam_1), ..., list(listparam_n) , where listparam_1..n are lists.</para>
+
+        <para>Here is how the <literal>makeerror.sci</literal> file is defined :</para>
+        <screen><![CDATA[function ok=makeerror()
+      // b doesn't exist!
+      disp(b)
+      ok=%t;
+endfunction]]></screen>
+
+        <para>Here is the PAsolve execution of <literal>makeerror</literal>:</para>
+        <screen><![CDATA[-->res=PAsolve('makeerror',list(),list(),list())
+
+ Job submitted : 4
+ res  =
+
+(1):
+Awaited (J:4)
+(2):
+Awaited (J:4)
+(3):
+Awaited (J:4)
+
+-->res
+ res  =
+
+Job 4: Task 0_0
+[2012-12-03 16:31:008 precision][SCILAB]!-- error 4
+[2012-12-03 16:31:008 precision][SCILAB]
+[2012-12-03 16:31:008 precision][SCILAB]Variable non définie : b
+[2012-12-03 16:31:008 precision][SCILAB]
+[2012-12-03 16:31:008 precision][SCILAB] at line 3 of function makeerror
+[2012-12-03 16:31:008 precision][SCILAB]
+
+
+AVERTISSEMENT : PAResult:PAwaitFor Error during execution of task 0_0
+Job 4: Task 1_0
+[2012-12-03 16:31:008 precision][SCILAB]!-- error 4
+[2012-12-03 16:31:008 precision][SCILAB]
+[2012-12-03 16:31:008 precision][SCILAB]Variable non définie : b
+[2012-12-03 16:31:008 precision][SCILAB]
+[2012-12-03 16:31:008 precision][SCILAB] at line 3 of function makeerror
+[2012-12-03 16:31:008 precision][SCILAB]
+
+
+AVERTISSEMENT : PAResult:PAwaitFor Error during execution of task 1_0
+Job 4: Task 2_0
+[2012-12-03 16:31:008 precision][SCILAB]!-- error 4
+[2012-12-03 16:31:008 precision][SCILAB]
+[2012-12-03 16:31:008 precision][SCILAB]Variable non définie : b
+[2012-12-03 16:31:008 precision][SCILAB]
+[2012-12-03 16:31:008 precision][SCILAB] at line 3 of function makeerror
+[2012-12-03 16:31:008 precision][SCILAB]
+
+
+Job 4 removed.
+
+
+AVERTISSEMENT : PAResult:PAwaitFor Error during execution of task 2_0
+AVERTISSEMENT : PAWaitFor:Error occured
+(1):
+Job 4: Task 0_0
+[2012-12-03 16:31:008 precision][SCILAB]!-- error 4
+[2012-12-03 16:31:008 precision][SCILAB]
+[2012-12-03 16:31:008 precision][SCILAB]Variable non définie : b
+[2012-12-03 16:31:008 precision][SCILAB]
+[2012-12-03 16:31:008 precision][SCILAB] at line 3 of function makeerror
+[2012-12-03 16:31:008 precision][SCILAB]
+
+
+     []
+(2):
+Job 4: Task 1_0
+[2012-12-03 16:31:008 precision][SCILAB]!-- error 4
+[2012-12-03 16:31:008 precision][SCILAB]
+[2012-12-03 16:31:008 precision][SCILAB]Variable non définie : b
+[2012-12-03 16:31:008 precision][SCILAB]
+[2012-12-03 16:31:008 precision][SCILAB] at line 3 of function makeerror
+[2012-12-03 16:31:008 precision][SCILAB]
+
+
+     []
+(3):
+Job 4: Task 2_0
+[2012-12-03 16:31:008 precision][SCILAB]!-- error 4
+[2012-12-03 16:31:008 precision][SCILAB]
+[2012-12-03 16:31:008 precision][SCILAB]Variable non définie : b
+[2012-12-03 16:31:008 precision][SCILAB]
+[2012-12-03 16:31:008 precision][SCILAB] at line 3 of function makeerror
+[2012-12-03 16:31:008 precision][SCILAB]
+
+
+     []
+ ]]></screen>
+
+        <para>You see in this example how the scilab errors from the remote execution are forwarded and appear in the logs.</para>
+       
+    </refsection>
+    <refsection>
+        <title>Receiving results</title>
+        <para>As explained above, PAsolve calls are asynchronous and don't block Scilab session, a collection of functions are provided to wait(block) for results arrival or test their presence without blocking:</para>
+        <itemizedlist>
+            <listitem><para><literal>PAwaitFor</literal>: given a vector of PAResult, blocks the scilab session until all results are received.</para></listitem>
+            <listitem><para><literal>PAwaitAny</literal>: given a vector of PAResult, blocks the scilab session until any one of those results are received. Successive calls to PAwaitAny, allows to retrieve the results one by one, in completion order.</para></listitem>
+            <listitem><para><literal>PAisAwaited</literal>: given a vector of PAResult, this non-blocking call tells which results are available.</para></listitem>
+            <listitem><para><literal>PAResult.val attribute</literal>: similarly to PAwaitFor, block the scilab session until all results are received. As it is an attribute, it provides full control on which particular results needs to be waited.</para></listitem>
+        </itemizedlist>
+
+        <para>Here is an example of using <literal>PAwaitFor</literal>:</para>
+        <screen><![CDATA[-->res=PAsolve('cosh', 1, 2, 3, 4, 5)
+
+ Job submitted : 5
+ res  =
+
+(1):
+Awaited (J:5)
+(2):
+Awaited (J:5)
+(3):
+Awaited (J:5)
+(4):
+Awaited (J:5)
+(5):
+Awaited (J:5)
+
+-->val=PAwaitFor(res)
+Job 5: Task 0_0
+
+
+Job 5: Task 1_0
+
+
+Job 5: Task 2_0
+
+
+Job 5: Task 3_0
+
+
+Job 5: Task 4_0
+
+
+Job 5 removed.
+
+
+ val  =
+
+
+       val(1)
+
+    1.5430806
+
+       val(2)
+
+    3.7621957
+
+       val(3)
+
+    10.067662
+
+       val(4)
+
+    27.308233
+
+       val(5)
+
+    74.209949
+
+-->typeof(val)
+ ans  =
+
+ list
+
+-->typeof(val(1))
+ ans  =
+
+ constant
+
+-->typeof(res)
+ ans  =
+
+ PAResL
+ ]]></screen>
+        <para>Notice that <literal>PAwaitFor</literal> returns its result in a list, which contains the real result to the cosh call. The "res" variable above will always be of class <literal>PAResL(PAResult)</literal>, and thus is not usable directly.</para>
+
+        <para>Here is an example of using <literal>PAwaitAny</literal>:</para>
+        <screen><![CDATA[-->res=PAsolve('cosh', 1, 2, 3, 4, 5)
+
+ Job submitted : 6
+ res  =
+
+(1):
+Awaited (J:6)
+(2):
+Awaited (J:6)
+(3):
+Awaited (J:6)
+(4):
+Awaited (J:6)
+(5):
+Awaited (J:6)
+
+-->val1=PAwaitAny(res)
+Job 6: Task 0_0
+
+
+ val1  =
+
+    1.5430806
+
+-->val2=PAwaitAny(res)
+Job 6: Task 2_0
+
+
+ val3  =
+
+    10.067662
+
+-->val3=PAwaitAny(res)
+Job 6: Task 1_0
+
+
+ val2  =
+
+    3.7621957
+
+
+-->val4=PAwaitAny(res)
+Job 6: Task 3_0
+
+
+ val4  =
+
+    27.308233
+
+-->val5=PAwaitAny(res)
+Job 6: Task 4_0
+
+
+Job 6 removed.
+
+
+ val5  =
+
+    74.209949
+
+-->val6=PAwaitAny(res)
+ !--error 10000
+All results have already been accessed
+at line      23 of function PAwaitAny called by :
+val6=PAwaitAny(res)
+
+ ]]></screen>
+
+        <para>Notice how successive calls to <literal>PAwaitAny</literal> returns different answers, and how the last call produces an error as all results have already been received. Please note as well, that the order in which results are received by a <literal>PAwaitAny</literal> call does NOT necessary match the order of the <literal>PAsolve</literal> call (i.e. first calls returns 1, second 2, etc...). It only depends on the order of completion and not submission!</para>
+
+        <para>Finally, an example of using <literal>PAisAwaited</literal>:</para>
+
+        <screen><![CDATA[-->res=PAsolve('cosh', 1, 2, 3, 4, 5)
+
+ Job submitted : 7
+ res  =
+
+(1):
+Awaited (J:7)
+(2):
+Awaited (J:7)
+(3):
+Awaited (J:7)
+(4):
+Awaited (J:7)
+(5):
+Awaited (J:7)
+
+-->val=PAisAwaited(res)
+ val  =
+
+  T
+  T
+  F
+  T
+  T
+
+-->val=PAisAwaited(res)
+ val  =
+
+  F
+  F
+  F
+  F
+  F
+ ]]></screen>
+
+        <para>We see in this example how results are progressively received. Finally the <literal>val</literal> attribute of the PAResult class can be used like PAwaitFor:</para>
+        <screen><![CDATA[-->res(1:2).val
+ ans  =
+
+
+       ans(1)
+
+    1.5430806
+
+       ans(2)
+
+    3.7621957
+
+-->res(3).val
+ ans  =
+
+    10.067662
+
+-->typeof(ans)
+ ans  =
+
+ constant
+
+-->res(4:5).val
+ ans  =
+
+
+       ans(1)
+
+    27.308233
+
+       ans(2)
+
+    74.209949
+
+-->typeof(ans)
+ ans  =
+
+ list   ]]></screen>
+        <para>You see how the <literal>val</literal> attribute has been used here to wait for the first two results, the third one and then the last two. You see as well how the variable type returned in the ans variable varies. Here is the convention : if more than one results is retrieved, the <literal>val</literal> attribute packs all results retrieved in a list. If only one result is retrieved, the <literal>val</literal> attribute returns it without packing.</para>
+        <para>We've seen above that we can as well call the <literal>logs</literal> attribute to retrieve task logs. Similarly a call to the <literal>logs</literal> attribute will block the scilab session until the result is available, and will behave the same as the <literal>val</literal> attribute concerning packing.</para>
+
+
+    </refsection>
+    <refsection>
+    <title>Complex Tasks Definitions</title>
+        <para>Running single scilab functions remotely is the standard way of using <literal>PAsolve</literal>, but sometimes Scilab functions will also need to read input files and/or write output files. In this chapter, we will describe how to do that using the object class <literal>PATask</literal>.</para>
+        <para>The <literal>PATask</literal> object works exactly like a structure. It contains, among others the following fields (see <link linkend="PATask">PATask</link> for the full list):</para>
+        <itemizedlist>
+            <listitem><para><literal>Func</literal>:the function to be executed in this task, i.e. 'cosh'.</para> </listitem>
+            <listitem><para><literal>Params</literal>: the parameters to the function, which can either be a single parameter or a cell array containing the function multiple parmaeters.</para></listitem>
+            <listitem><para><literal>InputFiles</literal>: the input files, given as a PAFiles array. Paths to the input files must be given relatively to the current directory and it is not allowed to refer to a file which is outside the current directory hierarchy (i.e. no '..').</para></listitem>
+            <listitem><para><literal>OutputFiles</literal>: the output files, given as a PAFiles array. Similarly the paths must be relative to the base directory of the remote scilab engine (which will be a subdirectory of the TEMP directory). The scilab function will have to create those files and all subdirectories relative to the base one.</para></listitem>
+            <listitem><para><literal>Description</literal>: a string representing the task.</para></listitem>
+            <listitem><para><literal>SelectionScript</literal>: a string which defines an additional Selection Script to select resources (see ProActive Scheduler Manual).</para></listitem>
+            <listitem><para><literal>Static</literal>: a boolean which defines if the SelectionScript used should be static or dynamic, default to dynamic (see ProActive Scheduler Manual).</para></listitem>
+            <listitem><para><literal>ScriptParams</literal>:  a string containing the parameters of the custom script delimited by spaces.</para></listitem>
+            <listitem><para><literal>NbNodes</literal>:  an integer value which indicates the number of Scheduler Nodes necessary to run this task. This parameter is interesting in
+                case the Scilab engine is running in multithreaded mode to specify the number of processors necessary or if an external program is
+                called from the task, and this programs requires multiple processors and/or machines. </para></listitem>
+            <listitem><para><literal>Topology</literal>: a string parameter which affects how nodes will be chosen to meet the NbNodes required. The values possible are : 'arbitrary',
+                'bestProximity', 'thresholdProximity', 'singleHost', 'singleHostExclusive', 'multipleHostsExclusive', 'differentHostsExclusive'
+                Please refer to ProActive Scheduler manual for more information on these values.</para></listitem>
+            <listitem><para><literal>ThresholdProximity</literal>: an integer value which indicates the threshold
+                in case the 'thresholdProximity' is set on the Topology attribute. Please
+                refer to ProActive Scheduler manual for more information on this setting.</para></listitem>
+            <listitem><para><literal>Compose</literal>: true or false. When composing tasks, is the result of the previous task given as first parameter of this one (see next chapter <emphasis>Chaining Remote Tasks</emphasis>) ?</para></listitem>
+        </itemizedlist>
+        <para>To illustrate the usage of <literal>PATask</literal>, we will define a simple Scilab function <literal>coshfile</literal> which will read an integer from a data file and will output the cosh of this integer to a second data file</para>
+        <para>Here is the content of <literal>coshfile.sci</literal>:</para>
+        <screen><![CDATA[function ok=coshfile()
+    load('coshfile_in.dat')
+    b=cosh(a);
+    save('coshfile_out.dat','b');
+    ok=%t;
+endfunction]]></screen>
+        <para>Below is the PAsolve execution of <literal>coshfile</literal> with the creation of the PATask and input/output files. We execute only one task, as multiple task would involve handling multiple files and would be too complicate for this example. The PAsolve function takes the PATask as parameter, which contains all the necessary information:</para>
+        <screen><![CDATA[-->t=PATask(1,1);
+
+-->t.Func = 'coshfile';
+
+-->t.Params = list();
+
+-->t.InputFiles='coshfile_in.dat';
+
+-->t.OutputFiles='coshfile_out.dat';
+
+-->t
+ t  =
+
+(1,1):
+Func: coshfile
+Params:
+InputFiles: { coshfile_in.dat (automatic) }
+OutputFiles: { coshfile_out.dat (automatic) }
+Static: false
+ThresholdProximity: 0
+Compose: false
+
+-->a=5
+ a  =
+
+    5.
+
+-->save('coshfile_in.dat','a');
+
+-->r=PAsolve(t)
+
+ Job submitted : 19
+ r  =
+
+(1):
+Awaited (J:19)
+
+
+-->r.val
+ r  =
+
+Job 19: Task 0_0
+
+
+Job 19 removed.
+
+
+(1):
+
+  T
+
+-->load('coshfile_out.dat')
+
+-->disp(b)
+
+    74.209949
+ ]]></screen>
+ <para>The file <literal>coshfile_out.dat</literal>, created by the remote scilab worker in a temporary directory has been transferred to the local current directory of the scilab session !</para>
+    </refsection>
+    <refsection>
+    <title>Chaining Remote Tasks</title>
+        <para>In the previous chapter, we learnt how to create a <emphasis>PATask</emphasis> with InputFiles and OutputFiles parameters. In this chapter, we will learn how to chain PATasks that will be run successively, i.e. the output of the first PATask will be given as the input of the second PATask, etc.</para>
+        <para>For the computation, we will use again the scilab function <literal>cosh</literal>. We won't use input or output files in this example, but of course it's possible to use this feature while chaining tasks:</para>
+
+        <screen><![CDATA[-->t=PATask(3,1);
+
+-->t(1:3,1).Func = 'cosh';
+
+-->t(1,1).Params = list(2);
+
+-->t(2,1)=t(1,1);
+
+-->t(2,1).Params=list();
+
+-->t(2,1).Compose=%t;
+
+-->t(3,1)=t(2,1);
+
+-->t
+ t  =
+
+(1,1):
+Func: cosh
+Params:
+
+    2.
+InputFiles: { }
+OutputFiles: { }
+Static: false
+ThresholdProximity: 0
+Compose: false
+
+(2,1):
+Func: cosh
+Params:
+InputFiles: { }
+OutputFiles: { }
+Static: false
+ThresholdProximity: 0
+Compose: true
+
+(3,1):
+Func: cosh
+Params:
+InputFiles: { }
+OutputFiles: { }
+Static: false
+ThresholdProximity: 0
+Compose: true
+
+
+-->r=PAsolve(t)
+
+ Job submitted : 20
+ r  =
+
+(1):
+Awaited (J:20)
+
+-->r.val
+Job 20: Task 0_2
+
+
+Job 20 removed.
+
+
+ ans  =
+
+    1.124D+09
+
+-->cosh(cosh(cosh(2)))
+ ans  =
+
+    1.124D+09
+ ]]></screen>
+        <para><emphasis>Explanation</emphasis>: the first 3 lines create a <emphasis>PATask</emphasis> with function <literal>cosh</literal> and parameter <emphasis>2</emphasis>. The fourth line replicates this task to the second line. On the fifth and sixth command, we set the parameters to the second task to the empty list and we activate the <literal>Compose</literal> flag.</para>
+        <para>This means that the fist argument of the function <literal>Func</literal> will be taken from the result of the previous task instead of the task <literal>Params</literal> attribute. As <literal>cosh</literal> has only one parameter, we set the Params attribute to the empty list.</para>
+        <para>Finally, on the seventh line we replicate the line two of the <literal>PATask</literal> matrix, without changing it. At the end we verify that the result received matches the same computation done locally.</para>
+
+        <para>In these two examples we saw how to submit a PATask matrix, each time with a number of columns equal to 1. If we add more columns to the PATask matrix, it will mean that more parallel tasks will be submitted. To resume:</para>
+        <itemizedlist>
+            <listitem><para>A <emphasis>line</emphasis> vector of PATask of length k means that k PATask will be run in parallel</para></listitem>
+            <listitem><para>A <emphasis>column</emphasis> vector of PATask of length m means that m PATask will be chained</para></listitem>
+            <listitem><para>A <emphasis>matrix</emphasis> of PATask of size m,k means that k parallel series of m PATask chained together will be run</para></listitem>
+        </itemizedlist>    
+    </refsection>
+    <refsection>
+        <title>See Also</title>
+        <simplelist type="inline">
+            <member>
+                <link linkend="Introduction">Introduction</link>
+            </member>
+            <member>
+                <link linkend="PAsolve">PAsolve</link>
+            </member>
+            <member>
+                <link linkend="PAconnect">PAconnect</link>
+            </member>
+        </simplelist>
+    </refsection>
+
+    <refsection>
+        <title>Authors</title>
+
+        <simplelist type="vert">
+            <member>The ProActive Team, Fabien Viale</member>
+        </simplelist>
+    </refsection>
+</refentry>

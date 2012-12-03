@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<refentry version="5.0-subset Scilab" xml:id="Installation" xml:lang="en"
+          xmlns="http://docbook.org/ns/docbook"
+          xmlns:xlink="http://www.w3.org/1999/xlink"
+          xmlns:svg="http://www.w3.org/2000/svg"
+          xmlns:ns3="http://www.w3.org/1999/xhtml"
+          xmlns:mml="http://www.w3.org/1998/Math/MathML"
+          xmlns:db="http://docbook.org/ns/docbook">
+    <info>
+        <pubdate>$LastChangedDate: 2011-07-20 18:41:39 +0100 (mer., 20 july 2011)$</pubdate>
+    </info>
+    <refnamediv>
+        <refname>Installation</refname>
+
+        <refpurpose>Installation of the ProActive Scilab Connector Toolbox</refpurpose>
+
+    </refnamediv>
+
+    <refsection>
+        <title>Introduction</title>
+
+
+        <para>A typical deployment of ProActive Scheduler with Scilab can be seen on the diagram below:</para>
+        <para>
+            <inlinemediaobject>
+                <imageobject>
+                    <imagedata fileref="SchedulerScilab.png"/>
+                </imageobject>
+            </inlinemediaobject>
+        </para>
+        <itemizedlist>
+            <listitem>
+                <para>The local Scilab session will connect to the ProActive Scheduler.
+                </para>
+            </listitem>
+            <listitem>
+                <para>The local user will submit a function "foo" to call with a set of parameters.
+                </para>
+            </listitem>
+            <listitem>
+                <para>The Scheduler will select among all its resources, those suited to the job.
+                </para>
+            </listitem>
+            <listitem>
+                <para>A Scilab engine will be started on each selected resource.
+                </para>
+            </listitem>
+            <listitem>
+                <para>Each foo(k) will be executed on remote engine.
+                </para>
+            </listitem>
+            <listitem>
+                <para>Results will be forwarded back to the use
+                </para>
+            </listitem>
+        </itemizedlist>
+    </refsection>
+    <refsection>
+        <title>Downloading and Installing ProActive Scilab Toolbox and ProActive Scheduler</title>
+        <para>Scilab Connector Toolbox can be downloaded from :
+            <ulink url="http://www.activeeon.com/community-downloads">http://www.activeeon.com/community-downloads
+            </ulink>
+            and will be soon available on ATOMS.
+            The packages which must be downloaded are called Scilab_Connector(if not downloaded from ATOMS) and
+            ProActive Scheduling Server Full (e.g. <literal>ProActiveScheduling-3.3.1_bin_full.zip</literal>)
+        </para>
+        <para>
+            After the packages are downloaded, unzip them in a directory e.g. D:\Scilab_Connector and
+            D:\ProActive_Scheduling_server
+        </para>
+        <para>
+            According to your deployment infrastructure,
+            <emphasis>ProActive Scheduler</emphasis>
+            must be installed on :
+        </para>
+        <itemizedlist>
+            <listitem>
+                <para>The host which will launch the Scheduler.
+                </para>
+            </listitem>
+            <listitem>
+                <para>Each worker host used by the Scheduler.
+                </para>
+            </listitem>
+        </itemizedlist>
+        <para>The prerequisite for using the ProActive Scheduler is a<emphasis>Java Virtual Machine</emphasis>. On the
+            above list, machines must
+            have a Java Virtual Machine installed and available on the Path of either cmd.exe for Windows or sh for
+            linux. For many
+            ProActive features it is also necessary to define the environment variable
+            <literal>JAVA_HOME</literal>
+            to the installation directory of
+            the Java Virtual Machine.
+        </para>
+        <para>Complete configuration and installation of the ProActive Scheduler is beyond the scope of this help, for
+            more information, refer to:
+        </para>
+
+        <para>
+            <ulink url="http://proactive.inria.fr/release-doc/Scheduling/multiple_html/index.html">ProActive Scheduler
+                Manual
+            </ulink>
+        </para>
+        <para>
+            <emphasis>Scilab Connector</emphasis>
+            must be installed on :
+        </para>
+        <itemizedlist>
+            <listitem>
+                <para>Each client host which will connect to the Scheduler to submit Scilab functions.
+                </para>
+            </listitem>
+        </itemizedlist>
+    </refsection>
+
+    <refsection>
+        <title>Automatic Configurations</title>
+        <refsection>
+            <title>Automatic search of Scilab installations for workers</title>
+            <para>In the typical utilisation of the toolbox, no configuration of the worker host will be necessary for
+                Scilab. When a scilab
+                task is waiting to be executed on a scheduler worker, a script will be executed to locate automatically
+                scilab on the host.
+            </para>
+            <para>
+                The script will search for scilab in typical locations in both windows and linux environments and will
+                write the scilab installations found in a configuration file which will be stored on the host. If no scilab installation
+                is found, then the configuration file will be empty and the host will be assumed not to contain any scilab.
+            </para>
+            <para>Subsequent executions of
+                Scilab will reuse this configuration file to decide whether a scilab task can be executed on the host or
+                not (though
+                it is possible to force a scilab research via execution options, see option
+                <emphasis>ForceScilabSearch</emphasis>
+                in<link type="scilab" linkend="proactive_options.html">Configuring PAsolve behavior</link>).
+            </para>
+
+        </refsection>
+        <refsection>
+            <title>Automatic download of Scilab Connector libraries into the Scheduler</title>
+            <para>When the Scilab Connector creates jobs understandable by the ProActive Scheduler, it will transfer
+                along the ProActive
+                Scilab Connector libraries that will be used by the scheduler worker in order to create Scilab engines.
+                Those libraries
+                are not installed in the ProActive Scheduler by default.
+            </para>
+            <para>
+                This transfer is done via the option<emphasis>UseJobClassPath</emphasis>. If this option is set to
+                false, then no transfer will be done,
+                and the librairies will have to be copied manually on the scheduler server and workers installations.
+            </para>
+        </refsection>
+    </refsection>
+    <refsection>
+        <title>Manual Configurations</title>
+        <refsection>
+            <title>Manual configuration of Scilab installations for workers</title>
+            <para>It may happen though that on some hosts, Scilab is not installed in a typical location and the
+                automatic script doesn't manage to find it. In that case it will be necessary to write a Scilab configuration file manually.
+            </para>
+            <para>A sample configuration file is located inside the
+                <emphasis>Scilab_Connector/scheduler-plugin</emphasis>
+                folder under the name ScilabWorkerConfiguration.xml
+            </para>
+            <para>This file must be edited and put inside the
+                <emphasis>addons</emphasis>
+                directory of ProActive Scheduler. This must be done on ProActive Scheduler Server and on
+                every hosts that will be used as Scilab workers for which the automatic configuration didn't work.
+            </para>
+            <para>If the scheduler is installed in a single directory shared by all workers (via NFS for example), then
+                only one ScilabWorkerConfiguration.xml
+                file needs to be edited. The syntax of the file allows to create a configuration for several machine
+                groups via wildcards
+                that will match a machine's hostname or ipaddress, and as well several scilab installations for the same
+                machine.
+            </para>
+            <para>Here is an example of ScilabWorkerConfiguration.xml :</para>
+            <para>On each worker host that will be used to compute remotely scilab functions, a specific configuration
+                file must be written to tell the scheduler where to find a scilab installation. The configuration file
+                is called<emphasis>ScilabWorkerConfiguration.xml</emphasis>, and a template is located in the folder
+                <emphasis>Scilab_Connector/toolbox/config</emphasis>.
+            </para>
+            <para>This file must be edited and put in the
+                <emphasis>addons</emphasis>
+                directory of ProActive Scheduler
+            </para>
+            <para>If the scheduler is installed in a directory shared by all workers, then only one
+                ScilabWorkerConfiguration.xml file needs to be created. The syntax of the file allows to create a
+                configuration for several machines, machine groups, and as well several scilab installations for the
+                same machine.
+            </para>
+            <para>For example, here is an example of ScilabWorkerConfiguration.xml :
+            </para>
+            <programlisting><![CDATA[<MatSciWorkerConfiguration>
+    <MachineGroup hostname=".*">
+        <scilab>
+            <version>5.3.0</version> <!-- Scilab version (must be at least 5.3.0) -->
+            <home>c:\Program Files\scilab-5.3.0</home> <!-- Scilab installation directory -->
+            <bindir>bin</bindir>
+            <command>Scilex.exe</command>
+            <arch>32</arch>
+         </scilab>
+    </MachineGroup>
+</ScilabInstallations>]]></programlisting>
+            <para>Here is an explanation of tags used by this file:</para>
+            <itemizedlist>
+                <listitem>
+                    <para>
+                        <emphasis>MachineGroup:</emphasis>
+                        this defines the machines which are targeted by this configuration. Machines can be identified
+                        by either
+                        <emphasis>hostname</emphasis>
+                        or<emphasis>ip</emphasis>. The syntax of hostname and ip attributes follow the Regular
+                        Expression syntax
+                    </para>
+                </listitem>
+                <listitem>
+                    <para>
+                        <emphasis>version:</emphasis>
+                        the Scilab version installed in numeric format.
+                    </para>
+                </listitem>
+                <listitem>
+                    <para>
+                        <emphasis>home:</emphasis>
+                        full path to scilab home directory.
+                    </para>
+                </listitem>
+                <listitem>
+                    <para>
+                        <emphasis>bindir:</emphasis>
+                        relative path (from homedir) to scilab executable.
+                    </para>
+                </listitem>
+                <listitem>
+                    <para>
+                        <emphasis>command:</emphasis>
+                        scilab executable name.
+                    </para>
+                </listitem>
+                <listitem>
+                    <para>
+                        <emphasis>arch:</emphasis>
+                        scilab architecture used (32 or 64)
+                    </para>
+                </listitem>
+            </itemizedlist>
+        </refsection>
+        <refsection>
+            <title>Manual Installation of ProActive Scilab Connector Libraries to the ProActive Scheduler</title>
+            <para>If the option <literal>UseJobClassPath</literal> is set to false, the content of the directory <literal>Scilab_Connector/scheduler-plugin</literal> (not the directory itself, only the content) must be copied
+                inside the <literal>addons</literal> directory of ProActive Scheduler and of every Scilab Worker which will be used as matlab workers.</para>
+            <para>Manually installing the librairies used by Scilab Connector inside the scheduler reduces the overhead of transferring them each time through the network.</para>
+
+        </refsection>
+    </refsection>
+
+    <refsection>
+        <title>See Also</title>
+        <simplelist type="inline">
+            <member>
+                <link linkend="Introduction">Introduction</link>
+            </member>
+            <member>
+                <link linkend="PAsolve">PAsolve</link>
+            </member>
+            <member>
+                <link linkend="PAconnect">PAconnect</link>
+            </member>
+        </simplelist>
+    </refsection>
+
+    <refsection>
+        <title>Authors</title>
+
+        <simplelist type="vert">
+            <member>The ProActive Team, Fabien Viale</member>
+        </simplelist>
+    </refsection>
+</refentry>

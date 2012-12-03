@@ -69,19 +69,14 @@
     <a href="#top_of_page">Back to Top</a></p>
 <h3 class="title">Starting ProActive Scheduler</h3>
 
-<p>Before starting ProActive Scheduler and Resource Manager, make sure that you:</p>
-<ul type="disc">
-    <li><p>Changed the default Resource Manager settings according to the paragraph <a href="proactive_installation.html#installation-3">Scheduler Configuration For Matlab</a>.</p></li>
-    <li><p>Configured each Matlab worker host according to the paragraph  <a href="proactive_installation.html#installation-4">Configuration of Remote Workers for Matlab</a>.</p></li>
-</ul>
-<p>The commands to start ProActive Scheduler are located in SCHEDULING/bin/unix or SCHEDULING/bin/windows, depending on your Operating System. The following commands are present:</p>
+<p>The commands to start ProActive Scheduler are located in Scheduler_Server/bin/unix or Scheduler_Server/bin/windows, depending on your Operating System. The following commands are present:</p>
 <ul type="disc">
     <li><p><b>rm-start(.bat)</b>: To start an empty ProActive Resource Manager.</p></li>
     <li><p><b>rm-start(.bat) -ln</b>: To start a ProActive Resource Manager with 4 local workers.</p></li>
     <li><p><b>scheduler-start(.bat)</b>: To start ProActive Scheduler.</p></li>
     <li><p><b>scheduler-start-gui(.bat)</b>: This starts the scheduler, the resource manager and all the web portals.</p></li>
 </ul>
-<p>The following sequence of commands (executed from SCHEDULING/bin/unix) will start a Resource Manager will 4 local Nodes(JVM) and a Scheduler. Although this trivial deployment is not meant to be a practical case, it is still a good way to test the framework and become familiar with ProActive.</p>
+<p>The following sequence of commands (executed from Scheduler_Server/bin/unix) will start a Resource Manager will 4 local Nodes(JVM) and a Scheduler. Although this trivial deployment is not meant to be a practical case, it is still a good way to test the framework and become familiar with ProActive.</p>
 <p>First the Resource Manager:</p>
 <pre> $ rm-start-clean -ln
 Starting Resource Manager, Please wait...
@@ -112,12 +107,33 @@ Scheduler successfully created on rmi://pendule.inria.fr:1099/</pre>
 <p>Here for this example we will use the default account with login <b>demo</b> and password <b>demo</b>.</p>
 
 <p>Here is what is displayed when the connection worked successfully:</p>
-<pre>>> PAconnect('rmi://pendule:1099/')
-Connection successful, please enter login/password
-Login succesful
-Creating dataspace handler, please wait...
-Dataspace handler created
->> </pre>
+<pre><![CDATA[ >> PAconnect('rmi://192.168.1.187:1099/')
+log file in use : C:\Users\fviale\AppData\Local\Temp\MatlabJVMSpawnHelper.log
+[2012-12-03 14:20:007 precision][MIDDLEMAN]Logging to org.slf4j.impl.Log4jLoggerAdapter(org.mortbay.log) via org.mortbay.log.Slf4jLog
+[2012-12-03 14:20:007 precision][MIDDLEMAN]jetty-6.1.x
+[2012-12-03 14:20:007 precision][MIDDLEMAN]Started SelectChannelConnector@0.0.0.0:32092
+[2012-12-03 14:20:007 precision][MIDDLEMAN]Remote Object Factory provider <pamr, class org.objectweb.proactive.extensions.pamr.remoteobject.PAMRRemoteObjectFactory> found
+[2012-12-03 14:20:007 precision][MIDDLEMAN]Remote Object Factory provider <pnp, class org.objectweb.proactive.extensions.pnp.PNPRemoteObjectFactory> found
+[2012-12-03 14:20:007 precision][MIDDLEMAN]Remote Object Factory provider <pnps, class org.objectweb.proactive.extensions.pnpssl.PNPSslRemoteObjectFactory> found
+[2012-12-03 14:20:007 precision][MIDDLEMAN]Remote Object Factory provider <pamrd, class org.objectweb.proactive.extensions.pamrd.PAMRDRemoteObjectFactorySPI$PAMRDRemoteObjectFactory> found
+[2012-12-03 14:20:007 precision][MIDDLEMAN]Remote Object Factory provider <amqp, class org.objectweb.proactive.extensions.amqp.remoteobject.AMQPRemoteObjectFactory> found
+[2012-12-03 14:20:007 precision][MIDDLEMAN]Remote Object Factory provider <amqp-federation, class org.objectweb.proactive.extensions.amqp.federation.AMQPFederationRemoteObjectFactory> found
+[2012-12-03 14:20:007 precision][MIDDLEMAN]Remote Object Factory provider <rmissl, class org.objectweb.proactive.extra.rmissl.RmiSslRemoteObjectFactory> found
+[2012-12-03 14:20:007 precision][MIDDLEMAN][MiddlemanDeployer] Starting Middleman JVM
+[2012-12-03 14:20:008 precision][MIDDLEMAN]Created a new registry on port 1110
+[2012-12-03 14:20:009 precision][MIDDLEMAN][MiddlemanDeployer] Middleman JVM started
+
+ Connection to JVM successful
+
+ Connection successful to rmi://192.168.1.187:1099/
+
+ Please enter login/password
+
+ Login successful
+ ans  =
+
+     []
+]]></pre>
 
 <p>If the scheduler is unreachable, here is what is displayed :</p>
 <pre>>> PAconnect('rmi://pendule:1099/')
