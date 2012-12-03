@@ -149,7 +149,7 @@ public interface MatSciEnvironment extends Remote {
      * @throws org.ow2.proactive.scheduler.ext.matsci.client.common.exception.PASchedulerException if an exception occurs during reconnection
      * @throws java.rmi.RemoteException
      */
-    public void ensureConnection() throws PASchedulerException, RemoteException;
+    public boolean ensureConnection() throws PASchedulerException, RemoteException;
 
     /**
      * Terminates the current environment

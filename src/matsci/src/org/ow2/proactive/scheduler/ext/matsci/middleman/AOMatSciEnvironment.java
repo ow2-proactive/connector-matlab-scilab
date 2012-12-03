@@ -713,7 +713,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
     /**
      * {@inheritDoc}
      */
-    public void ensureConnection() {
+    public boolean ensureConnection() {
         if (!isLoggedIn()) {
             LOGGER_RO.setLevel(Level.FATAL);
             try {
@@ -724,6 +724,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
             }
             LOGGER_RO.setLevel(RO_LEVEL);
         }
+        return true;
     }
 
     /**
