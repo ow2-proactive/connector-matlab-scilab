@@ -4,16 +4,18 @@ function b=%PAResult_e(i1, R)
     //disp(i1)
     select i1
     case 'val'
-        b = PAResult_PAwaitFor(R);
+         b = PAwaitFor(R);
     case 'logs'
         if (jexists(R.logs)) then
-           b = jinvoke(R.logs,'toString');
+            PAwaitFor(R);
+            b = jinvoke(R.logs,'toString');
         else
             error('PAResult::object cleared');
         end
         
     case 'iserror'
         if (jexists(R.iserror)) then
+            PAwaitFor(R);
             b = jinvoke(R.iserror, 'get');
         else
             error('PAResult::object cleared');
