@@ -77,19 +77,58 @@
 <ul type="disc">
     <li><p><b>JobName</b>: Name of the job that will be submitted to the Scheduler</p></li>
     <li><p><b>JobDescription</b>: Description of the job that will be submitted to the scheduler</p></li>
-    <li><p><b>Debug</b>: activate this option if any problem occurs and you want Matlab Connector Toolbox to run in debug mode (with verbose output)</p></li>
-    <li><p><b>TransferEnv</b>: this important option is by default set to off. If set to on, it allows the automatic transfer of the workspace where the PAsolve call is done to the remote matlab engines. Global variables are transferred but not local variables existing in workspaces higher than the current one. The options <b>EnvExcludeList</b> and <b>EnvExcludeTypeList</b> control the name and type of variables that should be excluded from the transfer.</p></li>
-    <li><p><b>LicenseSaverURL</b>: this very important option is the address of the proxy server which, if installed, acts as a proxy to the FlexNET server. The proxy server ensures that Matlab or toolboxes license tokens are available before any remote Matlab tasks starts. The scheduling of the task will be delayed until the tokens are available. The License Saver Proxy is not distributed with ProActive Toolbox and must be downloaded separately. See <a href="http://www.activeeon.com">http://www.activeeon.com</a> for availablity and download. </p></li>
-    <li><p><b>CustomDataspaceURL</b> and <b>CustomDataspacePath</b>: by default these options are not set. Dataspaces are a ProActive internal mechanism allowing a shared file system between hosts. The mechanism allows the automatic transfer of files between the local matlab session and the remote engines. <b>Matlab Connector Toolbox</b> has an internal automatic Dataspace creation. But sometimes, one would like to rely on an external Dataspace such as a ftp server. This Dataspace MUST be accessible from the local file system in order to work with <b>Matlab Connector Toolbox</b>.The <b>CustomDataspaceURL</b> option gives the Universally accessible URL of this dataspace and the <b>CustomDataspacePath</b> gives the path to access this dataspace from the local file system. </p></li>
-    <li><p><b>SharedPushPublicUrl</b>, <b>SharedPullPublicUrl</b>, <b>SharedPushPrivateUrl</b>, <b>SharedPullPrivateUrl</b></p>: similarly to the CustomDataspaceURL option, these URLS define the addresses of the Shared DataSpaces (if the scheduler is configured to deploy them). Shared Dataspaces are used as "Cache" DataSpaces, the Matlab connector toolbox will push its input files to the SharedPushPublicUrl and pull the output files from the SharedPullPublicUrl. Private urls will be used by the workers to access the files.</p></li>
-    <li><p><b>VersionPref</b>, <b>VersionMin</b>, <b>VersionMax</b> and <b>VersionRej</b>: these options allow the user to define which version of Matlab should/should not be used. In an heterogeneous environment, several versions of matlab can be available simultaneously on the network. These options ensures that the submitted matlab code will meet the correct matlab version. It is the responsibility of the user to find which versions are/are not compatible with the code.</p></li>
-    <li><p><b>VersionPref</b>: is the preferred version to use. It won't prevent another version to be used if the preferred version is not available.It is set automatically to the version of the local matlab session, but can be as well user defined via this option.</p></li>
-    <li><p><b>VersionMin</b> and <b>VersionMax</b>: is the minimum/maximum version to use. It is set by default to the minimum/maximum version supported.</p></li>
-    <li><p><b>VersionRej</b>: is a list of versions to be rejected. It is set by default to the versions for which the ptolemy java2matlab interface has not been compiled (and thus are not supported). These versions are all "a" releases matlab2007a, matlab2008a, etc...</p></li>
-    <li><p><b>Fork</b>: this option is set by default to off. It means the tasks will be executed (on remote hosts) in a separate Java Virtual Machine process.</p></li>
-    <li><p><b>RunAsMe</b>: this option is set by default to off. It means the tasks will be executed (on remote hosts) under the account of the currently logged user.</p></li>
-    <li><p><b>Priority</b>: this option is the priority of jobs created inside the ProActive Scheduler by PAsolve calls. Default to "Normal"</p></li>
-    <li><p><b>RemoveJobAfterRetrieve</b>: automatically removes the job from the scheduler after all results of the job have been retrieved.</p></li>
+    <li><p><b>Debug</b>: activate this option if any problem occurs and you want Matlab Connector Toolbox to run in
+        debug mode (with verbose output)</p></li>
+    <li><p><b>TransferEnv</b>: this important option is by default set to off. If set to on, it allows the automatic
+        transfer of the workspace where the PAsolve call is done to the remote matlab engines. Global variables are
+        transferred but not local variables existing in workspaces higher than the current one. The options <b>EnvExcludeList</b>
+        and <b>EnvExcludeTypeList</b> control the name and type of variables that should be excluded from the transfer.
+    </p></li>
+    <li><p><b>LicenseSaverURL</b>: this very important option is the address of the proxy server which, if installed,
+        acts as a proxy to the FlexNET server. The proxy server ensures that Matlab or toolboxes license tokens are
+        available before any remote Matlab tasks starts. The scheduling of the task will be delayed until the tokens are
+        available. The License Saver Proxy is not distributed with ProActive Toolbox and must be downloaded separately.
+        See <a href="http://www.activeeon.com">http://www.activeeon.com</a> for availablity and download. </p></li>
+    <li><p><b>CustomDataspaceURL</b> and <b>CustomDataspacePath</b>: by default these options are not set. Dataspaces
+        are a ProActive internal mechanism allowing a shared file system between hosts. The mechanism allows the
+        automatic transfer of files between the local matlab session and the remote engines. <b>Matlab Connector
+            Toolbox</b> has an internal automatic Dataspace creation. But sometimes, one would like to rely on an
+        external Dataspace such as a ftp server. This Dataspace MUST be accessible from the local file system in order
+        to work with <b>Matlab Connector Toolbox</b>.The <b>CustomDataspaceURL</b> option gives the Universally
+        accessible URL of this dataspace and the <b>CustomDataspacePath</b> gives the path to access this dataspace from
+        the local file system. </p></li>
+    <li><p><b>SharedPushPublicUrl</b>, <b>SharedPullPublicUrl</b>, <b>SharedPushPrivateUrl</b>,
+        <b>SharedPullPrivateUrl</b>: similarly to the CustomDataspaceURL option, these URLS define the addresses of the
+        Shared DataSpaces (if the scheduler is configured to deploy them). Shared Dataspaces are used as "Cache"
+        DataSpaces, the Matlab connector toolbox will push its input files to the SharedPushPublicUrl and pull the
+        output files from the SharedPullPublicUrl. Private urls will be used by the workers to access the files.</p>
+    </li>
+    <li><p><b>VersionPref</b>, <b>VersionMin</b>, <b>VersionMax</b> and <b>VersionRej</b>: these options allow the user
+        to define which version of Matlab should/should not be used. In an heterogeneous environment, several versions
+        of matlab can be available simultaneously on the network. These options ensures that the submitted matlab code
+        will meet the correct matlab version. It is the responsibility of the user to find which versions are/are not
+        compatible with the code. For all these version use the version number of the form 7.9,  7.11, etc</p></li>
+    <li><p><b>VersionPref</b>: is the preferred version to use. It won't prevent another version to be used if the
+        preferred version is not available.It is set automatically to the version of the local matlab session, but can
+        be as well user defined via this option.</p></li>
+    <li><p><b>VersionMin</b> and <b>VersionMax</b>: is the minimum/maximum version to use. It is set by default to the
+        minimum/maximum version supported.</p></li>
+    <li><p><b>VersionRej</b>: is a list of versions to be rejected.</p></li>
+    <li><p><b>VersionArch</b>: the matlab version architecture to be used. "Any" means any architecture can be used,
+       "32" means only 32bit architectures and "64" means only 64-bit architectures..</p></li>
+    <li><p><b>Fork</b>: this option is set by default to off. It means the tasks will be executed (on remote hosts) in a
+        separate Java Virtual Machine process.</p></li>
+    <li><p><b>RunAsMe</b>: this option is set by default to off. It means the tasks will be executed (on remote hosts)
+        under the account of the currently logged user.</p></li>
+    <li><p><b>Priority</b>: this option is the priority of jobs created inside the ProActive Scheduler by PAsolve calls.
+        Default to "Normal"</p></li>
+    <li><p><b>NbTaskExecution</b>: this option defines how many times maximum a task can be executed whenever it fails.
+        This parameter is set by default to 2, which means that it will be restarted one time if an error occurs.
+        This way, we can minimize the issues which can arise for example because of file transfer. On the other hand,
+        a user task failure which would normally fail (syntax error, user code error) will also be rerun,
+        and it is sometimes not desired (set this parameter to 1 to prevent that).</p></li>
+    <li><p><b>RemoveJobAfterRetrieve</b>: automatically removes the job from the scheduler after all results of the job
+        have been retrieved.</p></li>
 </ul>
 
 
@@ -167,95 +206,73 @@ ans =
     <script language="Javascript">addTopOfPageButtons();</script>
     <a href="#top_of_page">Back to Top</a></p>
 <h3 class="title">Debugging</h3>
+<p>This section is mainly for advanced users.</p>
 <p>Debugging of the different Matlab Connector Toolbox components is done via all of the following:</p>
 <ul type="disc">
     <li><p>The <b>Debug</b> option.</p></li>
-    <li><p>The <b>CheckMatlabXXX.log</b> and <b>ReserveMatlabXXX.log</b> files.</p></li>
+    <li><p>The <b>AutomaticFindMatlabXXX.log</b> and <b>ReserveMatlabXXX.log</b> files.</p></li>
     <li><p>The <b>MatlabExecutableXXX.log</b> and <b>MatlabStartXXX.log</b>files.</p></li>
-    <li><p>The <b>MatSci_Middleman_JVM.log</b> file.</p></li>
+    <li><p>The <b>MatSci_Middleman_JVM.log</b> and <b>MatlabJVMSpawnHelper.log
+    </b> files.</p></li>
 </ul>
-<p>Files with XXX in the above list are created with a complex ID replacing the XXX pattern.</p>
-<p>The <b>CheckMatlab</b>, <b>ReserveMatlab</b>, <b>MatlabExecutable</b> and <b>MatlabStart</b> log files are produced on the <b>worker hosts</b> <i>TEMP</i> directory. The TEMP directory is always <i>/tmp</i> on linux systems. On Windows it can be known by opening a command line (cmd.exe) and typing echo %TEMP%:</p>
+<p>Files with XXX in the above list are created with the proactive node name of the resource on which it is executed.</p>
+<p>The <b>AutomaticFindMatlab</b>, <b>ReserveMatlab</b>, <b>MatlabExecutable</b> and <b>MatlabStart</b> log files are produced on the <b>worker hosts</b> <i>TEMP</i> directory. The TEMP directory is always <i>/tmp</i> on linux systems. On Windows it can be known by opening a command line (cmd.exe) and typing echo %TEMP%:</p>
 <pre>C:\Users\Administrator>echo %TEMP%
 C:\Users\Administrator\AppData\Local\Temp\2
 </pre>
-<p>The <b>CheckMatlab</b> log files logs the output of FindMatlab selection scripts which determines where to find matlab according to MatlabConfiguration.xml file (see <a href=""></a> for more info). Read these files if you want to determine why the task couldn't execute on this worker host. Here is an example of those files:</p>
-<pre>CheckMatlab0a3e377deae6f182_2396e9a2_12d7b483856__8000.log:
-Parsing configuration file :/home/fviale/eclipse_workspace/Matlab_Scilab_Connector/matlab/config/worker/MatlabConfiguration.xml
-Choosing config with version_pref=7.5, versionRej=[7.8, 7.10, 7.6], versionMin=7.5, versionMax=7.11
-Version : 7.5
-... preferred
-Matlab home : /usr/local/matlab2007b
-Matlab version : 7.5
-Matlab bin directory  : bin
-Matlab command name : matlab
+<p>The <b>AutomaticFindMatlab</b> log files logs the output of FindMatlab selection scripts which determines where to find matlab according to MatlabConfiguration.xml file or via automatic search(see <a href="proactive_installation.html#installation-3">Automatic Configuration of ProActive Scheduler for Matlab</a> for more info). Read these files if you want to determine why the task couldn't execute on this worker host. Here is an example of those files:</p>
+<pre>AutomaticFindMatlablocal-LocalNodes-0:
+Fri Nov 30 15:30:27 +0100 2012 : Finding Matlab on precision
+Reading config in C:\Users\fviale\AppData\Local\Temp\MatlabWorkerConfiguration.xml
+Found  Matlab (7.11) : C:\Program Files\MATLAB\R2010b bin\win64 MATLAB.exe 64 bits
+Deciding Matlab (7.11) : C:\Program Files\MATLAB\R2010b bin\win64 MATLAB.exe 64 bits
+7.11(64) accepted
 </pre>
-<p>Similarly the <b>ReserveMatlab</b> log files are the output of ReserveMatlab selection scripts which reserve matlab tokens for computations. Here is an example of those files:</p>
-<pre>ReserveMatlab0a3e377deae6f182_2396e9a2_12d7b483856__8000.log:
-    Wed Jan 12 18:33:44 CET 2011 : Executing toolbox checking script on pendule
-    /usr/local/matlab2007b/bin/matlab
-    -nodisplay
-    -nojvm
-    -nosplash
-    -r
-    a=1,a=1,if a,fid = fopen('/tmp/0a3e377deae6f182_2396e9a2_12d7b483856__8000/matlabTest1.lock','w'),fclose(fid),else exit(),end;while true,pause(500),a=1,a=1,end;exit()
-    command executed
-    OK
-    Wed Jan 12 18:34:00 CET 2011 : Executing toolbox checking script on pendule
-    /usr/local/matlab2007b/bin/matlab
-    -nodisplay
-    -nojvm
-    -nosplash
-    -r
-    a=1,a=1,if a,fid = fopen('/tmp/0a3e377deae6f182_2396e9a2_12d7b483856__8000/matlabTest1.lock','w'),fclose(fid),else exit(),end;while true,pause(500),a=1,a=1,end;exit()
-    command executed
-    OK
-</pre>
+<p>Similarly the <b>ReserveMatlab</b> log files are the output of ReserveMatlab selection scripts which reserve matlab tokens for computations when using the <b>LicenseSaverURL</b> option.
 <p>The <b>MatlabExecutable</b> log files are not created by default. They are the verbose output of the tasks submitted via PAsolve and are activated only if the PAoption Debug is set to on. Here is an example of those files:</p>
-<pre>MatlabExecutable0a3e377deae6f182_2396e9a2_12d7b483856__8000.log:
-    [2012-04-25 19:29:020 pendule][MatlabExecutable] Unzipping source files from /tmp/PA_JVM554543033/local-LocalNodes-3/1/-721112986/.PAScheduler/0/MatlabPAsolveSrc_0_6b1bd1617af47a4630456822b146673dfd8dd37a.zip
-[2012-04-25 19:29:020 pendule][MatlabExecutable] Contents of /tmp/PA_JVM554543033/local-LocalNodes-3/1/-721112986/.PAScheduler/0
-[2012-04-25 19:29:020 pendule][MatlabExecutable] MatlabPAsolveSrc_0_6b1bd1617af47a4630456822b146673dfd8dd37a.zip
-[2012-04-25 19:29:020 pendule][MatlabExecutable] checktoolboxes_start_and_hide_desktop.m
-[2012-04-25 19:29:020 pendule][MatlabExecutable] MatlabPAsolveVarIn_0_1_1.mat
-[2012-04-25 19:29:020 pendule][MatlabExecutable] keepalive_callback_fcn.m
-[2012-04-25 19:29:020 pendule][MatlabExecutable] Acquiring MATLAB connection using /usr/local/matlab2010b/bin/matlab
-[2012-04-25 19:29:020 pendule][MatlabExecutable] Adding to matlabpath sources from /tmp/PA_JVM554543033/local-LocalNodes-3/1/-721112986/.PAScheduler/0
-[2012-04-25 19:29:020 pendule][MatlabExecutable] checktoolboxes_start_and_hide_desktop( {'matlab'},'/tmp/PA_JVM554543033/local-LocalNodes-3/1/-721112986');
-[2012-04-25 19:29:020 pendule][MatlabExecutable] Executing Keep-Alive timer
-[2012-04-25 19:29:020 pendule][MatlabExecutable] t = timer('Period', 300,'ExecutionMode','fixedRate');t.TimerFcn = { @keepalive_callback_fcn, {'matlab'}};start(t);
-[2012-04-25 19:29:020 pendule][MatlabExecutable] Loading input variables from /tmp/PA_JVM554543033/local-LocalNodes-3/1/-721112986/.PAScheduler/0/MatlabPAsolveVarIn_0_1_1.mat
-[2012-04-25 19:29:020 pendule][MatlabExecutable] Running MATLAB command: out = factorial(in1);
-[2012-04-25 19:29:020 pendule][MatlabExecutable] MATLAB command completed successfully, receiving output...
-[2012-04-25 19:29:020 pendule][MatlabExecutable] Storing 'out' variable into /tmp/PA_JVM554543033/local-LocalNodes-3/1/-721112986/.PAScheduler/0/MatlabPAsolveVarOut_0_1_1.mat
-[2012-04-25 19:29:021 pendule][MATLAB]Warning: No window system found.  Java option 'MWT' ignored
-[2012-04-25 19:29:021 pendule][MATLAB]
-[2012-04-25 19:29:021 pendule][MATLAB]                            < M A T L A B (R) >
-[2012-04-25 19:29:021 pendule][MATLAB]                  Copyright 1984-2010 The MathWorks, Inc.
-[2012-04-25 19:29:021 pendule][MATLAB]                Version 7.11.0.584 (R2010b) 64-bit (glnxa64)
-[2012-04-25 19:29:021 pendule][MATLAB]                              August 16, 2010
-[2012-04-25 19:29:021 pendule][MATLAB]
-[2012-04-25 19:29:021 pendule][MATLAB]
-[2012-04-25 19:29:021 pendule][MATLAB]  To get started, type one of these: helpwin, helpdesk, or demo.
-[2012-04-25 19:29:021 pendule][MATLAB]  For product information, visit www.mathworks.com.
-[2012-04-25 19:29:021 pendule][MATLAB]
-[2012-04-25 19:29:022 pendule][MATLAB]---- MATLAB START ----
-[2012-04-25 19:29:022 pendule][MATLAB]
-[2012-04-25 19:29:022 pendule][MATLAB]Your variables are:
-[2012-04-25 19:29:022 pendule][MATLAB]
-[2012-04-25 19:29:022 pendule][MATLAB]NODE_LIST      NODE_URL_LIST  in1            t
-[2012-04-25 19:29:022 pendule][MATLAB]
-[2012-04-25 19:29:022 pendule][MatlabExecutable] Receiving and testing output...
-[2012-04-25 19:29:022 pendule][MatlabExecutable] Closing MATLAB...
-[2012-04-25 19:29:022 pendule][MatlabExecutable] Task completed successfully
+<pre>MatlabExecutable_local-LocalNodes-0.log:
+[2012-11-26 14:56:000 precision][MatlabExecutable] Unzipping source files from C:\Users\fviale\AppData\Local\Temp\PA_JVM680795027\local-LocalNodes-1\23\2044898909\.PAScheduler\22\MatlabPAsolveSrc_22_e37682bfe3442231097f57bfa66495983df5629a.zip
+[2012-11-26 14:56:000 precision][MatlabExecutable] Contents of C:\Users\fviale\AppData\Local\Temp\PA_JVM680795027\local-LocalNodes-1\23\2044898909\.PAScheduler\22
+[2012-11-26 14:56:000 precision][MatlabExecutable] checktoolboxes_start_and_hide_desktop.m
+[2012-11-26 14:56:000 precision][MatlabExecutable] keepalive_callback_fcn.m
+[2012-11-26 14:56:000 precision][MatlabExecutable] MatlabPAsolveSrc_22_e37682bfe3442231097f57bfa66495983df5629a.zip
+[2012-11-26 14:56:000 precision][MatlabExecutable] MatlabPAsolveVarIn_22_1_1.mat
+[2012-11-26 14:56:000 precision][MatlabExecutable] myHello.m
+[2012-11-26 14:56:000 precision][MatlabExecutable] Acquiring MATLAB connection using C:\Program Files\MATLAB\R2010b\bin\matlab.exe
+[2012-11-26 14:56:000 precision][MatlabExecutable] Adding to matlabpath sources from C:\Users\fviale\AppData\Local\Temp\PA_JVM680795027\local-LocalNodes-1\23\2044898909\.PAScheduler\22
+[2012-11-26 14:56:000 precision][MatlabExecutable] checktoolboxes_start_and_hide_desktop( {'matlab'},'C:\Users\fviale\AppData\Local\Temp\PA_JVM680795027\local-LocalNodes-1\23\2044898909');
+[2012-11-26 14:56:000 precision][MatlabExecutable] Executing Keep-Alive timer
+[2012-11-26 14:56:000 precision][MatlabExecutable] t = timer('Period', 300,'ExecutionMode','fixedRate');t.TimerFcn = { @keepalive_callback_fcn, {'matlab'}};start(t);
+[2012-11-26 14:56:000 precision][MatlabExecutable] Loading input variables from C:\Users\fviale\AppData\Local\Temp\PA_JVM680795027\local-LocalNodes-1\23\2044898909\.PAScheduler\22\MatlabPAsolveVarIn_22_1_1.mat
+[2012-11-26 14:56:000 precision][MatlabExecutable] Running MATLAB command: out = myHello(in1)
+[2012-11-26 14:56:000 precision][MatlabExecutable] MATLAB command completed successfully, receiving output...
+[2012-11-26 14:56:000 precision][MatlabExecutable] Storing 'out' variable into C:\Users\fviale\AppData\Local\Temp\PA_JVM680795027\local-LocalNodes-1\23\2044898909\.PAScheduler\22\MatlabPAsolveVarOut_22_1_1.mat
+[2012-11-26 14:56:011 precision][MatlabExecutable] Testing output file : C:\Users\fviale\AppData\Local\Temp\PA_JVM680795027\local-LocalNodes-1\23\2044898909\.PAScheduler\22\MatlabPAsolveVarOut_22_1_1.mat
+[2012-11-26 14:56:011 precision][MatlabExecutable] Closing MATLAB...
+[2012-11-26 14:56:011 precision][MatlabExecutable]
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+
+---- MATLAB START ----
+
+Your variables are:
+
+NODE_LIST      NODE_URL_LIST  in1            t
+
+Number of nodes used : 2
+Node n°1: 192.168.1.187 rmi://192.168.1.187:1099/local-LocalNodes-1
+Node n°2: 192.168.1.187 rmi://192.168.1.187:1099/local-LocalNodes-0
+Hello Dude1
+
+out =
+
+     1
+
+
+[2012-11-26 14:56:011 precision][MatlabExecutable] End of Task
 </pre>
 <p>The <b>MatlabStart</b> log file is the direct output of the Matlab process created on the worker. Unlike the <b>MatlabExecutable</b> log file, it is created each time.</p>
-<pre>/tmp/MatlabStart0a3e377deae6f182_2d177818_136ea6d1f1f__8000.log:
-                                < M A T L A B (R) >
-                  Copyright 1984-2010 The MathWorks, Inc.
-                Version 7.11.0.584 (R2010b) 64-bit (glnxa64)
-                              August 16, 2010
-
+<pre>/tmp/MatlabStart_local-LocalNodes-0.log:
 
   To get started, type one of these: helpwin, helpdesk, or demo.
   For product information, visit www.mathworks.com.
@@ -265,8 +282,18 @@ Matlab command name : matlab
 Your variables are:
 
 NODE_LIST      NODE_URL_LIST  in1            t
+
+Number of nodes used : 2
+Node n°1: 192.168.1.187 rmi://192.168.1.187:1099/local-LocalNodes-1
+Node n°2: 192.168.1.187 rmi://192.168.1.187:1099/local-LocalNodes-0
+Hello Dude1
+
+out =
+
+     1
 </pre>
-<p>Finally the <b>MatSci_Middleman_JVM.log</b> file is created inside the temp directory of the <b>client host</b> and is logging everything concerning ProActive MiddleMan JVM. Here is an example:</p>
+<p>Finally the <b>MatSci_Middleman_JVM.log</b> file is created inside the temp directory of the <b>client host</b> and is logging everything concerning ProActive MiddleMan JVM. The <b>MatlabJVMSpawnHelper.log
+</b> is similar to the <b>MatSci_Middleman_JVM.log</b>. Here is an example:</p>
 <pre>/tmp/MatSci_Middleman_JVM.log:
     [2012-04-25 19:29:016 pendule][AOMatlabEnvironment] Submitting job of 1 tasks...
     [2012-04-25 19:29:016 pendule][AOMatlabEnvironment] Job 1 submitted.

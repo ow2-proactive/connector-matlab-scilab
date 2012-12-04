@@ -93,7 +93,7 @@ public class MatlabExecutable extends JavaExecutable {
     static {
         try {
             HOSTNAME = java.net.InetAddress.getLocalHost().getHostName();
-            NODENAME = MatSciEngineConfigBase.getNodeName();
+            NODENAME = System.getProperty("node.name");
         } catch (Exception e) {
         }
     }

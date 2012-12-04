@@ -154,13 +154,7 @@
         <title>See Also</title>
         <simplelist type="inline">
             <member>
-                <link linkend="Installation">Installation</link>
-            </member>
-            <member>
-                <link linkend="PAsolve">PAsolve</link>
-            </member>
-            <member>
-                <link linkend="PAconnect">PAconnect</link>
+                <link linkend="Installation">Installation of the ProActive Scilab Connector Toolbox</link>
             </member>
         </simplelist>
     </refsection>
