@@ -2,17 +2,12 @@ function outputs = PAsolve(varargin)
     [locals,globals] = who_user1();
     ke=grep(locals,['varargin']);
     locals(ke)=[];
-    global ('PA_connected','PA_solver', 'SOLVEid')
+    global ('PA_connected','PA_solver')
 
     if ~exists('PA_connected') | PA_connected ~= 1
         error('A connection to the ProActive scheduler must be established in order to use PAsolve, see PAconnect');
     end
 
-    if exists('SOLVEid') & type(SOLVEid) == 8
-        SOLVEid = SOLVEid + 1;
-    else
-        SOLVEid = int32(1);
-    end
 
     opt=PAoptions();
 
@@ -57,20 +52,20 @@ function outputs = PAsolve(varargin)
 
         initSolveConfig(solve_config, opt);
 
-        [taskFilesToClean,pa_dir,curr_dir,fs,subdir] = initDirectories(opt,solve_config,NN,SOLVEid);
+        [taskFilesToClean,pa_dir,curr_dir,fs,subdir, solveid] = initDirectories(opt,solve_config,NN);
 
         initDS(solve_config,opt);              
 
 
-        taskFilesToClean = initTransferSource(task_configs,solve_config,opt,Tasks, SOLVEid,taskFilesToClean, pa_dir,subdir,fs,NN,MM);
+        taskFilesToClean = initTransferSource(task_configs,solve_config,opt,Tasks, solveid,taskFilesToClean, pa_dir,subdir,fs,NN,MM);
 
-        initTransferEnv(locals,globals,solve_config,opt,SOLVEid,taskFilesToClean, pa_dir,subdir,fs);
+        initTransferEnv(locals,globals,solve_config,opt,solveid,taskFilesToClean, pa_dir,subdir,fs);
 
         initInputFiles(task_configs,solve_config,opt,Tasks,NN,MM);
 
         initOutputFiles(task_configs,solve_config,opt,Tasks,NN,MM);
 
-        [outVarFiles, inputscript, mainScript,taskFilesToClean] = initParameters(task_configs,solve_config,opt,Tasks,pa_dir,subdir,fs,NN,MM,taskFilesToClean);
+        [outVarFiles, inputscript, mainScript,taskFilesToClean] = initParameters(task_configs,solve_config,opt,Tasks,pa_dir,subdir,fs,NN,MM,taskFilesToClean, solveid);
 
         initOtherTCAttributes(NN,MM, task_configs, Tasks);
 
@@ -190,7 +185,7 @@ function [Tasks, NN, MM]=parseParams(varargin)
 endfunction
 
 // Initialize used directories
-function [taskFilesToClean,pa_dir,curr_dir,fs,subdir] = initDirectories(opt,solve_config,NN,solveid)
+function [taskFilesToClean,pa_dir,curr_dir,fs,subdir, solveid] = initDirectories(opt,solve_config,NN)
     jimport java.io.File;
     jimport java.lang.String;
     curr_dir = pwd();
@@ -203,16 +198,24 @@ function [taskFilesToClean,pa_dir,curr_dir,fs,subdir] = initDirectories(opt,solv
     end    
     // PAScheduler sub directory init
 
-    subdir = '.PAScheduler';    
+    subdir = '.PAScheduler';
+
+    // getting the solveid from the task repository
+    jimport org.ow2.proactive.scheduler.ext.scilab.client.embedded.ScilabTaskRepository;
+    addJavaObj(ScilabTaskRepository);
+    repository = jinvoke(ScilabTaskRepository,'getInstance');
+    addJavaObj(repository);
+    solveid = jinvoke(repository,'getNextLocalId')
+
 
     if isempty(opt.CustomDataspaceURL)
         if ~isdir(curr_dir + fs + subdir)
             mkdir(curr_dir,subdir);
         end
-        if ~isdir(curr_dir + fs + subdir + fs + string(solveid))
-            mkdir(curr_dir + fs + subdir,string(solveid));
+        if ~isdir(curr_dir + fs + subdir + fs + string(solveid) + "s")
+            mkdir(curr_dir + fs + subdir,string(solveid) + "s");
         end
-        pa_dir = curr_dir + fs + subdir + fs + string(solveid);
+        pa_dir = curr_dir + fs + subdir + fs + string(solveid) + "s";
     else
         if isempty(opt.CustomDataspacePath)
             clearJavaStack();    
@@ -221,10 +224,10 @@ function [taskFilesToClean,pa_dir,curr_dir,fs,subdir] = initDirectories(opt,solv
         if ~isdir(opt.CustomDataspacePath + fs + subdir)
             mkdir(opt.CustomDataspacePath,subdir);
         end
-        if ~isdir(opt.CustomDataspacePath + fs + subdir + fs + string(solveid))
-            mkdir(opt.CustomDataspacePath + fs + subdir , string(solveid));
+        if ~isdir(opt.CustomDataspacePath + fs + subdir + fs + string(solveid) + "s")
+            mkdir(opt.CustomDataspacePath + fs + subdir , string(solveid) + "s");
         end
-        pa_dir = opt.CustomDataspacePath + fs + subdir + fs + string(solveid);
+        pa_dir = opt.CustomDataspacePath + fs + subdir + fs + string(solveid) + "s";
     end
 
 
@@ -233,7 +236,7 @@ function [taskFilesToClean,pa_dir,curr_dir,fs,subdir] = initDirectories(opt,solv
         taskFilesToClean($+1)=list();
     end
 
-    subdir = subdir + '/' + string(solveid);
+    subdir = subdir + '/' + string(solveid) + "s";
     jinvoke(solve_config,'setJobSubDirPath',subdir);
     jinvoke(solve_config,'setDirToClean',pa_dir);
     jremove(File);
@@ -506,10 +509,10 @@ function initOutputFiles(task_configs,solve_config,opt,Tasks,NN,MM)
 endfunction
 
 // Initialize Task Config Input Parameters
-function [outVarFiles, inputscript, mainScript,taskFilesToClean] = initParameters(task_configs,solve_config,opt,Tasks,pa_dir, subdir,fs,NN,MM,taskFilesToClean)
+function [outVarFiles, inputscript, mainScript,taskFilesToClean] = initParameters(task_configs,solve_config,opt,Tasks,pa_dir, subdir,fs,NN,MM,taskFilesToClean, solveid)
 
-    variableInFileBaseName = 'ScilabPAsolveVarIn_' + string(SOLVEid);
-    variableOutFileBaseName = 'ScilabPAsolveVarOut_' + string(SOLVEid);
+    variableInFileBaseName = 'ScilabPAsolveVarIn_' + string(solveid);
+    variableOutFileBaseName = 'ScilabPAsolveVarOut_' + string(solveid);
     outVarFiles = list(NN);  
     curr_dir = pwd();
     for i=1:NN       

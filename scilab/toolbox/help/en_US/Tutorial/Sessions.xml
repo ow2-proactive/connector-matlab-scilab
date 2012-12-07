@@ -1,0 +1,481 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<refentry version="5.0-subset Scilab" xml:id="Sessions" xml:lang="en"
+          xmlns="http://docbook.org/ns/docbook"
+          xmlns:xlink="http://www.w3.org/1999/xlink"
+          xmlns:svg="http://www.w3.org/2000/svg"
+          xmlns:ns3="http://www.w3.org/1999/xhtml"
+          xmlns:mml="http://www.w3.org/1998/Math/MathML"
+          xmlns:db="http://docbook.org/ns/docbook">
+    <info>
+        <pubdate>$LastChangedDate: 2011-07-20 18:41:39 +0100 (mer., 20 july 2011)$</pubdate>
+    </info>
+    <refnamediv>
+        <refname>Sessions</refname>
+
+        <refpurpose>Disconnected mode and Fault-tolerant Sessions</refpurpose>
+
+    </refnamediv>
+
+    <refsection>
+        <title>Introduction</title>
+
+        <para>In the previous chapter we saw how we can run complex scilab code remotely, and wait for the results produced. Sometimes,
+            when tasks are really long and scilab licences scarce, it can be very convenient to close the local scilab session to
+            avoid consuming a token or local processing resources.</para>
+        <para>
+            It is as well important, when submitting a long serie of distributed
+            computations, that every intermediate result is kept and not lost if a Scilab crash occurs before the end.           
+            In this chapter, we will learn how to use the <emphasis>Disconnected/Fault Tolerant</emphasis> mode of <emphasis>Scilab Connector Toolbox</emphasis>.</para>
+
+    </refsection>
+    <refsection>
+        <title>Exiting Scilab before a job completion</title>
+
+        <para>In this example we will run a long list of cosh tasks and will close the scilab session:</para>
+        <screen><![CDATA[-->res=PAsolve('cosh',1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10)
+
+ Job submitted : 27
+ res  =
+
+(1):
+Awaited (J:27)
+(2):
+Awaited (J:27)
+(3):
+Awaited (J:27)
+(4):
+Awaited (J:27)
+(5):
+Awaited (J:27)
+(6):
+Awaited (J:27)
+(7):
+Awaited (J:27)
+(8):
+Awaited (J:27)
+(9):
+Awaited (J:27)
+(10):
+Awaited (J:27)
+(11):
+Awaited (J:27)
+(12):
+Awaited (J:27)
+(13):
+Awaited (J:27)
+(14):
+Awaited (J:27)
+(15):
+Awaited (J:27)
+(16):
+Awaited (J:27)
+(17):
+Awaited (J:27)
+(18):
+Awaited (J:27)
+(19):
+Awaited (J:27)
+(20):
+Awaited (J:27)
+
+ --> exit]]></screen>
+        <para>At this point a popup window will appear, asking if we want to enable disconnected mode, with the list of jobs unfinished.</para>
+        <para><inlinemediaobject>
+            <imageobject>
+                <imagedata fileref="DisconnectedPopup.png"/>
+            </imageobject>
+        </inlinemediaobject></para>
+        <para>We can focus on other works while the job is computed, but with a limitation: we cannot turn off the computer as the
+            workers will try to transfer output data to the local computer when they terminate.</para>
+        <para>
+            An alternative exists though, we can use a <literal>Shared Dataspace</literal> as explained in chapter <link linkend="Configuration">The PAoptions.ini file</link>
+            to allow a completely disconnected mode. In the Shared Dataspace mode, all data will be kept in a cached space on the
+            scheduler and it will not be necessary the leave the local computer on. It is also safer to use the Shared Dataspace
+            mode when in an environment where network disconnections can occur.</para>
+    </refsection>
+    <refsection>
+        <title>Reconnecting and Retrieving previous job results</title>
+        <para>When we restart the scilab session, we will need to reconnect to ProActive Scheduler in order to receive the job results. The <literal>PAconnect</literal> function will display the list of jobs that were unfinished at last session. We will then use the function <literal>PAgetResults</literal> to receive the results :</para>
+        <screen><![CDATA[-->PAconnect()
+log file in use : C:\Users\fviale\AppData\Local\Temp\SCI_TMP_12140_\ScilabJVMSpawnHelper.log
+
+ Connection to JVM successful
+
+ The following jobs were uncomplete before last scilab shutdown :  27
+
+ Connection successful to
+
+ Login successful
+ ans  =
+
+
+       ans(1)
+
+ 27
+
+-->res=PAgetResults(27)
+
+ Retrieving results of job 27
+ res  =
+
+Job 27: Task 0_0
+
+
+Job 27: Task 1_0
+
+
+Job 27: Task 2_0
+
+( ............. )
+
+Job 27: Task 19_0
+
+
+Job 27 removed.
+
+
+(1):
+
+    1.5430806
+(2):
+
+    3.7621957
+( ............. )
+(20):
+
+    11013.233
+ ]]></screen>
+        <para>The previous output has been stripped for clarity. Please note that only the jobs from the last scilab session will be kept this way and be accessible via PAgetResults, jobs from previous sessions will be unavailable.
+            Sometimes it can be complicated to remember to which computation is associated the JobID, but it is possible to read the <literal>jobid</literal> attribute from the <literal>PAresult</literal> object right after submitting via PAsolve (non-blocking call) :</para>
+        <screen><![CDATA[-->res2=PAsolve('cosh',1,2,3,4,5)
+
+ Job submitted : 28
+ res2  =
+
+(1):
+Awaited (J:28)
+(2):
+Awaited (J:28)
+(3):
+Awaited (J:28)
+(4):
+Awaited (J:28)
+(5):
+Awaited (J:28)
+
+-->res2.jobid
+ ans  =
+
+
+       ans(1)
+
+ 28
+
+       ans(2)
+
+ 28
+
+       ans(3)
+
+ 28
+
+       ans(4)
+
+ 28
+
+       ans(5)
+
+ 28   ]]></screen>
+        <para>This allows for example to store the job id into a data file and automate the retrieval of results.
+            But it is also possible to fully automate the disconnected mode with Fault-tolerant sessions, as described in next chapter.</para>
+    </refsection>
+
+    <refsection>
+    <title>Using fault-tolerant sessions</title>       
+        <para>
+            The idea behind fault-tolerant sessions is that when submitting a long serie of PAsolve computations (lasting several hours,
+            days, ...), with post-processing of intermediate results and resubmission of additional PAsolve computations,  any problem occurring (network disconnection, crash
+            of the scilab program) can compromise the overall computation. It will be often necessary to restart the computation from zero.</para>
+        <para>
+            A ProActive fault tolerant-session records automatically every step of the computation. Any intermediate result will be kept in a database.
+            If Scilab crashes, or the user simply exits Scilab, all already retrieved results will be available at the next Scilab session.</para>
+        <para>
+            The user will simply have to resubmit the same serie of PAsolve calls, no new ProActive Scheduler job will be resubmitted
+            which have already been submitted in a previous session. Calls to PAwaitFor for results which have already been retrieved
+            will be instantaneous.</para>
+        <para>It is thus important not to modify the parameters, the order, or the code of the functions used. Generally
+            speaking, if the serie of computations is executed via a long Scilab script, then the same script must be rerun at the next
+            session and it will very quickly reach the point it was before the crash.
+        </para>
+        <para>Establishment of fault tolerant sessions is done via the functions <literal>PAbeginSession</literal> and <literal>PAendSession</literal>:</para>
+        <para><literal>PAbeginSession</literal> starts the initial fault-tolerant sesssion or reload an already started fault-tolerant session. Only one fault-tolerant session can be active at a time.</para>
+        <para><literal>PAendSession</literal> stops the fault-tolerant session when the long computation is finished</para>
+        <para>Example of use :</para>
+        <para><literal>1)</literal> we start the session using PAbeginSession and do some computations, after a while scilab crashes:</para>
+        <screen><![CDATA[-->PAbeginSession()
+Started Recording Session at Tue Dec 04 17:13:11 CET 2012
+ ans  =
+
+  T
+
+-->res=PAsolve('cosh',1,2,3,4,5)
+
+ Job submitted : 47
+ res  =
+
+(1):
+Awaited (J:47)
+(2):
+Awaited (J:47)
+(3):
+Awaited (J:47)
+(4):
+Awaited (J:47)
+(5):
+Awaited (J:47)
+
+-->val = PAwaitFor(res)
+Job 47: Task 0_0
+
+
+Job 47: Task 1_0
+
+
+Job 47: Task 2_0
+
+
+Job 47: Task 3_0
+
+
+Job 47: Task 4_0
+
+
+[WARNING] job 47 is being recorded and cannot be removed, set PAoption RemoveJobAfterRetrieve to false in order to disable automatic removal.
+
+ val  =
+
+
+       val(1)
+
+    1.5430806
+
+       val(2)
+
+    3.7621957
+
+       val(3)
+
+    10.067662
+
+       val(4)
+
+    27.308233
+
+       val(5)
+
+    74.209949
+
+-->res2=PAsolve('cosh',1,2,3,4,5)
+
+ Job submitted : 48
+ res2  =
+
+(1):
+Awaited (J:48)
+(2):
+Awaited (J:48)
+(3):
+Awaited (J:48)
+(4):
+Awaited (J:48)
+(5):
+Awaited (J:48)
+
+--> exit // simulate scilab crash   ]]></screen>
+        <para><literal>2)</literal> After the crash, we start over Scilab and issue the same serie of commands (the PAwaitFor calls become instantaneous):</para>
+        <screen><![CDATA[-->PAconnect()
+log file in use : C:\Users\fviale\AppData\Local\Temp\SCI_TMP_11384_\ScilabJVMSpawnHelper.log
+
+ Connection to JVM successful
+
+ The following jobs were uncomplete before last scilab shutdown :  48
+
+ Connection successful to
+
+ Login successful
+ ans  =
+
+
+       ans(1)
+
+ 48
+
+-->PAbeginSession()
+Recalled Recorded Session at Tue Dec 04 17:13:11 CET 2012
+ ans  =
+
+  T
+
+-->res=PAsolve('cosh',1,2,3,4,5)
+
+ Job recalled : 47
+ res  =
+
+Job 47: Task 0_0
+
+
+Job 47: Task 1_0
+
+
+Job 47: Task 2_0
+
+
+Job 47: Task 3_0
+
+
+Job 47: Task 4_0
+
+
+[WARNING] job 47 is being recorded and cannot be removed, set PAoption RemoveJobAfterRetrieve to false in order to disable automatic removal.
+
+(1):
+
+    1.5430806
+(2):
+
+    3.7621957
+(3):
+
+    10.067662
+(4):
+
+    27.308233
+(5):
+
+    74.209949
+
+-->val = PAwaitFor(res)
+ val  =
+
+
+       val(1)
+
+    1.5430806
+
+       val(2)
+
+    3.7621957
+
+       val(3)
+
+    10.067662
+
+       val(4)
+
+    27.308233
+
+       val(5)
+
+    74.209949
+
+-->res2=PAsolve('cosh',1,2,3,4,5)
+
+ Job recalled : 48
+ res2  =
+
+Job 48: Task 0_0
+
+
+Job 48: Task 1_0
+
+
+Job 48: Task 2_0
+
+
+Job 48: Task 3_0
+
+
+Job 48: Task 4_0
+
+
+[WARNING] job 48 is being recorded and cannot be removed, set PAoption RemoveJobAfterRetrieve to false in order to disable automatic removal.
+
+(1):
+
+    1.5430806
+(2):
+
+    3.7621957
+(3):
+
+    10.067662
+(4):
+
+    27.308233
+(5):
+
+    74.209949
+
+-->val2 = PAwaitFor(res2)
+ val2  =
+
+
+       val2(1)
+
+    1.5430806
+
+       val2(2)
+
+    3.7621957
+
+       val2(3)
+
+    10.067662
+
+       val2(4)
+
+    27.308233
+
+       val2(5)
+
+    74.209949
+ ]]></screen>
+        <para><literal>3)</literal> finally, we call PAendSession() to exit the fault-tolerant session :</para>
+        <screen><![CDATA[-->PAendSession()
+Ended Recording Session started at Tue Dec 04 17:13:11 CET 2012
+ ans  =
+
+  T
+  ]]></screen>
+        
+    </refsection>
+
+    <refsection>
+        <title>See Also</title>
+        <simplelist type="inline">
+            <member>
+                <link linkend="Introduction">Introduction to the ProActive Toolbox</link>
+            </member>
+            <member>
+                <link linkend="Submitting">Running Scilab functions remotely</link>
+            </member>
+            <member>
+                <link linkend="PAbeginSession">PAbeginSession</link>
+            </member>
+            <member>
+                <link linkend="PAgetResults">PAbeginSession</link>
+            </member>
+            <member>
+                <link linkend="Configuration">Configuring and Debugging the Scilab Connector jobs</link>
+            </member>
+        </simplelist>
+    </refsection>
+
+    <refsection>
+        <title>Authors</title>
+
+        <simplelist type="vert">
+            <member>The ProActive Team, Fabien Viale</member>
+        </simplelist>
+    </refsection>
+</refentry>

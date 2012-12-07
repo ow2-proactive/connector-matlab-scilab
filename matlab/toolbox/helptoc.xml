@@ -15,9 +15,8 @@
             <tocitem target="proactive_installation.html">Installation
                 <tocitem target="proactive_installation.html#installation-1">Introduction</tocitem>
                 <tocitem target="proactive_installation.html#installation-2">Downloading and Installing ProActive Scheduler</tocitem>
-                <tocitem target="proactive_installation.html#installation-3">Scheduler Configuration For Matlab</tocitem>
-                <tocitem target="proactive_installation.html#installation-4">Configuration of Remote Workers for Matlab</tocitem>
-                <tocitem target="proactive_installation.html#installation-5">Setting up java.policy file</tocitem>
+                <tocitem target="proactive_installation.html#installation-3">Automatic Configuration of ProActive Scheduler for Matlab</tocitem>
+                <tocitem target="proactive_installation.html#installation-4">Manual Configuration of ProActive Scheduler for Matlab</tocitem>
             </tocitem>
             <tocitem target="proactive_startup.html">Starting And Connecting
                 <tocitem target="proactive_startup.html#startup-1">Introduction</tocitem>
@@ -27,7 +26,8 @@
             <tocitem target="proactive_monitoring.html">Monitoring
                 <tocitem target="proactive_monitoring.html#monitoring-1">Introduction</tocitem>
                 <tocitem target="proactive_monitoring.html#monitoring-2">Scheduler and Resource Manager command line controllers</tocitem>
-                <tocitem target="proactive_monitoring.html#monitoring-3">Scheduler and Resource Manager GUI</tocitem>
+                <tocitem target="proactive_monitoring.html#monitoring-3">ProActive Web Portals</tocitem>
+                <tocitem target="proactive_monitoring.html#monitoring-4">Matlab Connector Toolbox monitoring functions</tocitem>
             </tocitem>
             <tocitem target="proactive_solve.html">Running Matlab functions remotely
                 <tocitem target="proactive_solve.html#solve-1">Introduction</tocitem>

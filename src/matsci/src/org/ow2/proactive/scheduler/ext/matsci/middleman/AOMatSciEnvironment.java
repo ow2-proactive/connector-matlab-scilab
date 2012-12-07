@@ -425,7 +425,6 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
      * {@inheritDoc}
      */
     public void login(String user, String passwd, String keyfile) throws PASchedulerException {
-
         if (scheduler != null) {
             LOGGER_RO.setLevel(Level.FATAL);
             try {
@@ -441,7 +440,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         //System.out.println("Trying to connect with "+user+" " +passwd);
         Credentials creds = null;
         if (user == null) {
-            if (lastConnectionData.containsKey(0)) {
+            if (lastConnectionData.containsKey(0) && lastConnectionData.get(0) != null) {
                 creds = lastConnectionData.get(0).getCredentials();
                 lastKeyFile = lastConnectionData.get(0).getKeyFile();
                 lastLogin = lastConnectionData.get(0).getLogin();
@@ -467,14 +466,18 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                 lastLogin = user;
                 lastCred = creds;
             } catch (IOException e) {
+                printLog(e, LogMode.FILEANDOUTALWAYS);
                 throw new PASchedulerException(e);
             } catch (KeyException e) {
+                printLog(e, LogMode.FILEANDOUTALWAYS);
                 throw new PASchedulerException(e, PASchedulerExceptionType.KeyException);
             } catch (LoginException e) {
+                printLog(e, LogMode.FILEANDOUTALWAYS);
                 throw new PASchedulerException(new LoginException(
                     "Could not retrieve public key, contact the Scheduler admininistrator\n" + e),
                     PASchedulerExceptionType.LoginException);
             } catch (Exception e) {
+                printLog(e, LogMode.FILEANDOUTALWAYS);
                 throw new PASchedulerException(e, PASchedulerExceptionType.OtherException);
             }
         }
@@ -501,15 +504,19 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
 
                 status = scheduler.getStatus();
             } catch (NotConnectedException e) {
+                printLog(e, LogMode.FILEALWAYSNEVEROUT);
                 throw new PASchedulerException(e, PASchedulerExceptionType.NotConnectedException);
             } catch (PermissionException e) {
+                printLog(e, LogMode.FILEALWAYSNEVEROUT);
                 throw new PASchedulerException(e, PASchedulerExceptionType.PermissionException);
             } catch (AlreadyConnectedException e) {
                 // This very nasty error occur when trying to reconnect to the scheduler, in that case, we have no other
                 // choice than to restart all proactive on this machine
+                printLog(e, LogMode.FILEALWAYSNEVEROUT);
                 MiddlemanDeployer.getInstance().restartAll();
                 throw new PASchedulerException(e, PASchedulerExceptionType.AlreadyConnectedException);
             } catch (LoginException e) {
+                printLog(e, LogMode.FILEALWAYSNEVEROUT);
                 throw new PASchedulerException(e, PASchedulerExceptionType.LoginException);
             }
             schedulerKilled = (status == SchedulerStatus.KILLED);
@@ -537,8 +544,12 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
             Runtime.getRuntime().addShutdownHook(shutDownHook);
 
         } catch (PASchedulerException e) {
+            printLog(e, LogMode.FILEALWAYSNEVEROUT);
+            throw e;
+        } catch (ProActiveRuntimeException e) {
             throw e;
         } catch (Exception e) {
+            printLog(e, LogMode.FILEALWAYSNEVEROUT);
             throw new PASchedulerException(e, PASchedulerExceptionType.OtherException);
         }
         // We start a thread that will keep the session alive
@@ -685,14 +696,29 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                     throw new RuntimeException(e);
                 }
             }
+            try {
+                initLogin(lastCred);
+
+                printLog("Reconnected to " + lastSchedulerURL + " synchronizing jobs...",
+                        LogMode.FILEANDOUTALWAYS);
+                syncAll();
+                printLog("jobs synchronized...", LogMode.FILEANDOUTALWAYS);
+
+            } catch (ProActiveTimeoutException e) {
+                // see above comment
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e1) {
+                    printLog(e1, LogMode.FILEONLY);
+                    throw new RuntimeException(e1);
+                }
+
+            }
+
         } finally {
             LOGGER_RO.setLevel(RO_LEVEL);
             CentralPAPropertyRepository.PA_FUTURE_SYNCHREQUEST_TIMEOUT.setValue(old_timeout);
         }
-        initLogin(lastCred);
-        printLog("Reconnected to " + lastSchedulerURL + " synchronizing jobs...", LogMode.FILEANDOUTALWAYS);
-        syncAll();
-        printLog("jobs synchronized...", LogMode.FILEANDOUTALWAYS);
 
     }
 
@@ -877,6 +903,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         currentSequenceIndex = 1;
         recordedJobs.clear();
         mappingSeqToJobID.clear();
+
         try {
             recMan.commit();
         } catch (IOException e) {
@@ -892,6 +919,9 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         for (Long key : lastJobs.keySet()) {
             if (!recordedJobs.containsKey(key)) {
                 allJobs.remove(key);
+                currentJobs.remove(key);
+                finishedJobs.remove(key);
+                tasksReceived.remove(key);
             }
         }
         try {
@@ -964,11 +994,15 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                 BitMatrix matrix = jinfo.getTaskReceptionMatrix();
                 //System.out.println("Job "+jid+" : "+matrix);
                 tasksReceived.put(jid, matrix);
-                currentJobs.add(jid);
+
                 if (!matrix.isTrue()) {
                     // we get the current state of the job if it's not finished yet
+                    currentJobs.add(jid);
                     syncRetrieve(jinfo);
+                } else {
+                    finishedJobs.add(jid);
                 }
+
                 index++;
             }
             try {
@@ -1194,9 +1228,22 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
     }
 
     protected void syncAll() throws PASchedulerException {
-        for (Long jid : currentJobs) {
-            MatSciJobInfo jinfo = allJobs.get(jid);
-            syncRetrieve(jinfo);
+        Iterator<Long> it = currentJobs.iterator();
+
+        while (it.hasNext()) {
+            Long jid = it.next();
+            if (allJobs.containsKey(jid)) {
+                MatSciJobInfo jinfo = allJobs.get(jid);
+                syncRetrieve(jinfo);
+            } else if (recordedJobs.containsKey(jid)) {
+                MatSciJobInfo jinfo = recordedJobs.get(jid);
+                printLog("" + jid, LogMode.FILEANDOUTALWAYS);
+                printLog("" + jinfo, LogMode.FILEANDOUTALWAYS);
+                syncRetrieve(jinfo);
+            } else {
+                printLog("Warning : unknown current job " + jid + " removing it", LogMode.FILEANDOUTALWAYS);
+                it.remove();
+            }
         }
     }
 

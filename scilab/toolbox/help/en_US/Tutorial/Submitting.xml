@@ -739,13 +739,25 @@ Job 20 removed.
         <title>See Also</title>
         <simplelist type="inline">
             <member>
-                <link linkend="Introduction">Introduction</link>
+                <link linkend="Introduction">Introduction to the ProActive Toolbox</link>
             </member>
             <member>
                 <link linkend="PAsolve">PAsolve</link>
             </member>
             <member>
-                <link linkend="PAconnect">PAconnect</link>
+                <link linkend="PATask">PATask</link>
+            </member>
+            <member>
+                <link linkend="PAResult">PAResult</link>
+            </member>
+            <member>
+                <link linkend="Monitoring">Monitoring the Scilab Connector jobs</link>
+            </member>
+            <member>
+                <link linkend="Configuration">Configuring and Debugging the Scilab Connector jobs</link>
+            </member>
+            <member>
+                <link linkend="Sessions">Disconnected mode and Fault-tolerant Sessions</link>
             </member>
         </simplelist>
     </refsection>

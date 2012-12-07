@@ -19,7 +19,7 @@ function val_k=PAwaitFor(l,timeout)
             jinvoke(taskids,'add',R.taskid); 
         end
         if ~allRes
-            // if we haven't already received everything we trigger a waitAll sall
+            // if we haven't already received everything we trigger a waitAll call
             jimport java.lang.Integer;
             if argn(2) == 2                
                 tout = jinvoke(Integer,'parseInt',string(timeout));

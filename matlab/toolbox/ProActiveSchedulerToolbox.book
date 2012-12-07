@@ -13,6 +13,7 @@ proactive_simulink.html
 PAScheduler_function_list.html
 PAconnect.html
 PAisConnected.html
+PAensureConnected.html
 PAdisconnect.html
 PAstate.html
 PAjobState.html
@@ -34,3 +35,5 @@ PAisAwaited.html
 PAarrayfun.html
 PAoptions.html
 PAgetResults.html
+PAbeginSession.html
+PAendSession.html

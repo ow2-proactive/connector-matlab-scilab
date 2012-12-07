@@ -110,7 +110,7 @@ public class ScilabConnectionRImpl implements ScilabConnection {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        logFile = new File(tmpDir, "ScilabStart" + nodeName + ".log");
+        logFile = new File(tmpDir, "ScilabStart_" + nodeName + ".log");
         mainFuncFile = new File(workingDir, "PAMain.sce");
         if (!mainFuncFile.exists()) {
             try {
