@@ -368,6 +368,9 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
             sessions = recMan.hashMap(SESSION_RECORD_NAME);
             lastConnectionData = recMan.hashMap(CONNECTIONDATA_RECORD_NAME);
 
+            // by this vanilla call we trigger serial version UIDs which could possibly appear
+            ConnectionData cData = lastConnectionData.get(0);
+
             // we clear the jobs of the n-2 session, if any
             lastJobs = recMan.hashMap(MIDDLEMAN_LASTJOBS_RECORD_NAME);
             cleanOldJobs();
@@ -482,6 +485,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
             }
         }
         initLogin(creds);
+
     }
 
     /**
