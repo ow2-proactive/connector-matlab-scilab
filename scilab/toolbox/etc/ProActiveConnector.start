@@ -1,19 +1,16 @@
-// Copyright (C) 2008 - INRIA
-// Copyright (C) 2009 - DIGITEO
 
-
-function toolbox_proactivelib = startModule()
+function ProActiveConnectorlib = startModule()
 
     global PA_matsci_dir
 
-    mprintf("Start Toolbox ProActive\n");
+    mprintf("Start Toolbox ProActiveConnector\n");
 
     if isdef("toolbox_proactivelib") then
         warning("Toolbox ProActive library is already loaded");
         //return;
     end
 
-    etc_tlbx = get_absolute_file_path('toolbox_proactive.start');
+    etc_tlbx = get_absolute_file_path('ProActiveConnector.start');
     if ~exists('PA_matsci_dir') | PA_matsci_dir == []
         oldcd=pwd();
         cd(etc_tlbx);
@@ -29,7 +26,7 @@ function toolbox_proactivelib = startModule()
     // =============================================================================
     mprintf("\tLoad macros\n");
     pathmacros = fullfile( root_tlbx, "macros");
-    toolbox_proactivelib = lib(pathmacros);
+    ProActiveConnectorlib = lib(pathmacros);
 
     // load gateways
     // =============================================================================
@@ -45,7 +42,7 @@ function toolbox_proactivelib = startModule()
         mprintf("\tLoad help\n");
         path_addchapter = pathconvert(root_tlbx+"/jar");
         if ( isdir(path_addchapter) <> [] ) then
-            add_help_chapter("Toolbox ProActive", path_addchapter, %F);
+            add_help_chapter("ProActiveConnector", path_addchapter, %F);
         end
     end
 
@@ -59,6 +56,6 @@ function toolbox_proactivelib = startModule()
 
 endfunction
 
-toolbox_proactivelib = startModule();
+ProActiveConnectorlib = startModule();
 clear startModule; // remove startModule on stack
 
