@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <info xmlns="http://docbook.org/ns/docbook" version="5.0">
 	<title>ProActive Matlab Connector <systemitem role="VERSION"/> Documentation</title>
-	<subtitle role="motto">An Open Source Middleware For Parallel, Distributed, Multicore Computing</subtitle>
+	<subtitle role="motto">An Open Source Solution for Enterprise Grids &amp; Clouds</subtitle>
 	<subtitle role="main">Matlab Connector</subtitle>
 
 <!-- to change the version and date look in the html.xsl
@@ -12,14 +12,14 @@ to -->
 
 	<author>
 		<personname>
-			<surname>The OASIS Research Team and ActiveEon Company</surname>
+			<surname>ActiveEon Company, in collaboration with INRIA</surname>
 		</personname>
 	</author>
 
 	<author><orgname/></author>
 
 <copyright>
-		<year>1997-2011</year>
+		<year>1997-2012</year>
 
 		<holder>INRIA/University of Nice-Sophia Antipolis/ActiveEon</holder>
 	</copyright>
