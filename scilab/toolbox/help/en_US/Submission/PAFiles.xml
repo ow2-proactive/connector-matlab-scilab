@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<refentry version="5.0-subset Scilab" xml:id="PAFiles" xml:lang="en"
+          xmlns="http://docbook.org/ns/docbook"
+          xmlns:xlink="http://www.w3.org/1999/xlink"
+          xmlns:svg="http://www.w3.org/2000/svg"
+          xmlns:ns3="http://www.w3.org/1999/xhtml"
+          xmlns:mml="http://www.w3.org/1998/Math/MathML"
+          xmlns:db="http://docbook.org/ns/docbook">
+    <info>
+        <pubdate>$LastChangedDate: 2011-07-20 18:41:39 +0100 (mer., 20 july 2011)$</pubdate>
+    </info>
+
+    <refnamediv>
+        <refname>PAFiles</refname>
+
+        <refpurpose>constructor of PAFiles objects.</refpurpose>
+    </refnamediv>
+
+    <refsynopsisdiv>
+        <title>Calling Sequence</title>
+
+        <synopsis>PAFiles(nbitems)</synopsis>
+    </refsynopsisdiv>
+
+    <refsection>
+        <title>Description</title>
+
+
+        <para>The PAFiles objects can be used as InputFiles or OutputFiles inside PATask
+        </para>
+    </refsection>
+
+    <refsection>
+        <title>Parameters</title>
+        <variablelist>
+            <varlistentry>
+                <term>nbitems</term>
+                <listitem>
+                    <para>
+                        the number of items in this PAFile list
+                    </para>
+                </listitem>
+            </varlistentry>
+        </variablelist>
+    </refsection>
+
+    <refsection>
+        <title>Attributes of the PATask object</title>
+        <variablelist>
+            <varlistentry>
+                <term>Path</term>
+                <listitem>
+                    <para>
+                        the path to the file represented by the PAFile object, it is relative to the current directory and must not
+                        be in a hierarchy higher than the current directory (i.e. no ".." )
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>Space</term>
+                <listitem>
+                    <para>
+                        the name of the data space used for this file (see ProActive documentation for more information on dataspace,
+                        it can be 'automatic', 'input', 'output', or 'global'. Default to 'automatic', which means that the space will be 'input'
+                        is the PAFile is used as and InputFile, and 'output' if it's used as OutputFile.
+                    </para>
+                </listitem>
+            </varlistentry>
+
+        </variablelist>
+    </refsection>
+
+    <refsection>
+        <title>Examples</title>
+        <programlisting role="example"><![CDATA[
+-->t=PATask(1,1);
+
+-->t(1,1).Func='cosh';
+
+--> f = PAFiles(2);
+--> f.Space = 'automatic'
+--> f(1).Path = 'intputfile1.mat';
+--> f(2).Path = 'intputfile2.mat';
+
+t(1,1).InputFiles = f;
+
+ ]]></programlisting>
+    </refsection>
+
+    <refsection>
+        <title>See Also</title>
+        <simplelist type="inline">
+            <member>
+                <link linkend="PATask">PATask</link>
+            </member>
+        </simplelist>
+    </refsection>
+
+    <refsection>
+        <title>Authors</title>
+
+        <simplelist type="vert">
+            <member>The ProActive Team, Fabien Viale</member>
+        </simplelist>
+    </refsection>
+</refentry>
