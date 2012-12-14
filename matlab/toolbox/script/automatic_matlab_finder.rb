@@ -77,6 +77,12 @@ class MatSciFinder
 
     # initialize logs
     logFileJava = JavaIO::File.new(tmpPath, "AutomaticFindMatlab"+nodeName+".log")
+    if !logFileJava.exists()
+      logFileJava.createNewFile()
+      logFileJava.setReadable(true, false)
+      logFileJava.setWritable(true, false)
+    end
+
     #logFile = File.new(logFileJava.toString(), "a");
     @orig_stdout = $stdout
     @orig_stderr = $stderr
@@ -104,7 +110,7 @@ class MatSciFinder
 
   def parseParams()
 
-    puts  "#{Time.new()} : Finding Matlab on #@hostname"
+    puts "#{Time.new()} : Finding Matlab on #@hostname"
 
     cpt = 0
     if (defined?($args) && $args != nil)
@@ -285,22 +291,31 @@ class MatSciFinder
     pf = dirtosearch + File::SEPARATOR + "MATLAB" + File::SEPARATOR+ "R*"
     Dir.glob(pf.to_s).each do |xx|
       puts "Analysing " + xx
-      x = File.basename(xx).to_s
-      conf = EngineConfig.new()
-      conf.version = matlabYearToVersion(x[1..x.length-1])
-      conf.home = xx.to_s.gsub("/", "\\")
-      conf.bindir = matlabBinDir(is64dir)
-      conf.command = matlabCommandName()
-      if is64dir
-        conf.arch = "64"
-      else
-        conf.arch = "32"
-      end
-      answer = true
-      #puts conf
-      #puts @configs.index(conf)
-      if @configs.index(conf) == nil
-        @configs.push(conf)
+      begin
+        x = File.basename(xx).to_s
+        conf = EngineConfig.new()
+        conf.version = matlabYearToVersion(x[1..x.length-1])
+        conf.home = xx.to_s.gsub("/", "\\")
+        conf.bindir = matlabBinDir(is64dir)
+        conf.command = matlabCommandName()
+        if is64dir
+          conf.arch = "64"
+        else
+          conf.arch = "32"
+        end
+        answer = true
+        #puts conf
+        #puts @configs.index(conf)
+        if @configs.index(conf) == nil
+          @configs.push(conf)
+          puts "Added " + conf.to_s
+        else
+          puts "Skipped already added " + conf.to_s
+        end
+
+      rescue Exception => e
+        puts e.message + "\n" + e.backtrace.join("\n")
+        puts "Error occurred, skipping ..."
       end
     end
     return answer
@@ -327,16 +342,22 @@ class MatSciFinder
 
   def findMatlabUnix()
     answer = false
+    locate_res = `locate -b -e -r "^MATLAB$" -q`
+    if $?.to_i == 0
+      locate_res.each_line do |line|
+        answer = findMatlabUnixInLine(line) || answer
+      end
+    end
     locate_res = `locate -b -e -r "^matlab$" -q`
     if $?.to_i == 0
       locate_res.each_line do |line|
-        answer = answer || findMatlabUnixInLine(line)
+        answer = findMatlabUnixInLine(line) || answer
       end
     end
     which_res = `which matlab 2>/dev/null`
     if $?.to_i == 0
       which_res.each_line do |line|
-        answer = answer || findMatlabUnixInLine(line)
+        answer = findMatlabUnixInLine(line) || answer
       end
     end
     t = Time.now
@@ -344,13 +365,13 @@ class MatSciFinder
       which_res = `which matlab#{i}a 2>/dev/null`
       if $?.to_i == 0
         which_res.each_line do |line|
-          answer = answer || findMatlabUnixInLine(line)
+          answer = findMatlabUnixInLine(line) || answer
         end
       end
       which_res = `which matlab#{i}b 2>/dev/null`
       if $?.to_i == 0
         which_res.each_line do |line|
-          answer = answer || findMatlabUnixInLine(line)
+          answer = findMatlabUnixInLine(line) || answer
         end
       end
     end
@@ -361,36 +382,91 @@ class MatSciFinder
   def findMatlabUnixInLine(line)
     line = line.strip()
     answer = false
-
+    puts "Analysing " +line
     t0 = File.exist?(line)
+    if !t0
+      puts "doesn't exist"
+    end
     t1 = File.readable?(line)
-    t2 = File.executable?(line)
+    if !t1
+      puts "is not readable"
+    end
+    t2_1 = File.executable?(line)
+    jf = JavaIO::File.new(line)
+    t2_2 = jf.canExecute()
+    t2 = t2_1 || t2_2
+    if !t2
+      puts "cannot be executed"
+    end
     t3 = !File.directory?(line)
+    if !t3
+      puts "is a directory"
+    end
     if t0 && t1 && t2 && t3
       # ok this is a matlab executable !
-      conf = EngineConfig.new()
-      matlabfullbin = readlink!(line)
-      fullbindir = File.dirname(matlabfullbin)
-      archdir = File.basename(fullbindir)
-      matlabhome = File.dirname(File.dirname(bindir))
-      conf.home = matlabhome
-      conf.arch = (archdir == "glnxa64") ? "64" : "32"
-      conf.bindir = "bin/"+ archdir
-      matlabyear = File.basename(matlabhome).to_s
-      matlabyear = matlabyear[6..matlabyear.length-1]
-      conf.version = matlabYearToVersion(matlabhome)
-      conf.command = matlabCommandName()
-      if @configs.index(conf) == nil
-        @configs.push(conf)
-      end
-      answer = true
-    end
-    return answer
-  end
+      begin
 
+        matlabfullbin = readlink!(line)
+
+        fullbindir = File.dirname(matlabfullbin)
+        archdir = File.basename(fullbindir)
+        if archdir == "bin"
+          matlabhome = File.dirname(fullbindir)
+          Dir.glob(fullbindir.to_s+"/glnx*").each do |xx|
+            conf = EngineConfig.new()
+            conf.command = "MATLAB"
+            archdir = File.basename(xx)
+            conf.bindir = "bin/"+ archdir
+            conf.arch = (archdir == "glnxa64") ? "64" : "32"
+            conf.home = matlabhome
+
+            matlabyear = File.basename(matlabhome).to_s
+            matlabyear = matlabyear[6..matlabyear.length-1]
+            conf.version = matlabYearToVersion(matlabyear)
+            if @configs.index(conf) == nil
+              @configs.push(conf)
+              puts "Added " + conf.to_s
+              answer = true
+            else
+              puts "Skipped already added " + conf.to_s
+            end
+          end
+        else
+          conf = EngineConfig.new()
+          matlabhome = File.dirname(File.dirname(fullbindir))
+          conf.bindir = "bin/"+ archdir
+          conf.arch = (archdir == "glnxa64") ? "64" : "32"
+          conf.home = matlabhome
+
+          matlabyear = File.basename(matlabhome).to_s
+          matlabyear = matlabyear[6..matlabyear.length-1]
+          conf.version = matlabYearToVersion(matlabyear)
+          conf.command = "MATLAB"
+          if @configs.index(conf) == nil
+            @configs.push(conf)
+            puts "Added " + conf.to_s
+            answer = true
+          else
+            puts "Skipped already added " + conf.to_s
+          end
+        end
+
+      rescue Exception => e
+        puts e.message + "\n" + e.backtrace.join("\n")
+        puts "Error occurred, skipping ..."
+      end
+      return answer
+    end
+  end
 
   def writeConfigs()
     if !@confFiles[0].exists() || @forceSearch
+      if !@confFiles[0].exists()
+        @confFiles[0].createNewFile()
+        @confFiles[0].setReadable(true, false)
+        @confFiles[0].setWritable(true, false)
+      end
+
       fos = JavaIO::FileOutputStream.new(@confFiles[0])
       confFileLock = fos.getChannel().lock(0, Long::MAX_VALUE, false)
       exception = false
