@@ -1,15 +1,16 @@
 include Java
 
-import java.lang.System
+#require '/store/softs/LicenseSaver_1.0.0/ProActive_LicenseSaver-1.0.0-api.jar'
+#require '/store/softs/LicenseSaver_1.0.0/lib/api/ProActive.jar'
 
-
+java_import java.lang.System
 
 module JavaIO
   include_package "java.io"
 end
-import java.net.InetAddress
-import java.util.Date
-import java.util.HashSet
+java_import java.net.InetAddress
+java_import java.util.Date
+java_import java.util.HashSet
 
 class ReserveMatlab
 
@@ -48,10 +49,10 @@ class ReserveMatlab
         # System Identification
         "ident" => %q!Identification_Toolbox!
     }
-    begin
-      nodeName = System.getProperty("node.name")
-    rescue
-      nodeName = "DummyNode"
+
+    @nodeName = System.getProperty("node.name")
+    if @nodeName == nil
+      @nodeName = "DummyNode"
     end
 
     @tmpPath = System.getProperty("java.io.tmpdir");
@@ -85,7 +86,6 @@ class ReserveMatlab
   end
 
 
-
   def toolbox_code(tb)
     return @toolboxmap[tb]
   end
@@ -95,11 +95,11 @@ class ReserveMatlab
     if client.areLicensed(feature)
       # TODO login with runAsMe
       begin
-      request = LicenseRequest.new(rid, login, feature)
-      tf = client.hasLicense(request);
+        request = LicenseRequest.new(rid, login, feature)
+        tf = client.hasLicense(request);
       rescue
-          return false
-        end
+        return false
+      end
       log(tf)
       return tf;
     else
@@ -114,13 +114,12 @@ class ReserveMatlab
 
     log(Date.new().to_string()+" : Executing toolbox checking script on " + @host)
     begin
-      import com.activeeon.proactive.license_saver.client.LicenseSaverClient
-      import com.activeeon.proactive.license_saver.LicenseRequest
+      java_import com.activeeon.proactive.license_saver.client.LicenseSaverClient
+      java_import com.activeeon.proactive.license_saver.LicenseRequest
     rescue Exception => e
       log("Warning : Licensing proxy classes not found, license checking disabled")
       return true
     end
-
     if (defined? $args) && ($args.size >= 3)
       rid = $args[0]
       login = $args[1]
@@ -129,8 +128,8 @@ class ReserveMatlab
         log(a)
       end
       if serverurl == nil
-         log("Warning : Licensing proxy not specified, license checking disabled")
-         return true
+        log("Warning : Licensing proxy not specified, license checking disabled")
+        return true
       end
       begin
         client = LicenseSaverClient.new(serverurl)
@@ -154,14 +153,17 @@ class ReserveMatlab
         # use the code and login to contact the proxy server for each Matlab feature
         return tf;
       else
-         tcode = toolbox_code("matlab")
-         return checkFeature(client, rid, login, tcode)
+        tcode = toolbox_code("matlab")
+        feat_set = HashSet.new();
+        feat_set.add(tcode)
+        return checkFeature(client, rid, login, feat_set)
       end
     end
     return false;
   end
 end
-
+#t = Time.now
+#$args=[""+t.usec.to_s,"fviale", "rmi://node0:1099/LicenseSaver"]
 $selected = false
 
 begin
@@ -169,10 +171,13 @@ begin
 
   #$selected = true
   $selected = cm.checkMatlab
+  cm.log("Accepted = "+$selected.to_s)
 
 rescue Exception => e
   puts e.message + "\n" + e.backtrace.join("\n")
   raise java.lang.RuntimeException.new(e.message + "\n" + e.backtrace.join("\n"))
 ensure
-  cm.close
+  if cm != nil
+    cm.close
+  end
 end
