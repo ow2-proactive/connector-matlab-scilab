@@ -450,10 +450,10 @@ if isnumeric(opt.CustomDataspaceURL) && isempty(opt.CustomDataspaceURL)
     if (~exist([curr_dir fs subdir],'dir'))
         mkdir(curr_dir,subdir);
     end
-    if (~exist([curr_dir fs subdir fs num2str(solveid) "m"],'dir'))
-        mkdir([curr_dir fs subdir],num2str(solveid) "m");
+    if (~exist([curr_dir fs subdir fs num2str(solveid) 'm'],'dir'))
+        mkdir([curr_dir fs subdir],[num2str(solveid) 'm']);
     end
-    pa_dir = [curr_dir fs subdir fs num2str(solveid) "m"];
+    pa_dir = [curr_dir fs subdir fs num2str(solveid) 'm'];
 else
     if isnumeric(opt.CustomDataspacePath) && isempty(opt.CustomDataspacePath)
         error('if CustomDataspaceURL is specified, CustomDataspacePath must be specified also');
@@ -461,10 +461,10 @@ else
     if (~exist([opt.CustomDataspacePath fs subdir],'dir'))
         mkdir(opt.CustomDataspacePath,subdir);
     end
-    if (~exist([opt.CustomDataspacePath fs subdir fs num2str(solveid) "m"],'dir'))
-        mkdir([opt.CustomDataspacePath fs subdir],[num2str(solveid) "m"]);
+    if (~exist([opt.CustomDataspacePath fs subdir fs num2str(solveid) 'm'],'dir'))
+        mkdir([opt.CustomDataspacePath fs subdir],[num2str(solveid) 'm']);
     end
-    pa_dir = [opt.CustomDataspacePath fs subdir fs num2str(solveid) "m"];
+    pa_dir = [opt.CustomDataspacePath fs subdir fs num2str(solveid) 'm'];
 end
 
 
@@ -474,7 +474,7 @@ for i=1:NN
     taskFilesToClean{i}={};
 end
 
-subdir = [subdir '/' num2str(solveid) "m"];
+subdir = [subdir '/' num2str(solveid) 'm'];
 solve_config.setJobSubDirPath(subdir);
 solve_config.setDirToClean(pa_dir);
 end
