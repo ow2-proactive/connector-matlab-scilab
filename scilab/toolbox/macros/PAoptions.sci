@@ -300,6 +300,11 @@ endfunction
     inputs(j).check = 'prioritycheck';
     inputs(j).trans = 'id';
     j=j+1;
+    inputs(j).name = 'UseJobClassPath';
+    inputs(j).default = %t;
+    inputs(j).check = 'logcheck';
+    inputs(j).trans = 'logtrans';
+    j=j+1;
     inputs(j).name = 'WindowsStartupOptions';
     inputs(j).default = '-nw';
     inputs(j).check = 'ischarornull';
@@ -327,12 +332,17 @@ endfunction
     j=j+1;
 
     inputs(j).name = 'EmbeddedJars';
-    inputs(j).default = 'ProActive_Scheduler-matsciemb.jar';
+    inputs(j).default = 'ProActive_Matlab_Scilab_Embedded.jar;jdbm-2_4.jar';
     inputs(j).check = 'jarlistcheck';
     inputs(j).trans = 'stringtocell';
     j=j+1;
     inputs(j).name = 'ProActiveJars';
-    inputs(j).default = 'jruby.jar,jruby-engine.jar,jython.jar,jython-engine.jar,ProActive.jar,ProActive_Scheduler-client.jar,ProActive_SRM-common-client.jar,ProActive_Scheduler-matsci.jar';
+    inputs(j).default = 'jruby.jar;jruby-engine.jar;jython.jar;jython-engine.jar;ProActive.jar;ProActive_Scheduler-core.jar;ProActive_SRM-common.jar;ProActive_Matlab_Scilab.jar';
+    inputs(j).check = 'jarlistcheck';
+    inputs(j).trans = 'stringtocell';
+    j=j+1;
+    inputs(j).name = 'WorkerJars';
+    inputs(j).default = 'ProActive_Matlab_Scilab.jar;matlabcontrol-3.1.0.jar;ProActive_LicenseSaver-1.0.0-api.jar';
     inputs(j).check = 'jarlistcheck';
     inputs(j).trans = 'stringtocell';
     j=j+1;

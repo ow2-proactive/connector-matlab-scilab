@@ -2,13 +2,6 @@ include Java
 
 import java.lang.System
 
-begin
-  import org.ow2.proactive.scheduler.ext.matlab.worker.util.MatlabEngineConfig
-rescue Exception => e
-  puts e.message + "\n" + e.backtrace.join("\n")
-  raise java.lang.RuntimeException.new(e.message + "\n" + e.backtrace.join("\n"))
-end
-
 
 
 module JavaIO
@@ -56,9 +49,9 @@ class ReserveMatlab
         "ident" => %q!Identification_Toolbox!
     }
     begin
-      @nodeName = MatlabEngineConfig.getNodeName()
+      nodeName = System.getProperty("node.name")
     rescue
-      @nodeName = "DummyNode"
+      nodeName = "DummyNode"
     end
 
     @tmpPath = System.getProperty("java.io.tmpdir");

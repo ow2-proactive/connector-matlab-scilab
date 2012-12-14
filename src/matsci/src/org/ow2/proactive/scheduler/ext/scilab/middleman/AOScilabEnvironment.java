@@ -42,6 +42,7 @@ import org.objectweb.proactive.core.body.exceptions.FutureMonitoringPingFailureE
 import org.objectweb.proactive.core.util.log.ProActiveLogger;
 import org.ow2.proactive.scheduler.common.exception.JobCreationException;
 import org.ow2.proactive.scheduler.common.exception.UserException;
+import org.ow2.proactive.scheduler.common.job.JobEnvironment;
 import org.ow2.proactive.scheduler.common.job.JobId;
 import org.ow2.proactive.scheduler.common.job.JobPriority;
 import org.ow2.proactive.scheduler.common.job.TaskFlowJob;
@@ -75,6 +76,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.TreeSet;
 
@@ -218,6 +220,20 @@ public class AOScilabEnvironment extends AOMatSciEnvironment<Boolean, ScilabResu
             job.setPriority(JobPriority.findPriority(config.getPriority()));
             job.setCancelJobOnError(false);
             job.setDescription(gconf.getJobDescription());
+
+            if (config.isUseJobClassPath()) {
+                JobEnvironment je = new JobEnvironment();
+                try {
+                    ArrayList<String> workerJars = config.getWorkerJars();
+                    if (config.isDebug()) {
+                        printLog("Using jobClasspath : " + workerJars);
+                    }
+                    je.setJobClasspath(workerJars.toArray(new String[workerJars.size()]));
+                    job.setEnvironment(je);
+                } catch (IOException e) {
+                    new PASchedulerException(e);
+                }
+            }
 
             String pullUrl = config.getSharedPullPublicUrl();
             String pushUrl = config.getSharedPushPublicUrl();
@@ -436,10 +452,10 @@ public class AOScilabEnvironment extends AOMatSciEnvironment<Boolean, ScilabResu
 
                     SelectionScript sscript = null;
                     try {
-                        sscript = new SelectionScript(url1, new String[] { "versionPref",
-                                config.getVersionPref(), "versionRej", config.getVersionRejAsString(),
-                                "versionMin", config.getVersionMin(), "versionMax", config.getVersionMax() },
-                            !config.isFindMatSciScriptStatic());
+                        sscript = new SelectionScript(url1, new String[] { "" + config.isDebug(),
+                                "versionPref", config.getVersionPref(), "versionRej",
+                                config.getVersionRejAsString(), "versionMin", config.getVersionMin(),
+                                "versionMax", config.getVersionMax() }, !config.isFindMatSciScriptStatic());
                     } catch (InvalidScriptException e1) {
                         throw new PASchedulerException(e1);
                     }

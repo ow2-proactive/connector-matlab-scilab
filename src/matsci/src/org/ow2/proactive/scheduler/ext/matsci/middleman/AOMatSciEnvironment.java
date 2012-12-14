@@ -40,6 +40,8 @@ import jdbm.PrimaryHashMap;
 import jdbm.RecordManager;
 import jdbm.RecordManagerFactory;
 import org.apache.commons.vfs.FileSystemException;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.objectweb.proactive.*;
 import org.objectweb.proactive.api.PAActiveObject;
 import org.objectweb.proactive.core.ProActiveException;
@@ -51,6 +53,8 @@ import org.objectweb.proactive.core.body.request.Request;
 import org.objectweb.proactive.core.body.request.RequestFilter;
 import org.objectweb.proactive.core.config.CentralPAPropertyRepository;
 import org.objectweb.proactive.core.node.NodeException;
+import org.objectweb.proactive.core.util.log.Loggers;
+import org.objectweb.proactive.core.util.log.ProActiveLogger;
 import org.ow2.proactive.authentication.crypto.CredData;
 import org.ow2.proactive.authentication.crypto.Credentials;
 import org.ow2.proactive.scheduler.common.*;
@@ -121,6 +125,12 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
      * Id of this active object
      */
     protected String aoid;
+
+    /**
+     * Loggers of Remote Object
+     */
+    static final Logger LOGGER_RO = ProActiveLogger.getLogger(Loggers.REMOTEOBJECT);
+    static final Level RO_LEVEL = LOGGER_RO.getLevel();
 
     /**
      * Name of the jobs backup table
@@ -372,12 +382,14 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
     public void login(String user, String passwd, String keyfile) throws PASchedulerException {
 
         if (scheduler != null) {
+            LOGGER_RO.setLevel(Level.FATAL);
             try {
                 scheduler.disconnect();
                 sched_proxy.disconnect();
             } catch (Exception e) {
 
             }
+            LOGGER_RO.setLevel(RO_LEVEL);
             scheduler = null;
         }
 
@@ -453,6 +465,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                     try {
                         if (scheduler != null) {
                             scheduler.disconnect();
+                            sched_proxy.disconnect();
                         }
                     } catch (Exception e) {
                     }
@@ -517,7 +530,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
             try {
                 this.scheduler.disconnect();
             } catch (Exception e) {
-                e.printStackTrace();
+                printLog(e);
             }
 
             this.scheduler = null;
@@ -547,7 +560,9 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         // 10 sec is an acceptable timeout
         CentralPAPropertyRepository.PA_FUTURE_SYNCHREQUEST_TIMEOUT.setValue(10000);
         try {
+            LOGGER_RO.setLevel(Level.FATAL);
             try {
+
                 sched_proxy.disconnect();
             } catch (ProActiveTimeoutException e) {
                 // if a proactive timeout occurs, either it is a normal timeout (in that case we ignore it ) or it's a timeout
@@ -564,7 +579,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                 }
             } catch (Exception e) {
                 // we ignore any random exception
-                printLog(e);
+                printLog(e, LogMode.FILEONLY);
             }
             try {
                 scheduler.disconnect();
@@ -573,7 +588,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException e1) {
-                    printLog(e1);
+                    printLog(e1, LogMode.FILEONLY);
                     throw new RuntimeException(e1);
                 }
 
@@ -594,11 +609,12 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                         reconnectionSleep = MAX_RECONNECTION_SLEEP;
                     }
                 } catch (InterruptedException e) {
-                    printLog(e);
+                    printLog(e, LogMode.FILEONLY);
                     throw new RuntimeException(e);
                 }
             }
         } finally {
+            LOGGER_RO.setLevel(RO_LEVEL);
             CentralPAPropertyRepository.PA_FUTURE_SYNCHREQUEST_TIMEOUT.setValue(old_timeout);
         }
         initLogin(oldCred);
@@ -612,11 +628,14 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
      * {@inheritDoc}
      */
     public boolean isConnected() {
+        boolean answer = false;
+        LOGGER_RO.setLevel(Level.FATAL);
         try {
-            return this.scheduler.isConnected();
-        } catch (Exception e) {
-            return false;
+            answer = this.scheduler.isConnected();
+        } catch (Throwable e) {
         }
+        LOGGER_RO.setLevel(RO_LEVEL);
+        return answer;
     }
 
     /**
@@ -624,12 +643,14 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
      */
     public void ensureConnection() {
         if (!isLoggedIn()) {
+            LOGGER_RO.setLevel(Level.FATAL);
             try {
                 this.scheduler.renewSession();
             } catch (Exception e) {
                 printLog(e);
                 reconnect();
             }
+            LOGGER_RO.setLevel(RO_LEVEL);
         }
     }
 
@@ -1716,7 +1737,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                 // we maybe serve the pending waitXXX method if there is one and if the necessary results are collected
                 maybeServePending(service);
             } catch (Throwable ex) {
-                printLog(ex);
+                printLog(ex, LogMode.FILEONLY);
             }
         }
 
@@ -1854,7 +1875,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         private static final int KEEP_ALIVE_TIME = 20000;
 
         /**
-         * we use a private Schuduler connection because two different thread cannot use the same scheduler connection
+         * we use a private Scheduler connection because two different thread cannot use the same scheduler connection
          */
         private Scheduler scheduler_itf_for_pinger;
 
@@ -1874,7 +1895,9 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
             while (true) {
                 try {
                     synchronized (scheduler) {
+                        LOGGER_RO.setLevel(Level.FATAL);
                         scheduler_itf_for_pinger.renewSession();
+                        LOGGER_RO.setLevel(RO_LEVEL);
                     }
                 } catch (RuntimeException e) {
                     // scheduler connection lost

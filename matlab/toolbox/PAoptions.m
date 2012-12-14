@@ -123,6 +123,11 @@
 %               Priority used by default for jobs submitted with PAsolve,
 %               default to 'Normal'
 %
+%   UseJobClassPath
+%               With this options set to true, the toolbox will use the jobClassPath feature of the scheduler, when submitting jobs
+%               jar files necessary to the matlab workers will be copied at each task execution. It will not be necessary to put the
+%               jars in the addons directory, but it will introduce an overhead
+%
 %   WindowsStartupOptions   char
 %               Options given to matlab worker processes started on windows operating systems
 %
@@ -150,7 +155,7 @@
 %               url or path of selection script used to reserve matlab
 %               tokens (internal)
 %
-%   ProActiveJars and EmbeddedJars
+%   ProActiveJars, EmbeddedJars and WorkerJars
 %               Comma separated list of jar files used by ProActive
 %               (internal)
 %   PathJars
@@ -238,7 +243,7 @@ logcheck = @(x)(ischar(x) && ismember(x, {'on','off', 'true', 'false'})) || islo
 versioncheck = @(x)((isnumeric(x)&&isempty(x)) || (ischar(x) && isempty(x)) || (ischar(x) && ~isempty(regexp(x, '^[1-9][\d]*\.[\d]+$'))));
 versionlistcheck = @(x)((isnumeric(x)&&isempty(x)) || (ischar(x) && isempty(x)) || (ischar(x) &&  ~isempty(regexp(x, '^([1-9][\d]*\.[\d]+[ ;,]+)*[1-9][\d]*\.[\d]+$'))));
 
-jarlistcheck = @(x)(ischar(x) &&  ~isempty(regexp(x, '^([\w\-]+\.jar[ ;,]+)*[\w\-]+\.jar$')));
+jarlistcheck = @(x)(ischar(x) &&  ~isempty(regexp(x, '^([\w\-\.]+\.jar[ ;,]+)*[\w\-\.]+\.jar$')));
 listcheck = @(x)(ischar(x) && (isempty(x) || ~isempty(regexp(x, '^([^ ;,]+[ ;,]+)*[^ ;,]+$'))));
 listcheck2 = @(x)((isnumeric(x)&&isempty(x)) || (ischar(x) && (isempty(x) || ~isempty(regexp(x, '^([^ ]+[ ]+)*[^ ]+$')))));
 listtrans = @listtocell;
@@ -428,6 +433,11 @@ inputs(j).default = 'Normal';
 inputs(j).check = @(x)(ischar(x) && ismember(x, {'Idle', 'Lowest', 'Low', 'Normal', 'High', 'Highest'}));
 inputs(j).trans = id;
 j=j+1;
+inputs(j).name = 'UseJobClassPath';
+inputs(j).default = true;
+inputs(j).check = logcheck;
+inputs(j).trans = logtrans;
+j=j+1;
 inputs(j).name = 'WindowsStartupOptions';
 inputs(j).default = '-automation -nodesktop -nosplash -nodisplay';
 inputs(j).check = @ischar;
@@ -444,12 +454,17 @@ inputs(j).check = @ischar;
 inputs(j).trans = conftrans;
 j=j+1;
 inputs(j).name = 'ProActiveJars';
-inputs(j).default = 'jruby.jar,jruby-engine.jar,jython.jar,jython-engine.jar,ProActive.jar,ProActive_Scheduler-client.jar,ProActive_SRM-common-client.jar,ProActive_Scheduler-matsci.jar';
+inputs(j).default = 'jruby.jar;jruby-engine.jar;jython.jar;jython-engine.jar;ProActive.jar;ProActive_Scheduler-core.jar;ProActive_SRM-common.jar;ProActive_Matlab_Scilab.jar';
 inputs(j).check = jarlistcheck;
 inputs(j).trans = listtrans;
 j=j+1;
 inputs(j).name = 'EmbeddedJars';
-inputs(j).default = 'ProActive_Scheduler-matsciemb.jar';
+inputs(j).default = 'ProActive_Matlab_Scilab_Embedded.jar;jdbm-2_4.jar';
+inputs(j).check = jarlistcheck;
+inputs(j).trans = listtrans;
+j=j+1;
+inputs(j).name = 'WorkerJars';
+inputs(j).default = 'ProActive_Matlab_Scilab.jar;matlabcontrol-3.1.0.jar;ProActive_LicenseSaver-1.0.0-api.jar';
 inputs(j).check = jarlistcheck;
 inputs(j).trans = listtrans;
 j=j+1;

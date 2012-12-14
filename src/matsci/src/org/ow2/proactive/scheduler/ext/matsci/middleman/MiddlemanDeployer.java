@@ -302,6 +302,7 @@ public abstract class MiddlemanDeployer {
         activate();
         exportAll();
         rebindAll();
+        System.out.println("[MiddlemanDeployer] Middleman JVM started");
     }
 
     /**

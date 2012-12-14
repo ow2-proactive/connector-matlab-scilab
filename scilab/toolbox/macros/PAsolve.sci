@@ -292,7 +292,8 @@ function initSolveConfig(solve_config,opt)
     jinvoke(solve_config, 'setSharedPullPrivateUrl', opt.SharedPullPrivateUrl);
     jinvoke(solve_config, 'setSharedAutomaticTransfer', opt.SharedAutomaticTransfer);
     jinvoke(solve_config, 'setJobDirectoryFullPath',curr_dir);
-    jinvoke(solve_config,'setPriority',opt.Priority);    
+    jinvoke(solve_config,'setPriority',opt.Priority);
+    jinvoke(solve_config,'setUseJobClassPath',opt.UseJobClassPath);
     jinvoke(solve_config,'setNbExecutions',opt.NbTaskExecution);   
     //solve_config.setTransferEnv(opt.TransferEnv);       
     jinvoke(solve_config,'setWindowsStartupOptionsAsString',opt.WindowsStartupOptions);
@@ -327,6 +328,18 @@ function initSolveConfig(solve_config,opt)
     jinvoke(solve_config,'setFindMatSciScriptStatic',opt.FindMatSciScriptStatic);
 
     jinvoke(solve_config,'setWorkerTimeoutStart',opt.WorkerTimeoutStart);
+    dist_lib_dir = opt.PathJars;
+    listjars = opt.WorkerJars;
+
+    for i=1:size(listjars,1)
+        jar_full_path =  fullfile(dist_lib_dir,listjars(i).entries);
+        if length(fileinfo(jar_full_path)) == 0
+            error('Can''t locate worker jar at '''+jar_full_path+'''');
+        end
+        jinvoke(solve_config,'addWorkerJar',jar_full_path);
+
+    end
+
     jremove(URL);
 endfunction
 
