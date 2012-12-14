@@ -73,7 +73,14 @@ public final class StackTraceUtil {
         if (!a.getClass().equals(b.getClass())) {
             return false;
         }
-        if (!a.getMessage().equals(b.getMessage())) {
+        if ((a.getMessage() == null) && (b.getMessage() != null)) {
+            return false;
+        }
+        if ((b.getMessage() == null) && (a.getMessage() != null)) {
+            return false;
+        }
+
+        if ((a.getMessage() != null) && (b.getMessage() != null) && !a.getMessage().equals(b.getMessage())) {
             return false;
         }
         return equalsStackTraces(a.getCause(), b.getCause());
