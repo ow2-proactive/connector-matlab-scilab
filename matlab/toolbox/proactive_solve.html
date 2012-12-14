@@ -638,6 +638,16 @@ ans =
 
    120
 </pre>
+<p>If you want to use more than one InputFile (resp OutputFile), use a PAFile array like this :</p>
+<pre>
+>> t.Func = @factfile;
+>> t.Params = {};
+>> f = PAFiles(2);
+>> f(1).Path = 'intputfile1.mat';
+>> f(2).Path = 'intputfile2.mat';
+>> t.InputFiles = f;
+</pre>
+
 
 <a name="solve-6"></a>
 

@@ -4,9 +4,9 @@ function %PAFiles_p(l)
          printf('{ ');
         //disp(m)
         for j=1:m
-                patsk=l.matrix(1,j).entries;
-                %PAFile_p(patsk);
-                printf(' ');
+            patsk=l.matrix(1,j).entries;
+            %PAFile_p(patsk);
+            printf(' ');
         end
          printf('}\n');
      end

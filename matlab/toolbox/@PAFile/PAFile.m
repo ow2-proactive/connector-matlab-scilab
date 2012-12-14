@@ -1,4 +1,4 @@
-% PAFile constructor of PAFile objects
+% PAFile constructor of PAFile objects. PAFile objects can be used as InputFiles or OutputFiles inside PATask
 %
 % Syntax
 %       t = PAFile(nbitems);
@@ -13,9 +13,12 @@
 %
 % Properties 
 %
-%       Path - a matlab function handle (the function to execute remotely)
+%       Path - the path to the file represented by the PAFile object, it is relative to the current directory and must not
+%       be in a hierarchy higher than the current directory (i.e. no ".." )
 %       
-%       Space - the name of the space used for this file, it can be 'automatic', 'input', 'output', or 'global'
+%       Space - the name of the data space used for this file (see ProActive documentation for more information on dataspace,
+%       it can be 'automatic', 'input', 'output', or 'global'. Default to 'automatic', which means that the space will be 'input'
+%       is the PAFile is used as and InputFile, and 'output' if it's used as OutputFile.
 %
 % Examples
 %

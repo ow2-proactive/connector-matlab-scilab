@@ -125,17 +125,8 @@
                 <term>InputFiles</term>
                 <listitem>
                     <para>
-                        A list containing the relative path (relative to this directory) of any input file used by the
-                        function Func. The files must be either located in the current directory or in a sub-directory,
-                        it is not possible to use files from a parent of sibling directory.
-                    </para>
-                </listitem>
-            </varlistentry>
-            <varlistentry>
-                <term>InputSource</term>
-                <listitem>
-                    <para>
-                        this string attribute determines which DataSpace will be used as an input DataSpace, it can either be "input" or "global", to use respectively the job Input Space or the Scheduler Global Space.
+                        the input files, given as a PAFiles array. Paths to the input files must be given relatively to
+                        the current directory and it is not allowed to refer to a file which is outside the current directory hierarchy (i.e. no '..').
                     </para>
                 </listitem>
             </varlistentry>
@@ -143,17 +134,9 @@
                 <term>OutputFiles</term>
                 <listitem>
                     <para>
-                        A list containing the relative path (relative to each distant Scilab session working directory)
-                        of any output file that will be created by the function Func. After the task is complete, the
-                        files will be transferred to the current directory accordingly to its relative path.
-                    </para>
-                </listitem>
-            </varlistentry>
-            <varlistentry>
-                <term>OutputSource</term>
-                <listitem>
-                    <para>
-                        this string attribute determines which DataSpace will be used as an output DataSpace, it can either be "ouput" or "global", to use respectively the job Output Space or the Scheduler Global Space.
+                        the output files, given as a PAFiles array. Similarly the paths must be relative to the base directory
+                        of the remote scilab engine (which will be a subdirectory of the TEMP directory).
+                        The scilab function will have to create those files and all subdirectories relative to the base one.
                     </para>
                 </listitem>
             </varlistentry>
