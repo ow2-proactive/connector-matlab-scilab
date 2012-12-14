@@ -167,7 +167,7 @@ function login(uri,credpath)
                 error('PAconnect::Authentication error');
             end
         end
-        disp('Login succesful');        
+        disp('Login successful');
     end   
 
 endfunction

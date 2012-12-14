@@ -1,8 +1,8 @@
 function [b]=%PAResL_e(i1,i2,l)
     //disp('PAResL_e_ : '+string(i1)+' '+typeof(l))
     //[m, n] = size(l(2));
-    //disp(i1);
-    //disp(i2);
+   // disp(i1);
+   // disp(i2);
     //b = mlist(['PAResL','matrix']);
     //b.matrix = l.matrix(1,i1);
 
@@ -29,9 +29,12 @@ function [b]=%PAResL_e(i1,i2,l)
                     b($+1) = out;
                 end                       
             end                
-        else
+        elseif typeof(i1) == 'constant' then
             b = mlist(['PAResL','matrix']);
+           // disp(i1);
             b.matrix = l.matrix(1,i1);
+        else
+            error("unexpected index type : " + typeof(i1));
         end     
 
 
