@@ -47,8 +47,6 @@ import java.util.List;
  */
 public class AwaitedTask implements Serializable {
 
-    private static final long serialVersionUID = 11;
-
     private String taskName;
 
     private List<OutputSelector> outputSelectors;

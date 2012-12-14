@@ -46,7 +46,6 @@ import java.io.Serializable;
  */
 public final class UnReifiable<T> implements Serializable {
 
-    private static final long serialVersionUID = 11;
     T t;
 
     public UnReifiable() {

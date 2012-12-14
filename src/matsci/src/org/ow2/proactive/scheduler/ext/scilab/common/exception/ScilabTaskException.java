@@ -46,7 +46,6 @@ import org.ow2.proactive.scheduler.ext.matsci.common.exception.MatSciTaskExcepti
  */
 public class ScilabTaskException extends MatSciTaskException {
 
-    private static final long serialVersionUID = 11;
     public ScilabTaskException() {
         super();
     }

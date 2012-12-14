@@ -88,8 +88,6 @@ import java.util.TreeSet;
  */
 public class AOScilabEnvironment extends AOMatSciEnvironment<Boolean, ScilabResultsAndLogs> {
 
-    private static final long serialVersionUID = 11;
-
     /**
      * Name of the middleman jobs backup
      */

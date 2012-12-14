@@ -89,8 +89,6 @@ import java.util.TreeSet;
  */
 public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResultsAndLogs> {
 
-    private static final long serialVersionUID = 11;
-
     /**
      * Name of the middleman jobs backup
      */

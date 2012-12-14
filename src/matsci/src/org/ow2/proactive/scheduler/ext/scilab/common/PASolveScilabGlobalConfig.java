@@ -46,8 +46,6 @@ import org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveMatSciGlobalCon
  */
 public class PASolveScilabGlobalConfig extends PASolveMatSciGlobalConfig {
 
-    private static final long serialVersionUID = 11;
-
     public PASolveScilabGlobalConfig() {
 
     }

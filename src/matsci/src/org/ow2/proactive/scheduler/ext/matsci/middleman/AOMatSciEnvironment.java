@@ -92,8 +92,6 @@ import java.util.concurrent.TimeoutException;
 public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, Serializable,
         ISchedulerEventListenerExtended, InitActive, RunActive {
 
-    private static final long serialVersionUID = 11;
-
     /**
      * Connection to the scheduler
      */
@@ -1977,8 +1975,6 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
      *         Internal class for filtering requests in the queue
      */
     private class FindNotWaitFilter implements RequestFilter {
-
-    private static final long serialVersionUID = 11;
 
         /**
          * Creates the filter

@@ -46,10 +46,9 @@ import java.io.Serializable;
  */
 public class ResultsAndLogs<R> implements Serializable {
 
-    private static final long serialVersionUID = 11;
     /**
-     * Result of the task
-     */
+    * Result of the task
+    */
     protected R result;
 
     /**

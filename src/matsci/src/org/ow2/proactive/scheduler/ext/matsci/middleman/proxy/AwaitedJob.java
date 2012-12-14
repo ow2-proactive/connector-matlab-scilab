@@ -45,8 +45,6 @@ import java.util.HashMap;
  */
 public class AwaitedJob implements Serializable {
 
-    private static final long serialVersionUID = 11;
-
     private String jobId;
 
     // input data

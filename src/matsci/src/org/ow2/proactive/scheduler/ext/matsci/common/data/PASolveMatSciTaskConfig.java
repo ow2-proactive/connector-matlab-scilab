@@ -49,8 +49,6 @@ import java.util.List;
  */
 public class PASolveMatSciTaskConfig implements Serializable {
 
-    private static final long serialVersionUID = 11;
-
     /**
      * Matlab or Scilab source files
      */

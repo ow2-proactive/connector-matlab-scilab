@@ -55,8 +55,6 @@ import java.rmi.RemoteException;
  */
 public class LoginFrame<E extends MatSciEnvironment> extends JDialog {
 
-    private static final long serialVersionUID = 11;
-
     private JTextField username;
     private JPasswordField password;
     private JTextField key;
