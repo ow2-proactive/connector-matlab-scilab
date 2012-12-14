@@ -548,6 +548,8 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         } catch (PASchedulerException e) {
             printLog(e, LogMode.FILEALWAYSNEVEROUT);
             throw e;
+        } catch (ProActiveRuntimeException e) {
+            throw e;
         } catch (Exception e) {
             printLog(e, LogMode.FILEALWAYSNEVEROUT);
             throw new PASchedulerException(e, PASchedulerExceptionType.OtherException);
@@ -696,14 +698,29 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                     throw new RuntimeException(e);
                 }
             }
+            try {
+                initLogin(lastCred);
+
+                printLog("Reconnected to " + lastSchedulerURL + " synchronizing jobs...",
+                        LogMode.FILEANDOUTALWAYS);
+                syncAll();
+                printLog("jobs synchronized...", LogMode.FILEANDOUTALWAYS);
+
+            } catch (ProActiveTimeoutException e) {
+                // see above comment
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e1) {
+                    printLog(e1, LogMode.FILEONLY);
+                    throw new RuntimeException(e1);
+                }
+
+            }
+
         } finally {
             LOGGER_RO.setLevel(RO_LEVEL);
             CentralPAPropertyRepository.PA_FUTURE_SYNCHREQUEST_TIMEOUT.setValue(old_timeout);
         }
-        initLogin(lastCred);
-        printLog("Reconnected to " + lastSchedulerURL + " synchronizing jobs...", LogMode.FILEANDOUTALWAYS);
-        syncAll();
-        printLog("jobs synchronized...", LogMode.FILEANDOUTALWAYS);
 
     }
 
