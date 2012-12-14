@@ -76,7 +76,8 @@ function deployJVM(opt,uri)
     addJavaObj(ScilabJVMSpawnHelper);
     addJavaObj(deployer);
 
-    home = getenv('JAVA_HOME');
+    home = getenv('JAVA_HOME',jre_path());  // this uses the JAVA_HOME env var or the jre used by scilab
+
     fs=filesep();
     if length(home) > 0
         if (getos() == "Windows") then

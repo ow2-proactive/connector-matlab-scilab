@@ -162,6 +162,9 @@ end
 function deployJVM(sched,opt,url)
 deployer = org.ow2.proactive.scheduler.ext.matlab.client.embedded.util.MatlabJVMSpawnHelper.getInstance();
 home = getenv('JAVA_HOME');
+if isempty(home)
+    home = java.lang.System.getProperty('java.home');
+end
 fs=filesep();
 if length(home) > 0
     if ispc()

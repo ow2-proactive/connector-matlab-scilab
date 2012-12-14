@@ -88,6 +88,8 @@
 
 <p>The package which must be downloaded is called <b>Matlab_Connector</b><br>After downloading the package unzip it in a directory e.g. D:\Matlab_Connector</p>
 
+<p>ProActive Scheduler must also be downloaded : <b>ProActiveScheduling-3.3.1_bin_full.zip</b></p>
+
 <p>IMPORTANT: According to your deployment infrastructure, ProActive Scheduler must be installed on :</p>
 <ol>
     <li><p>The host which will launch the <b>Scheduler</b>.</p></li>
@@ -140,7 +142,7 @@
     manage to find it. In that case it will be necessary to write a Matlab configuration file manually.</p>
 <p>A sample configuration file is located inside the <b>Matlab_Connector/scheduler-plugin</b> folder under the name MatlabWorkerConfiguration.xml</p>
 <p>This file must be edited and put inside the <b>addons</b> directory of ProActive Scheduler. This must be done on ProActive Scheduler Server and on
-    every hosts that will be used as Matlab workers.</p>
+    every hosts that will be used as Matlab workers for which the automatic configuration didn't work.</p>
 <p>If the scheduler is installed in a single directory shared by all workers (via NFS for example), then only one MatlabWorkerConfiguration.xml
     file needs to be edited. The syntax of the file allows to create a configuration for several machine groups via wildcards
     that will match a machine's hostname or ipaddress, and as well several matlab installations for the same machine.</p>
@@ -173,6 +175,7 @@
 <h4 class="title">Manual Installation of ProActive Matlab Connector Libraries to the ProActive Scheduler</h4>
 <p>If the option <b>UseJobClassPath</b> is set to false, the content of the directory <b>Matlab_Connector/scheduler-plugin</b> (not the directory itself, only the content) must be copied
     inside the <b>addons</b> directory of ProActive Scheduler and of every Matlab Worker which will be used as matlab workers.</p>
+<p>Manually installing the librairies used by Matlab Connector inside the scheduler reduces the overhead of transferring them each time through the network.</p>
 
 
 <a name="bottom_of_page"></a>
