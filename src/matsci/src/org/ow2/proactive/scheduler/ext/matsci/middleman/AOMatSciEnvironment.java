@@ -131,33 +131,48 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
     static final Level RO_LEVEL = LOGGER_RO.getLevel();
 
     /**
-     * Name of the jobs backup table
+     * Table name of the jobs backup
      */
     public static final String MIDDLEMAN_JOBS_RECORD_NAME = "MiddlemanJobs";
 
     /**
-     * Name of the jobs backup table being recorded for replay
+     * Table name of the jobs from last session
      */
     public static final String MIDDLEMAN_LASTJOBS_RECORD_NAME = "MiddlemanLastJobs";
 
     /**
-     * Name of the jobs backup table being recorded for replay
+     * Table name of the jobs being recorded for replay
      */
     public static final String MIDDLEMAN_RECORDEDJOBS_RECORD_NAME = "MiddlemanRecordedJobs";
 
     /**
-     * Name of the jobs backup table being recorded for replay
+     * Table name of the matching between the sequence and the job
      */
     public static final String MIDDLEMAN_SEQTOJOBID_RECORD_NAME = "MiddlemanSeq2JobId";
 
     /**
-     * Name of the jobs backup table being recorded for replay
+     * Table name of the last recording session
      */
     public static final String SESSION_RECORD_NAME = "MiddlemanSession";
+
+    /**
+     * Table name of the last credentials
+     */
+    public static final String CONNECTIONDATA_RECORD_NAME = "MiddlemanConnectionData";
 
     protected static final int MIN_RECONNECTION_SLEEP = 4;
 
     protected static final int MAX_RECONNECTION_SLEEP = 128;
+
+    protected static String HOSTNAME = null;
+
+    static {
+        try {
+            HOSTNAME = java.net.InetAddress.getLocalHost().getHostName();
+
+        } catch (Exception e) {
+        }
+    }
 
     /**
      * Object handling the middlemanJobsFile connection
@@ -181,16 +196,59 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
      */
     protected PrimaryHashMap<Long, Long> lastJobs;
 
+    /**
+     * Mapping of sequence index with jobs (in PAsessions)
+     */
     protected PrimaryHashMap<Integer, Long> mappingSeqToJobID;
 
+    /**
+     * Date of last session
+     */
     protected PrimaryHashMap<Integer, Date> sessions;
 
+    /**
+     * last info of connection
+     */
+    protected PrimaryHashMap<Integer, ConnectionData> lastConnectionData;
+
+    /**
+     * state of the recording session
+     */
     protected PASessionState state = PASessionState.NORMAL;
 
+    /**
+     * last login used
+     */
+    protected String lastLogin;
+
+    /**
+     * Last credentials used
+     */
+    protected Credentials lastCred;
+
+    /**
+     * Last Scheduler url used
+     */
+    protected String lastSchedulerURL;
+
+    /**
+     * Last key file used
+     */
+    protected String lastKeyFile;
+
+    /**
+     * start time of current session
+     */
     protected Date sessionStart = null;
 
+    /**
+     * current sequence index in the PAsession
+     */
     protected int currentSequenceIndex = 1;
 
+    /**
+     * Matrix of task received for each job
+     */
     protected HashMap<Long, BitMatrix> tasksReceived = new HashMap<Long, BitMatrix>();
 
     /**
@@ -237,11 +295,6 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
      * tells if the hook used for PAMR reconnection has been deployed or not
      */
     private static boolean pamrHookSet = false;
-
-    /**
-     * Credentials used last
-     */
-    private Credentials oldCred;
 
     /**
      * Number of seconds slept before two reconnection attempts
@@ -293,11 +346,6 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
     protected SchedulerAuthenticationInterface auth;
 
     /**
-     * URL of the scheduler
-     */
-    protected String schedulerURL = null;
-
-    /**
      * *******************************************************************************************************
      * ************************************* LOGIN AND CONNECTION ********************************************
      */
@@ -320,6 +368,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
             recordedJobs = recMan.hashMap(MIDDLEMAN_RECORDEDJOBS_RECORD_NAME);
             mappingSeqToJobID = recMan.hashMap(MIDDLEMAN_SEQTOJOBID_RECORD_NAME);
             sessions = recMan.hashMap(SESSION_RECORD_NAME);
+            lastConnectionData = recMan.hashMap(CONNECTIONDATA_RECORD_NAME);
 
             // we clear the jobs of the n-2 session, if any
             lastJobs = recMan.hashMap(MIDDLEMAN_LASTJOBS_RECORD_NAME);
@@ -393,26 +442,43 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
 
         //System.out.println("Trying to connect with "+user+" " +passwd);
         Credentials creds = null;
-        try {
-            if (keyfile != null && keyfile.length() > 0) {
-                byte[] keyfileContent = FileToBytesConverter.convertFileToByteArray(new File(keyfile));
-                CredData cd = new CredData(CredData.parseLogin(user), CredData.parseDomain(user), passwd,
-                    keyfileContent);
-                creds = Credentials.createCredentials(cd, auth.getPublicKey());
+        if (user == null) {
+            if (lastConnectionData.containsKey(0)) {
+                creds = lastConnectionData.get(0).getCredentials();
+                lastKeyFile = lastConnectionData.get(0).getKeyFile();
+                lastLogin = lastConnectionData.get(0).getLogin();
+                lastSchedulerURL = lastConnectionData.get(0).getUrl();
+                lastCred = creds;
             } else {
-                creds = Credentials.createCredentials(new CredData(CredData.parseLogin(user), CredData
-                        .parseDomain(user), passwd), auth.getPublicKey());
+                throw new IllegalStateException();
             }
-        } catch (IOException e) {
-            throw new PASchedulerException(e);
-        } catch (KeyException e) {
-            throw new PASchedulerException(e, PASchedulerExceptionType.KeyException);
-        } catch (LoginException e) {
-            throw new PASchedulerException(new LoginException(
-                "Could not retrieve public key, contact the Scheduler admininistrator\n" + e),
-                PASchedulerExceptionType.LoginException);
-        } catch (Exception e) {
-            throw new PASchedulerException(e, PASchedulerExceptionType.OtherException);
+
+        }
+        if (creds == null) {
+            try {
+                if (keyfile != null && keyfile.length() > 0) {
+                    byte[] keyfileContent = FileToBytesConverter.convertFileToByteArray(new File(keyfile));
+                    CredData cd = new CredData(CredData.parseLogin(user), CredData.parseDomain(user), passwd,
+                        keyfileContent);
+                    creds = Credentials.createCredentials(cd, auth.getPublicKey());
+                } else {
+                    creds = Credentials.createCredentials(new CredData(CredData.parseLogin(user), CredData
+                            .parseDomain(user), passwd), auth.getPublicKey());
+                }
+                lastKeyFile = keyfile;
+                lastLogin = user;
+                lastCred = creds;
+            } catch (IOException e) {
+                throw new PASchedulerException(e);
+            } catch (KeyException e) {
+                throw new PASchedulerException(e, PASchedulerExceptionType.KeyException);
+            } catch (LoginException e) {
+                throw new PASchedulerException(new LoginException(
+                    "Could not retrieve public key, contact the Scheduler admininistrator\n" + e),
+                    PASchedulerExceptionType.LoginException);
+            } catch (Exception e) {
+                throw new PASchedulerException(e, PASchedulerExceptionType.OtherException);
+            }
         }
         initLogin(creds);
     }
@@ -428,10 +494,10 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         try {
             try {
                 this.scheduler = auth.login(creds);
-                this.sched_proxy.init(schedulerURL, creds);
+                this.sched_proxy.init(lastSchedulerURL, creds);
 
                 loggedin = true;
-                this.oldCred = creds;
+                this.lastCred = creds;
 
                 this.sched_proxy.addEventListener(stubOnThis);
 
@@ -484,7 +550,12 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         if (!currentJobs.isEmpty()) {
             syncAll();
         }
-
+        lastConnectionData.put(0, new ConnectionData(lastSchedulerURL, lastLogin, lastCred, lastKeyFile));
+        try {
+            recMan.commit();
+        } catch (Exception e) {
+            printLog(e, LogMode.FILEANDOUTALWAYS);
+        }
     }
 
     /**
@@ -520,6 +591,10 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         return loggedin && isConnected();
     }
 
+    public boolean hasCredentialsStored() {
+        return lastConnectionData.containsKey(0);
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -547,7 +622,8 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
      */
     protected void reconnect() {
         boolean joined = false;
-        printLog("Connection to " + schedulerURL + " lost, trying to reconnect.", LogMode.FILEANDOUTALWAYS);
+        printLog("Connection to " + lastSchedulerURL + " lost, trying to reconnect.",
+                LogMode.FILEANDOUTALWAYS);
 
         // we set a timeout for all ProActive synchronous calls. The reason behind this is that we can be in a situation
         // where the PAMR router failed and when this happens all ProActive calls block forever. By putting a timeout we
@@ -596,7 +672,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
 
             while (!joined) {
                 try {
-                    joined = this.join(schedulerURL);
+                    joined = this.join(lastSchedulerURL);
                 } catch (ProActiveTimeoutException e) {
                     // see above comment
                 }
@@ -615,8 +691,8 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
             LOGGER_RO.setLevel(RO_LEVEL);
             CentralPAPropertyRepository.PA_FUTURE_SYNCHREQUEST_TIMEOUT.setValue(old_timeout);
         }
-        initLogin(oldCred);
-        printLog("Reconnected to " + schedulerURL + " synchronizing jobs...", LogMode.FILEANDOUTALWAYS);
+        initLogin(lastCred);
+        printLog("Reconnected to " + lastSchedulerURL + " synchronizing jobs...", LogMode.FILEANDOUTALWAYS);
         syncAll();
         printLog("jobs synchronized...", LogMode.FILEANDOUTALWAYS);
 
@@ -724,20 +800,25 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
      * {@inheritDoc}
      */
     public boolean join(String url) throws PASchedulerException {
+        if ((url == null) && (lastConnectionData.containsKey(0))) {
+            url = lastConnectionData.get(0).getUrl();
+        } else if (url == null) {
+            url = "rmi://" + HOSTNAME + ":1099";
+        }
         try {
             auth = SchedulerConnection.join(url);
         } catch (Exception e) {
             printLog(e, LogMode.FILEALWAYS);
             return false;
         }
-        schedulerURL = url;
+        lastSchedulerURL = url;
         this.loggedin = false;
         joined = true;
         return true;
     }
 
     public String getSchedulerURL() {
-        return schedulerURL;
+        return lastSchedulerURL;
     }
 
     /**
@@ -1880,7 +1961,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         @Override
         public void run() {
             try {
-                scheduler_itf_for_pinger = auth.login(oldCred);
+                scheduler_itf_for_pinger = auth.login(lastCred);
             } catch (LoginException e) {
                 // should never occur
                 printLog(e, LogMode.FILEANDOUTALWAYS);

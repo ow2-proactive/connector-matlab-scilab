@@ -112,6 +112,13 @@ public interface MatSciEnvironment extends Remote {
     public boolean disconnect() throws RemoteException;
 
     /**
+     * Returns true if the MiddleMan JVM has some user credentials stored in its database
+     * @return tf
+     * @throws RemoteException
+     */
+    public boolean hasCredentialsStored() throws RemoteException;
+
+    /**
      * Is the environment actually connected to scheduler ? (the scheduler can choose to disconnect a logged-in client)
      * @return
      * @throws java.rmi.RemoteException
