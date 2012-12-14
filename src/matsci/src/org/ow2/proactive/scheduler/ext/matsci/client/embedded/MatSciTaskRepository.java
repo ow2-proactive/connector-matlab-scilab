@@ -73,7 +73,12 @@ public abstract class MatSciTaskRepository {
     /**
      * Name of the jobs backup table being recorded for replay
      */
-    public static final String EMBEDDED_SEQTOJOBID_RECORD_NAME = "EmbeddednSeq2JobId";
+    public static final String EMBEDDED_SEQTOJOBID_RECORD_NAME = "EmbeddedSeq2JobId";
+
+    /**
+     * Name of the jobs backup table being recorded for replay
+     */
+    public static final String EMBEDDED_LASTJOBLOCALID_RECORD_NAME = "EmbeddedLastJobLocalId";
 
     /**
      * Object handling the middlemanJobsFile connection
@@ -99,6 +104,8 @@ public abstract class MatSciTaskRepository {
 
     protected PrimaryHashMap<Integer, Long> mappingSeqToJobID;
 
+    protected PrimaryHashMap<Integer, Integer> lastJobLocalId;
+
     protected PASessionState state = PASessionState.NORMAL;
 
     protected int currentSequenceIndex = 1;
@@ -116,6 +123,8 @@ public abstract class MatSciTaskRepository {
             // we load the list of recorded jobs
             recordedJobs = recMan.hashMap(EMBEDDED_RECORDEDJOBS_RECORD_NAME);
             mappingSeqToJobID = recMan.hashMap(EMBEDDED_SEQTOJOBID_RECORD_NAME);
+
+            lastJobLocalId = recMan.hashMap(EMBEDDED_LASTJOBLOCALID_RECORD_NAME);
 
             // we clear the jobs of the n-2 session, if any
             lastJobs = recMan.hashMap(EMBEDDED_LASTJOBS_RECORD_NAME);
@@ -181,6 +190,23 @@ public abstract class MatSciTaskRepository {
             return jobs.get(jid);
         }
         return null;
+    }
+
+    public int getNextLocalId() {
+        Integer lastId = lastJobLocalId.get(0);
+        Integer answer;
+        if (lastId == null) {
+            lastId = 0;
+        }
+        answer = lastId + 1;
+        lastJobLocalId.put(0, answer);
+        try {
+            recMan.commit();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return answer;
+
     }
 
     public void addJob(MatSciClientJobInfo jinfo) {
