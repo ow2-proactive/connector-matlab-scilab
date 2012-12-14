@@ -145,6 +145,7 @@ function login(uri,credpath)
                 jinvoke(PA_solver,'login',credpath);
             catch        
                 clearJavaStack();
+                disp(lasterror());
                 error('PAconnect::Authentication error');
             end
         elseif isempty(uri) & jinvoke(PA_solver,'hasCredentialsStored');
@@ -152,6 +153,7 @@ function login(uri,credpath)
                 jinvoke(PA_solver,'login',[], [], []);
             catch        
                 clearJavaStack();
+                disp(lasterror());
                 error('PAconnect::Authentication error');
             end
         else
