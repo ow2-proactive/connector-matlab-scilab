@@ -60,8 +60,7 @@ import org.ow2.proactive.scheduler.common.task.dataspaces.OutputSelector;
 import org.ow2.proactive.scheduler.common.util.SchedulerProxyUserInterface;
 
 import javax.security.auth.login.LoginException;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.*;
@@ -347,13 +346,56 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
      * load the awaited jobs from the status file
      */
     protected void loadJobs() {
-
+        if (recMan != null) {
+            try {
+                recMan.close();
+            } catch (Exception e) {
+            }
+        }
         try {
             recMan = RecordManagerFactory.createRecordManager(statusFile.getCanonicalPath());
             awaitedJobs = recMan.hashMap(STATUS_RECORD_NAME);
             recMan.commit();
+        } catch (IOError e) {
+            // we track invalid class exceptions
+            if (e.getCause() instanceof InvalidClassException) {
+                try {
+                    recMan.close();
+                } catch (IOException e1) {
+
+                }
+                recMan = null;
+                cleanDataBase();
+                loadJobs();
+            } else {
+                throw e;
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    protected void cleanDataBase() {
+        if (recMan != null) {
+            throw new IllegalStateException("Connection to a DB is established, cannot clean it");
+        }
+        // delete all db files
+        File[] dbJobFiles = new File(TMPDIR).listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                if (name.startsWith(sessionName)) {
+                    return true;
+                }
+                return false;
+            }
+        });
+        for (File f : dbJobFiles) {
+            try {
+                logger.info("Deleting " + f);
+                f.delete();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -419,14 +461,6 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
             throw e;
         } catch (Exception e) {
             // we ignore any runtime exception
-        }
-        if (recMan != null) {
-            try {
-                recMan.close();
-                recMan = null;
-            } catch (Exception e) {
-
-            }
         }
     }
 

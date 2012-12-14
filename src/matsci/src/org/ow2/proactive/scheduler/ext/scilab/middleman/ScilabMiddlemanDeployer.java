@@ -97,6 +97,12 @@ public class ScilabMiddlemanDeployer extends MiddlemanDeployer {
     }
 
     @Override
+    protected void unbindAll() throws Exception {
+        registry.unbind(AOScilabEnvironment.class.getName());
+        super.unbindAll();
+    }
+
+    @Override
     protected void unexportAll() throws Exception {
         UnicastRemoteObject.unexportObject(pastub_paenv_Scilab, true);
         super.unexportAll();

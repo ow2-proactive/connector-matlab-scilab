@@ -91,6 +91,12 @@ public class MatlabMiddlemanDeployer extends MiddlemanDeployer {
         super.terminateAO();
     }
 
+    @Override
+    protected void unbindAll() throws Exception {
+        registry.unbind(AOMatlabEnvironment.class.getName());
+        super.unbindAll();
+    }
+
     protected void unexportAll() throws Exception {
         UnicastRemoteObject.unexportObject(pastub_paenv_matlab, true);
         super.unexportAll();
