@@ -2,8 +2,8 @@ mode(-1);
 lines(0);
 global PA_matsci_dir
 
-TOOLBOX_NAME = 'toolbox_proactive';
-TOOLBOX_TITLE = 'Toolbox ProActive';
+TOOLBOX_NAME = 'ProActiveConnector';
+TOOLBOX_TITLE = 'ProActive Connector';
 
 // Version Check
 try
