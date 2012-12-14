@@ -89,7 +89,7 @@ public class ScilabExecutable extends JavaExecutable {
     static {
         try {
             HOSTNAME = java.net.InetAddress.getLocalHost().getHostName();
-            NODENAME = MatSciEngineConfigBase.getNodeName();
+            NODENAME = System.getProperty("node.name");
             os = OperatingSystem.getOperatingSystem();
             fs = os.fileSeparator();
         } catch (Exception e) {

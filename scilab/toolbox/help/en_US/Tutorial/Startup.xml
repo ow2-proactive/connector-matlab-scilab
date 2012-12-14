@@ -12,7 +12,7 @@
     <refnamediv>
         <refname>Startup</refname>
 
-        <refpurpose>Starting and Connecting</refpurpose>
+        <refpurpose>Starting and Connecting to ProActive Scheduler</refpurpose>
 
     </refnamediv>
 
@@ -34,7 +34,7 @@
                     Nodes on available machines.
                 </para>
                 <para>Configuration of the Resource Manager for acquiring resources is beyond the scope of this document
-                    and is explained on the Resource Manager manual available at<ulink
+                    and is explained on the Resource Manager manual available at <ulink
                             url="http://proactive.inria.fr/release-doc/Resourcing/multiple_html/index.html">
                         http://proactive.inria.fr/release-doc/Resourcing/multiple_html/index.html</ulink>.
                 </para>
@@ -118,7 +118,7 @@
         <para>A popup window will appear asking for a username and password. This username/password refers to the
             username and password of your account on ProActive Scheduler. ProActive Scheduler features a full account
             management facility along with the possibility to synchronize to existing Windows or Linux accounts via
-            LDAP. More information can be found at<ulink
+            LDAP. More information can be found at <ulink
                     url="http://proactive.inria.fr/release-doc/Scheduling/multiple_html/admin_manual.html#Scheduler_authentication">
                 Scheduler Manual:Configure users authentication</ulink>.
         </para>
@@ -161,13 +161,16 @@ log file in use : C:\Users\fviale\AppData\Local\Temp\SCI_TMP_5928_\ScilabJVMSpaw
         <title>See Also</title>
         <simplelist type="inline">
             <member>
-                <link linkend="Introduction">Introduction</link>
+                <link linkend="Introduction">Introduction to the ProActive Toolbox</link>
             </member>
             <member>
-                <link linkend="PAsolve">PAsolve</link>
+                <link linkend="Installation">Installation of the ProActive Scilab Connector Toolbox</link>
             </member>
             <member>
                 <link linkend="PAconnect">PAconnect</link>
+            </member>
+            <member>
+                <link linkend="Submitting">Running Scilab functions remotely</link>
             </member>
         </simplelist>
     </refsection>

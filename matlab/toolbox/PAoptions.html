@@ -136,67 +136,83 @@
     VersionMax        char
                 A maximum matlab version that can be used
  
+    VersionArch        'any' | '32' | '64'
+                The matlab version architecture to be used. "Any" means any architecture can be used.
+
+    ForceMatlabSearch   boolean
+                Do we force the automated search of Matlab ?
+                In the default behavior, this is set to false. The selection script will try to search Matlab
+                only if a MatlabWorkerConfiguration.xml cannot be found on the host. If the script finds some Matlab instances
+                it will create a new MatlabWorkerConfiguration.xml to speed up latter executions.
+                If on the contrary ForceMatlabSearch is set to true, the selection script will always search the disk for
+                Matlab installations.
+
     Priority          'Idle' | 'Lowest' | 'Low' | 'Normal' | 'High' | 'Highest'
                 Priority used by default for jobs submitted with PAsolve,
                 default to 'Normal'
- 
+
+    UseJobClassPath
+                With this options set to true, the toolbox will use the jobClassPath feature of the scheduler, when submitting jobs
+                jar files necessary to the matlab workers will be copied at each task execution. It will not be necessary to put the
+                jars in the addons directory, but it will introduce an overhead
+
     WindowsStartupOptions   char
                 Options given to matlab worker processes started on windows operating systems
- 
+
     LinuxStartupOptions     char
                 Options given to matlab worker processes started on linux operating systems
- 
+
     CustomScript
                 url or path of a user-defined selection script used in
                 addition to (before) FindMatlabScript and MatlabReservationScript
- 
+
     CustomScriptStatic
                 a boolean, true if the CustomScript is a static one
                 (executed only once on a given machine), otherwise the
                 CustomScript will be dynamic (default)
- 
+
     CustomScriptParams
                 a string containing the parameters of the custom script
                 delimited by spaces.
- 
+
     FindMatlabScript and FindMatSciScriptStatic
                 url or path of selection script used to find matlab
                 (internal)
- 
+
     MatlabReservationScript
                 url or path of selection script used to reserve matlab
                 tokens (internal)
- 
-    ProActiveJars and EmbeddedJars
+
+    ProActiveJars, EmbeddedJars and WorkerJars
                 Comma separated list of jar files used by ProActive
                 (internal)
     PathJars
                 path to the proactive and embedded jars (internal)
- 
+
     ProActiveConfiguration
                 path to ProActive configuration file (internal)
- 
+
     Log4JConfiguration
                 path to log4j configuration file (internal)
- 
+
     SecurityFile
                 path to java security configuration file (internal)
- 
+
     RmiPort
                 default RMI port used when deploying the middleman JVM (internal)
- 
+
     JvmTimeout
                 default timeout used when deploying the middleman JVM (internal)
- 
+
     JvmArguments
                 Optional JVM arguments for the middleman JVM (internal)
- 
+
     UseMatlabControl
                 do we use the MatlabControl framework ? (internal)
- 
+
     EnableDisconnectedPopup
                 a popup will appear when the matlab session finishes and some jobs are uncomplete (internal)
- 
+
     WorkerTimeoutStart
                 Timeout used to start the matlab engine (*10ms) (internal)</pre></div><!--after help -->
 </body>

@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<refentry version="5.0-subset Scilab" xml:id="Configuration" xml:lang="en"
+          xmlns="http://docbook.org/ns/docbook"
+          xmlns:xlink="http://www.w3.org/1999/xlink"
+          xmlns:svg="http://www.w3.org/2000/svg"
+          xmlns:ns3="http://www.w3.org/1999/xhtml"
+          xmlns:mml="http://www.w3.org/1998/Math/MathML"
+          xmlns:db="http://docbook.org/ns/docbook">
+    <info>
+        <pubdate>$LastChangedDate: 2011-07-20 18:41:39 +0100 (mer., 20 july 2011)$</pubdate>
+    </info>
+    <refnamediv>
+        <refname>Configuration</refname>
+
+        <refpurpose>Configuring and Debugging the Scilab Connector jobs</refpurpose>
+
+    </refnamediv>
+
+    <refsection>
+        <title>Introduction</title>
+
+        <para><literal>PAsolve</literal> can be configured using various options. It can be done either:</para>
+
+        <itemizedlist>
+            <listitem><para><emphasis>Statically</emphasis> by editing the file <literal>ScilabConnector/toolbox/config/PAoptions.ini</literal> which will be loaded when the toolbox is loaded.</para></listitem>
+            <listitem><para><emphasis>Dynamically</emphasis> by calling the <literal>PAoptions</literal> function which will affect every subsequent PAsolve calls.</para></listitem>
+        </itemizedlist>
+       
+
+    </refsection>
+    <refsection>
+        <title>The PAoptions.ini file</title>
+
+        <para>The
+            <literal>PAoptions.ini</literal>
+            file is located inside the ProActive Scheduler release at the following location :
+            <literal>Scilab_Connector/toolbox/config/PAoptions.ini</literal>
+        </para>
+
+        <para>It contains many options which controls how PAsolve behave, we will detail a few important ones (see the
+            PAoptions.ini file or the
+            <link linkend="PAoptions">PAoptions</link>
+            function for the full list):
+        </para>
+        <itemizedlist>
+            <listitem>
+                <para><literal>JobName</literal>: Name of the job that will be submitted to the Scheduler
+                </para>
+            </listitem>
+            <listitem>
+                <para><literal>JobDescription</literal>: Description of the job that will be submitted to the scheduler
+                </para>
+            </listitem>
+            <listitem>
+                <para><literal>Debug</literal>: activate this option if any problem occurs and you want Scilab Connector
+                    Toolbox to run in debug mode (with verbose output)
+                </para>
+            </listitem>
+            <listitem>
+                <para><literal>TransferEnv</literal>: this important option is by default set to off. If set to on, it
+                    allows the automatic transfer of the workspace where the PAsolve call is done to the remote scilab
+                    engines. Global variables are transferred but not local variables existing in workspaces higher than
+                    the current one. The options
+                    <literal>EnvExcludeList</literal>
+                    and
+                    <literal>EnvExcludeTypeList</literal>
+                    control the name and type of variables that should be excluded from the transfer.
+                </para>
+            </listitem>
+            <listitem>
+                <para>
+                    <literal>CustomDataspaceURL</literal>
+                    and<literal>CustomDataspacePath</literal>: by default these options are not set. Dataspaces are a
+                    ProActive internal mechanism allowing a shared file system between hosts. The mechanism allows the
+                    automatic transfer of files between the local scilab session and the remote engines.
+                    <literal>Scilab Connector Toolbox</literal>
+                    has an internal automatic Dataspace creation. But sometimes, one would like to rely on an external
+                    Dataspace such as a ftp server. This Dataspace MUST be accessible from the local file system in
+                    order to work with<literal>Scilab Connector Toolbox</literal>.The
+                    <literal>CustomDataspaceURL</literal>
+                    option gives the Universally accessible URL of this dataspace and the
+                    <literal>CustomDataspacePath</literal>
+                    gives the path to access this dataspace from the local file system.
+                </para>
+            </listitem>
+            <listitem>
+                <para><literal>SharedPushPublicUrl</literal>,<literal>SharedPullPublicUrl</literal>,<literal>
+                    SharedPushPrivateUrl</literal>,<literal>SharedPullPrivateUrl</literal>: similarly to the
+                    CustomDataspaceURL option, these URLS define the addresses of the Shared DataSpaces (if the
+                    scheduler is configured to deploy them). Shared Dataspaces are used as "Cache" DataSpaces, the
+                    Scilab connector toolbox will push its input files to the SharedPushPublicUrl and pull the output
+                    files from the SharedPullPublicUrl. Private urls will be used by the workers to access the files.
+                </para>
+            </listitem>
+            <listitem>
+                <para><literal>VersionPref</literal>,<literal>VersionMin</literal>,
+                    <literal>VersionMax</literal>
+                    and<literal>VersionRej</literal>: these options allow the user to define which version of Scilab
+                    should/should not be used. In an heterogeneous environment, several versions of scilab can be
+                    available simultaneously on the network. These options ensures that the submitted scilab code will
+                    meet the correct scilab version. It is the responsibility of the user to find which versions are/are
+                    not compatible with the code.
+                </para>
+            </listitem>
+            <listitem>
+                <para><literal>VersionPref</literal>: is the preferred version to use. It won't prevent another version
+                    to be used if the preferred version is not available.It is set automatically to the version of the
+                    local scilab session, but can be as well user defined via this option.
+                </para>
+            </listitem>
+            <listitem>
+                <para>
+                    <literal>VersionMin</literal>
+                    and<literal>VersionMax</literal>: is the minimum/maximum version to use. It is set by default to the
+                    minimum/maximum version supported.
+                </para>
+            </listitem>
+            <listitem>
+                <para><literal>VersionRej</literal>: is a list of versions to be rejected. It is set by default to the
+                    versions for which the ptolemy java2scilab interface has not been compiled (and thus are not
+                    supported). These versions are all "a" releases scilab2007a, scilab2008a, etc...
+                </para>
+            </listitem>
+            <listitem>
+                <para><literal>VersionArch</literal>: the scilab version architecture to be used. "Any" means any architecture can be used,
+                    "32" means only 32bit architectures and "64" means only 64-bit architectures..
+                </para>
+            </listitem>
+            <listitem>
+                <para><literal>Fork</literal>: this option is set by default to off. It means the tasks will be executed
+                    (on remote hosts) in a separate Java Virtual Machine process.
+                </para>
+            </listitem>
+            <listitem>
+                <para><literal>RunAsMe</literal>: this option is set by default to off. It means the tasks will be
+                    executed (on remote hosts) under the account of the currently logged user.
+                </para>
+            </listitem>
+            <listitem>
+                <para><literal>Priority</literal>: this option is the priority of jobs created inside the ProActive
+                    Scheduler by PAsolve calls. Default to "Normal"
+                </para>
+            </listitem>
+            <listitem>
+                <para><literal>NbTaskExecution</literal>: this option defines how many times maximum a task can be executed whenever it fails.
+                    This parameter is set by default to 2, which means that it will be restarted one time if an error occurs.
+                    This way, we can minimize the issues which can arise for example because of file transfer. On the other hand,
+                    a user task failure which would normally fail (syntax error, user code error) will also be rerun,
+                    and it is sometimes not desired (set this parameter to 1 to prevent that).
+                </para>
+            </listitem>
+            <listitem>
+                <para><literal>RemoveJobAfterRetrieve</literal>: automatically removes the job from the scheduler after
+                    all results of the job have been retrieved.
+                </para>
+            </listitem>
+        </itemizedlist>
+    </refsection>
+    <refsection>
+        <title>Using the PAoptions function</title>
+        <para>While options can be edited via the PAoptions.ini file, it is still possible to change options on the run via calls to the <link linkend="PAoptions">PAoptions</link>  function. The example in this chapter will detail the usage of the option <literal>TransferEnv</literal> which allows the local workspace to be transferred to remote engines.</para>
+        <para>We will define a function called <literal>testenv</literal> which will read a variable from the parent workspace and will compute the factorial of it. Here is how the <literal>testenv</literal> function is defined:</para>
+
+        <screen><![CDATA[function out=testenv()
+// the variable "a" is transferred with the environment
+disp(a);
+out = factorial(a);
+endfunction]]></screen>
+
+        <para>Here is how we set the TransferEnv option dynamically, and execute the call:</para>
+        <screen><![CDATA[-->PAoptions('TransferEnv',%t);
+
+-->a=5
+ a  =
+
+    5.
+
+-->r=PAsolve('testenv',list())
+
+ Job submitted : 22
+ r  =
+
+(1):
+Awaited (J:22)
+
+--> r.val
+Job 22: Task 0_0
+[2012-12-04 11:04:057 precision][SCILAB]    5.
+
+
+Job 22 removed.
+
+
+ ans  =
+
+    74.209949  ]]></screen>
+
+        <para>If now, we reset the TransferEnv option to false and try to execute testenv, we will receive the following error:</para>
+        <screen><![CDATA[->PAoptions('TransferEnv',%f);
+
+-->r=PAsolve('testenv',list())
+
+ Job submitted : 23
+ r  =
+
+(1):
+Awaited (J:23)
+
+--> r.val
+Job 23: Task 0_0
+[2012-12-04 11:08:010 precision][SCILAB]!-- error 4
+[2012-12-04 11:08:010 precision][SCILAB]
+[2012-12-04 11:08:010 precision][SCILAB]Undefined Variable : a
+[2012-12-04 11:08:010 precision][SCILAB]
+[2012-12-04 11:08:010 precision][SCILAB] at line 3 of function testenv
+[2012-12-04 11:08:010 precision][SCILAB]
+
+
+Job 23 removed.
+
+
+AVERTISSEMENT : PAResult:PAwaitFor Error during execution of task 0_0
+AVERTISSEMENT : PAWaitFor:Error occured
+ ans  =
+
+     []
+ ]]></screen>
+        <para>Indeed the remote execution of the testenv function couldn't find in its workspace the variable "a" !</para>
+    </refsection>
+    <refsection>
+        <title>Debugging the Scilab Connector Toolbox</title>
+        <para>This section is mainly for advanced users.</para>
+        <para>Debugging of the different Scilab Connector Toolbox components is done via all of the following:</para>
+        <itemizedlist>
+            <listitem><para>The <literal>Debug</literal> option.</para></listitem>
+            <listitem><para>The <literal>AutomaticFindScilabXXX.log</literal> file.</para></listitem>
+            <listitem><para>The <literal>ScilabExecutableXXX.log</literal> file.</para></listitem>
+            <listitem><para>The <literal>MatSci_Middleman_JVM.log</literal> and <literal>ScilabJVMSpawnHelper.log
+            </literal> files.</para></listitem>
+        </itemizedlist>
+        <para>Files with XXX in the above list are created with the proactive node name of the resource on which it is executed.</para>
+        <para>The <literal>AutomaticFindScilab</literal>, , <literal>ScilabExecutable</literal> and <literal>ScilabStart</literal> log files are produced on the <emphasis>worker hosts</emphasis> <literal>TEMP</literal> directory. The TEMP directory is usually <literal>/tmp</literal> on linux systems. On Windows it can be known by opening a command line (cmd.exe) and typing echo %TEMP%:</para>
+        <screen><![CDATA[C:\Users\Administrator>echo %TEMP%
+            C:\Users\Administrator\AppData\Local\Temp\2
+        ]]></screen>
+        <para>The <literal>AutomaticFindScilab</literal> log files logs the output of FindScilab selection scripts which determines where to find scilab according to ScilabWorkerConfiguration.xml file or via automatic search(see <link linkend="Installation">Automatic search of Scilab installations for workers</link> for more info). Read these files if you want to determine why the task couldn't execute on this worker host. Here is an example of those files:</para>
+        <screen><![CDATA[AutomaticFindScilablocal-LocalNodes-0:
+Mon Dec 03 15:58:59 +0100 2012 : Finding Scilab on precision
+Reading config in C:\Users\fviale\AppData\Local\Temp\ScilabWorkerConfiguration.xml
+Found  Scilab (5.3.3) : C:\Program Files (x86)\scilab-5.3.3 bin Scilex.exe 32 bits
+Found  Scilab (5.4.0) : C:\Program Files (x86)\scilab-5.4.0 bin Scilex.exe 32 bits
+Found  Scilab (5.4.0) : C:\Program Files\scilab-5.4.0 bin Scilex.exe 64 bits
+Deciding Scilab (5.3.3) : C:\Program Files (x86)\scilab-5.3.3 bin Scilex.exe 32 bits
+5.3.3(32) accepted
+        ]]></screen>
+        <para>The <literal>ScilabExecutable</literal> log files are not created by default. They are the verbose output of the tasks submitted via PAsolve and are activated only if the PAoption Debug is set to on. Here is an example of those files:</para>
+        <screen><![CDATA[ScilabExecutable_local-LocalNodes-0.log:
+[2012-11-29 18:05:024 precision][SCILAB Engine]Initialisation :
+[2012-11-29 18:05:024 precision][SCILAB Engine]  Chargement de l'environnement de travail
+[2012-11-29 18:05:024 precision][SCILAB Engine]
+[2012-11-29 18:05:024 precision][SCILAB Engine]
+[2012-11-29 18:05:024 precision][SCILAB Engine]Start JIMS
+[2012-11-29 18:05:024 precision][SCILAB Engine]
+[2012-11-29 18:05:024 precision][SCILAB Engine]AVERTISSEMENT : JIMS requires java.
+[2012-11-29 18:05:024 precision][SCILAB Engine]
+[2012-11-29 18:05:024 precision][SCILAB Engine]
+[2012-11-29 18:05:024 precision][SCILAB Engine]
+[2012-11-29 18:05:024 precision][SCILAB Engine] ---- SCILAB START ----
+[2012-11-29 18:05:024 precision][SCILAB Engine]
+[2012-11-29 18:05:024 precision][SCILAB Engine] Number of nodes used : 2
+[2012-11-29 18:05:024 precision][SCILAB Engine]
+[2012-11-29 18:05:024 precision][SCILAB Engine] Node n°1: 192.168.1.187 rmi://192.168.1.187:1099/local-LocalNodes-1
+[2012-11-29 18:05:024 precision][SCILAB Engine]
+[2012-11-29 18:05:024 precision][SCILAB Engine] Node n°2: 192.168.1.187 rmi://192.168.1.187:1099/local-LocalNodes-0
+[2012-11-29 18:05:024 precision][SCILAB Engine]
+[2012-11-29 18:05:024 precision][SCILAB Engine] Hello Dude3
+[2012-11-29 18:05:024[2012-11-29 18:05:024 precision][ScilabExecutable] Receiving and testing output...
+[2012-11-29 18:05:024 precision][ScilabExecutable] Closing SCILAB...
+[2012-11-29 18:05:024 precision][ScilabExecutable] End of Task        ]]></screen>
+
+        <para>Finally the <literal>MatSci_Middleman_JVM.log</literal> file is created inside the temp directory of the <literal>client host</literal> and is logging everything concerning ProActive MiddleMan JVM. The <literal>ScilabJVMSpawnHelper.log
+        </literal> is similar to <literal>MatSci_Middleman_JVM.log</literal>. Here is an example:</para>
+        <screen><![CDATA[/tmp/MatSci_Middleman_JVM.log:
+            [2012-04-25 19:29:016 pendule][AOScilabEnvironment] Submitting job of 1 tasks...
+            [2012-04-25 19:29:016 pendule][AOScilabEnvironment] Job 1 submitted.
+            [2012-04-25 19:29:016 pendule][AOScilabEnvironment] waiting for request with no timeout
+            [2012-04-25 19:29:016 pendule][AOScilabEnvironment] Request received : areAwaited
+            [2012-04-25 19:29:016 pendule][AOScilabEnvironment] waiting for request with no timeout
+            [2012-04-25 19:29:022 pendule][AOScilabEnvironment] Request received : taskStateUpdatedEvent
+            [2012-04-25 19:29:022 pendule][AOScilabEnvironment] Received task 0_0 of Job 1 finished event...
+            [2012-04-25 19:29:022 pendule][AOScilabEnvironment] Looking for result of task 0_0 for job 1
+            [2012-04-25 19:29:022 pendule][AOScilabEnvironment] waiting for request with no timeout
+            [2012-04-25 19:29:022 pendule][AOScilabEnvironment] Request received : jobStateUpdatedEvent
+            [2012-04-25 19:29:022 pendule][AOScilabEnvironment] Received job 1 finished event...
+            [2012-04-25 19:29:023 pendule][AOScilabEnvironment] Updating results of job: 1(1) : Finished
+            [2012-04-25 19:29:023 pendule][AOScilabEnvironment] waiting for request with no timeout
+            [2012-04-25 19:29:024 pendule][AOScilabEnvironment] Request received : areAwaited
+            [2012-04-25 19:29:024 pendule][AOScilabEnvironment] waiting for request with no timeout
+            [2012-04-25 19:29:024 pendule][AOScilabEnvironment] Request received : waitAll
+            [2012-04-25 19:29:024 pendule][AOScilabEnvironment] Removed waitAll for job=1 request from the queue
+            [2012-04-25 19:29:024 pendule][AOScilabEnvironment] serving waitAll for job 1
+            [2012-04-25 19:29:024 pendule][AOScilabEnvironment] Sending the results of task 0_0 of job 1 back...
+            [2012-04-25 19:29:024 pendule][AOScilabEnvironment] waiting for request with no timeout
+            [2012-04-25 19:29:024 pendule][AOScilabEnvironment] Request received : isConnected
+            [2012-04-25 19:29:024 pendule][AOScilabEnvironment] waiting for request with no timeout
+            [2012-04-25 19:29:024 pendule][AOScilabEnvironment] Request received : isLoggedIn
+            [2012-04-25 19:29:024 pendule][AOScilabEnvironment] waiting for request with no timeout
+            [2012-04-25 19:29:024 pendule][AOScilabEnvironment] Request received : jobRemove
+            [2012-04-25 19:29:024 pendule][AOScilabEnvironment] waiting for request with no timeout
+            [2012-04-25 19:29:046 pendule][AOScilabEnvironment] Request received : isConnected
+            [2012-04-25 19:29:046 pendule][AOScilabEnvironment] waiting for request with no timeout
+            [2012-04-25 19:29:047 pendule][AOScilabEnvironment] Request received : solve
+
+        ]]></screen>
+    </refsection>
+
+    <refsection>
+        <title>See Also</title>
+        <simplelist type="inline">
+            <member>
+                <link linkend="Introduction">Introduction</link>
+            </member>
+            <member>
+                <link linkend="PAsolve">PAsolve</link>
+            </member>
+            <member>
+                <link linkend="PAconnect">PAconnect</link>
+            </member>
+        </simplelist>
+    </refsection>
+
+    <refsection>
+        <title>Authors</title>
+
+        <simplelist type="vert">
+            <member>The ProActive Team, Fabien Viale</member>
+        </simplelist>
+    </refsection>
+</refentry>

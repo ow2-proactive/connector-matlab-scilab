@@ -177,7 +177,7 @@ public class MatlabConnectionRImpl implements MatlabConnection {
         this.startUpOptions = paconfig.getStartupOptions();
         this.TIMEOUT_START = paconfig.getWorkerTimeoutStart();
 
-        this.logFile = new File(tmpDir, "MatlabStart" + nodeName + ".log");
+        this.logFile = new File(tmpDir, "MatlabStart_" + nodeName + ".log");
         this.mainFuncFile = new File(workingDir, "PAMain.m");
         if (!mainFuncFile.exists()) {
             try {

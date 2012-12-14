@@ -18,7 +18,8 @@
 <div class="helptext"><pre><!--helptext -->  <span class="helptopic">PAconnect</span> connects to the ProActive scheduler
  
   Syntax
- 
+
+        <span class="helptopic">PAconnect</span>();
         <span class="helptopic">PAconnect</span>(url [,credpath]);
         jobs = <span class="helptopic">PAconnect</span>(url [,credpath]);
  
@@ -34,17 +35,22 @@
  
   Description
  
-        <span class="helptopic">PAconnect</span> connects to a running ProActive Scheduler by specifying its
-        url. If the scheduler could be reached a popup window will appear, asking
-        for login and password. An additional SSH key can also be provided when the user needs to execute remote task under
-        one's identity (RunAsMe option). ProActive Scheduler features a full account management facility along with the
-        possibility to synchronize to existing Windows or Linux accounts via LDAP. More information can be found inside
+         <span class="helptopic">PAconnect</span> connects to a running ProActive Scheduler by specifying its url. If the scheduler could be reached a popup
+        window will appear, asking for login and password. An additional SSH key can also be provided when the user needs
+        to execute remote task under one's identity (RunAsMe option). ProActive Scheduler features a full account management
+        facility along with the possibility to synchronize to existing Windows or Linux accounts via LDAP. More information can be found inside
         Scheduler's manual chapter "Configure users authentication". If you haven't configured any account in the scheduler
         use, the default account login "demo", password "demo".
-        You can as well encrypt credentials using the command line tool "create-cred" to automate the connection.
- 
+        You can as well encrypt credentials using the command line tool "create-cred" and provide the path to the credentials
+        file with the parameter credpath. Or you can simply reuse automatically the same credentials and url that you used at
+        last scheduler connection by using <span class="helptopic">PAconnect</span>() without parameter.
+        <span class="helptopic">PAconnect</span>() without parameter can also be used to connect to a local ProActive scheduler deployed with the standard
+        RMI protocol
+
+
         In case jobs from the last Matlab session were not complete before Matlab exited. It is possible to get their result
         using PAgetResults
+
  
   Example
  

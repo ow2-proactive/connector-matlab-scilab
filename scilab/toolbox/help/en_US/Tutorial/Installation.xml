@@ -132,7 +132,7 @@
                 not (though
                 it is possible to force a scilab research via execution options, see option
                 <emphasis>ForceScilabSearch</emphasis>
-                in<link type="scilab" linkend="proactive_options.html">Configuring PAsolve behavior</link>).
+                in <link linkend="Configuration">Configuring PAsolve behavior</link>).
             </para>
 
         </refsection>
@@ -256,16 +256,28 @@
     </refsection>
 
     <refsection>
+        <title>Terminating ProActive Scilab Connector</title>
+        <para>If the scilab connector has not been downloaded via ATOMS, it will be useful to configure scilab in order to close properly the toolbox at the scilab exit.
+        In order to do that, simply add the following lines to the <literal>scilab.quit</literal> file located in the <literal>etc</literal> folder and used by scilab to execute command at exit :
+        </para>
+        <screen>// PROACTIVE
+            if isdef("toolbox_proactivelib") then
+            PAterminate();
+            end</screen>
+
+    </refsection>
+
+    <refsection>
         <title>See Also</title>
         <simplelist type="inline">
             <member>
-                <link linkend="Introduction">Introduction</link>
+                <link linkend="Introduction">Introduction to the ProActive Toolbox</link>
             </member>
             <member>
-                <link linkend="PAsolve">PAsolve</link>
+                <link linkend="Startup">Starting and Connecting to ProActive Scheduler</link>
             </member>
             <member>
-                <link linkend="PAconnect">PAconnect</link>
+                <link linkend="Configuration">Configuring and Debugging the Scilab Connector jobs</link>
             </member>
         </simplelist>
     </refsection>
