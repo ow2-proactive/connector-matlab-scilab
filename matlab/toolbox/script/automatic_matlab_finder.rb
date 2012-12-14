@@ -1,7 +1,7 @@
 include Java
 
 
-#require 'c:\users\fviale\workspace\matlab_scilab_connector\lib\scheduling\jdom.jar'
+#require '/Users/fabienviale/eclipse_workspace/matlab_scilab_connector/lib/scheduling/jdom.jar'
 
 
 java_import org.jdom.input.SAXBuilder
@@ -277,7 +277,7 @@ class MatSciFinder
       when :windows
         return findMatlabWindows()
       when :macosx
-        return findMatlabUnix()
+        return findMatlabMac()
       when :linux
         return findMatlabUnix()
       else
@@ -379,6 +379,31 @@ class MatSciFinder
     return answer
   end
 
+  def findMatlabMac()
+    answer = false
+    locate_res = `locate /Applications/*/matlab`
+    if $?.to_i == 0
+      locate_res.each_line do |line|
+        answer = findMatlabMacInLine(line) || answer
+      end
+    end
+    locate_res = `locate /Applications/*/MATLAB`
+    if $?.to_i == 0
+      locate_res.each_line do |line|
+        answer = findMatlabMacInLine(line) || answer
+      end
+    end
+    which_res = `which matlab 2>/dev/null`
+    if $?.to_i == 0
+      which_res.each_line do |line|
+        answer = findMatlabMacInLine(line) || answer
+      end
+    end
+    
+    return answer
+  end
+
+
   def findMatlabUnixInLine(line)
     line = line.strip()
     answer = false
@@ -407,6 +432,11 @@ class MatSciFinder
       begin
 
         matlabfullbin = readlink!(line)
+	matlabcmd = File.basename(matlabfullbin)
+	if matlabcmd != "matlab" && matlabcmd != "MATLAB"
+		puts "Wrong executable name : " + matlabcmd
+		return false 
+	end
 
         fullbindir = File.dirname(matlabfullbin)
         archdir = File.basename(fullbindir)
@@ -458,6 +488,93 @@ class MatSciFinder
       return answer
     end
   end
+
+def findMatlabMacInLine(line)
+    line = line.strip()
+    answer = false
+    puts "Analysing " +line
+    t0 = File.exist?(line)
+    if !t0
+      puts "doesn't exist"
+    end
+    t1 = File.readable?(line)
+    if !t1
+      puts "is not readable"
+    end
+    t2_1 = File.executable?(line)
+    jf = JavaIO::File.new(line)
+    t2_2 = jf.canExecute()
+    t2 = t2_1 || t2_2
+    if !t2
+      puts "cannot be executed"
+    end
+    t3 = !File.directory?(line)
+    if !t3
+      puts "is a directory"
+    end
+    if t0 && t1 && t2 && t3
+      # ok this is a matlab executable !
+      begin
+
+        matlabfullbin = readlink!(line)
+	matlabcmd = File.basename(matlabfullbin)
+	if matlabcmd != "matlab" && matlabcmd != "MATLAB"
+		puts "Wrong executable name : " + matlabcmd
+		return false 
+	end
+
+        fullbindir = File.dirname(matlabfullbin)
+        archdir = File.basename(fullbindir)
+        if archdir == "bin"
+          matlabhome = File.dirname(fullbindir)
+          Dir.glob(fullbindir.to_s+"/mac*").each do |xx|
+            conf = EngineConfig.new()
+            conf.command = "MATLAB"
+            archdir = File.basename(xx)
+            conf.bindir = "bin/"+ archdir
+            conf.arch = (archdir == "maci64") ? "64" : "32"
+            conf.home = matlabhome
+
+            matlabyear = File.basename(matlabhome).to_s
+            matlabyear = matlabyear[8,5]
+            conf.version = matlabYearToVersion(matlabyear)
+            if @configs.index(conf) == nil
+              @configs.push(conf)
+              puts "Added " + conf.to_s
+              answer = true
+            else
+              puts "Skipped already added " + conf.to_s
+            end
+          end
+        else
+          conf = EngineConfig.new()
+          matlabhome = File.dirname(File.dirname(fullbindir))
+          conf.bindir = "bin/"+ archdir
+          conf.arch = (archdir == "maci64") ? "64" : "32"
+          conf.home = matlabhome
+
+          matlabyear = File.basename(matlabhome).to_s
+          matlabyear = matlabyear[8,5]
+          conf.version = matlabYearToVersion(matlabyear)
+          conf.command = "MATLAB"
+          if @configs.index(conf) == nil
+            @configs.push(conf)
+            puts "Added " + conf.to_s
+            answer = true
+          else
+            puts "Skipped already added " + conf.to_s
+          end
+        end
+
+      rescue Exception => e
+        puts e.message + "\n" + e.backtrace.join("\n")
+        puts "Error occurred, skipping ..."
+      end
+      return answer
+    end
+  end
+
+
 
   def writeConfigs()
     if !@confFiles[0].exists() || @forceSearch
@@ -528,7 +645,7 @@ class MatSciFinder
     orig_min = 2
     orig_year = 2006
     year = yearab[0..3].to_i
-    isb = (yearab[4, 1] == "b")
+    isb = (yearab[4, 1] == "b") || (yearab[4, 1] == "B")
     min = orig_min + (year - orig_year) * 2 + (isb ? 1 : 0)
     return "#{maj}.#{min}"
   end
