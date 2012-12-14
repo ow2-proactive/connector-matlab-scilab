@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<refentry version="5.0-subset Scilab" xml:id="Startup" xml:lang="en"
+          xmlns="http://docbook.org/ns/docbook"
+          xmlns:xlink="http://www.w3.org/1999/xlink"
+          xmlns:svg="http://www.w3.org/2000/svg"
+          xmlns:ns3="http://www.w3.org/1999/xhtml"
+          xmlns:mml="http://www.w3.org/1998/Math/MathML"
+          xmlns:db="http://docbook.org/ns/docbook">
+    <info>
+        <pubdate>$LastChangedDate: 2011-07-20 18:41:39 +0100 (mer., 20 july 2011)$</pubdate>
+    </info>
+    <refnamediv>
+        <refname>Startup</refname>
+
+        <refpurpose>Starting and Connecting</refpurpose>
+
+    </refnamediv>
+
+    <refsection>
+        <title>Introduction</title>
+
+        <para>ProActive Scheduler is in fact composed of two programs working together:</para>
+
+        <itemizedlist>
+            <listitem>
+                <para><emphasis>ProActive Resource Manager</emphasis>: the resource manager is the program in charge of
+                    a pool of resources called Nodes.
+                </para>
+                <para>Each node is a Java Virtual Machine running on a worker host. There can be several of these Nodes
+                    deployed on a single host, generally when a host has multiple processes or cores.
+                    It allows to maximize the processing power available on the network.
+                </para>
+                <para>The Resource Manager needs to be configured according to the network topology in order to deploy
+                    Nodes on available machines.
+                </para>
+                <para>Configuration of the Resource Manager for acquiring resources is beyond the scope of this document
+                    and is explained on the Resource Manager manual available at<ulink
+                            url="http://proactive.inria.fr/release-doc/Resourcing/multiple_html/index.html">
+                        http://proactive.inria.fr/release-doc/Resourcing/multiple_html/index.html</ulink>.
+                </para>
+            </listitem>
+            <listitem>
+                <para><emphasis>ProActive Scheduler</emphasis>: the scheduler receives jobs to be executed.
+                </para>
+                <para>It will schedule their execution according to its policy and its workload. When a job is ready to
+                    be scheduled, the scheduler will contact the resource manager to find the maximum number of
+                    resources available to execute the job.
+                </para>
+                <para>Resources will be selected sometimes according to specific policies. In case of Scilab Connector
+                    Toolbox, only resources which have a valid Scilab configuration will be selected. A lot of extra
+                    selection will be done dynamically, for example specific Scilab versions needed by the job, or
+                    toolbox tokens availability .
+                </para>
+            </listitem>
+        </itemizedlist>
+
+    </refsection>
+    <refsection>
+        <title>Starting ProActive Scheduler</title>
+        <para>The commands to start ProActive Scheduler are located in Scheduler_Server/bin/unix or
+            Scheduler_Server/bin/windows, depending on your Operating System. The following commands are present:
+        </para>
+        <itemizedlist>
+            <listitem>
+                <para><literal>rm-start(.bat)</literal>: To start an empty ProActive Resource Manager.
+                </para>
+            </listitem>
+            <listitem>
+                <para><literal>rm-start(.bat) -ln</literal>: To start a ProActive Resource Manager with 4 local workers.
+                </para>
+            </listitem>
+            <listitem>
+                <para><literal>scheduler-start(.bat)</literal>: To start ProActive Scheduler.
+                </para>
+            </listitem>
+            <listitem>
+                <para><literal>scheduler-start-gui(.bat)</literal>: This starts the scheduler, the resource manager and
+                    all the web portals.
+                </para>
+            </listitem>
+        </itemizedlist>
+        <para>The following sequence of commands (executed from Scheduler_Server/bin/unix) will start a Resource Manager
+            will 4 local Nodes(JVM) and a Scheduler. Although this trivial deployment is not meant to be a practical
+            case, it is still a good way to test the framework and become familiar with ProActive.
+        </para>
+        <para>First the Resource Manager:</para>
+        <screen>$ rm-start-clean -ln
+            Starting Resource Manager, Please wait...
+            Resource Manager successfully created on rmi://pendule.inria.fr:1099/
+        </screen>
+
+        <para>Then the Scheduler:</para>
+        <screen>$ scheduler-start-clean
+            Starting Scheduler, Please wait...
+            Resource Manager URL was not specified, connection made to the local Resource Manager at
+            rmi://pendule.inria.fr:1099/
+            Starting scheduler...
+            Scheduler successfully created on rmi://pendule.inria.fr:1099/
+        </screen>
+    </refsection>
+
+    <refsection>
+        <title>Connecting to a running ProActive Scheduler from Scilab</title>
+        <para>
+            <link linkend="PAconnect">PAconnect</link>
+            is the function used to connect to the scheduler from the toolbox.
+        </para>
+        <para>From a matlab session, assuming that Matlab Connector Toolbox is already in Matlab path, run the following
+            command (where PAconnect's argument is the url you received from the Scheduler starting command):
+        </para>
+
+        <screen>>> PAconnect('rmi://pendule.inria.fr:1099/');</screen>
+
+        <para>you can also use the simplify syntax<literal>PAconnect()</literal>, it will automatically look for a
+            scheduler deployed locally.
+        </para>
+
+        <para>A popup window will appear asking for a username and password. This username/password refers to the
+            username and password of your account on ProActive Scheduler. ProActive Scheduler features a full account
+            management facility along with the possibility to synchronize to existing Windows or Linux accounts via
+            LDAP. More information can be found at<ulink
+                    url="http://proactive.inria.fr/release-doc/Scheduling/multiple_html/admin_manual.html#Scheduler_authentication">
+                Scheduler Manual:Configure users authentication</ulink>.
+        </para>
+        <para>Here for this example we will use the default account with login
+            <literal>demo</literal>
+            and password<literal>demo</literal>.
+        </para>
+
+        <para>Here is what is displayed when the connection worked successfully:</para>
+        <screen><![CDATA[-->PAconnect('rmi://192.168.1.187:1099/')
+log file in use : C:\Users\fviale\AppData\Local\Temp\SCI_TMP_5928_\ScilabJVMSpawnHelper.log
+[2012-12-03 14:20:007 precision][MIDDLEMAN]Logging to org.slf4j.impl.Log4jLoggerAdapter(org.mortbay.log) via org.mortbay.log.Slf4jLog
+[2012-12-03 14:20:007 precision][MIDDLEMAN]jetty-6.1.x
+[2012-12-03 14:20:007 precision][MIDDLEMAN]Started SelectChannelConnector@0.0.0.0:32092
+[2012-12-03 14:20:007 precision][MIDDLEMAN]Remote Object Factory provider <pamr, class org.objectweb.proactive.extensions.pamr.remoteobject.PAMRRemoteObjectFactory> found
+[2012-12-03 14:20:007 precision][MIDDLEMAN]Remote Object Factory provider <pnp, class org.objectweb.proactive.extensions.pnp.PNPRemoteObjectFactory> found
+[2012-12-03 14:20:007 precision][MIDDLEMAN]Remote Object Factory provider <pnps, class org.objectweb.proactive.extensions.pnpssl.PNPSslRemoteObjectFactory> found
+[2012-12-03 14:20:007 precision][MIDDLEMAN]Remote Object Factory provider <pamrd, class org.objectweb.proactive.extensions.pamrd.PAMRDRemoteObjectFactorySPI$PAMRDRemoteObjectFactory> found
+[2012-12-03 14:20:007 precision][MIDDLEMAN]Remote Object Factory provider <amqp, class org.objectweb.proactive.extensions.amqp.remoteobject.AMQPRemoteObjectFactory> found
+[2012-12-03 14:20:007 precision][MIDDLEMAN]Remote Object Factory provider <amqp-federation, class org.objectweb.proactive.extensions.amqp.federation.AMQPFederationRemoteObjectFactory> found
+[2012-12-03 14:20:007 precision][MIDDLEMAN]Remote Object Factory provider <rmissl, class org.objectweb.proactive.extra.rmissl.RmiSslRemoteObjectFactory> found
+[2012-12-03 14:20:007 precision][MIDDLEMAN][MiddlemanDeployer] Starting Middleman JVM
+[2012-12-03 14:20:008 precision][MIDDLEMAN]Created a new registry on port 1110
+[2012-12-03 14:20:009 precision][MIDDLEMAN][MiddlemanDeployer] Middleman JVM started
+
+ Connection to JVM successful
+
+ Connection successful to rmi://192.168.1.187:1099/
+
+ Please enter login/password
+
+ Login successful
+ ans  =
+
+     []
+ ]]></screen>
+    </refsection>
+
+    <refsection>
+        <title>See Also</title>
+        <simplelist type="inline">
+            <member>
+                <link linkend="Introduction">Introduction</link>
+            </member>
+            <member>
+                <link linkend="PAsolve">PAsolve</link>
+            </member>
+            <member>
+                <link linkend="PAconnect">PAconnect</link>
+            </member>
+        </simplelist>
+    </refsection>
+
+    <refsection>
+        <title>Authors</title>
+
+        <simplelist type="vert">
+            <member>The ProActive Team, Fabien Viale</member>
+        </simplelist>
+    </refsection>
+</refentry>

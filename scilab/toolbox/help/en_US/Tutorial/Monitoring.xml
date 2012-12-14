@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<refentry version="5.0-subset Scilab" xml:id="Monitoring" xml:lang="en"
+          xmlns="http://docbook.org/ns/docbook"
+          xmlns:xlink="http://www.w3.org/1999/xlink"
+          xmlns:svg="http://www.w3.org/2000/svg"
+          xmlns:ns3="http://www.w3.org/1999/xhtml"
+          xmlns:mml="http://www.w3.org/1998/Math/MathML"
+          xmlns:db="http://docbook.org/ns/docbook">
+    <info>
+        <pubdate>$LastChangedDate: 2011-07-20 18:41:39 +0100 (mer., 20 july 2011)$</pubdate>
+    </info>
+    <refnamediv>
+        <refname>Monitoring</refname>
+
+        <refpurpose>Monitoring the Scilab Connector jobs</refpurpose>
+
+    </refnamediv>
+
+    <refsection>
+        <title>Introduction</title>
+
+
+        <para>The present chapter is a quick start guide to
+            <emphasis>ProActive Scheduler</emphasis>
+            and
+            <emphasis>Resource Manager</emphasis>
+            controllers and Graphical User Interfaces.
+        </para>
+        <para>These tools allow to execute a collection of operations on the Scheduler or Resource Manager, but in the
+            context of the<emphasis>Scilab Connector Toolbox</emphasis>, we will describe only the monitoring part.
+        </para>
+
+    </refsection>
+    <refsection>
+        <title>Scheduler and Resource Manager command line controllers</title>
+
+        <para>The command line controllers of
+            <emphasis>ProActive Scheduler</emphasis>
+            and
+            <emphasis>Resource Manager</emphasis>
+            are called respectively
+            <emphasis>scheduler-client</emphasis>
+            and<emphasis>rm-client</emphasis>. They are located in
+            <literal>Scheduler_Server/bin/unix</literal>
+            or
+            <literal>Scheduler_Server/bin/windows</literal>
+            depending on your operating system.
+        </para>
+        <itemizedlist>
+            <listitem>
+                <para>
+                    <emphasis>scheduler-client</emphasis>
+                    allows to submit jobs to
+                    <emphasis>ProActive Scheduler</emphasis>
+                    in XML format, monitor job executions, preview results, view job logs, etc.
+                </para>
+            </listitem>
+            <listitem>
+                <para>
+                    <emphasis>rm-client</emphasis>
+                    allows to deploy or monitor resources in<emphasis>Resource Manager</emphasis>.
+                </para>
+            </listitem>
+        </itemizedlist>
+        <para>Here is an example use of scheduler-client, default login and password is<emphasis>demo</emphasis>/
+            <emphasis>demo</emphasis>:
+        </para>
+        <screen><![CDATA[fviale@pendule unix $ scheduler-client
+            Trying to connect Scheduler on rmi://localhost/
+            -> Connection established on rmi://localhost/
+
+            Connecting client to the Scheduler
+            login: demo
+            password: ****
+            Retrieved public key from Scheduler at rmi://localhost/
+            -> Client 'demo' successfully connected
+
+            Type command here (type '?' or help() to see the list of commands)
+
+
+            > listjobs();
+            ID     NAME                          OWNER     PRIORITY     PROJECT          STATUS       START AT               DURATION
+
+            1      Scilab Environment Job 0      demo      Normal       Not Assigned     Finished     18:33:53  01/12/11      7s 789ms
+            2      Scilab Environment Job 1      demo      Normal       Not Assigned     Finished     20:50:33  01/12/11     827ms
+            3      Scilab Environment Job 2      demo      Normal       Not Assigned     Finished     20:51:39  01/12/11     751ms
+            4      Scilab Environment Job 3      demo      Normal       Not Assigned     Finished     20:52:25  01/12/11     781ms
+            5      Scilab Environment Job 4      demo      Normal       Not Assigned     Finished     20:53:10  01/12/11     766ms
+            6      Scilab Environment Job 5      demo      Normal       Not Assigned     Finished     20:54:38  01/12/11     747ms
+            7      Scilab Environment Job 6      demo      Normal       Not Assigned     Finished     20:57:46  01/12/11     770ms
+            8      Scilab Environment Job 7      demo      Normal       Not Assigned     Finished     23:07:09  01/12/11      4s 774ms
+            9      Scilab Environment Job 8      demo      Normal       Not Assigned     Finished     01:05:02  01/13/11     792ms
+            10     Scilab Environment Job 9      demo      Normal       Not Assigned     Finished     01:08:09  01/13/11     879ms
+            11     Scilab Environment Job 10     demo      Normal       Not Assigned     Finished     01:11:35  01/13/11     867ms
+            12     Scilab Environment Job 11     demo      Normal       Not Assigned     Finished     01:20:11  01/13/11     710ms
+            13     Scilab Environment Job 12     demo      Normal       Not Assigned     Finished     01:56:33  01/13/11      1s 121ms
+            14     Scilab Environment Job 13     demo      Normal       Not Assigned     Finished     02:20:19  01/13/11     23s  19ms
+            15     Scilab Environment Job 14     demo      Normal       Not Assigned     Finished     02:21:03  01/13/11     20s 986ms
+            16     Scilab Environment Job 0      demo      Normal       Not Assigned     Finished     02:40:00  01/13/11      2s 587ms
+
+            > jobstate(15)
+
+            Job '15'    name:Scilab Environment Job 14    owner:demo    status:Finished    #tasks:20
+
+            ID       NAME   ITER   DUP   STATUS     HOSTNAME                         EXEC DURATION   TOT DURATION   #NODES USED   #EXECUTIONS   #NODES KILLED
+
+            150001   9_0                 Finished   pendule.inria.fr (PA_JVM41...    733ms            2s 943ms      1             1/1           0/2
+            150002   5_0                 Finished   pendule.inria.fr (PA_JVM15...    753ms            3s 601ms      1             1/1           0/2
+            150003   8_0                 Finished   pendule.inria.fr (PA_JVM19...    637ms            2s 531ms      1             1/1           0/2
+            150004   10_0                Finished   pendule.inria.fr (PA_JVM15...    723ms            1s 734ms      1             1/1           0/2
+            150005   1_0                 Finished   pendule.inria.fr (PA_JVM41...    635ms            2s 493ms      1             1/1           0/2
+            150006   4_0                 Finished   pendule.inria.fr (PA_JVM14...    823ms            3s 708ms      1             1/1           0/2
+            150007   16_0                Finished   pendule.inria.fr (PA_JVM15...    803ms            2s 405ms      1             1/1           0/2
+            150008   7_0                 Finished   pendule.inria.fr (PA_JVM19...    733ms            2s 953ms      1             1/1           0/2
+            150009   6_0                 Finished   pendule.inria.fr (PA_JVM14...    626ms            3s 741ms      1             1/1           0/2
+            150010   2_0                 Finished   pendule.inria.fr (PA_JVM41...    724ms           798ms          1             1/1           0/2
+            150011   0_0                 Finished   pendule.inria.fr (PA_JVM14...    612ms            3s 553ms      1             1/1           0/2
+            150012   3_0                 Finished   pendule.inria.fr (PA_JVM14...    832ms            3s 575ms      1             1/1           0/2
+            150013   17_0                Finished   pendule.inria.fr (PA_JVM15...    614ms            3s 631ms      1             1/1           0/2
+            150014   15_0                Finished   pendule.inria.fr (PA_JVM19...    637ms            2s 490ms      1             1/1           0/2
+            150015   19_0                Finished   pendule.inria.fr (PA_JVM41...    716ms            2s 532ms      1             1/1           0/2
+            150016   11_0                Finished   pendule.inria.fr (PA_JVM15...    621ms            3s 675ms      1             1/1           0/2
+            - more - (q : abort | a : display all | any : next page)
+            150017   12_0                Finished   pendule.inria.fr (PA_JVM19...    615ms           687ms          1             1/1           0/2
+            150018   13_0                Finished   pendule.inria.fr (PA_JVM14...    617ms           596ms          1             1/1           0/2
+            150019   18_0                Finished   pendule.inria.fr (PA_JVM19...    625ms            2s 487ms      1             1/1           0/2
+            150020   14_0                Finished   pendule.inria.fr (PA_JVM41...    720ms            2s 502ms      1             1/1           0/2
+
+            > task
+
+            taskoutput(   taskresult(
+            > taskresult(15,'12_0')
+            Task 12_0 result =>
+            true
+
+            > taskoutput(15,'12_0')
+            12_0 output :
+            [ Thu Jan 13 02:21:24 CET 2011 ][pendule OUT]
+            [ Thu Jan 13 02:21:24 CET 2011 ][pendule OUT]
+            [ Thu Jan 13 02:21:24 CET 2011 ][pendule OUT]
+            [ Thu Jan 13 02:21:24 CET 2011 ][pendule OUT]
+            [ Thu Jan 13 02:21:24 CET 2011 ][pendule OUT]
+            [ Thu Jan 13 02:21:24 CET 2011 ][pendule OUT]
+            [ Thu Jan 13 02:21:24 CET 2011 ][pendule OUT]
+            [ Thu Jan 13 02:21:24 CET 2011 ][pendule OUT]
+            [ Thu Jan 13 02:21:24 CET 2011 ][pendule OUT]
+            [ Thu Jan 13 02:21:24 CET 2011 ][pendule OUT]
+            [ Thu Jan 13 02:21:24 CET 2011 ][pendule OUT]
+            [ Thu Jan 13 02:21:24 CET 2011 ][pendule OUT]
+            [ Thu Jan 13 02:21:24 CET 2011 ][pendule OUT]
+            [ Thu Jan 13 02:21:24 CET 2011 ][pendule OUT]
+
+            > exit();
+            Exiting controller.
+        ]]></screen>
+        <para>The
+            <literal>help()</literal>
+            function gives a description of all available commands. More information about the scheduler controller can
+            be found at <ulink
+                    url="http://proactive.inria.fr/release-doc/Scheduling/multiple_html/user_manual.html#scheduler_controller">
+                Using the Scheduler controller</ulink>.
+        </para>
+        <para>Here is an example use of rm-client:</para>
+        <screen><![CDATA[fviale@pendule unix $ rm-client
+            Trying to connect RM on rmi://localhost:1099/
+            -> Connection established on rmi://localhost:1099/
+
+            Connecting to the RM
+            login: demo
+            password: ****
+            Retrieved public key from Resource Manager at rmi://localhost:1099/
+            -> Client 'demo'  successfully connected
+
+            Type command here (type '?' or help() to see the list of commands)
+
+
+            > listnodes();
+            SOURCE NAME     HOSTNAME           STATE   SINCE            URL                                                      PROVIDER   OWNER
+
+            GCMLocalNodes   pendule.inria.fr   Free    13/01/11 02:40   rmi://pendule.inria.fr:6608/PA_JVM1485855611_GCMNode-0   demo
+            GCMLocalNodes   pendule.inria.fr   Free    13/01/11 02:40   rmi://pendule.inria.fr:6608/PA_JVM1574715742_GCMNode-0   demo
+            GCMLocalNodes   pendule.inria.fr   Free    13/01/11 02:40   rmi://pendule.inria.fr:6608/PA_JVM1916148777_GCMNode-0   demo
+            GCMLocalNodes   pendule.inria.fr   Free    13/01/11 02:40   rmi://pendule.inria.fr:6608/PA_JVM416643970_GCMNode-0    demo
+
+            >]]></screen>
+        <para>Here we see that the Resource Manager has been deployed with 4 local nodes. The STATE column displays if
+            the node is currently executing a job, free or there was a node failure. More information about the Resource
+            Manager controller can be found at <ulink
+                    url="http://proactive.inria.fr/release-doc/Resourcing/multiple_html/Resource_Manager_admin.html#rm_admin_console">
+                Interacting with the resource manager</ulink>.
+        </para>
+    </refsection>
+    <refsection>
+        <title>Scheduler and Resource Manager Web Portals</title>
+        <para>The ProActive Web Portals are web graphical user interfaces for both Scheduler and Resource Manager. They provide a more convenient way of monitoring job execution than the command line interface.
+            The ProActive Web Portals are embedded into the package <emphasis>ProActive Scheduling Server Full</emphasis> from the <ulink url="http://www.activeeon.com/community-downloads">ProActive downloads page</ulink>. Thet are started automatically when the <emphasis>scheduler-start-gui</emphasis> command is used to start the scheduler  see <ulink url="proactive_startup.html">Starting and Connecting</ulink> </para>
+        <para>Here is a view of the <emphasis>Scheduler Web Portal</emphasis>:</para>
+        <para><inlinemediaobject>
+            <imageobject>
+                <imagedata fileref="SchedulerPortal.png"/>
+            </imageobject>
+        </inlinemediaobject></para>
+
+        <para>Here is a view of the <emphasis>Resource Manager Web Portal</emphasis>:</para>
+        <para><inlinemediaobject>
+            <imageobject>
+                <imagedata fileref="RMPortal.png"/>
+            </imageobject>
+        </inlinemediaobject></para>
+        <para>They can be accessed after the <emphasis>scheduler-start-gui</emphasis> command has been launched from a web browser at the addresses : <literal>http://localhost:8080/sched</literal> and <literal>http://localhost:8080/rm</literal>. <literal>localhost</literal> has to be replaced by the server hostname if it is not deployed locally.</para>
+        <para>Information on their usage can be found in the <ulink url="http://proactive.inria.fr//release-doc/Scheduling/multiple_html/index.html">Scheduler Manual</ulink>.</para>
+    </refsection>
+    <refsection>
+        <title>Scilab Connector Toolbox monitoring functions</title>
+        <para>Scilab Connector Toolbox provides a set of function for monitoring job execution, similarly as the scheduler-client command line interface. Here is the list of those functions :</para>
+        <table cellspacing="0" width="100%" border="0" cellpadding="2">
+            <tr valign="top">
+                <td width="150"><link linkend="PAstate">PAstate</link></td>
+                <td>State of ProActive Scheduler</td>
+            </tr>
+            <tr valign="top">
+                <td width="150"><link linkend="PAjobState">PAjobState</link></td>
+                <td>State of the given job</td>
+            </tr>
+            <tr valign="top">
+                <td width="150"><link linkend="PAjobState">PAjobRemove</link></td>
+                <td>Removes the given job from the scheduler</td>
+            </tr>
+            <tr valign="top">
+                <td width="150"><link linkend="PAjobOutput">PAjobOutput</link></td>
+                <td>Textual log of the given job</td>
+            </tr>
+            <tr valign="top">
+                <td width="150"><link linkend="PAjobResult">PAjobResult</link></td>
+                <td>Textual result of the given job</td>
+            </tr>
+            <tr valign="top">
+                <td width="150"><link linkend="PAkillJob">PAkillJob</link></td>
+                <td>Kills the given job</td>
+            </tr>
+            <tr valign="top">
+                <td width="150"><link linkend="PApauseJob">PApauseJob</link></td>
+                <td>Pauses the given job</td>
+            </tr>
+            <tr valign="top">
+                <td width="150"><link linkend="PAresumeJob">PAresumeJob</link></td>
+                <td>Resumes the given job</td>
+            </tr>
+            <tr valign="top">
+                <td width="150"><link linkend="PAkillTask">PAkillTask</link></td>
+                <td>Kills the given task</td>
+            </tr>
+            <tr valign="top">
+                <td width="150"><link linkend="PAtaskOutput">PAtaskOutput</link></td>
+                <td>Textual log of the given task</td>
+            </tr>
+            <tr valign="top">
+                <td width="150"><link linkend="PAtaskResult">PAtaskResult</link></td>
+                <td>Textual result of the given task</td>
+            </tr>
+        </table>
+    </refsection>
+
+    <refsection>
+        <title>See Also</title>
+        <simplelist type="inline">
+            <member>
+                <link linkend="Introduction">Introduction</link>
+            </member>
+            <member>
+                <link linkend="PAsolve">PAsolve</link>
+            </member>
+            <member>
+                <link linkend="PAconnect">PAconnect</link>
+            </member>
+        </simplelist>
+    </refsection>
+
+    <refsection>
+        <title>Authors</title>
+
+        <simplelist type="vert">
+            <member>The ProActive Team, Fabien Viale</member>
+        </simplelist>
+    </refsection>
+</refentry>

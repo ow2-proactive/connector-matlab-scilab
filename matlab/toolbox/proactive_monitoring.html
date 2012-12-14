@@ -45,7 +45,7 @@
 
             <p><a href="proactive_monitoring.html#monitoring-2">Scheduler and Resource Manager command line controllers</a></p>
 
-            <p><a href="proactive_monitoring.html#monitoring-3">ProActive Studio GUI</a></p>
+            <p><a href="proactive_monitoring.html#monitoring-3">ProActive Web Portals</a></p>
 
             <p><a href="proactive_monitoring.html#monitoring-4">Matlab Connector Toolbox monitoring functions</a></p>
 
@@ -193,16 +193,17 @@ Type command here (type '?' or help() to see the list of commands)
     <script language="Javascript">updateSectionId("monitoring-3");</script>
     <script language="Javascript">addTopOfPageButtons();</script>
     <a href="#top_of_page">Back to Top</a></p>
-<h3 class="title">ProActive Studio GUI</h3>
+<h3 class="title">Scheduler and Resource Manager Web Portals</h3>
 
-<p>The ProActive Studio is a graphical user interface for both Scheduler and Resource Manager, and which provide a more convenient way of monitoring job execution. The ProActive Studio GUI must be downloaded separately from ProActive Scheduler on the <a href="http://www.activeeon.com/community-downloads">ProActive downloads page</a>. They required a Java Virtual Machine installed in order to run.</p>
-<p>Here is a view of the <b>Scheduler GUI</b>:</p>
-<p><img src="Scheduling_Big.png" alt="Scheduler GUI"></p>
-<p>Information on its usage can be found at <a href="http://proactive.inria.fr/release-doc/Scheduling/multiple_html/Scheduler_Eclipse_Plugin.html">ProActive Scheduler Eclipse Plugin</a>.</p>
+<p>The ProActive Web Portals are web graphical user interfaces for both Scheduler and Resource Manager. They provide a more convenient way of monitoring job execution than the command line interface.
+    The ProActive Web Portals are embedded into the package <b>ProActive Scheduling Server Full</b> from the <a href="http://www.activeeon.com/community-downloads">ProActive downloads page</a>. Thet are started automatically when the <b>scheduler-start-gui</b> command is used to start the scheduler  see <a href="proactive_startup.html">Starting and Connecting</a> </p>
+<p>Here is a view of the <b>Scheduler Web Portal</b>:</p>
+<p><img src="SchedulerPortal.png" alt="Scheduler Web Portal"></p>
 
-<p>Here is a view of the <b>Resource Manager GUI</b>:</p>
-<p><img src="tree_view.png" alt="Resource Manager GUI"></p>
-<p>Information on its usage can be found at <a href="http://proactive.inria.fr/release-doc/Resourcing/multiple_html/Resource_Manager_admin.html#Resource_Manager_plugin">Resource Manager Graphical User Interface</a>.</p>
+<p>Here is a view of the <b>Resource Manager Web Portal</b>:</p>
+<p><img src="RMPortal.png" alt="Resource Manager Web Portal"></p>
+<p>They can be accessed after the <b>scheduler-start-gui</b> command has been launched from a web browser at the addresses : <b>http://localhost:8080/sched</b> and <b>http://localhost:8080/rm</b>. <i>localhost</i> has to be replaced by the server hostname if it is not deployed locally.</p>
+<p>Information on their usage can be found in the <a href="http://proactive.inria.fr//release-doc/Scheduling/multiple_html/index.html">Scheduler Manual</a>.</p>
 
 <a name="monitoring-4"></a>
 

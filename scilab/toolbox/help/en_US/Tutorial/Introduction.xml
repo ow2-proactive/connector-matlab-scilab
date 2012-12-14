@@ -69,12 +69,12 @@
         </para>
         <itemizedlist>
             <listitem>
-                <para>The<emphasis>scheduler administrator</emphasis>: responsible for ProActive Scheduler installation
+                <para>The <emphasis>scheduler administrator</emphasis>: responsible for ProActive Scheduler installation
                     on every machines, and the administration of ProActive Scheduler.
                 </para>
             </listitem>
             <listitem>
-                <para>The<emphasis>toolbox user</emphasis>: who will simply use the installed toolbox to run matlab code
+                <para>The <emphasis>toolbox user</emphasis>: who will simply use the installed toolbox to run matlab code
                     in parallel.
                 </para>
             </listitem>
@@ -144,7 +144,7 @@
     <refsection>
         <title>What are the current limitations of Scilab Connector Toolbox?</title>
         <para>Known bugs and limitations are reported on ProActive Matlab/Scilab Connector's JIRA bug reporting tool:</para>
-        <para><emphasis>https://bugs.activeeon.com/browse/MSC</emphasis></para>
+        <para><ulink url="http://bugs.activeeon.com/browse/MSC">http://bugs.activeeon.com/browse/MSC</ulink></para>
 
 
 
