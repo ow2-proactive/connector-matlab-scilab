@@ -23,12 +23,13 @@ function PAterminate()
                     msg = msg + 'The MiddleMan JVM can stay alive and handle data transfers while your computer is on' + ascii(10);
                     msg = msg + 'Do you want enable this mode ?';
                     btn = messagebox(msg, "ProActive", "question", ["Yes" "No"], "modal")
-
+                    if btn == 1
+                        return;
+                    end
                 end
                 jremove(notReceived);
                 jremove(repository);
                 jremove(ScilabTaskRepository);
-                return;
             end
         end
         try
