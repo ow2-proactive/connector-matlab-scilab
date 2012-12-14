@@ -37,7 +37,6 @@ package org.ow2.proactive.scheduler.ext.matsci.common.data;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.net.URI;
 
 
 /**

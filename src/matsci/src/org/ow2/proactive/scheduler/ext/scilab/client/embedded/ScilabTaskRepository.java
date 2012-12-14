@@ -34,11 +34,9 @@
  */
 package org.ow2.proactive.scheduler.ext.scilab.client.embedded;
 
-import jdbm.RecordManagerFactory;
 import org.ow2.proactive.scheduler.ext.matsci.client.embedded.MatSciTaskRepository;
 
 import java.io.File;
-import java.io.IOException;
 
 
 /**

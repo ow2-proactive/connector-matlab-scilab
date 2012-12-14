@@ -171,6 +171,19 @@
                 </para>
             </listitem>
             <listitem>
+                <para><emphasis>VersionArch</emphasis>: The scilab version architecture to be used. "Any" means any architecture
+                    can be used, "32" means only 32bit architectures and "64" means only 64-bit architectures.
+                </para>
+            </listitem>
+            <listitem>
+                <para><emphasis>ForceScilabSearch</emphasis>: Do we force the automated search of Scilab ?
+                    In the default behavior, this is set to false. The selection script will try to search Scilab
+                    only if a ScilabWorkerConfiguration.xml cannot be found on the host. If the script finds some Scilab instances it will
+                    create a new ScilabWorkerConfiguration.xml to speed up latter executions.
+                    If on the contrary ForceScilabSearch is set to true, the selection script will always search the disk for Scilab installations
+                </para>
+            </listitem>
+            <listitem>
                 <para><emphasis>Priority</emphasis>: this option is the priority of jobs created inside the ProActive
                     Scheduler by PAsolve calls. Default to "Normal".
                 </para>

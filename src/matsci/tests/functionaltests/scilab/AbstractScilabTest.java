@@ -37,17 +37,12 @@
 package functionaltests.scilab;
 
 import functionaltests.SchedulerTStarter;
-import jdbm.PrimaryHashMap;
-import jdbm.RecordManager;
-import jdbm.RecordManagerFactory;
 import org.objectweb.proactive.core.config.CentralPAPropertyRepository;
 import org.ow2.proactive.authentication.crypto.CredData;
 import org.ow2.proactive.authentication.crypto.Credentials;
 import org.ow2.proactive.scheduler.common.SchedulerAuthenticationInterface;
 import org.ow2.proactive.scheduler.common.SchedulerConnection;
 import org.ow2.proactive.scheduler.ext.common.util.IOTools;
-import org.ow2.proactive.scheduler.ext.matsci.client.embedded.MatSciTaskRepository;
-import org.ow2.proactive.scheduler.ext.matsci.middleman.AOMatSciEnvironment;
 import org.ow2.proactive.scheduler.ext.matsci.middleman.proxy.MatSciSchedulerProxy;
 import org.ow2.proactive.scheduler.ext.scilab.client.embedded.ScilabTaskRepository;
 import org.ow2.proactive.scheduler.ext.scilab.middleman.AOScilabEnvironment;

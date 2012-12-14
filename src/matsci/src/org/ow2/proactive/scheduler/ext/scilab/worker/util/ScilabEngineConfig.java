@@ -45,10 +45,11 @@ public class ScilabEngineConfig extends MatSciEngineConfigBase {
     private static final long serialVersionUID = 11;
 
     // the Home Dir of Scilab on this machine
-    private String scilabHome = null;
-    private String scilabBinDir = null;
-    private String scilabCommandName = null;
+    private String home = null;
+    private String binDir = null;
+    private String command = null;
     private String version = null;
+    private String arch = null;
 
     private static OperatingSystem os = OperatingSystem.getOperatingSystem();
 
@@ -59,24 +60,20 @@ public class ScilabEngineConfig extends MatSciEngineConfigBase {
      */
     protected static ScilabEngineConfig currentConf = null;
 
-    /**
-     * last Scilab configuration
-     */
-    protected static ScilabEngineConfig lastConf = null;
-
-    public String getScilabBinDir() {
-        return scilabBinDir;
+    public String getBinDir() {
+        return binDir;
     }
 
-    public String getScilabCommandName() {
-        return scilabCommandName;
+    public String getCommand() {
+        return command;
     }
 
-    public ScilabEngineConfig(String scilabHome, String version, String scilabBinDir, String scilabCommandName) {
-        this.scilabHome = scilabHome;
-        this.version = version;
-        this.scilabBinDir = scilabBinDir;
-        this.scilabCommandName = scilabCommandName;
+    public ScilabEngineConfig(String home, String version, String binDir, String command, String arch) {
+        this.home = home.replaceAll("" + '\u0000', "");
+        this.version = version.replaceAll("" + '\u0000', "");
+        this.binDir = binDir.replaceAll("" + '\u0000', "");
+        this.command = command.replaceAll("" + '\u0000', "");
+        this.arch = arch.replaceAll("" + '\u0000', "");
 
     }
 
@@ -85,12 +82,7 @@ public class ScilabEngineConfig extends MatSciEngineConfigBase {
     }
 
     public static void setCurrentConfiguration(ScilabEngineConfig conf) {
-        lastConf = currentConf;
         currentConf = conf;
-    }
-
-    public static boolean hasChangedConf() {
-        return (lastConf != null) && (!lastConf.equals(currentConf));
     }
 
     /**
@@ -98,41 +90,47 @@ public class ScilabEngineConfig extends MatSciEngineConfigBase {
      *
      * @return scilab path
      */
-    public String getScilabHome() {
-        return scilabHome;
+    public String getHome() {
+        return home;
     }
 
     public String getVersion() {
         return version;
     }
 
-    public String getFullCommand() {
-        return scilabHome + os.fileSeparator() + scilabBinDir + os.fileSeparator() + scilabCommandName;
+    public String getArch() {
+        return arch;
     }
 
-    public boolean hasManyConfig() {
-        return false;
+    public void setArch(String arch) {
+        this.arch = arch;
+    }
+
+    public String getFullCommand() {
+        return home + os.fileSeparator() + binDir + os.fileSeparator() + command;
     }
 
     public String toString() {
-        return "Scilab Home : " + scilabHome + nl + "Scilab Version : " + version + nl + "Scilab binDir : " +
-            scilabBinDir + nl + "Scilab command : " + scilabCommandName;
+        return "Scilab Home : " + home + nl + "Scilab Version : " + version + nl + "Scilab binDir : " +
+            binDir + nl + "Scilab command : " + command + nl + "Scilab arch : " + arch;
     }
 
+    @Override
     public boolean equals(Object o) {
         if (this == o)
             return true;
-        if (!(o instanceof ScilabEngineConfig))
+        if (o == null || getClass() != o.getClass())
             return false;
 
         ScilabEngineConfig that = (ScilabEngineConfig) o;
 
-        if (scilabBinDir != null ? !scilabBinDir.equals(that.scilabBinDir) : that.scilabBinDir != null)
+        if (arch != null ? !arch.equals(that.arch) : that.arch != null)
             return false;
-        if (scilabCommandName != null ? !scilabCommandName.equals(that.scilabCommandName)
-                : that.scilabCommandName != null)
+        if (binDir != null ? !binDir.equals(that.binDir) : that.binDir != null)
             return false;
-        if (scilabHome != null ? !scilabHome.equals(that.scilabHome) : that.scilabHome != null)
+        if (command != null ? !command.equals(that.command) : that.command != null)
+            return false;
+        if (home != null ? !home.equals(that.home) : that.home != null)
             return false;
         if (version != null ? !version.equals(that.version) : that.version != null)
             return false;
@@ -140,11 +138,13 @@ public class ScilabEngineConfig extends MatSciEngineConfigBase {
         return true;
     }
 
+    @Override
     public int hashCode() {
-        int result = scilabHome != null ? scilabHome.hashCode() : 0;
-        result = 31 * result + (scilabBinDir != null ? scilabBinDir.hashCode() : 0);
-        result = 31 * result + (scilabCommandName != null ? scilabCommandName.hashCode() : 0);
+        int result = home != null ? home.hashCode() : 0;
+        result = 31 * result + (binDir != null ? binDir.hashCode() : 0);
+        result = 31 * result + (command != null ? command.hashCode() : 0);
         result = 31 * result + (version != null ? version.hashCode() : 0);
+        result = 31 * result + (arch != null ? arch.hashCode() : 0);
         return result;
     }
 }

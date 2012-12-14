@@ -3,11 +3,12 @@
     <MachineGroup hostname=".*">  <!-- This is a regular expression representing the machines targetted by this configuration, attributes can either be "hostname" or "ip" -->
         <matlab>
             <version>7.11</version>     <!-- The version of matlab -->
-            <home>/usr/local/matlab2010b</home>    <!-- Matlab installation directory -->
+            <home>C:\Program Files\MATLAB\R2010b</home>    <!-- Matlab installation directory -->
             <!-- Example windows path: <home>C:\Program Files\Matlab2010b</home> -->
             <bindir>bin</bindir> <!-- Matlab bin directory (should not be changed) -->
-            <command>matlab</command>  <!-- Matlab executable name -->
-            <!-- Matlab executable name on windows:: matlab.exe -->
+            <command>matlab.exe</command>  <!-- Matlab executable name -->
+            <arch>32</arch> <!-- Architecture 32 or 64 -->
+            <!-- Matlab executable name on windows: matlab.exe -->
         </matlab>
     </MachineGroup>
 </MatSciWorkerConfiguration>

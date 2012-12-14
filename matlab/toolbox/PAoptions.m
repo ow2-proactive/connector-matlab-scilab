@@ -119,6 +119,17 @@
 %   VersionMax        char
 %               A maximum matlab version that can be used
 %
+%   VersionArch        'any' | '32' | '64'
+%               The matlab version architecture to be used. "Any" means any architecture can be used.
+%
+%   ForceMatlabSearch   boolean
+%               Do we force the automated search of Matlab ?
+%               In the default behavior, this is set to false. The selection script will try to search Matlab
+%               only if a MatlabWorkerConfiguration.xml cannot be found on the host. If the script finds some Matlab instances
+%               it will create a new MatlabWorkerConfiguration.xml to speed up latter executions.
+%               If on the contrary ForceMatlabSearch is set to true, the selection script will always search the disk for
+%               Matlab installations.
+%
 %   Priority          'Idle' | 'Lowest' | 'Low' | 'Normal' | 'High' | 'Highest'
 %               Priority used by default for jobs submitted with PAsolve,
 %               default to 'Normal'
@@ -397,6 +408,16 @@ inputs(j).name = 'VersionMax';
 inputs(j).default = [];
 inputs(j).check = versioncheck;
 inputs(j).trans = @versiontrans;
+j=j+1;
+inputs(j).name = 'VersionArch';
+inputs(j).default = 'any';
+inputs(j).check = @(x)(ischar(x) && ismember(x, {'any', '32', '64', }));
+inputs(j).trans = id;
+j=j+1;
+inputs(j).name = 'ForceMatlabSearch';
+inputs(j).default = false;
+inputs(j).check = logcheck;
+inputs(j).trans = logtrans;
 j=j+1;
 inputs(j).name = 'MatlabReservationScript';
 inputs(j).default = ['$MATSCI$' filesep 'script' filesep 'reserve_matlab.rb' ];

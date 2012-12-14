@@ -283,11 +283,10 @@ public class MatlabExecutable extends JavaExecutable {
         if (conf == null) {
             conf = (MatlabEngineConfig) MatlabFinder.getInstance().findMatSci(paconfig.getVersionPref(),
                     paconfig.getVersionRej(), paconfig.getVersionMin(), paconfig.getVersionMax(),
-                    paconfig.isDebug());
+                    paconfig.getVersionArch(), paconfig.isDebug());
             if (conf == null) {
                 throw new IllegalStateException("No valid Matlab configuration found, aborting...");
             }
-
         }
         matlabEngineConfig = conf;
         return matlabEngineConfig;
