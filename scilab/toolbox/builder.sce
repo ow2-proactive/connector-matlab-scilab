@@ -19,12 +19,7 @@ catch
     error(gettext('Scilab 5.3.3 or more is required.'));
 end;
 
-// JIMS install check
-if ~atomsIsInstalled('JIMS')
-    error('JIMS Atoms Module must be installed in order to use ProActive Scheduler Module');
-end
-
-disp('Start ProActive');
+disp('Build ProActive');
 
 root_tlbx = get_absolute_file_path('builder.sce');
 if ~exists('PA_matsci_dir') | PA_matsci_dir == []
