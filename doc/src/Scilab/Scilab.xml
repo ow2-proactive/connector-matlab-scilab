@@ -148,7 +148,7 @@ Start Toolbox ProActive
             If those steps were done successfully the toolbox will be available to use on Scilab. The detailed toolbox guide will also be loaded inside Scilab help at section "ProActive Scilab Connector"
         </para>
          <para>Please refer to the Scilab toolbox Help for a detailed explanation of ProActive Scilab Connector Toolbox usage.</para>
-         <para>Alternatively you can either browse it online <emphasis xlink:href="../toolbox/help/en_US/scilab_en_US_help/index.html">here</emphasis></para>
+         <para>Alternatively you can either browse it online <emphasis xlink:href="../../../../dist/scilab/toolbox/help/en_US/scilab_en_US_help/index.html">here</emphasis></para>
 
 
     </section>
