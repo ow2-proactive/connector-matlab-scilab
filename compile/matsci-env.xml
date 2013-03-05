@@ -114,7 +114,7 @@
         </fileset>
 
         <pathelement location="${cl.matsci.tests.dir}"/>
-        <pathelement location="${base.dir}/compile/lib/junit-4.3.jar"/>
+        <pathelement location="${base.dir}/compile/lib/junit-4.11-SNAPSHOT-20120416-1530.jar"/>
         <pathelement location="${cl.matsci.dir}"/>
         <fileset dir="${lib.dir}">
             <include name="matsci/**/*.jar"/>
