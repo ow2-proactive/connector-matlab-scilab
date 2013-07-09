@@ -36,7 +36,14 @@
  */
 package functionaltests.matlab;
 
-import functionaltests.SchedulerTStarter;
+import static junit.framework.Assert.assertTrue;
+
+import java.io.File;
+import java.io.FilenameFilter;
+import java.net.InetAddress;
+import java.net.URI;
+import java.security.PublicKey;
+
 import org.objectweb.proactive.core.config.CentralPAPropertyRepository;
 import org.ow2.proactive.authentication.crypto.CredData;
 import org.ow2.proactive.authentication.crypto.Credentials;
@@ -45,16 +52,9 @@ import org.ow2.proactive.scheduler.common.SchedulerConnection;
 import org.ow2.proactive.scheduler.ext.common.util.IOTools;
 import org.ow2.proactive.scheduler.ext.matlab.client.embedded.MatlabTaskRepository;
 import org.ow2.proactive.scheduler.ext.matlab.middleman.AOMatlabEnvironment;
-import org.ow2.proactive.scheduler.ext.matsci.middleman.proxy.MatSciSchedulerProxy;
 import org.ow2.tests.FunctionalTest;
 
-import java.io.File;
-import java.io.FilenameFilter;
-import java.net.InetAddress;
-import java.net.URI;
-import java.security.PublicKey;
-
-import static junit.framework.Assert.assertTrue;
+import functionaltests.SchedulerTStarter;
 
 
 /**
@@ -105,7 +105,8 @@ public class AbstractMatlabTest extends FunctionalTest {
                     return true;
                 } else if (name.startsWith(MatlabTaskRepository.MATLAB_EMBEDDED_JOBS_FILE_NAME)) {
                     return true;
-                } else if (name.startsWith(MatSciSchedulerProxy.DEFAULT_STATUS_FILENAME)) {
+                    // TODO : change below the value to JobDB.DEFAULT_STATUS_FILENAME
+                } else if (name.startsWith("SmartProxy")) {
                     return true;
                 }
                 return false;

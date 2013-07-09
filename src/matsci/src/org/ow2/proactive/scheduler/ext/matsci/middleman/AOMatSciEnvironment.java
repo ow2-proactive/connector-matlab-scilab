@@ -118,8 +118,8 @@ import org.ow2.proactive.scheduler.ext.matsci.client.common.exception.PASchedule
 import org.ow2.proactive.scheduler.ext.matsci.client.common.exception.PASchedulerExceptionType;
 import org.ow2.proactive.scheduler.ext.matsci.common.data.DSSource;
 import org.ow2.proactive.scheduler.ext.matsci.common.exception.MatSciTaskException;
-import org.ow2.proactive.scheduler.ext.matsci.middleman.proxy.ISchedulerEventListenerExtended;
-import org.ow2.proactive.scheduler.ext.matsci.middleman.proxy.MatSciSchedulerProxy;
+import org.ow2.proactive.scheduler.common.util.dsclient.ISchedulerEventListenerExtended;
+import org.ow2.proactive.scheduler.common.util.dsclient.SmartProxy;
 import org.ow2.proactive.scheduler.util.console.SchedulerModel;
 import org.ow2.proactive.utils.FileToBytesConverter;
 import org.ow2.proactive.utils.console.StdOutConsole;
@@ -141,12 +141,12 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
     /**
      * ProActive stub of the proxy to the scheduler with disconnected mode support
      */
-    protected MatSciSchedulerProxy sched_proxy;
+    protected SmartProxy sched_proxy;
 
     /**
      * real object of the proxy
      */
-    protected MatSciSchedulerProxy sched_proxy_root;
+    protected SmartProxy sched_proxy_root;
 
     /**
      * Connection to the scheduler console
@@ -818,7 +818,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         serviceThread = Thread.currentThread();
         bodyOnThis = PAActiveObject.getBodyOnThis();
 
-        sched_proxy_root = MatSciSchedulerProxy.getInstance();
+        sched_proxy_root = SmartProxy.getInstance();
         try {
             sched_proxy = PAActiveObject.turnActive(sched_proxy_root, PAActiveObject.getNode());
         } catch (ActiveObjectCreationException e) {

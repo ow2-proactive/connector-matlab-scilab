@@ -36,17 +36,7 @@
  */
 package functionaltests.scilab;
 
-import functionaltests.SchedulerTStarter;
-import org.objectweb.proactive.core.config.CentralPAPropertyRepository;
-import org.ow2.proactive.authentication.crypto.CredData;
-import org.ow2.proactive.authentication.crypto.Credentials;
-import org.ow2.proactive.scheduler.common.SchedulerAuthenticationInterface;
-import org.ow2.proactive.scheduler.common.SchedulerConnection;
-import org.ow2.proactive.scheduler.ext.common.util.IOTools;
-import org.ow2.proactive.scheduler.ext.matsci.middleman.proxy.MatSciSchedulerProxy;
-import org.ow2.proactive.scheduler.ext.scilab.client.embedded.ScilabTaskRepository;
-import org.ow2.proactive.scheduler.ext.scilab.middleman.AOScilabEnvironment;
-import org.ow2.tests.FunctionalTest;
+import static junit.framework.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -54,7 +44,17 @@ import java.net.InetAddress;
 import java.net.URI;
 import java.security.PublicKey;
 
-import static junit.framework.Assert.assertTrue;
+import org.objectweb.proactive.core.config.CentralPAPropertyRepository;
+import org.ow2.proactive.authentication.crypto.CredData;
+import org.ow2.proactive.authentication.crypto.Credentials;
+import org.ow2.proactive.scheduler.common.SchedulerAuthenticationInterface;
+import org.ow2.proactive.scheduler.common.SchedulerConnection;
+import org.ow2.proactive.scheduler.ext.common.util.IOTools;
+import org.ow2.proactive.scheduler.ext.scilab.client.embedded.ScilabTaskRepository;
+import org.ow2.proactive.scheduler.ext.scilab.middleman.AOScilabEnvironment;
+import org.ow2.tests.FunctionalTest;
+
+import functionaltests.SchedulerTStarter;
 
 
 /**
@@ -108,7 +108,8 @@ public class AbstractScilabTest extends FunctionalTest {
                     return true;
                 } else if (name.startsWith(ScilabTaskRepository.SCILAB_EMBEDDED_JOBS_FILE_NAME)) {
                     return true;
-                } else if (name.startsWith(MatSciSchedulerProxy.DEFAULT_STATUS_FILENAME)) {
+                    // TODO : change below the value to JobDB.DEFAULT_STATUS_FILENAME
+                } else if (name.startsWith("SmartProxy")) {
                     return true;
                 }
                 return false;
