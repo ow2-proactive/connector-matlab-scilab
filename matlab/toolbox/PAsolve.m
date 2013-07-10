@@ -315,9 +315,17 @@ end
 
 % Parse command line parameters
 function [Tasks, NN, MM]=parseParams(varargin)
+
+if length(varargin) == 0
+   error('Parameter list cannot be empty');
+end
+
 if isa(varargin{1}, 'function_handle')
     Func = varargin{1};
     NN=length(varargin)-1;
+    if NN == 0
+        error('Parameter list cannot be empty');
+    end
     Tasks(1:NN) = PATask;
     Tasks(1:NN).Func = Func;
     for i=1:NN
@@ -331,6 +339,9 @@ elseif isa(varargin{1}, 'PATask')
     if length(varargin) == 1
         Tasks = varargin{1};
         NN = size(Tasks,2);
+        if NN == 0
+            error('PATask array cannot be empty');
+        end
         MM = size(Tasks,1);
     else
         NN=length(varargin);
