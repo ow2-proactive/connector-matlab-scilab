@@ -36,6 +36,15 @@
  */
 package org.ow2.proactive.scheduler.ext.matlab.middleman;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.TreeSet;
+
 import org.apache.commons.vfs.FileSystemException;
 import org.apache.log4j.Level;
 import org.objectweb.proactive.core.body.exceptions.FutureMonitoringPingFailureException;
@@ -57,7 +66,11 @@ import org.ow2.proactive.scheduler.ext.matlab.common.data.PASolveMatlabGlobalCon
 import org.ow2.proactive.scheduler.ext.matlab.common.data.PASolveMatlabTaskConfig;
 import org.ow2.proactive.scheduler.ext.matlab.worker.MatlabExecutable;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.PASessionState;
-import org.ow2.proactive.scheduler.ext.matsci.client.common.data.*;
+import org.ow2.proactive.scheduler.ext.matsci.client.common.data.MatSciClientJobInfo;
+import org.ow2.proactive.scheduler.ext.matsci.client.common.data.MatSciJobInfo;
+import org.ow2.proactive.scheduler.ext.matsci.client.common.data.MatSciJobStatus;
+import org.ow2.proactive.scheduler.ext.matsci.client.common.data.MatSciTaskStatus;
+import org.ow2.proactive.scheduler.ext.matsci.client.common.data.TaskNameComparator;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.exception.PASchedulerException;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.exception.PASolveException;
 import org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveFile;
@@ -71,15 +84,6 @@ import org.ow2.proactive.scripting.SelectionScript;
 import org.ow2.proactive.scripting.SimpleScript;
 import org.ow2.proactive.topology.descriptor.ThresholdProximityDescriptor;
 import org.ow2.proactive.topology.descriptor.TopologyDescriptor;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.TreeSet;
 
 
 /**
@@ -199,6 +203,7 @@ public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResu
             HashMap<String, PASolveMatSciTaskConfig> tconf_maps = new HashMap<String, PASolveMatSciTaskConfig>();
 
             if (schedulerKilled) {
+                printLog("the Scheduler has been killed");
                 throw new PASchedulerException("the Scheduler has been killed");
             }
             ensureConnection();
@@ -236,16 +241,19 @@ public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResu
                     je.setJobClasspath(workerJars.toArray(new String[workerJars.size()]));
                     job.setEnvironment(je);
                 } catch (IOException e) {
-                    new PASchedulerException(e);
+                    printLog(e);
+                    throw new PASchedulerException(e);
                 }
             }
 
             String pullUrl = config.getSharedPullPublicUrl();
             String pushUrl = config.getSharedPushPublicUrl();
             if ((pushUrl != null && pullUrl == null) || (pushUrl == null && pushUrl != null)) {
-                throw new IllegalStateException(
+                IllegalStateException e = new IllegalStateException(
                     "Invalid shared urls, they must be both set or both null. PushUrl = " + pushUrl +
                         " , PullUrl=" + pullUrl);
+                printLog(e);
+                throw new PASchedulerException(e);
             }
 
             if (pushUrl != null) {
@@ -289,6 +297,7 @@ public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResu
                         try {
                             sc = new SimpleScript(forkenvFile, new String[0]);
                         } catch (InvalidScriptException e) {
+                            printLog(e);
                             throw new PASchedulerException(e);
                         }
                         fe.setEnvScript(sc);
@@ -299,6 +308,7 @@ public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResu
                         try {
                             schedulerTask.setPreScript(new SimpleScript(preFile, new String[0]));
                         } catch (InvalidScriptException e) {
+                            printLog(e);
                             throw new PASchedulerException(e);
                         }
                     }
@@ -422,6 +432,7 @@ public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResu
                                     .isCustomScriptStatic());
 
                         } catch (InvalidScriptException e1) {
+                            printLog(e1);
                             throw new PASchedulerException(e1);
                         }
                         schedulerTask.addSelectionScript(sscript);
@@ -472,6 +483,7 @@ public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResu
                                 config.getVersionMin(), "versionMax", config.getVersionMax(), "versionArch",
                                 config.getVersionArch() }, !config.isFindMatSciScriptStatic());
                     } catch (InvalidScriptException e1) {
+                        printLog(e1);
                         throw new PASchedulerException(e1);
                     }
                     schedulerTask.addSelectionScript(sscript);
@@ -494,13 +506,16 @@ public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResu
 
                         paramsList.add(config.getLicenseSaverURL());
                         if (taskConfigs[i][j].getToolboxesUsed() == null) {
-                            throw new IllegalStateException("No toolbox usage definition");
+                            IllegalStateException e = new IllegalStateException("No toolbox usage definition");
+                            printLog(e);
+                            throw new PASchedulerException(e);
                         }
                         paramsList.addAll(Arrays.asList(taskConfigs[i][j].getToolboxesUsed()));
                         scriptParams = paramsList.toArray(new String[paramsList.size()]);
                         try {
                             sscript = new SelectionScript(url3, scriptParams);
                         } catch (InvalidScriptException e1) {
+                            printLog(e1);
                             throw new PASchedulerException(e1);
                         }
 
@@ -514,7 +529,8 @@ public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResu
                     try {
                         job.addTask(schedulerTask);
                     } catch (UserException e) {
-                        e.printStackTrace();
+                        printLog(e);
+                        throw new PASchedulerException(e);
                     }
 
                     tconf_maps.put(tname, taskConfigs[i][j]);
@@ -536,21 +552,25 @@ public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResu
                 printLog(re);
                 return null;
             } catch (JobCreationException re) {
+                printLog(re);
                 throw new PASchedulerException(re);
             } catch (FileSystemException re) {
                 // a file system exception can occur either because the shared dataspace is wrongly configured or we are not connected
+                printLog(re);
                 if (isConnected()) {
                     throw new PASchedulerException(re);
                 }
-                printLog(re);
                 return null;
             } catch (Exception re) {
+                printLog(re);
                 if (isProActiveExeption(re)) {
-                    printLog(re);
                     return null;
                 } else {
                     throw new PASchedulerException(re);
                 }
+            } catch (Error re) {
+                printLog(re);
+                throw new PASchedulerException(re);
             }
 
             Long jid = Long.parseLong(sjid.value());
@@ -575,6 +595,7 @@ public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResu
                 recMan.commit();
             } catch (IOException e) {
                 printLog(e, LogMode.FILEANDOUTALWAYS);
+                throw new PASchedulerException(e);
             }
 
             return jinfo.getClientJobInfo();

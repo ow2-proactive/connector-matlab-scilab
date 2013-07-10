@@ -36,6 +36,14 @@
  */
 package org.ow2.proactive.scheduler.ext.scilab.middleman;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.TreeSet;
+
 import org.apache.commons.vfs.FileSystemException;
 import org.apache.log4j.Level;
 import org.objectweb.proactive.core.body.exceptions.FutureMonitoringPingFailureException;
@@ -53,7 +61,11 @@ import org.ow2.proactive.scheduler.common.task.dataspaces.InputAccessMode;
 import org.ow2.proactive.scheduler.common.util.SchedulerProxyUserInterface;
 import org.ow2.proactive.scheduler.ext.common.util.BitMatrix;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.PASessionState;
-import org.ow2.proactive.scheduler.ext.matsci.client.common.data.*;
+import org.ow2.proactive.scheduler.ext.matsci.client.common.data.MatSciClientJobInfo;
+import org.ow2.proactive.scheduler.ext.matsci.client.common.data.MatSciJobInfo;
+import org.ow2.proactive.scheduler.ext.matsci.client.common.data.MatSciJobStatus;
+import org.ow2.proactive.scheduler.ext.matsci.client.common.data.MatSciTaskStatus;
+import org.ow2.proactive.scheduler.ext.matsci.client.common.data.TaskNameComparator;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.exception.PASchedulerException;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.exception.PASolveException;
 import org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveFile;
@@ -71,14 +83,6 @@ import org.ow2.proactive.scripting.SelectionScript;
 import org.ow2.proactive.scripting.SimpleScript;
 import org.ow2.proactive.topology.descriptor.ThresholdProximityDescriptor;
 import org.ow2.proactive.topology.descriptor.TopologyDescriptor;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.TreeSet;
 
 
 /**
@@ -192,6 +196,7 @@ public class AOScilabEnvironment extends AOMatSciEnvironment<Boolean, ScilabResu
             HashMap<String, PASolveMatSciTaskConfig> tconf_maps = new HashMap<String, PASolveMatSciTaskConfig>();
 
             if (schedulerKilled) {
+                printLog("the Scheduler is killed");
                 throw new PASchedulerException("the Scheduler is killed");
             }
             ensureConnection();
@@ -229,16 +234,19 @@ public class AOScilabEnvironment extends AOMatSciEnvironment<Boolean, ScilabResu
                     je.setJobClasspath(workerJars.toArray(new String[workerJars.size()]));
                     job.setEnvironment(je);
                 } catch (IOException e) {
-                    new PASchedulerException(e);
+                    printLog(e);
+                    throw new PASchedulerException(e);
                 }
             }
 
             String pullUrl = config.getSharedPullPublicUrl();
             String pushUrl = config.getSharedPushPublicUrl();
             if ((pushUrl != null && pullUrl == null) || (pushUrl == null && pushUrl != null)) {
-                throw new IllegalStateException(
+                IllegalStateException e = new IllegalStateException(
                     "Invalid shared urls, they must be both set or both null. PushUrl = " + pushUrl +
                         " , PullUrl=" + pullUrl);
+                printLog(e);
+                throw new PASchedulerException(e);
             }
             if (pushUrl != null) {
                 job.setInputSpace(pushUrl);
@@ -283,6 +291,7 @@ public class AOScilabEnvironment extends AOMatSciEnvironment<Boolean, ScilabResu
                         try {
                             sc = new SimpleScript(forkenvFile, new String[0]);
                         } catch (InvalidScriptException e) {
+                            printLog(e);
                             throw new PASchedulerException(e);
                         }
                         fe.setEnvScript(sc);
@@ -438,6 +447,7 @@ public class AOScilabEnvironment extends AOMatSciEnvironment<Boolean, ScilabResu
                             sscript = new SelectionScript(url, params, !config.isCustomScriptStatic());
 
                         } catch (InvalidScriptException e1) {
+                            printLog(e1);
                             throw new PASchedulerException(e1);
                         }
                         schedulerTask.addSelectionScript(sscript);
@@ -466,7 +476,8 @@ public class AOScilabEnvironment extends AOMatSciEnvironment<Boolean, ScilabResu
                     try {
                         job.addTask(schedulerTask);
                     } catch (UserException e) {
-                        e.printStackTrace();
+                        printLog(e);
+                        throw new PASchedulerException(e);
                     }
 
                     tconf_maps.put(tname, taskConfigs[i][j]);
@@ -488,22 +499,27 @@ public class AOScilabEnvironment extends AOMatSciEnvironment<Boolean, ScilabResu
                 printLog(re);
                 return null;
             } catch (JobCreationException re) {
+                printLog(re);
                 throw new PASchedulerException(re);
 
             } catch (FileSystemException re) {
                 // a file system exception can occur either because the shared dataspace is wrongly configured or we are not connected
+                printLog(re);
                 if (isConnected()) {
                     throw new PASchedulerException(re);
                 }
-                printLog(re);
                 return null;
             } catch (Exception re) {
                 if (isProActiveExeption(re)) {
                     printLog(re);
                     return null;
                 } else {
+                    printLog(re);
                     throw new PASchedulerException(re);
                 }
+            } catch (Error re) {
+                printLog(re, LogMode.FILEANDOUTALWAYS);
+                throw new PASchedulerException(re);
             }
 
             Long jid = Long.parseLong(sjid.value());
@@ -529,6 +545,7 @@ public class AOScilabEnvironment extends AOMatSciEnvironment<Boolean, ScilabResu
                 recMan.commit();
             } catch (IOException e) {
                 printLog(e, LogMode.FILEANDOUTALWAYS);
+                throw new PASchedulerException(e);
             }
 
             return jinfo.getClientJobInfo();
