@@ -1,3 +1,3 @@
 function %PAFile_p(l)
-    printf('['+l.Path+' ('+l.Space+')]');
+    printf('[%s (%s)]',+l.Path,l.Space);
 endfunction
