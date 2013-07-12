@@ -731,7 +731,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                     // see above comment
                 }
                 try {
-                    Thread.sleep(reconnectionSleep);
+                    Thread.sleep(reconnectionSleep * 1000);
                     reconnectionSleep = reconnectionSleep * 2;
                     if (reconnectionSleep > MAX_RECONNECTION_SLEEP) {
                         reconnectionSleep = MAX_RECONNECTION_SLEEP;
