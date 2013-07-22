@@ -297,7 +297,7 @@
                 <include name="matsci/**/*.jar"/>
             </fileset>
         </copy>
-        <copy todir="${dev.scheduling.test.dir}/addons" flatten="yes">
+        <!--<copy todir="${dev.scheduling.test.dir}/addons" flatten="yes">
             <fileset dir="${matlab.tb.dir}/config">
                 <include name="matlab_scilab_connector.ini"/>
                 <include name="MatlabWorkerConfiguration.xml"/>
@@ -306,7 +306,7 @@
                 <include name="matlab_scilab_connector.ini"/>
                 <include name="ScilabWorkerConfiguration.xml"/>
             </fileset>
-        </copy>
+        </copy>-->
 
     </target>
 

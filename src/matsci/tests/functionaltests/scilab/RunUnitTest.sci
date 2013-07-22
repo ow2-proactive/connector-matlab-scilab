@@ -28,6 +28,7 @@ if evstr(testLeak) == 1
 end
 
 PAoptions('Debug',%t);
+PAoptions('ForceScilabSearch',%t);
 try
     PAconnect(url, cred);
     if evstr(runAsMe) == 1

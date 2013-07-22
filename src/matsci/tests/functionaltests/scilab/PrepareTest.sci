@@ -8,6 +8,9 @@ try
     else
         atomsUpdate('JIMS');
     end
+    if atomsIsInstalled('ProActiveConnector')
+        atomsRemove('ProActiveConnector');
+    end
 
     exec builder.sce;
     cd unit_tests;
