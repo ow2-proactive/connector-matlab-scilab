@@ -47,13 +47,16 @@ import java.security.PublicKey;
 import org.objectweb.proactive.core.config.CentralPAPropertyRepository;
 import org.ow2.proactive.authentication.crypto.CredData;
 import org.ow2.proactive.authentication.crypto.Credentials;
+import org.ow2.proactive.resourcemanager.core.properties.PAResourceManagerProperties;
 import org.ow2.proactive.scheduler.common.SchedulerAuthenticationInterface;
 import org.ow2.proactive.scheduler.common.SchedulerConnection;
+import org.ow2.proactive.scheduler.core.properties.PASchedulerProperties;
 import org.ow2.proactive.scheduler.ext.common.util.IOTools;
 import org.ow2.proactive.scheduler.ext.scilab.client.embedded.ScilabTaskRepository;
 import org.ow2.proactive.scheduler.ext.scilab.middleman.AOScilabEnvironment;
 import org.ow2.tests.FunctionalTest;
 
+import functionaltests.SchedulerCommandLine;
 import functionaltests.SchedulerTStarter;
 
 
@@ -129,7 +132,9 @@ public class AbstractScilabTest extends FunctionalTest {
 
     protected void start() throws Exception {
         init();
-        SchedulerTStarter.createRMAndScheduler(null);
+        SchedulerTStarter.main(new String[] { "true",
+                System.getProperty(PASchedulerProperties.PA_SCHEDULER_PROPERTIES_FILEPATH),
+                System.getProperty(PAResourceManagerProperties.PA_RM_PROPERTIES_FILEPATH) });
 
         SchedulerAuthenticationInterface auth = SchedulerConnection.waitAndJoin(schedURI.toString());
 
@@ -150,7 +155,7 @@ public class AbstractScilabTest extends FunctionalTest {
 
     protected void startCmdLine(String uri, File proactiveConf) throws Exception {
         init();
-        SchedulerTStarter.startSchedulerCmdLine(false, proactiveConf);
+        SchedulerCommandLine.startSchedulerCmdLine(false, proactiveConf);
 
         SchedulerAuthenticationInterface auth = SchedulerConnection.waitAndJoin((uri != null) ? uri
                 : schedURI.toString());
@@ -170,14 +175,14 @@ public class AbstractScilabTest extends FunctionalTest {
     }
 
     protected void restartCmdLine(String uri, File proactiveConf) throws Exception {
-        SchedulerTStarter.killSchedulerCmdLine();
-        SchedulerTStarter.startSchedulerCmdLine(true, proactiveConf);
+        SchedulerCommandLine.killSchedulerCmdLine();
+        SchedulerCommandLine.startSchedulerCmdLine(true, proactiveConf);
         SchedulerAuthenticationInterface auth = SchedulerConnection.waitAndJoin((uri != null) ? uri
                 : schedURI.toString());
     }
 
     protected void killScheduler() {
-        SchedulerTStarter.killSchedulerCmdLine();
+        SchedulerCommandLine.killSchedulerCmdLine();
     }
 
     @org.junit.Test

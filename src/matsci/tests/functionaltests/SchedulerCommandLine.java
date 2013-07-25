@@ -36,30 +36,17 @@
  */
 package functionaltests;
 
-import org.apache.commons.io.FileUtils;
-import org.objectweb.proactive.core.config.CentralPAPropertyRepository;
-import org.objectweb.proactive.utils.OperatingSystem;
-import org.ow2.proactive.authentication.crypto.CredData;
-import org.ow2.proactive.authentication.crypto.Credentials;
-import org.ow2.proactive.resourcemanager.RMFactory;
-import org.ow2.proactive.resourcemanager.authentication.RMAuthentication;
-import org.ow2.proactive.resourcemanager.core.properties.PAResourceManagerProperties;
-import org.ow2.proactive.resourcemanager.frontend.RMConnection;
-import org.ow2.proactive.scheduler.SchedulerFactory;
-import org.ow2.proactive.scheduler.common.Scheduler;
-import org.ow2.proactive.scheduler.common.SchedulerAuthenticationInterface;
-import org.ow2.proactive.scheduler.common.SchedulerConnection;
-import org.ow2.proactive.scheduler.common.exception.NotConnectedException;
-import org.ow2.proactive.scheduler.common.exception.PermissionException;
-import org.ow2.proactive.scheduler.core.properties.PASchedulerProperties;
-import org.ow2.proactive.scheduler.ext.common.util.IOTools;
-import org.ow2.proactive.scheduler.util.process.ProcessTreeKiller;
-import org.ow2.tests.ProActiveSetup2;
-
 import java.io.File;
 import java.io.Serializable;
-import java.net.URI;
 import java.util.HashMap;
+
+import org.apache.commons.io.FileUtils;
+import org.objectweb.proactive.utils.OperatingSystem;
+import org.ow2.proactive.resourcemanager.authentication.RMAuthentication;
+import org.ow2.proactive.resourcemanager.frontend.RMConnection;
+import org.ow2.proactive.scheduler.common.SchedulerConnection;
+import org.ow2.proactive.scheduler.ext.common.util.IOTools;
+import org.ow2.proactive.scheduler.util.process.ProcessTreeKiller;
 
 
 /**
@@ -68,18 +55,7 @@ import java.util.HashMap;
  *
  * @author The ProActive Team
  */
-public class SchedulerTStarter implements Serializable {
-
-    protected static String rmUsername = "demo";
-    protected static String rmPassword = "demo";
-
-    protected static String schedulerDefaultURL = "//Localhost/";
-
-    private static final int DEFAULT_NUMBER_OF_NODES = 4;
-    private static final int DEFAULT_NODE_TIMEOUT = 30 * 1000;
-    private static int nodeTimeout = DEFAULT_NODE_TIMEOUT;
-
-    protected static Scheduler sched;
+public class SchedulerCommandLine implements Serializable {
 
     private static Process p;
 
@@ -147,89 +123,5 @@ public class SchedulerTStarter implements Serializable {
             e.printStackTrace();
         }
         //p.destroy();
-    }
-
-    /**
-     * Start a Scheduler and Resource Manager. Must be called with following
-     * arguments:
-     * <ul>
-     * <li>first argument: true if the RM started with the scheduler has to start some nodes
-     * <li>second argument: path to a scheduler Properties file
-     * <li>third argument: path to a RM Properties file
-     * </ul>
-     */
-    public static void main(String[] args) throws Exception {
-        if (args.length < 3) {
-            throw new IllegalArgumentException(
-                "SchedulerTStarter must be started with 3 parameters: localhodes schedPropPath rmPropPath");
-        }
-
-        if (args.length == 4) {
-            createWithExistingRM(args);
-        } else {
-            createRMAndScheduler(args);
-        }
-        System.out.println("Scheduler successfully created !");
-    }
-
-    public static void createRMAndScheduler(String[] args) throws Exception {
-        ProActiveSetup2 setup = new ProActiveSetup2();
-        boolean localnodes;
-        String schedPropPath;
-        String RMPropPath;
-        if (args != null && args.length == 3) {
-            localnodes = Boolean.valueOf(args[0]);
-            schedPropPath = args[1];
-            RMPropPath = args[2];
-        } else {
-            localnodes = true;
-            schedPropPath = System.getProperty(PASchedulerProperties.PA_SCHEDULER_PROPERTIES_FILEPATH);
-            RMPropPath = System.getProperty(PAResourceManagerProperties.PA_RM_PROPERTIES_FILEPATH);
-        }
-
-        PAResourceManagerProperties.updateProperties(RMPropPath);
-        PASchedulerProperties.updateProperties(schedPropPath);
-
-        //Starting a local RM
-        RMFactory.setOsJavaProperty();
-        RMFactory.startLocal();
-
-        // waiting the initialization
-        RMAuthentication rmAuth = RMConnection.waitAndJoin(null);
-
-        SchedulerFactory.createScheduler(new URI("rmi://localhost:" +
-            CentralPAPropertyRepository.PA_RMI_PORT.getValue() + "/"),
-                PASchedulerProperties.SCHEDULER_DEFAULT_POLICY.getValueAsString());
-
-        SchedulerAuthenticationInterface itf = SchedulerConnection.waitAndJoin(schedulerDefaultURL);
-        System.out.println("Scheduler successfully created at " + "rmi://localhost:" +
-            CentralPAPropertyRepository.PA_RMI_PORT.getValue() + "/");
-        Credentials cred = Credentials.createCredentials(new CredData(rmUsername, rmPassword), itf
-                .getPublicKey());
-        sched = itf.login(cred);
-        if (localnodes) {
-            RMTHelper.getDefaultInstance().createLocalNodeSource();
-        }
-    }
-
-    public static void killScheduler() throws PermissionException, NotConnectedException {
-        if (sched != null) {
-            boolean killed = sched.kill();
-        }
-    }
-
-    public static void createWithExistingRM(String[] args) throws Exception {
-        String schedPropPath = args[1];
-        String rmUrl = args[3];
-
-        System.out.println("Creating with existing " + rmUrl);
-
-        PASchedulerProperties.updateProperties(schedPropPath);
-
-        SchedulerFactory.createScheduler(new URI(rmUrl), PASchedulerProperties.SCHEDULER_DEFAULT_POLICY
-                .getValueAsString());
-
-        SchedulerConnection.waitAndJoin(schedulerDefaultURL);
-
     }
 }
