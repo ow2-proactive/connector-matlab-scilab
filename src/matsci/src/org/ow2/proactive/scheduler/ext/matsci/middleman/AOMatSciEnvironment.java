@@ -843,6 +843,9 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
             case GLOBAL:
                 iam = InputAccessMode.TransferFromGlobalSpace;
                 break;
+            case USER:
+                iam = InputAccessMode.TransferFromUserSpace;
+                break;
             case AUTOMATIC:
                 iam = InputAccessMode.TransferFromInputSpace;
                 break;
@@ -858,6 +861,9 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                 break;
             case GLOBAL:
                 iam = OutputAccessMode.TransferToGlobalSpace;
+                break;
+            case USER:
+                iam = OutputAccessMode.TransferToUserSpace;
                 break;
             case AUTOMATIC:
                 iam = OutputAccessMode.TransferToOutputSpace;

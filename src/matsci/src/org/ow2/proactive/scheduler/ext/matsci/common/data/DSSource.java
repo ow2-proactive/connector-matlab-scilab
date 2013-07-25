@@ -48,6 +48,8 @@ public enum DSSource {
 
     GLOBAL("global"),
 
+    USER("user"),
+
     AUTOMATIC("automatic");
 
     private String ref;
