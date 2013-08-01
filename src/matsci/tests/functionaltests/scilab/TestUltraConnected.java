@@ -34,12 +34,15 @@
  */
 package functionaltests.scilab;
 
-import org.ow2.proactive.scheduler.ext.common.util.IOTools;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
 
 import java.io.File;
 
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertTrue;
+import org.junit.Before;
+import org.ow2.proactive.scheduler.ext.common.util.IOTools;
+
+import functionalTests.TestDisabler;
 
 
 /**
@@ -53,6 +56,11 @@ public class TestUltraConnected extends AbstractScilabTest {
     static final int NB_ITER = 2;
 
     static final String TMPDIR = System.getProperty("java.io.tmpdir");
+
+    @Before
+    public void before() {
+        TestDisabler.unstable();
+    }
 
     @org.junit.Test
     public void run() throws Throwable {

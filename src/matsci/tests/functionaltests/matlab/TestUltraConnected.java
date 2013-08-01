@@ -56,7 +56,7 @@ public class TestUltraConnected extends AbstractMatlabTest {
 
     static final String TMPDIR = System.getProperty("java.io.tmpdir");
 
-    @org.junit.Test
+    @org.junit.Before
     public void before() throws Throwable {
         TestDisabler.unstable();
     }
