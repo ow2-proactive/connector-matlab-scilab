@@ -91,8 +91,8 @@
      -->
 
     <target name="compile.matsci" description="Compile Matlab/Scilab classes">
-        <taskdef name="stubGenerator" classname="ant.AntStubGenerator" classpath="${proactive.utils.jar}"/>
-        <typedef name="class" classname="ant.AntStubGeneratorClass" classpath="${proactive.utils.jar}"/>
+        <taskdef name="stubGenerator" classname="ant.AntStubGenerator" classpathref="all.libs" />
+        <typedef name="class" classname="ant.AntStubGeneratorClass" classpathref="all.libs"/>
 
         <mkdir dir="${cl.matsci.dir}"/>
 

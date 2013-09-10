@@ -34,14 +34,13 @@
  */
 package functionaltests.matlab;
 
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertTrue;
-
 import java.io.File;
 
 import org.ow2.proactive.scheduler.ext.common.util.IOTools;
+import org.junit.Ignore;
 
-import functionalTests.TestDisabler;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
 
 
 /**
@@ -50,16 +49,12 @@ import functionalTests.TestDisabler;
  *
  * @author The ProActive Team
  */
+@Ignore // unstable
 public class TestUltraConnected extends AbstractMatlabTest {
 
     static final int NB_ITER = 1;
 
     static final String TMPDIR = System.getProperty("java.io.tmpdir");
-
-    @org.junit.Before
-    public void before() throws Throwable {
-        TestDisabler.unstable();
-    }
 
     @org.junit.Test
     public void run() throws Throwable {

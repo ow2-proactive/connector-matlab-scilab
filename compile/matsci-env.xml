@@ -14,7 +14,6 @@
     <property name="dev.scheduling.test.dir" value="${base.dir}/dev/scheduling"/>
     <property name="dev.scheduling.test.deploy.lib.dir" value="${base.dir}/dev/scheduling/dist/lib"/>
     <property name="proactive.jar" value="${lib.dir}/scheduling/ProActive.jar"/>
-    <property name="proactive.utils.jar" value="${lib.dir}/scheduling/ProActive_utils.jar"/>
 
     <property name="compile.dir" value="${base.dir}/compile"/>
     <property name="classes.dir" value="${base.dir}/classes"/>
