@@ -349,7 +349,7 @@ endfunction
     inputs(j).trans = 'stringtocell';
     j=j+1;
     inputs(j).name = 'ProActiveJars';
-    inputs(j).default = 'jruby.jar;jython-2.5.4-rc1.jar;groovy-all-2.1.5.jar;ProActive.jar;ProActive_Scheduler-core.jar;ProActive_SRM-common.jar;ProActive_Matlab_Scilab.jar';
+    inputs(j).default = 'jruby-1.7.4.jar;jython-2.5.4-rc1.jar;groovy-all-2.1.5.jar;ProActive.jar;ProActive_Scheduler-core.jar;ProActive_SRM-common.jar;ProActive_Matlab_Scilab.jar';
     inputs(j).check = 'jarlistcheck';
     inputs(j).trans = 'stringtocell';
     j=j+1;

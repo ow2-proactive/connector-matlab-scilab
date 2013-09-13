@@ -12,6 +12,10 @@
             <fileset dir="${scheduling.project.dir}/dist/lib" includes="*/**" />
         </copy>
 
+		<copy todir="${lib.dir}/scheduling" overwrite="false">
+			<fileset dir="${programming.project.dir}/dist/lib" includes="ProActive.jar" />
+		</copy>
+
         <copy todir="${dev.dir}/scheduling/bin" overwrite="false">
             <fileset dir="${scheduling.project.dir}/bin" includes="*/**" />
          </copy>
