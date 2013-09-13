@@ -1,0 +1,6 @@
+lib/scheduling
+doc/built/
+classes/
+junitReports/
+dist/
+dev/scheduling
