@@ -130,7 +130,7 @@ endfunction
     //  deff ("y=logcheck(x)","if islogical(x), y=%t, elseif isnumeric(x), y=((x == 0)|(x == 1))elseif ischar(x), y=ismember(x,{''true'',''false''}), else y=%f, end","n");
     deff ("y=versioncheck(x)","if isnumeric(x), y=isempty(x), elseif ischar(x), y=~isempty(regexp(x, ''/^[1-9][0-9]*(\.[0-9]+)*$/'')), else y=%f, end","n");
     deff ("y=versionlistcheck(x)","if isnumeric(x), y=isempty(x), elseif ischar(x), y=~isempty(regexp(x, ''/^([1-9][0-9]*(\.[0-9]+)*[ ;,]+)*[1-9][0-9]*(\.[0-9]+)*$/'')), else y=%f, end","n");
-    deff ("y=jarlistcheck(x)","if ischar(x), y=~isempty(regexp(x, ''/^([\w\-\.]+\.jar[ ;,]+)*[\w\-\.]+\.jar$/'')), else y=%f ,end","n");
+    deff ("y=jarlistcheck(x)","if ischar(x), y=~isempty(regexp(x, ''/^([\w\-\.]+\.jar[ ;,]+)*(([\w\-\.]+\.jar)|([*]))$/'')), else y=%f ,end","n");
     deff ("y=listcheck(x)","if ischar(x), y=~isempty(regexp(x, ''/^([^ ;,]+[ ;,]+)*[^ ;,]+$/'')), else y=%f ,end","n");
     deff ("y=listcheck2(x)","if isvoid(x),y=%t, elseif ischar(x), y=~isempty(regexp(x, ''/^([^ ]+[ ]+)*[^ ]+$/'')), else y=%f ,end","n");
 
@@ -349,7 +349,7 @@ endfunction
     inputs(j).trans = 'stringtocell';
     j=j+1;
     inputs(j).name = 'ProActiveJars';
-    inputs(j).default = 'jruby-1.7.4.jar;jython-2.5.4-rc1.jar;groovy-all-2.1.5.jar;ProActive.jar;ProActive_Scheduler-core.jar;ProActive_SRM-common.jar;ProActive_Matlab_Scilab.jar';
+    inputs(j).default = 'jruby-1.7.4.jar;jython-2.5.4-rc1.jar;groovy-all-2.1.6.jar;*';
     inputs(j).check = 'jarlistcheck';
     inputs(j).trans = 'stringtocell';
     j=j+1;

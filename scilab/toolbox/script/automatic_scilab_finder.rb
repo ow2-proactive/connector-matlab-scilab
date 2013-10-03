@@ -49,6 +49,9 @@ class MatSciFinder
 
   # check if string v1 represents a version inferior to string v2
   def inf(v1, v2)
+    if(v1 == nil || v2 == nil)
+        return false
+    end
     p1 = v1.split(/\./)
     p1.map! { |x| x.to_i() }
 

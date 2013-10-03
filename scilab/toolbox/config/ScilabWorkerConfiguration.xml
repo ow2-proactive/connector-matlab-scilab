@@ -4,10 +4,10 @@
     <MachineGroup hostname=".*"> <!-- This is a regular expression representing the machines targeted by this configuration, attributes can either be "hostname" or "ip" -->
         <scilab>
                <version>5.3.3</version>  <!-- The version of scilab (at least 5.3.0) -->
-               <home>C:\Program Files (x86)\scilab-5.4.0</home>  <!-- Scilab installation directory example on Windows,
+               <home>/home/ybonnaffe/tools/scilab</home>  <!-- Scilab installation directory example on Windows,
                on linux, it's better to install it manually in a shared location than to use the packaging mechanism -->
                <bindir>bin</bindir> <!-- Scilab bin directory (should not be changed) -->
-               <command>Scilex.exe</command>  <!-- Scilab executable name -->
+               <command>scilab</command>  <!-- Scilab executable name -->
                <arch>32</arch> <!-- Architecture 32 or 64 -->
                <!-- Scilab executable name on linux : scilab , on windows: Scilex.exe -->
         </scilab>
