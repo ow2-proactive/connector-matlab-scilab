@@ -1,0 +1,107 @@
+<project name='rscript' default='all' basedir='.'>
+
+	<property name='distdir' location='dist'/>
+	<property name='target' location='${distdir}/parscript.jar'/>
+	<property name='srcdir' location='src'/>
+	<property name='bindir' location='bin'/>
+	<property name='docdir' location='doc'/>
+	<property name='libdir' location='lib'/>		
+	<property name='compilelibdir' location='compile/lib'/>
+	<property environment='env'/>
+	<property name='jnidir' location='${env.R_HOME}/site-library/rJava/jri'/>
+	<property name='pasdir' location='${env.PASCHED_HOME}/dist/lib'/>
+
+	<target name='all' depends='clean, dist, doc, test'/>
+
+	<target name='clean'>
+		<delete dir='${bindir}'/>
+		<delete dir='${docdir}'/>
+		<delete file='${target}'/>
+	</target>
+
+	<target name='cleanall' depends='clean'>
+		<delete dir='${libdir}'/>
+	</target>
+
+	<target name='lib.check'>
+		<available file='${libdir}' type='dir' property='lib.present'/>
+	</target>
+
+	<target name='lib' depends='lib.check' unless='lib.present'>
+		<mkdir dir='${libdir}'/>
+		<get src='http://rforge.net/rscript/files/JRS.jar'		dest='${libdir}/JRS.jar' usetimestamp='true'/>
+		<get src='http://rforge.net/JRI/files/JRI.jar'			dest='${libdir}/JRI.jar' usetimestamp='true'/>
+		<get src='http://rforge.net/JRI/files/JRIEngine.jar'	dest='${libdir}/JRIEngine.jar' usetimestamp='true'/>
+		<get src='http://rforge.net/Rserve/files/REngine.jar'	dest='${libdir}/REngine.jar' usetimestamp='true'/>
+		<get src='http://rforge.net/Rserve/files/RserveEngine.jar' dest='${libdir}/RserveEngine.jar' usetimestamp='true'/>
+	</target>
+
+	<!-- Added to ProActive Scheduling libs -->
+	<path id="classpath">
+	  <fileset dir="${pasdir}">
+	    <include name="*.jar"/>
+	  </fileset>
+
+	  <fileset dir="${libdir}">
+	    <include name="JRS.jar"/>
+		<include name="REngine.jar"/>
+	  </fileset>
+
+	  <fileset dir="${compilelibdir}">
+	    <include name="hamcrest-core-1.3.jar"/>
+		<include name="junit-4.11.jar"/>
+	  </fileset>	  
+
+	  <pathelement path="${build.dir}"/>
+	</path>
+	
+	<target name='compile' depends='lib'>
+		<mkdir dir='${bindir}'/>
+		<javac srcdir='${srcdir}' destdir='${bindir}'>
+				<classpath refid='classpath'/>
+		</javac>
+	</target>
+
+	<target name='dist' depends='compile'>
+		<jar jarfile='${target}' basedir='${bindir}' excludes='**/test/'>
+			<service type='javax.script.ScriptEngineFactory' provider='org.ow2.parscript.PARScriptFactory'/>
+		</jar>
+		<copy file='${target}' todir='${env.PASCHED_HOME}/addons'/>
+	</target>
+
+	<target name='doc' depends='compile'>
+		<javadoc
+			packagenames='org.rosuda.jrs'
+			sourcepath='${srcdir}'
+			destdir='${docdir}'
+			classpath='${libdir}/REngine.jar'
+			link='http://java.sun.com/javase/6/docs/api/'
+			author='true'/>
+	</target>
+
+	<target name='test' depends='test-rserve, test-jri'/>
+
+	<target name='test-rserve' depends='dist'>
+		<run-test jarg='-Dorg.rosuda.jrs.host=localhost'/>
+	</target>
+
+	<target name='test-jri' depends='dist'>
+		<run-test jarg='-Djava.library.path=${jnidir}'/>
+	</target>
+
+	<macrodef name='run-test'>
+		<attribute name='jarg'/>
+		<sequential>
+			<java classname='org.rosuda.jrs.test.RScriptTest' fork='true'>
+				<jvmarg value='@{jarg}'/>
+				<assertions> <enable/> </assertions>
+				<classpath>
+					<fileset dir='${libdir}/'/>
+					<pathelement location='${target}'/>
+					<pathelement location='${bindir}'/>
+				</classpath>
+			</java>
+		</sequential>
+	</macrodef>
+
+</project>
