@@ -12,18 +12,21 @@ import org.ow2.proactive.scripting.TaskScript;
 
 /**
  * Basic PARScript tests.
+ * 
  * @author Activeeon Team
  */
 @RunWith(JUnit4.class)
 public class TestOutput {
-    
+
 	@Test
-    public void test() throws Exception {
+	public void test() throws Exception {
 		String stringToPrint = "Hello World";
-    	String rScript = "print('"+stringToPrint+"')";    	
-    	SimpleScript ss = new SimpleScript(rScript, PARScriptFactory.ENGINE_NAME);
-    	TaskScript taskScript = new TaskScript(ss);
-    	ScriptResult<Serializable> res = taskScript.execute();
-    	org.junit.Assert.assertEquals("R Script output is broken", stringToPrint, res.getOutput());    	
-    }	
+		String rScript = "print('" + stringToPrint + "')";
+		SimpleScript ss = new SimpleScript(rScript,
+				PARScriptFactory.ENGINE_NAME);
+		TaskScript taskScript = new TaskScript(ss);
+		ScriptResult<Serializable> res = taskScript.execute();
+		org.junit.Assert.assertTrue("R Script output is broken", res
+				.getOutput().contains(stringToPrint));
+	}
 }

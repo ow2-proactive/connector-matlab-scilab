@@ -201,5 +201,6 @@
 	<classpathentry kind="lib" path="H:/Temp/workspace/Releases/ProActiveScheduling-3.4.0_bin_full/dist/lib/xmlsec-1.4.0.jar"/>
 	<classpathentry kind="lib" path="compile/lib/hamcrest-core-1.3.jar"/>
 	<classpathentry kind="lib" path="compile/lib/junit-4.11.jar"/>
+	<classpathentry kind="lib" path="dist/parscript.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
