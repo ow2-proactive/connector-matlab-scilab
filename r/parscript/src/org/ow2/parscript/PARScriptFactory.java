@@ -82,8 +82,14 @@ public final class PARScriptFactory extends RScriptFactory {
 		// Add the library path
 		if (isWindows) {
 			String fs = java.io.File.separator;
-			String libraryPath = rHome + fs + "library" + fs + "rJava" + fs
-					+ "jri";
+			String libraryPath = rHome + fs + "library" + fs + "rJava" + fs + "jri";
+			// Get the architecture of the jvm not the os
+			String sunArchDataModel = System.getProperty("sun.arch.data.model");
+			if ("32".equals(sunArchDataModel)) {
+				libraryPath += fs + "i386";
+			} else if ("64".equals(sunArchDataModel)) {
+				libraryPath += fs + "x64";
+			}
 			try {
 				PARScriptFactory.addLibraryPath(libraryPath);
 			} catch (Exception e) {

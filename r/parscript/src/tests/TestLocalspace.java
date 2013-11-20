@@ -31,7 +31,7 @@ import org.ow2.proactive.scripting.TaskScript;
 public class TestLocalspace {
 
 	@Test
-	public void testPrintHelloWorld() throws Exception {
+	public void test() throws Exception {
 		File f = new File(System.getProperty("java.io.tmpdir"));
 		String path = f.getCanonicalPath();
 		DataSpacesFileObject dsfo = new MockedDSFO(path);

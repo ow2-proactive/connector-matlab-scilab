@@ -29,7 +29,7 @@ import org.ow2.proactive.scripting.TaskScript;
 @RunWith(JUnit4.class)
 public class TestResults {
 	@Test
-	public void testPrintHelloWorld() throws Exception {
+	public void test() throws Exception {
 		// Results from hypothetical previous tasks
 		String task1Name = "task1";
 		double result1 = 1d;
