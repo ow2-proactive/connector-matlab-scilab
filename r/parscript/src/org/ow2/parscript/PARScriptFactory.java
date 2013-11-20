@@ -2,6 +2,7 @@ package org.ow2.parscript;
 
 import static javax.script.ScriptEngine.NAME;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collections;
@@ -10,6 +11,7 @@ import java.util.List;
 import javax.script.ScriptEngine;
 
 import org.apache.commons.lang3.StringUtils;
+import org.ow2.proactive.scheduler.util.process.Environment;
 import org.rosuda.jrs.RScriptFactory;
 
 /**
@@ -61,8 +63,7 @@ public final class PARScriptFactory extends RScriptFactory {
 				} catch (Exception e) {
 					e.printStackTrace();
 					throw new IllegalStateException(
-							"Unable to locate R homedir, it seems R is not installed",
-							e);
+							"Unable to locate R homedir, it seems R is not installed", e);
 				}
 			} else {
 				// Nothing to do on Linux, maybe check in path ...
@@ -72,34 +73,49 @@ public final class PARScriptFactory extends RScriptFactory {
 						"Unable to locate R homedir, be sure the R_HOME env variable is defined");
 			}
 		}
-
 		// Check if the path to rJava is already setted
 		String libPath = System.getProperty("java.library.path");
 		if (libPath != null && libPath.contains("jri")) {
 			return;
 		}
-
 		// Add the library path
 		if (isWindows) {
-			String fs = java.io.File.separator;
-			String libraryPath = rHome + fs + "library" + fs + "rJava" + fs + "jri";
-			// Get the architecture of the jvm not the os
-			String sunArchDataModel = System.getProperty("sun.arch.data.model");
-			if ("32".equals(sunArchDataModel)) {
-				libraryPath += fs + "i386";
-			} else if ("64".equals(sunArchDataModel)) {
-				libraryPath += fs + "x64";
-			}
-			try {
-				PARScriptFactory.addLibraryPath(libraryPath);
-			} catch (Exception e) {
-				throw new IllegalStateException(
-						"Unable to add jri to library path " + libraryPath, e);
-			}
+			this.dynamicAddLibraryPath(rHome, "Path");
 		} else {
-			// TODO Linux here
+			this.dynamicAddLibraryPath(rHome, "LD_LIBRARY_PATH");
 		}
 	}
+
+	private void dynamicAddLibraryPath(final String rHome, final String libPathVarName) {				
+		String fs = java.io.File.separator;
+		// Get the architecture of the jvm not the os
+		String sunArchDataModel = System.getProperty("sun.arch.data.model");
+		String rLibrarayPath = rHome + fs + "bin" + fs;
+		String jriLibraryPath = rHome + fs + "library" + fs + "rJava" + fs + "jri" + fs;
+		// Use correct libraries depending on jvm architecture 
+		if ("32".equals(sunArchDataModel)) {
+			rLibrarayPath += "i386";
+			jriLibraryPath += "i386";
+		} else if ("64".equals(sunArchDataModel)) {
+			rLibrarayPath += "x64";
+			jriLibraryPath += "x64";
+		}
+		// Dynamically add to java library path
+		try {
+			PARScriptFactory.addLibraryPath(jriLibraryPath);
+		} catch (Exception e) {
+			throw new IllegalStateException(
+					"Unable to add jri to library path " + jriLibraryPath, e);
+		}
+		// Update the current process 'libPathVarName' environment variable
+		try {
+			String varValue = System.getenv(libPathVarName);
+			Environment.setenv(libPathVarName, varValue + File.pathSeparator + rLibrarayPath, true);
+		} catch (Exception e) {
+			throw new IllegalStateException(
+					"Unable to add R lib to " + libPathVarName + " environment variable " + rLibrarayPath, e);
+		}
+	}	
 
 	/**
 	 * Adds the specified path to the java library path
