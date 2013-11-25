@@ -9,7 +9,7 @@ setClass(
 )
 
 PATask <- function(name) {
-  new (Class="PATask")
+  new (Class="PATask", javaObject = new(J("org.ow2.proactive.scheduler.common.task.ScriptTask"))    )
 }
 
 

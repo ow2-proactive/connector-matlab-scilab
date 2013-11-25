@@ -1,25 +1,49 @@
-PAinit <- function( pa_toolbox_home ) {
-  if (is.null(pa_toolbox_home)) {
-    error("Toolbox home is not set")
-  }
-  if (!any(is.element(installed.packages(),"codetools"))) {
-    install.packages("codetools")
-  }
-  if (!any(is.element(installed.packages(),"stringr"))) {
-    install.packages("stringr")
-  }
-  if (!any(is.element(installed.packages(),"rJava"))) {
-    install.packages("rJava")
-  }
-  require("codetools")
-  require("stringr")
-  require("rJava")
-  
-  .jinit()
-  
-  .jaddClassPath(dir(str_c(pa_toolbox_home,"/java"), full.names=TRUE))
-  .jclassPath()
+.onLoad <- function(libname, pkgname) {
 
+  .jpackage(pkgname, lib.loc = libname)
+
+  #.jinit()
+
+  .jaddClassPath(dir(file.path(libname,pkgname,"java"), full.names=TRUE))
   # if this fails, there is a problem with classloading
   J("org.ow2.proactive.scripting.Script")
+  
 }
+
+
+
+# PAinit <- function(sys) {
+#   if (!exists("PA.initialized")) {
+#     PA.initialized <<- FALSE
+#   }
+#   if (!PA.initialized) {
+#     pkg.root <- system.file(package="PARConnector")
+#     if (length(pkg.root) == 0) {
+#       # package is not loaded, we are building it
+#       pkg.root <- getwd()
+#       print("Building PARConnector from :")
+#       print(pkg.root)
+#     } else {
+#       print("Initializing PAConnector...")
+#       print(pkg.root)
+#     }
+#     
+#     .jinit()
+#     
+#     .jaddClassPath(dir(file.path(pkg.root,"java"), full.names=TRUE))
+#     # if this fails, there is a problem with classloading
+#     J("org.ow2.proactive.scripting.Script")
+#     PA.initialized <<- TRUE
+#   }
+# }
+
+local({
+  pkg.root <- getwd()
+  print("Building PARConnector from :")
+  print(pkg.root)
+  .jinit()
+  .jaddClassPath(dir(file.path(pkg.root,"inst","java"), full.names=TRUE))
+  # if this fails, there is a problem with classloading
+  J("org.ow2.proactive.scripting.Script")
+ })
+

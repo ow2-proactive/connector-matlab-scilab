@@ -19,7 +19,7 @@
 };
 
 
-PAsolve <- function(funname, ..., varies=NULL, input.files=list(), output.files=list(),.do.verbose=FALSE) {
+PASolve <- function(client, funname, ..., varies=NULL, input.files=list(), output.files=list(),.do.verbose=FALSE) {
   fun <- match.fun(funname)
   dots <- list(...)
   repldots <- list()
@@ -107,6 +107,26 @@ PAsolve <- function(funname, ..., varies=NULL, input.files=list(), output.files=
     }      
   }
   
+  final.calls <- list()
+  for (i in 1:maxlength) {
+    output <- str_c(funname,"(")
+    for (j in 1:length(dots)) {   
+      nname = names(final.param.list[[i]][j])
+      if (is.null(nname) || nchar(nname) == 0) {
+        output<- str_c(output,final.param.list[[i]][[j]],sep=" ")
+      } else {
+        output<- str_c(output,nname,"=")
+        output<- str_c(output,final.param.list[[i]][[j]],sep=" ")
+      }
+      
+      if (j < length(dots) ) {        
+        output<- str_c(output,",")     
+      }
+    }
+    output<- str_c(output,")",sep="")    
+    final.calls[[i]] <- output
+  }
+    
   if (.do.verbose) {
     # print the command produced for debug    
     for (i in 1:maxlength) {
@@ -152,4 +172,13 @@ PAsolve <- function(funname, ..., varies=NULL, input.files=list(), output.files=
     }  
   }
   
+  job = PAJob()
+  for (i in 1:maxlength) {
+    t <- PATask()    
+    setName(t,str_c("t",i))
+    setScript(t,final.calls[[i]])  
+    addTask(job) <- t    
+  }
+  jobid <- client$submit(getJavaObject(job))
+  return(jobid)
 };

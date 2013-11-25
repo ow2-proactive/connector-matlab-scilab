@@ -1,0 +1,16 @@
+import("rJava")
+import("codetools")
+import("stringr")
+export(PAConnect)
+export(PASolve)
+export(PAPushFile)
+export(PAPullFile)
+export(PADeleteFile)
+exportClasses(
+    PATask,
+    PAJob,
+    PASchedulerStatus,
+    PAJobStatus,
+    PATaskStatus
+)
+

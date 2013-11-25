@@ -1,0 +1,24 @@
+Package: PARConnector
+Version: 0.9-1
+Date: 2013-11-22
+Title: ProActive R Connector
+Author: The ProActive Team
+Maintainer: The ProActive Team <proactive@ow2.org>
+Description: Distributed/Cloud Computing with ProActive Scheduler
+Depends: R (>= 3.0.0), utils (>= 3.0.0), rJava (>= 0.9-4), codetools (>= 0.2-8), stringr (>= 0.6.2), methods
+SystemRequirements: Java (>= 1.7)
+License: AGPL-3
+Collate:
+     pa_inline_functions.r
+     PAinit.r
+     PATask.r
+     PAJob.r
+     PAConnect.r
+     PAPushFile.r
+     PAPullFile.r
+     PADeleteFile.r
+     PASchedulerStatus.r
+     PATaskStatus.r
+     PAJobStatus.r
+     PASolve_saveDependencies.r
+     PASolve.r

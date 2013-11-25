@@ -12,7 +12,7 @@ setClass(
 )
 
 PAJob <- function() {
-  new (Class="PAJob")
+  new (Class="PAJob", javaObject = .jnew(J("org.ow2.proactive.scheduler.common.job.TaskFlowJob")))
 }
 
  
