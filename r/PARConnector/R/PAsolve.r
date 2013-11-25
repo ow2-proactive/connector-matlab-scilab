@@ -19,7 +19,7 @@
 };
 
 
-PASolve <- function(client, funname, ..., varies=NULL, input.files=list(), output.files=list(),.do.verbose=FALSE) {
+PASolve <- function(funname, ..., varies=NULL, input.files=list(), output.files=list(), client = .scheduler.client,.do.verbose=FALSE) {
   fun <- match.fun(funname)
   dots <- list(...)
   repldots <- list()
