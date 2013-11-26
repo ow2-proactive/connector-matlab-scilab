@@ -3,8 +3,9 @@
   .jpackage(pkgname, lib.loc = libname)
 
   #.jinit()
-
+ 
   .jaddClassPath(dir(file.path(libname,pkgname,"java"), full.names=TRUE))
+  
   # if this fails, there is a problem with classloading
   J("org.ow2.proactive.scripting.Script")
   
@@ -40,9 +41,10 @@
 local({
   pkg.root <- getwd()
   print("Building PARConnector from :")
-  print(pkg.root)
+  print(pkg.root)  
   .jinit()
   .jaddClassPath(dir(file.path(pkg.root,"inst","java"), full.names=TRUE))
+  print(.jclassPath())
   # if this fails, there is a problem with classloading
   J("org.ow2.proactive.scripting.Script")
  })
