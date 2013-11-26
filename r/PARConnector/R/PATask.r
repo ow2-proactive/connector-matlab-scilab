@@ -1,15 +1,21 @@
+## TODO implement all task methods
+
 setClass( 
   Class="PATask", 
   representation = representation(
-     javaObject = "jobjRef"
+     javaObject = "jobjRef",
+     dependencies = "list"
   ),
   prototype=prototype(
-    javaObject = new(J("org.ow2.proactive.scheduler.common.task.ScriptTask"))    
+    javaObject = new(J("org.ow2.proactive.scheduler.common.task.ScriptTask")),
+    dependencies = list()
   )
 )
 
 PATask <- function(name) {
-  new (Class="PATask", javaObject = new(J("org.ow2.proactive.scheduler.common.task.ScriptTask"))    )
+  tsk <- new (Class="PATask", javaObject = new(J("org.ow2.proactive.scheduler.common.task.ScriptTask")), dependencies = list())
+  setName(tsk,name)
+  return (tsk)
 }
 
 
@@ -52,7 +58,9 @@ setMethod("setScript", "PATask",
 
 setReplaceMethod("addDependency" ,"PATask" ,
                  function(object,value) {
-                   object@dependencies <- c(object@dependencies, value)
+                   object@tasks <- c(object@tasks,value)
+                   jo = object@javaObject
+                   jo$addDependence(getJavaObject(value))
                    return(object)
                  }
 )
@@ -81,12 +89,6 @@ setReplaceMethod("addSelectionScript" ,"PATask" ,
                    object@selectionScripts <- c(object@selectionScripts, value)
                    return(object)
                  }
-)
-
-setMethod("show" ,"PATask" ,
-          function(object) {
-            cat(toString(object))                                 
-          } 
 )
 
 
@@ -120,35 +122,47 @@ setMethod("toString","PATask",
               output <- str_c(output,jo$getSelectionScripts()$toString())   
               output <- str_c(output,"\n")
             }
-            if (!is.null(object@javaObject$getPreScript())) {  
+            if (!is.null(jo$getPreScript())) {  
               output <- str_c(output,"  preScript : ",jo$getPreScript(),"\n")
             }
-            if (!is.null(object@javaObject$getPostScript())) {  
+            if (!is.null(jo$getPostScript())) {  
               output <- str_c(output,"  postScript : ",jo$getPostScript(),"\n")
             }            
-            if (!is.null(object@javaObject$getPostScript())) {  
-              output <- str_c(output,"  cleanScript : ",jo$getCleanScript(),"\n")
+            if (!is.null(jo$getCleaningScript())) {  
+              output <- str_c(output,"  cleanScript : ",jo$getCleaningScript(),"\n")
             }
-            if (object@javaObject$isRunAsMe()) {  
+            if (o$isRunAsMe()) {  
               output <- str_c(output,"  runAsMe : ",jo$isRunAsMe(),"\n")
             }
-            if (!is.null(object@javaObject$getResultPreview())) {  
+            if (!is.null(jo$getResultPreview())) {  
               output <- str_c(output,"  resultPreview : ",jo$getResultPreview(),"\n")
             }
-            if (object@javaObject$getWallTime() > 0) {  
-              output <- str_c(output,"  wallTime : ",object@wallTime,"\n")
+            if (jo$getWallTime() > 0) {  
+              output <- str_c(output,"  wallTime : ",jo$getWallTime(),"\n")
             }
-            if (is.null(object@javaObject$getDependencesList())) {      
+            if (length(object@dependencies) > 0) {      
               output <- str_c(output,"  dependencies : ")
-#               for (i in 1:length(object@dependencies)) {
-#                 output <- str_c(output,object@dependencies[[i]]@name)
-#                 if (i < length(object@dependencies)) {
-#                   output <- str_c(output,", ")
-#                 }
-#               }              
+              for (i in 1:length(object@dependencies)) {
+                output <- str_c(output,getName(object@dependencies[[i]]))
+                if (i < length(object@dependencies)) {
+                  output <- str_c(output,", ")
+                }
+              }       
               output <- str_c(output,"\n")
             }
                         
             return(output)
+          } 
+)
+
+setMethod("show" ,"PATask" ,
+          function(object) {
+            cat(toString(object))                                 
+          } 
+)
+
+setMethod("print" ,"PATask" ,
+          function(x) {
+            print(toString(x))                                 
           } 
 )

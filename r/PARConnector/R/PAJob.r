@@ -1,3 +1,5 @@
+## TODO implement all job methods
+
 setClass( 
   Class="PAJob", 
   representation = representation(
@@ -12,7 +14,10 @@ setClass(
 )
 
 PAJob <- function() {
-  new (Class="PAJob", javaObject = .jnew(J("org.ow2.proactive.scheduler.common.job.TaskFlowJob")))
+  object = new (Class="PAJob", javaObject = .jnew(J("org.ow2.proactive.scheduler.common.job.TaskFlowJob")), tasks = list())
+  setName(object, "PARJob")
+  setDescription(object, "ProActive R Job")
+  return(object)
 }
 
  
@@ -33,6 +38,44 @@ setReplaceMethod("addTask" ,"PAJob" ,
             return(object)
           }
 )
+
+setMethod("getName", "PAJob",
+          function(object) {
+            return(object@javaObject$getName())                          
+          } 
+)
+
+setMethod("setName", "PAJob",
+          function(object,value) {
+            return(object@javaObject$setName(value))                          
+          } 
+)
+
+setMethod("getProjectName", "PAJob",
+          function(object) {
+            return(object@javaObject$getProjectName())                          
+          } 
+)
+
+setMethod("setProjectName", "PAJob",
+          function(object,value) {
+            return(object@javaObject$setProjectName(value))                          
+          } 
+)
+
+setMethod("getDescription", "PAJob",
+          function(object) {
+            return(object@javaObject$getDescription())                          
+          } 
+)
+
+setMethod("setDescription", "PAJob",
+          function(object,value) {
+            return(object@javaObject$setDescription(value))                          
+          } 
+)
+
+
 
 setMethod("toString" ,c("PAJob"),
           function(x, ...) {
@@ -64,7 +107,7 @@ setMethod("toString" ,c("PAJob"),
             if (!is.null(jo$getUserSpace())) {
               output <- str_c(output,"  userSpace : ",jo$getUserSpace(),"\n")
             }
-            if (length(jo$getTasks()) > 0) {      
+            if (length(object@tasks) > 0) {      
               output <- str_c(output,"  tasks : ")
               for (i in 1:length(object@tasks)) {
                 output <- str_c(output,getName(object@tasks[[i]]))
@@ -85,18 +128,8 @@ setMethod("show" ,"PAJob",
           } 
 )
 
-.cat_list <- function(ll) {
-  cat(.toString_list(ll))  
-}
-
-.toString_list <- function(ll) {
-  output <- t("{ ")
-  for (k in 1:length(ll)) {
-    output <- str_c(output,toString(ll[[k]])," ")
-    if (k < length(ll) ) {        
-      output <- str_c(output,",")     
-    }
-  }
-  output <- str_c(output,"}")
-  return(output)
-}
+setMethod("print" ,"PAJob" ,
+          function(x) {
+            print(toString(x))                                 
+          } 
+)

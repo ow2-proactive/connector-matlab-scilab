@@ -171,14 +171,15 @@ PASolve <- function(funname, ..., varies=NULL, input.files=list(), output.files=
       cat("\n",sep="")
     }  
   }
-  
-  job = PAJob()
+  tnames <- ""
+  job <- PAJob()
   for (i in 1:maxlength) {
-    t <- PATask()    
-    setName(t,str_c("t",i))
-    setScript(t,final.calls[[i]])  
+    tnames[i] <- str_c("t",i)
+    t <- PATask(tnames[i])          
+    setScript(t,final.calls[[i]])     
     addTask(job) <- t    
   }
   jobid <- client$submit(getJavaObject(job))
-  return(jobid)
+  jobresult <- PAJobResult(job, jobid$value(),  tnames, client)
+  return(jobresult)
 };

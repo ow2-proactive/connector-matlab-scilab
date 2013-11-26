@@ -15,7 +15,25 @@ setGeneric(
   def=function(object,value) {standardGeneric("getJavaObject" )}  
 )
 
+setGeneric(
+  name="getDefinition",
+  def=function(object,value) {standardGeneric("getDefinition")}  
+)
+setGeneric(
+  name="setDefinition",
+  def=function(object,value) {standardGeneric("setDefinition")}  
+)
+
 ### PAJob
+
+setGeneric(
+  name="getProjectName",
+  def=function(object,value) {standardGeneric("getProjectName")}  
+)
+setGeneric(
+  name="setProjectName",
+  def=function(object,value) {standardGeneric("setProjectName")}  
+) 
 
 setGeneric(
   name="addTask<-",
