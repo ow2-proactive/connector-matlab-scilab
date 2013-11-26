@@ -1,7 +1,9 @@
 package org.ow2.parscript;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -252,7 +254,15 @@ public class PARScriptEngine extends RScriptEngine {
 
 	/** R paths are not antislash friendly */
 	private String convertToRPath(DataSpacesFileObject dsfo) {
-		String path = dsfo.getRealURI().replace("file://", "");
+		String path = dsfo.getRealURI();
+		URI uri = null;
+		try {
+			uri = new URI(path);
+			File f = new File(uri);
+			path = f.getCanonicalPath();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		return path.replace("\\", "/");
 	}
 

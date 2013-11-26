@@ -2,6 +2,7 @@ package tests;
 
 import java.io.File;
 import java.io.Serializable;
+import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -33,8 +34,7 @@ public class TestLocalspace {
 	@Test
 	public void test() throws Exception {
 		File f = new File(System.getProperty("java.io.tmpdir"));
-		String path = f.getCanonicalPath();
-		DataSpacesFileObject dsfo = new MockedDSFO(path);
+		DataSpacesFileObject dsfo = new MockedDSFO(f.toURI());
 
 		String rScript = "result=getwd();";
 
@@ -48,15 +48,15 @@ public class TestLocalspace {
 		String resPath = (String) res.getResult();
 		org.junit.Assert.assertNotNull("No result from R script", resPath);
 		org.junit.Assert.assertEquals(
-				"R script working directory is incorrect", path,
+				"R script working directory is incorrect", f.getCanonicalPath(),
 				resPath.replace("/", "\\"));
 	}
 
 	class MockedDSFO implements DataSpacesFileObject {
-		private String path;
+		private URI uri;
 
-		public MockedDSFO(String path) {
-			this.path = path;
+		public MockedDSFO(URI uri) {
+			this.uri = uri;
 		}
 
 		@Override
@@ -114,13 +114,11 @@ public class TestLocalspace {
 
 		@Override
 		public List<String> getAllRealURIs() {
-
 			return null;
 		}
 
 		@Override
 		public List<String> getAllSpaceRootURIs() {
-
 			return null;
 		}
 
@@ -133,25 +131,22 @@ public class TestLocalspace {
 		@Override
 		public List<DataSpacesFileObject> getChildren()
 				throws FileSystemException {
-
 			return null;
 		}
 
 		@Override
 		public FileContent getContent() throws FileSystemException {
-
 			return null;
 		}
 
 		@Override
 		public DataSpacesFileObject getParent() throws FileSystemException {
-
 			return null;
 		}
 
 		@Override
 		public String getRealURI() {
-			return "file://" + path;
+			return this.uri.toString();
 		}
 
 		@Override
