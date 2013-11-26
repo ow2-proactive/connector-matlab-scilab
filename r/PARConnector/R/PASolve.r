@@ -20,6 +20,9 @@
 
 
 PASolve <- function(funname, ..., varies=NULL, input.files=list(), output.files=list(), client = .scheduler.client,.do.verbose=FALSE) {
+  if (client == NULL) {
+    stop("You are not currently connected to the scheduler, use PAConnect")
+  }
   fun <- match.fun(funname)
   dots <- list(...)
   repldots <- list()

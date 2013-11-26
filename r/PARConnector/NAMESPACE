@@ -6,9 +6,11 @@ export(PASolve)
 export(PAPushFile)
 export(PAPullFile)
 export(PADeleteFile)
+export(PAWaitFor)
 exportClasses(
     PATask,
     PAJob,
+    PAJobResult,
     PASchedulerStatus,
     PAJobStatus,
     PATaskStatus

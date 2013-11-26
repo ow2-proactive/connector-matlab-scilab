@@ -128,6 +128,13 @@ setGeneric(
   def=function(object,value) {standardGeneric("addSelectionScript<-" )}  
 )
 
+### PAJobResult
+setGeneric(
+  name="PAWaitFor",
+  def=function(paresult, ...) {standardGeneric("PAWaitFor" )}  
+)
+
+
 
 .cat_list <- function(ll) {
   cat(.toString_list(ll))  
