@@ -1,6 +1,9 @@
 .onLoad <- function(libname, pkgname) {
 
   .jpackage(pkgname, lib.loc = libname)
+  
+  # callback engine
+  .jengine(start=TRUE)
 
   #.jinit()
  

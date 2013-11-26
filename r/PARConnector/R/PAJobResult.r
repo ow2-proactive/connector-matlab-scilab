@@ -31,24 +31,26 @@ setMethod("PAWaitFor","PAJobResult",
             task.list <- .jnew(J("java.util.ArrayList"))
             for (i in 1:length(tnames)) {
               task.list$add(tnames[i])
-            }
-            print("l1")
+            }           
             tryCatch ({
             listentry <- client$waitForAllTasks(paresult@job.id,task.list,.jlong(timeout))
             } , Exception = function(e) {
               e$jobj$printStackTrace()
               stop()
-            })
-            print("l2")
+            })           
             answer <- list()
-            for (i in 1:length(tnames)) {
-              print(strc_c("l3_",i))
-              tresult <- listentry$get(i-1)$getValue()
-              print(strc_c("l4_",i))
-              jobj <- tresult$value()
-              
-              answer[[i]] <- 
-              print(strc_c("l5_",i))
+            for (i in 1:length(tnames)) {              
+              entry <- listentry$get(as.integer(i-1))             
+              tresult <- entry$getValue()              
+              jobj <- tresult$value()              
+              if (class(jobj) == "jobjRef") {               
+                rexp <- J("org.rosuda.jrs.RexpConvert")$jobj2rexp(jobj)                
+                eng <- .jengine()                
+                eng.assign("tmpoutput",rexp)                
+                answer[[i]] <- callback(tmpoutput)
+              } else {
+                answer[[i]] <- callback(jobj)
+              }                           
             }
             return(answer)
             
