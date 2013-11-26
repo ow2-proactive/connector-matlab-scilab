@@ -21,6 +21,5 @@ Collate:
      PATaskStatus.r
      PAJobStatus.r
      PAJobResult.r
-     PAWaitFor.r
      PASolve_saveDependencies.r
      PASolve.r

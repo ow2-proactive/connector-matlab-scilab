@@ -96,6 +96,7 @@ public class PARScriptEngine extends RScriptEngine {
 			// If the 'result' variable is explicitly defined in the global
 			// environment it is considered as the task result instead of the
 			// result exp
+
 			REXP resultRexp = super.engine.get(TaskScript.RESULT_VARIABLE,
 					null, true);
 			if (resultRexp != null) {
