@@ -187,7 +187,7 @@ public class PARScriptEngine extends RScriptEngine {
 		}
 		try {
 			String path = convertToRPath(dsfo);
-		//	super.engine.parseAndEval("setwd('" + path + "')");
+			super.engine.parseAndEval("setwd('" + path + "')");
 			super.engine.assign("localspace", new REXPString(path));
 		} catch (Exception e) {
 			e.printStackTrace();
