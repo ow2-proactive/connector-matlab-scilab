@@ -4,12 +4,13 @@ setClass(
     job = "PAJob",
     job.id = "character",
     task.names = "character",
-    client = "jobjRef"   
+    client = "jobjRef",
+    working.dir = "character"
   )  
 )
 
-PAJobResult <- function(job,jid,tnames, client) {
-  new (Class="PAJobResult" , job = job, job.id = jid, task.names = tnames, client=client)
+PAJobResult <- function(job,jid,tnames, client, working.dir = getwd()) {
+  new (Class="PAJobResult" , job = job, job.id = jid, task.names = tnames, client=client, working.dir = working.dir)
 }
 
 setMethod(
@@ -33,7 +34,7 @@ setMethod("PAWaitFor","PAJobResult",
               task.list$add(tnames[i])
             }           
             tryCatch ({
-            listentry <- client$waitForAllTasks(paresult@job.id,task.list,.jlong(timeout))
+              listentry <- client$waitForAllTasks(paresult@job.id,task.list,.jlong(timeout))
             } , Exception = function(e) {
               e$jobj$printStackTrace()
               stop()
@@ -41,16 +42,41 @@ setMethod("PAWaitFor","PAJobResult",
             answer <- list()
             for (i in 1:length(tnames)) {              
               entry <- listentry$get(as.integer(i-1))             
-              tresult <- entry$getValue()              
-              jobj <- tresult$value()              
-              if (class(jobj) == "jobjRef") {               
-                rexp <- J("org.rosuda.jrs.RexpConvert")$jobj2rexp(jobj)                
-                eng <- .jengine()                
-                eng.assign("tmpoutput",rexp)                
-                answer[[i]] <- callback(tmpoutput)
+              tresult <- entry$getValue()  
+              # print logs                 
+              jlogs <- tresult$getOutput()         
+              logs <- jlogs$getAllLogs(TRUE)
+              if (!is.null(logs)) {
+                # cat(str_c(tnames[i], " : ","\n"))
+                cat(logs)
+                cat("\n")
+              }
+              
+              if(tresult$hadException()) {     
+                answer[[i]] <- exception(tresult$value())
               } else {
-                answer[[i]] <- callback(jobj)
-              }                           
+                # transferring output files
+                tasks <- paresult@job@tasks
+                for (i in 1:length(tasks)) {
+                  outfiles <- tasks[[i]]@outputfiles
+                  if (length(outfiles) > 0) {
+                    for (j in 1:length(outfiles)) {
+                      pafile <- outfiles[[j]]
+                      pullFile(pafile, client = paresult@client, working.dir = paresult@working.dir)
+                    }
+                  }
+                }
+                
+                jobj <- tresult$value()              
+                if (class(jobj) == "jobjRef") {               
+                  rexp <- J("org.rosuda.jrs.RexpConvert")$jobj2rexp(jobj)                
+                  eng <- .jengine()                
+                  eng.assign("tmpoutput",rexp)                
+                  answer[[i]] <- callback(tmpoutput)
+                } else {
+                  answer[[i]] <- callback(jobj)
+                } 
+              }
             }
             return(answer)
             

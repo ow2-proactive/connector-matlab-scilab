@@ -134,6 +134,81 @@ setGeneric(
   def=function(paresult, ...) {standardGeneric("PAWaitFor" )}  
 )
 
+setGeneric(
+  name="PAWaitAny",
+  def=function(paresult, ...) {standardGeneric("PAWaitAny" )}  
+)
+
+### PAFile
+
+setGeneric(
+  name="setHash<-",
+  def=function(object, value) {standardGeneric("setHash<-")}  
+)
+
+setGeneric(
+  name="pushFile",
+  def=function(object, ...) {standardGeneric("pushFile")}  
+)
+
+setGeneric(
+  name="pullFile",
+  def=function(object, ...) {standardGeneric("pullFile")}  
+)
+
+setGeneric(
+  name="getMode",
+  def=function(object,input) {standardGeneric("getMode")}  
+)
+
+setGeneric(
+  name="getSelector",
+  def=function(object) {standardGeneric("getSelector")}  
+)
+
+
+cacheEnv <- new.env()
+
+# returns a growing id used in PASolve
+.getNewSolveId <- function() {  
+  # emulating local static variable
+  if (exists("pasolve.id", envir=cacheEnv)){
+    id <- get("pasolve.id", envir=cacheEnv)
+  } else {
+    id <- 0
+  }   
+  id <- id + 1
+  
+  assign("pasolve.id", id, envir=cacheEnv)
+    
+  return(id)
+}
+
+# computes a hash based on the hostname & the solve id & a time stamp
+# this is to guaranty that files used by a job will be put in a unique folder
+.generateSpaceHash <- function() {
+  id <- .getNewSolveId()
+  localhost <- J("java.net.InetAddress")$getLocalHost()
+  hname <- localhost$getHostName()
+  time <- Sys.time()
+  full_str <- str_c(hname, toString(id), time)
+  j_str <- .jnew(J("java.lang.String"),full_str)
+  return(j_str$hashCode())
+}
+
+.getSpaceName <- function(space) {
+  if (toupper(space) == "INPUT") {
+    return ("INPUTSPACE")
+  } else if (toupper(space) == "OUTPUT") {
+    return ("OUTPUTSPACE")
+  } else if (toupper(space) == "GLOBAL") {
+    return ("GLOBALSPACE")
+  } else if (toupper(space) == "USER") {
+    return ("USERSPACE")
+  }
+  return(space)
+}
+
 
 
 .cat_list <- function(ll) {
