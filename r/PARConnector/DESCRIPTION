@@ -11,6 +11,7 @@ License: AGPL-3
 Collate:
      pa_inline_functions.r
      PAinit.r
+     PAFile.r
      PATask.r
      PAJob.r
      PAConnect.r

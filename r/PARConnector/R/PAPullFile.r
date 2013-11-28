@@ -1,10 +1,11 @@
-PAPullFile <- function(space, pathname, outputFile, 
+PAPullFile <- function(space, path, fileName, outputFile, 
                        client = .scheduler.client) {
   tryCatch({
-    J(client, "pullFile", space, pathname, outputFile)
+    pulled <- J(client, "pullFile", .getSpaceName(space), str_c(path,"/", fileName), outputFile)
   }, Exception = function(e) {
-    print("Error in PAPullFile(...):")
+    print(str_c("Error in PAPullFile(",space,",",path,",",fileName,",",outputFile,") :"))
     e$jobj$printStackTrace()
     stop()
   })
+  return (pulled)
 }

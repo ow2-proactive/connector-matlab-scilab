@@ -7,7 +7,6 @@
 
   #.jinit()
  
-  .jaddClassPath(dir(file.path(libname,pkgname,"java"), full.names=TRUE))
   
   # if this fails, there is a problem with classloading
   J("org.ow2.proactive.scripting.Script")

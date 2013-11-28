@@ -4,12 +4,14 @@ setClass(
   Class="PAJob", 
   representation = representation(
        javaObject = "jobjRef",
-       tasks = "list"
+       tasks = "list",
+       hash = "character"
        
     ),
   prototype=prototype(
     javaObject = .jnew(J("org.ow2.proactive.scheduler.common.job.TaskFlowJob")),
-    tasks = list()
+    tasks = list(),
+    hash = "NOTSET"
   )
 )
 
@@ -17,6 +19,7 @@ PAJob <- function() {
   object = new (Class="PAJob", javaObject = .jnew(J("org.ow2.proactive.scheduler.common.job.TaskFlowJob")), tasks = list())
   setName(object, "PARJob")
   setDescription(object, "ProActive R Job")
+  object@hash <- str_replace_all(toString(.generateSpaceHash()),fixed("-"), "_")
   return(object)
 }
 
@@ -32,9 +35,25 @@ setMethod("getJavaObject", "PAJob",
 
 setReplaceMethod("addTask" ,"PAJob" ,
           function(object,value) {
-            object@tasks <- c(object@tasks,value)
+            tsk <- value
+            object@tasks <- c(object@tasks,tsk)
             jo = object@javaObject
-            jo$addTask(getJavaObject(value))
+            jtsk <- getJavaObject(tsk)
+            if (length(tsk@inputfiles) > 0) {
+              for (i in 1:length(tsk@inputfiles)) {
+                pafile <- tsk@inputfiles[[i]]
+                setHash(pafile)<-object@hash
+                jtsk$addInputFiles(getSelector(pafile), getMode(pafile,TRUE))
+              }
+            }
+            if (length(tsk@outputfiles) > 0) {
+              for (i in 1:length(tsk@outputfiles)) {
+                pafile <- tsk@outputfiles[[i]]
+                setHash(pafile)<-object@hash
+                jtsk$addOutputFiles(getSelector(pafile), getMode(pafile,FALSE))
+              }
+            }
+            jo$addTask(jtsk)
             return(object)
           }
 )

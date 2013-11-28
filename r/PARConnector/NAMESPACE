@@ -7,7 +7,9 @@ export(PAPushFile)
 export(PAPullFile)
 export(PADeleteFile)
 export(PAWaitFor)
+export(PAWaitAny)
 exportClasses(
+    PAFile,
     PATask,
     PAJob,
     PAJobResult,

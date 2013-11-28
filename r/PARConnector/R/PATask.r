@@ -4,11 +4,15 @@ setClass(
   Class="PATask", 
   representation = representation(
      javaObject = "jobjRef",
-     dependencies = "list"
+     dependencies = "list",
+     inputfiles = "list",
+     outputfiles = "list"
   ),
   prototype=prototype(
     javaObject = new(J("org.ow2.proactive.scheduler.common.task.ScriptTask")),
-    dependencies = list()
+    dependencies = list(),
+    inputfiles = list(),
+    outputfiles = list()
   )
 )
 
@@ -58,7 +62,7 @@ setMethod("setScript", "PATask",
 
 setReplaceMethod("addDependency" ,"PATask" ,
                  function(object,value) {
-                   object@tasks <- c(object@tasks,value)
+                   object@dependencies <- c(object@dependencies,value)
                    jo = object@javaObject
                    jo$addDependence(getJavaObject(value))
                    return(object)
@@ -68,9 +72,12 @@ setReplaceMethod("addDependency" ,"PATask" ,
 
 
 setReplaceMethod("addInputFiles" ,"PATask" ,
-                 function(object,value) {
-                   len <- length(object@inputFiles)
-                   object@inputFiles[[len+1]] <- value
+                 function(object, value) {
+                   if (class(value) != "PAFile") {
+                     stop("unexpected argument class, expected PAFile, received ",class(value))
+                   }
+                   len <- length(object@inputfiles)
+                   object@inputfiles[[len+1]] <- value
                    return(object)
                  }
 )
@@ -78,8 +85,11 @@ setReplaceMethod("addInputFiles" ,"PATask" ,
 
 setReplaceMethod("addOutputFiles" ,"PATask" ,
                  function(object,value) {
-                   len <- length(object@outputFiles)
-                   object@outputFiles[[len+1]] <- value
+                   if (class(value) != "PAFile") {
+                     stop("unexpected argument class, expected PAFile, received ",class(value))
+                   }
+                   len <- length(object@outputfiles)
+                   object@outputfiles[[len+1]] <- value
                    return(object)
                  }
 )
@@ -107,16 +117,28 @@ setMethod("toString","PATask",
               output <- str_c(output,"  R script : ",jo$getScript()$toString(),"\n")
             }
             
-            if (!is.null(jo$getInputFilesList())) {      
-              output <- str_c(output,"  inputFiles : ")
-              output <- str_c(output,jo$getInputFiles()$toString())
+            if (length(object@inputfiles) > 0) {      
+              output <- str_c(output,"  input files : ")
+              for (i in 1:length(object@inputfiles)) {
+                output <- str_c(output,toString(object@inputfiles[[i]]))
+                if (i < length(object@inputfiles)) {
+                  output <- str_c(output,", ")
+                }
+              }       
               output <- str_c(output,"\n")
             }
-            if (!is.null(jo$getOutputFilesList())) {      
-              output <- str_c(output,"  outputFiles : ")
-              output <- str_c(output,jo$getOutputFiles()$toString())  
+            
+            if (length(object@outputFiles) > 0) {      
+              output <- str_c(output,"  output files : ")
+              for (i in 1:length(object@outputfiles)) {
+                output <- str_c(output,toString(object@outputfiles[[i]]))
+                if (i < length(object@outputfiles)) {
+                  output <- str_c(output,", ")
+                }
+              }       
               output <- str_c(output,"\n")
             }
+                        
             if (!is.null(jo$getSelectionScripts())) {      
               output <- str_c(output,"  selectionScripts : ")
               output <- str_c(output,jo$getSelectionScripts()$toString())   
