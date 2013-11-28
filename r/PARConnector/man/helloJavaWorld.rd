@@ -1,12 +1,12 @@
-\name{helloJavaWorld}
-\alias{helloJavaWorld}
-\title{Function to say hello from a Java class}
+\name{PASolve}
+\alias{PASolve}
+\title{Function to submit a job to the ProActive Scheduler}
 \description{
   This function executes a method of a Java class
   defined in a JAR inside the R package.
 }
 \usage{
-  helloJavaWorld()
+  PASolve("function_name", args_vector)
 }
 \details{
   Details are given in the package vignette.
@@ -16,6 +16,5 @@
 }
 \author{Tobias Verbeke}
 \examples{
-  helloJavaWorld()
 }
 \keyword{manip}
