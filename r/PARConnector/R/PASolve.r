@@ -19,12 +19,18 @@
 };
 
 
-PASolve <- function(funname, ..., varies=NULL, input.files=list(), output.files=list(), client = .scheduler.client, in.dir = getwd(), out.dir = getwd(), .debug = PADebug()) {
+PASolve <- function(funcOrFuncName, ..., varies=NULL, input.files=list(), output.files=list(), client = .scheduler.client, in.dir = getwd(), out.dir = getwd(), .debug = PADebug()) {
   if (client == NULL || is.jnull(client) ) {
     stop("You are not currently connected to the scheduler, use PAConnect")
   }   
   
-  fun <- match.fun(funname)
+  if (is.character(funcOrFuncName)) {
+    fun <- match.fun(funcOrFuncName)
+    funname <- funcOrFuncName
+  } else {
+    fun <- funcOrFuncName
+    funname <- "fun"
+  }
   dots <- list(...)
   repldots <- list()
   
@@ -99,7 +105,6 @@ PASolve <- function(funname, ..., varies=NULL, input.files=list(), output.files=
   }
   
   # pattern replacements in output files  
-  # pattern replacements in input files  
   final.output.files <- list()  
   if (length(output.files) > 0) {
     for (i in 1:maxlength) {
@@ -187,7 +192,7 @@ PASolve <- function(funname, ..., varies=NULL, input.files=list(), output.files=
     # save function dependencies and push it to the space, only for closure
     env_file <- str_replace_all(file.path(tempdir(),hash,"PASolve.rdata"),fixed("\\"), "/")
     
-    .PASolve_saveDependencies(funname, env_file, .do.verbose=.debug)
+    .PASolve_saveDependencies(funname, env_file, envir=environment(),.do.verbose=.debug)
     pasolvefile <- PAFile("PASolve.rdata",hash = hash,working.dir = file.path(str_replace_all(tempdir(),fixed("\\"), "/"),hash))
     pushFile(pasolvefile, client = client)
   }
