@@ -1,6 +1,7 @@
 import("rJava")
 import("codetools")
 import("stringr")
+import("gtools")
 export(PAConnect)
 export(PASolve)
 export(PAPushFile)
@@ -8,6 +9,7 @@ export(PAPullFile)
 export(PADeleteFile)
 export(PAWaitFor)
 export(PAWaitAny)
+export(PADebug)
 exportClasses(
     PAFile,
     PATask,

@@ -184,6 +184,18 @@ cacheEnv <- new.env()
   return(id)
 }
 
+.pa.debug = FALSE
+
+PADebug <- function(debug=TRUE) {  
+  if (nargs() == 1) { 
+    env <- parent.env(environment())
+    unlockBinding(".pa.debug", env)
+    .pa.debug <<- debug
+    lockBinding(".pa.debug", env)
+  }
+  return(.pa.debug)
+}
+
 # computes a hash based on the hostname & the solve id & a time stamp
 # this is to guaranty that files used by a job will be put in a unique folder
 .generateSpaceHash <- function() {
@@ -195,6 +207,29 @@ cacheEnv <- new.env()
   j_str <- .jnew(J("java.lang.String"),full_str)
   return(j_str$hashCode())
 }
+
+.default.javaexp.handler = function(e, .print.error=TRUE) {
+  if (.print.error || PADebug()) {
+    if (PADebug()) {
+      print("Java Error in :")
+      traceback(4)
+    }
+    e$jobj$printStackTrace()
+  }
+  stop(e)
+}
+
+j_try_catch <- defmacro(FUN, .print.error = TRUE, .handler = NULL, .default.handler = .default.javaexp.handler, expr={
+  tryCatch ({
+    return (FUN)
+  } , Exception = function(e) {
+    if (is.null(.handler)) {
+      .default.handler(e, .print.error=.print.error)
+    } else {
+      .handler(e, .print.error=.print.error, .default.handler = .default.handler)
+    }
+  })
+})
 
 .getSpaceName <- function(space) {
   if (toupper(space) == "INPUT") {

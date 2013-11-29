@@ -19,10 +19,10 @@
 };
 
 
-PASolve <- function(funname, ..., varies=NULL, input.files=list(), output.files=list(), client = .scheduler.client, in.dir = getwd(), out.dir = getwd(), .debug=FALSE) {
-  if (client == NULL) {
+PASolve <- function(funname, ..., varies=NULL, input.files=list(), output.files=list(), client = .scheduler.client, in.dir = getwd(), out.dir = getwd(), .debug = PADebug()) {
+  if (client == NULL || is.jnull(client) ) {
     stop("You are not currently connected to the scheduler, use PAConnect")
-  }  
+  }   
   
   fun <- match.fun(funname)
   dots <- list(...)
@@ -187,7 +187,7 @@ PASolve <- function(funname, ..., varies=NULL, input.files=list(), output.files=
     # save function dependencies and push it to the space, only for closure
     env_file <- str_replace_all(file.path(tempdir(),hash,"PASolve.rdata"),fixed("\\"), "/")
     
-    .PASolve_saveDependencies(funname, env_file)
+    .PASolve_saveDependencies(funname, env_file, .do.verbose=.debug)
     pasolvefile <- PAFile("PASolve.rdata",hash = hash,working.dir = file.path(str_replace_all(tempdir(),fixed("\\"), "/"),hash))
     pushFile(pasolvefile, client = client)
   }
@@ -232,7 +232,7 @@ PASolve <- function(funname, ..., varies=NULL, input.files=list(), output.files=
     print("Submitting job : ")
     cat(toString(job))
   }
-  jobid <- client$submit(getJavaObject(job))
+  jobid <- j_try_catch(client$submit(getJavaObject(job)))
   cat(str_c("Job submitted (id : ",jobid$value(),")","\n"))
   jobresult <- PAJobResult(job, jobid$value(),  tnames, client)
   return(jobresult)

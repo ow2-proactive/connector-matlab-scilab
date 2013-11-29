@@ -27,6 +27,11 @@ setMethod(
 
 setMethod("PAWaitFor","PAJobResult", 
           function(paresult, timeout = .Machine$integer.max, client = .scheduler.client, callback = identity) {
+            
+            if (client == NULL || is.jnull(client) ) {
+              stop("You are not currently connected to the scheduler, use PAConnect")
+            }             
+            
             tnames <- paresult@task.names
             task.list <- .jnew(J("java.util.ArrayList"))
             for (i in 1:length(tnames)) {
@@ -56,8 +61,8 @@ setMethod("PAWaitFor","PAJobResult",
               } else {
                 # transferring output files
                 tasks <- paresult@job@tasks
-                for (i in 1:length(tasks)) {
-                  outfiles <- tasks[[i]]@outputfiles
+                for (k in 1:length(tasks)) {
+                  outfiles <- tasks[[k]]@outputfiles
                   if (length(outfiles) > 0) {
                     for (j in 1:length(outfiles)) {
                       pafile <- outfiles[[j]]
@@ -72,9 +77,8 @@ setMethod("PAWaitFor","PAJobResult",
                   eng <- .jengine()                
                   eng.assign("tmpoutput",rexp)                  
                   answer[[i]] <- callback(tmpoutput)
-                } else {             
-                  print(callback(jobj))
-                  answer[[i]] <- callback(jobj)
+                } else {                              
+                  answer[[i]] <- callback(jobj)      
                 } 
               }
             }

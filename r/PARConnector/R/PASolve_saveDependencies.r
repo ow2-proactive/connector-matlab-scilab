@@ -1,4 +1,4 @@
-.doSaveDependencies <- function(funcOrFuncName,envir=NULL, newenvir=new.env(),.buffer={},.do.verbose=FALSE) {
+.doSaveDependencies <- function(funcOrFuncName,envir=NULL, newenvir=new.env(),.buffer={},.do.verbose=PADebug()) {
   if (typeof(funcOrFuncName) == "character") {
     # if in buffer, then already inspected
     if (is.element(funcOrFuncName, .buffer)) {
@@ -61,7 +61,7 @@
   return(list(out,.buffer))
 };
 
-.doSaveListDependencies <- function(lstvarName,envir=NULL, newenvir=new.env(),.buffer={},.do.verbose=FALSE) {
+.doSaveListDependencies <- function(lstvarName,envir=NULL, newenvir=new.env(),.buffer={},.do.verbose=PADebug()) {
   lstvar <- tryCatch( get(lstvarName,envir), error = function(e) {message(e);return(NULL)} );
   assign(lstvarName, lstvar, envir=newenvir);
   for(el in lstvar) {
@@ -79,7 +79,7 @@
   return(list(out,.buffer))
 };
 
-.PASolve_saveDependencies <- function(func,file,.do.verbose=FALSE) {
+.PASolve_saveDependencies <- function(func,file,.do.verbose=PADebug()) {
   newenvir <- new.env()
   outsubpair <- .doSaveDependencies(func,newenvir=newenvir,.do.verbose=.do.verbose)
   # print(str_c("saving ",file))
