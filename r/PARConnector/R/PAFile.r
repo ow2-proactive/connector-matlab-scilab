@@ -2,22 +2,30 @@
 
 setClass( 
   Class="PAFile", 
-  representation = representation(
-    filepath = "character",
-    pathdest = "character",
-    space = "character",
-    hash = "character"
-  )  
+  representation = representation(    
+    filepath = "character", # absolute or relative local file path
+    pathdest = "character", # data space path (can be empty if filepath is relative, in which case it will match the local relative path)
+    space = "character", # remote data space name
+    hash = "character", # hash directory used to separate the jobs, must not be empty
+    working.dir = "character" # local working directory, used to resolve local relative paths
+  ), 
+  prototype=prototype(
+    filepath = "",
+    pathdest = "",
+    space = "",
+    hash = "",
+    working.dir = getwd()
+  )
 )
 
-PAFile <- function(filepath, pathdest = "", space = "USER", hash = "") {
-  if (is.null(pathdest)) {
+PAFile <- function(filepath, pathdest = "", space = "USER", hash = "", working.dir = getwd()) {
+  if (pathdest == "") {
     # testing that filepath is not absolute 
     if (!.isRelative(filepath)) {
-      stop(str_c(filepath, " is an absolute path and no destination path is provided"))
+      stop(str_c(filepath, " is an absolute path and no dataspace destination path is provided"))
     } 
   }
-  ff <- new (Class="PAFile", filepath = filepath, pathdest = pathdest, space = space)
+  ff <- new (Class="PAFile", filepath = filepath, pathdest = pathdest, space = space, hash = hash, working.dir = working.dir)
   return (ff)
 }
 
@@ -33,7 +41,7 @@ setReplaceMethod("setHash", "PAFile",
                  
 
 setMethod("pushFile", "PAFile",
-          function(object, client = .scheduler.client, working.dir = getwd()) {
+          function(object, client = .scheduler.client) {
             if (object@hash == "") {
               stop("Hash directory is not set, use method setHash")
             }
@@ -41,11 +49,13 @@ setMethod("pushFile", "PAFile",
             filename <- basename(object@filepath)
             if (object@pathdest == "") {
               pathdest <- str_c("/",object@hash,"/",str_replace_all(dirname(object@filepath),fixed("\\"), "/"))
-              filepath <- file.path(working.dir, object@filepath)
+              filepath <- file.path(object@working.dir, object@filepath)
             } else {
               pathdest <- str_c("/",object@hash,"/",str_replace_all(object@pathdest,fixed("\\"), "/"))
               if (.isRelative(object@filepath)) {
-                filepath <- file.path(working.dir,object@filepath)
+                filepath <- file.path(object@working.dir,object@filepath)
+              } else {
+                filepath <- object@filepath
               }
             }
                         
@@ -55,23 +65,27 @@ setMethod("pushFile", "PAFile",
 )
 
 setMethod("pullFile", "PAFile",
-          function(object, client = .scheduler.client, working.dir = getwd()) {
+          function(object, client = .scheduler.client) {
             if (object@hash == "") {
               stop("Hash directory is not set, use method setHash")
             }
             
             filename <- basename(object@filepath)
             if (object@pathdest == "") {
-              pathdest <- str_c(object@hash,"/",str_replace_all(dirname(object@filepath),fixed("\\"), "/"))
-              filepath <- file.path(working.dir, object@filepath)
-            } else {
-              pathdest <- str_c(object@hash,"/",str_replace_all(object@pathdest,fixed("\\"), "/"))
               if (.isRelative(object@filepath)) {
-                filepath <- file.path(working.dir,object@filepath)
+                pathname <- str_c("/",object@hash,"/",str_replace_all(object@filepath,fixed("\\"), "/"))
+                filepath <- file.path(object@working.dir, object@filepath)
+              } else {
+                stop(str_c(object@filepath, " is an absolute path and no dataspace destination path is provided"))
+              }
+            } else {
+              pathname <- str_c("/",object@hash,"/",str_replace_all(object@pathdest,fixed("\\"), "/"),"/",basename(object@filepath))
+              if (.isRelative(object@filepath)) {
+                filepath <- file.path(object@working.dir,object@filepath)
               }
             }
             
-            PAPullFile(toupper(object@space),pathdest, filename, filepath )                      
+            PAPullFile(toupper(object@space),pathname, filepath )                      
             
           } 
 )
@@ -111,11 +125,16 @@ setMethod("show" ,"PAFile" ,
 )
 
 setMethod("toString","PAFile",
-          function(x) {
-            if (x@pathdest == "") {
-              output <- str_c(x@filepath," -> $",x@space, "/",x@filepath)
+          function(x, input=TRUE) {
+            if (.isRelative(x@filepath)) {
+              filepath <- file.path(x@working.dir, x@filepath)
             } else {
-              output <- str_c(x@filepath," -> $",x@space, "/",x@pathdest,"/",basename(x@filepath))
+              filepath <- x@filepath
+            }
+            if (x@pathdest == "") {              
+              output <- str_c(filepath," ",ifelse(input,"->","<-")," $",x@space,"/", x@hash,"/",x@filepath)
+            } else {
+              output <- str_c(filepath," ",ifelse(input,"->","<-")," $",x@space, "/",x@pathdest,"/",basename(x@filepath))
             }
             return (output)            
           }

@@ -128,10 +128,10 @@ setMethod("toString","PATask",
               output <- str_c(output,"\n")
             }
             
-            if (length(object@outputFiles) > 0) {      
+            if (length(object@outputfiles) > 0) {
               output <- str_c(output,"  output files : ")
               for (i in 1:length(object@outputfiles)) {
-                output <- str_c(output,toString(object@outputfiles[[i]]))
+                output <- str_c(output,toString(object@outputfiles[[i]], input=FALSE))
                 if (i < length(object@outputfiles)) {
                   output <- str_c(output,", ")
                 }
@@ -153,7 +153,7 @@ setMethod("toString","PATask",
             if (!is.null(jo$getCleaningScript())) {  
               output <- str_c(output,"  cleanScript : ",jo$getCleaningScript(),"\n")
             }
-            if (o$isRunAsMe()) {  
+            if (jo$isRunAsMe()) {  
               output <- str_c(output,"  runAsMe : ",jo$isRunAsMe(),"\n")
             }
             if (!is.null(jo$getResultPreview())) {  

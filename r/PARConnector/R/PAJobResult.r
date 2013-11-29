@@ -4,13 +4,12 @@ setClass(
     job = "PAJob",
     job.id = "character",
     task.names = "character",
-    client = "jobjRef",
-    working.dir = "character"
+    client = "jobjRef"
   )  
 )
 
-PAJobResult <- function(job,jid,tnames, client, working.dir = getwd()) {
-  new (Class="PAJobResult" , job = job, job.id = jid, task.names = tnames, client=client, working.dir = working.dir)
+PAJobResult <- function(job,jid,tnames, client) {
+  new (Class="PAJobResult" , job = job, job.id = jid, task.names = tnames, client=client)
 }
 
 setMethod(
@@ -62,7 +61,7 @@ setMethod("PAWaitFor","PAJobResult",
                   if (length(outfiles) > 0) {
                     for (j in 1:length(outfiles)) {
                       pafile <- outfiles[[j]]
-                      pullFile(pafile, client = paresult@client, working.dir = paresult@working.dir)
+                      pullFile(pafile, client = paresult@client)
                     }
                   }
                 }
@@ -71,9 +70,10 @@ setMethod("PAWaitFor","PAJobResult",
                 if (class(jobj) == "jobjRef") {               
                   rexp <- J("org.rosuda.jrs.RexpConvert")$jobj2rexp(jobj)                
                   eng <- .jengine()                
-                  eng.assign("tmpoutput",rexp)                
+                  eng.assign("tmpoutput",rexp)                  
                   answer[[i]] <- callback(tmpoutput)
-                } else {
+                } else {             
+                  print(callback(jobj))
                   answer[[i]] <- callback(jobj)
                 } 
               }

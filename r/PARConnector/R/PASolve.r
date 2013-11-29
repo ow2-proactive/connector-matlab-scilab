@@ -19,7 +19,7 @@
 };
 
 
-PASolve <- function(funname, ..., varies=NULL, input.files=list(), output.files=list(), client = .scheduler.client, working.dir = getwd(), .do.verbose=FALSE) {
+PASolve <- function(funname, ..., varies=NULL, input.files=list(), output.files=list(), client = .scheduler.client, in.dir = getwd(), out.dir = getwd(), .debug=FALSE) {
   if (client == NULL) {
     stop("You are not currently connected to the scheduler, use PAConnect")
   }  
@@ -113,7 +113,7 @@ PASolve <- function(funname, ..., varies=NULL, input.files=list(), output.files=
   
   final.calls <- list()
   for (i in 1:maxlength) {
-    output <- str_c(funname,"(")
+    output <- str_c("result = ",funname,"(")
     for (j in 1:length(dots)) {   
       nname = names(final.param.list[[i]][j])
       if (is.null(nname) || nchar(nname) == 0) {
@@ -131,7 +131,7 @@ PASolve <- function(funname, ..., varies=NULL, input.files=list(), output.files=
     final.calls[[i]] <- output
   }
     
-  if (.do.verbose) {
+  if (.debug) {
     print("PASolve execution of : ")
     # print the command produced for debug    
     for (i in 1:maxlength) {
@@ -186,24 +186,30 @@ PASolve <- function(funname, ..., varies=NULL, input.files=list(), output.files=
   if (typeof(fun) == "closure") {
     # save function dependencies and push it to the space, only for closure
     env_file <- str_replace_all(file.path(tempdir(),hash,"PASolve.rdata"),fixed("\\"), "/")
-    print(env_file)
+    
     .PASolve_saveDependencies(funname, env_file)
-    pasolvefile <- PAFile(env_file, hash = hash)
-    pushFile(pasolvefile, client = client, working.dir = file.path(tempdir(),hash))
+    pasolvefile <- PAFile("PASolve.rdata",hash = hash,working.dir = file.path(str_replace_all(tempdir(),fixed("\\"), "/"),hash))
+    pushFile(pasolvefile, client = client)
   }
   
   for (i in 1:maxlength) {
     tnames[i] <- str_c("t",i)
-    t <- PATask(tnames[i])   
-    
-    total_script <- str_c("load(\"PASolve.rdata\")\n",final.calls[[i]])
+    t <- PATask(tnames[i])  
+    total_script <- str_c("setwd(file.path(getwd(),\"",hash,"\"))\n")
+    if (.debug) {
+      total_script <- str_c(total_script, "print(paste(\"Working directory is :\",getwd()))\n")
+      total_script <- str_c(total_script, "print(\"Working directory content :\")\n")
+      total_script <- str_c(total_script, "print(list.files(getwd()))\n")
+    }
+    total_script <- str_c(total_script, "load(\"PASolve.rdata\")\n")
+    total_script <- str_c(total_script, final.calls[[i]])
     setScript(t,total_script)  
     
     if (length(input.files) > 0) {
       tmp.input.files <- final.input.files[[i]]
       for (j in 1:length(tmp.input.files)) {
-        pafile <- PAFile(tmp.input.files[[j]], hash = hash)
-        pushFile(pafile, client = client, working.dir = working.dir)
+        pafile <- PAFile(tmp.input.files[[j]], hash = hash, working.dir = in.dir)
+        pushFile(pafile, client = client)
         addInputFiles(t) <- pafile      
       }
     }
@@ -215,15 +221,19 @@ PASolve <- function(funname, ..., varies=NULL, input.files=list(), output.files=
     if (length(output.files) > 0) {
       tmp.output.files <- final.output.files[[i]]
       for (j in 1:length(tmp.output.files)) {
-        pafile <- PAFile(tmp.output.files[[j]], hash = hash)
+        pafile <- PAFile(tmp.output.files[[j]], hash = hash, working.dir = out.dir)
         addOutputFiles(t) <- pafile
       }
     }
     
     addTask(job) <- t    
   }
+  if (.debug) {
+    print("Submitting job : ")
+    cat(toString(job))
+  }
   jobid <- client$submit(getJavaObject(job))
   cat(str_c("Job submitted (id : ",jobid$value(),")","\n"))
-  jobresult <- PAJobResult(job, jobid$value(),  tnames, client, working.dir = working.dir)
+  jobresult <- PAJobResult(job, jobid$value(),  tnames, client)
   return(jobresult)
 };

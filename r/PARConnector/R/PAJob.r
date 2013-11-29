@@ -136,7 +136,17 @@ setMethod("toString" ,c("PAJob"),
               }              
               output <- str_c(output,"\n")
             }
-            output <- str_c(output,"\n")
+            
+            if (length(object@tasks) > 0) {      
+              output <- str_c(output,"  tasks contents : \n{\n")
+              for (i in 1:length(object@tasks)) {
+                output <- str_c(output,toString(object@tasks[[i]]))
+                
+                output <- str_c(output,"\n")
+                
+              }              
+              output <- str_c(output,"}\n")
+            }
             return(output)
           } 
 )

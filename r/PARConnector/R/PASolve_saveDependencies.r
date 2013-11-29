@@ -82,8 +82,9 @@
 .PASolve_saveDependencies <- function(func,file,.do.verbose=FALSE) {
   newenvir <- new.env()
   outsubpair <- .doSaveDependencies(func,newenvir=newenvir,.do.verbose=.do.verbose)
-  print("saving",file)
+  # print(str_c("saving ",file))
+  dir.create(dirname(file), recursive = TRUE)
   save(list = outsubpair[[1]],file = file, envir = newenvir);
-  print(file,"saved")
+  # print(str_c(file," saved"))
   return(outsubpair[[1]])
 };
