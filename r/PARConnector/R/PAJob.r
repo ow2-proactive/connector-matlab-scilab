@@ -5,8 +5,7 @@ setClass(
   representation = representation(
        javaObject = "jobjRef",
        tasks = "list",
-       hash = "character"
-       
+       hash = "character"            
     ),
   prototype=prototype(
     javaObject = .jnew(J("org.ow2.proactive.scheduler.common.job.TaskFlowJob")),

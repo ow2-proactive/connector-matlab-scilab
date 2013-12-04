@@ -28,6 +28,9 @@ PASolve <- function(funcOrFuncName, ..., varies=NULL, input.files=list(), output
     fun <- match.fun(funcOrFuncName)
     funname <- funcOrFuncName
   } else {
+    if (typeof(funcOrFuncName) != "closure") {
+      stop("unexpected type for parameter funcOrFuncName ",typeof(funcOrFuncName), ", consider using function name instead")
+    }
     fun <- funcOrFuncName
     funname <- "fun"
   }
@@ -47,18 +50,22 @@ PASolve <- function(funcOrFuncName, ..., varies=NULL, input.files=list(), output
   }
   
   # harmonize parameters (i.e. extends each varying parameter to match the size of the biggest, by relooping)
-  for (i in 1:length(dots)) {      
-    if (is.null(varies) || is.element(i, varies) || (!is.null(names(dots[i])) && is.element(names(dots[i]),varies))) {
+  for (i in 1:length(dots)) {   
+    handletype <- is.element(typeof(dots[[i]]), c("logical", "integer", "double", "complex", "raw"))
+                             
+    if (handletype && ((is.null(varies) || is.element(i, varies) || (!is.null(names(dots[i])) && is.element(names(dots[i]),varies))))) {
       len <- length(dots[[i]])
       nb_rep <- maxlength %/% len
       rem <- maxlength %% len
       if (rem != 0) {
          # TODO display a warning if the biggest length is not a multiple of this parameter's length
       } 
-      if (is.null(names(dots[i])) || nchar(names(dots[i])) == 0)  {
+        if (is.null(names(dots[i])) || nchar(names(dots[i])) == 0)  {
         repldots[[i]] <- as.list(rep(dots[[i]],nb_rep,len = maxlength))
+        
       } else {        
         tmplist <- as.list(rep(dots[[i]],nb_rep,len = maxlength))
+        
         names(tmplist) <- rep(names(dots[i]),maxlength)
         repldots[[i]] <- tmplist                      
       }
@@ -66,9 +73,17 @@ PASolve <- function(funcOrFuncName, ..., varies=NULL, input.files=list(), output
     } else {
       # for unvarying parameter, replicate it as it is (i.e. a list is replicated into N lists,
       # instead of a list of size N)
-      repldots[[i]] <- rep(dots[i],maxlength)       
+      if (handletype) {
+        repldots[[i]] <- rep(dots[i],maxlength)       
+      } else {
+        tmplist <- list()
+        for (j in 1:maxlength) {
+          tmplist[[j]] <- dots[[i]]
+        } 
+        repldots[[i]] <- tmplist
+      }
     }
-  }
+  } 
   
   # now, for each original parameter, we have produced a list.
   # we want instead for each remote function call, the list of parameters associated
@@ -86,11 +101,11 @@ PASolve <- function(funcOrFuncName, ..., varies=NULL, input.files=list(), output
         names(tmp.param.list)[j] <- nm
       } else {
         names(tmp.param.list)[j] <- ""
-      }
-      
-    }   
-    final.param.list[[i]] = tmp.param.list
-  }
+      }      
+    } 
+   
+    final.param.list[[i]] = tmp.param.list    
+  }  
   
   # pattern replacements in input files  
   final.input.files <- list()  
@@ -116,46 +131,105 @@ PASolve <- function(funcOrFuncName, ..., varies=NULL, input.files=list(), output
     }      
   }
   
+  if (typeof(fun) == "closure") {
+    # save function dependencies and push it to the space, only for closure  
+    envir <- environment(fun)   
+    if (!exists("fun",envir)) {
+      assign("fun",fun,envir=envir)
+    }
+    pairlist <- .PASolve_computeDependencies("fun", envir=envir,.do.verbose=.debug)    
+  }
+  
+  tnames <- ""
+  job <- PAJob()
+  hash <- job@hash
+  hash.tmp.dir <- file.path(tempdir(),hash)
+  dir.create(hash.tmp.dir, recursive = TRUE)
   final.calls <- list()
+  
+#   final.calls <- list()
+#   for (i in 1:maxlength) {
+#     output <- str_c("result = ",funname,"(")
+#     for (j in 1:length(dots)) {          
+#       nname = names(final.param.list[[i]][j])    
+#       if (is.null(nname) || nchar(nname) == 0) {
+#         output<- str_c(output,.param.to.remote.eval(final.param.list[[i]][[j]])," ")
+#       } else {
+#         output<- str_c(output,nname," = ")
+#         output<- str_c(output,.param.to.remote.eval(final.param.list[[i]][[j]])," ")
+#       }
+#       
+#       if (j < length(dots) ) {        
+#         output<- str_c(output,",")     
+#       }
+#     }
+#     output<- str_c(output,")",sep="")    
+#     final.calls[[i]] <- output
+#   }
+  
+  
   for (i in 1:maxlength) {
-    output <- str_c("result = ",funname,"(")
-    for (j in 1:length(dots)) {   
-      nname = names(final.param.list[[i]][j])
-      if (is.null(nname) || nchar(nname) == 0) {
-        output<- str_c(output,final.param.list[[i]][[j]],sep=" ")
-      } else {
-        output<- str_c(output,nname,"=")
-        output<- str_c(output,final.param.list[[i]][[j]],sep=" ")
-      }
+    
+    env_file <- str_replace_all(file.path(hash.tmp.dir,str_c("PASolve_",i,".rdata")),fixed("\\"), "/")
+    
+    PASolveCall <- as.call(c(fun,final.param.list[[i]]))
+    
+    if (typeof(fun) == "closure") {
+      assign("PASolveCall", PASolveCall, envir = pairlist[["newenvir"]])
       
-      if (j < length(dots) ) {        
-        output<- str_c(output,",")     
+      save(list = c(pairlist[["subpair"]],"PASolveCall"),file = env_file, envir = pairlist[["newenvir"]]);     
+    } else {
+      save(PASolveCall,file = env_file);
+    }
+              
+    
+    pasolvefile <- PAFile(basename(env_file),hash = hash,working.dir = file.path(str_replace_all(tempdir(),fixed("\\"), "/"),hash))
+    pushFile(pasolvefile, client = client)
+    
+    final.calls[[i]] <- PASolveCall
+    
+    tnames[i] <- str_c("t",i)
+    t <- PATask(tnames[i])  
+    total_script <- str_c("ifelse(file.exists(\"",hash,"\"),setwd(file.path(getwd(),\"",hash,"\")),NA)\n")
+    if (.debug) {
+      total_script <- str_c(total_script, "print(paste(\"[DEBUG] Working directory is :\",getwd()))\n")
+      total_script <- str_c(total_script, "print(\"[DEBUG] Working directory content :\")\n")
+      total_script <- str_c(total_script, "print(list.files(getwd()))\n")
+    }
+    total_script <- str_c(total_script, "ifelse(file.exists(\"",basename(env_file),"\"),load(\"",basename(env_file),"\"),stop(\"Could not find PASolve environment file : ",basename(env_file)," \"))\n")   
+    if (.debug) {
+      total_script <- str_c(total_script, "print(\"[DEBUG] Environment :\")\n")
+      total_script <- str_c(total_script,"print(ls())\n")      
+    }
+    total_script <- str_c(total_script, "result <- eval(PASolveCall)\n")
+    setScript(t,total_script)  
+    
+    if (length(input.files) > 0) {
+      tmp.input.files <- final.input.files[[i]]
+      for (j in 1:length(tmp.input.files)) {
+        pafile <- PAFile(tmp.input.files[[j]], hash = hash, working.dir = in.dir)
+        pushFile(pafile, client = client)
+        addInputFiles(t) <- pafile      
       }
     }
-    output<- str_c(output,")",sep="")    
-    final.calls[[i]] <- output
-  }
+    addInputFiles(t) <- pasolvefile   
     
+    if (length(output.files) > 0) {
+      tmp.output.files <- final.output.files[[i]]
+      for (j in 1:length(tmp.output.files)) {
+        pafile <- PAFile(tmp.output.files[[j]], hash = hash, working.dir = out.dir)
+        addOutputFiles(t) <- pafile
+      }
+    }
+    
+    addTask(job) <- t    
+  }
+  
   if (.debug) {
     print("PASolve execution of : ")
     # print the command produced for debug    
     for (i in 1:maxlength) {
-      cat(funname,"(",sep="")
-      for (j in 1:length(dots)) {   
-        nname = names(final.param.list[[i]][j])
-        if (is.null(nname) || nchar(nname) == 0) {
-          cat(final.param.list[[i]][[j]],sep=" ")
-        } else {
-          cat(nname,"=",sep="")
-          cat(final.param.list[[i]][[j]],sep=" ")
-        }
-        
-        if (j < length(dots) ) {        
-          cat(",")     
-        }
-      }
-          
-      cat(")",sep="")
+      print(final.calls[[i]])                    
       
       if (length(input.files) > 0) {
         cat(", in.f : { ")
@@ -182,57 +256,6 @@ PASolve <- function(funcOrFuncName, ..., varies=NULL, input.files=list(), output
     }  
   }
   
-  
-  tnames <- ""
-  job <- PAJob()
-  hash <- job@hash
-  
-  
-  if (typeof(fun) == "closure") {
-    # save function dependencies and push it to the space, only for closure
-    env_file <- str_replace_all(file.path(tempdir(),hash,"PASolve.rdata"),fixed("\\"), "/")
-    
-    .PASolve_saveDependencies(funname, env_file, envir=environment(),.do.verbose=.debug)
-    pasolvefile <- PAFile("PASolve.rdata",hash = hash,working.dir = file.path(str_replace_all(tempdir(),fixed("\\"), "/"),hash))
-    pushFile(pasolvefile, client = client)
-  }
-  
-  for (i in 1:maxlength) {
-    tnames[i] <- str_c("t",i)
-    t <- PATask(tnames[i])  
-    total_script <- str_c("setwd(file.path(getwd(),\"",hash,"\"))\n")
-    if (.debug) {
-      total_script <- str_c(total_script, "print(paste(\"Working directory is :\",getwd()))\n")
-      total_script <- str_c(total_script, "print(\"Working directory content :\")\n")
-      total_script <- str_c(total_script, "print(list.files(getwd()))\n")
-    }
-    total_script <- str_c(total_script, "load(\"PASolve.rdata\")\n")
-    total_script <- str_c(total_script, final.calls[[i]])
-    setScript(t,total_script)  
-    
-    if (length(input.files) > 0) {
-      tmp.input.files <- final.input.files[[i]]
-      for (j in 1:length(tmp.input.files)) {
-        pafile <- PAFile(tmp.input.files[[j]], hash = hash, working.dir = in.dir)
-        pushFile(pafile, client = client)
-        addInputFiles(t) <- pafile      
-      }
-    }
-    if (typeof(fun) == "closure") {
-      # the function dependency is always added as an input file
-      addInputFiles(t) <- pasolvefile   
-    }
-    
-    if (length(output.files) > 0) {
-      tmp.output.files <- final.output.files[[i]]
-      for (j in 1:length(tmp.output.files)) {
-        pafile <- PAFile(tmp.output.files[[j]], hash = hash, working.dir = out.dir)
-        addOutputFiles(t) <- pafile
-      }
-    }
-    
-    addTask(job) <- t    
-  }
   if (.debug) {
     print("Submitting job : ")
     cat(toString(job))

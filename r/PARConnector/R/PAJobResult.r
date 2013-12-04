@@ -57,7 +57,7 @@ setMethod("PAWaitFor","PAJobResult",
               }
               
               if(tresult$hadException()) {     
-                answer[[i]] <- exception(tresult$value())
+                answer[[i]] <- simpleError(tresult$value())
               } else {
                 # transferring output files
                 tasks <- paresult@job@tasks

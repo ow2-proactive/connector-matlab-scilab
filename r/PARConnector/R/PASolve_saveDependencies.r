@@ -6,7 +6,7 @@
     }
     
     if (.do.verbose) {
-      print(paste(" // processing function: '", funcOrFuncName))
+      print(str_c(" // processing function: '", funcOrFuncName,"'"))
     }
     if (is.null(envir)) {
       func <- tryCatch( get(funcOrFuncName), error = function(e) {message(e);return(NULL)} );
@@ -79,12 +79,17 @@
   return(list(out,.buffer))
 };
 
-.PASolve_saveDependencies <- function(func,file,.do.verbose=PADebug()) {
-  newenvir <- new.env()
-  outsubpair <- .doSaveDependencies(func,newenvir=newenvir,.do.verbose=.do.verbose)
+.PASolve_saveDependencies <- function(subpair,newenvir,file) {
+  
   # print(str_c("saving ",file))
-  dir.create(dirname(file), recursive = TRUE)
-  save(list = outsubpair[[1]],file = file, envir = newenvir);
+  save(list = subpair,file = file, envir = newenvir);
   # print(str_c(file," saved"))
-  return(outsubpair[[1]])
 };
+
+.PASolve_computeDependencies <- function(funname,envir=environment(),.do.verbose=PADebug()) {
+  newenvir <- new.env()
+  func <- get(funname,envir)
+  assign(funname, func, envir = newenvir)
+  outsubpair <- .doSaveDependencies(funname,newenvir=newenvir,.do.verbose=.do.verbose)
+  return(list(subpair = outsubpair[[1]],newenvir = newenvir))
+}

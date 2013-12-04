@@ -50,9 +50,9 @@ setMethod("getScript", "PATask",
 
 
 setMethod("setScript", "PATask",
-          function(object,value) {
-            s_clz = J("org.ow2.proactive.scripting.Script")
-            sscript = new(J("org.ow2.proactive.scripting.SimpleScript"),value,"parscript")         
+          function(object,value) {            
+            s_clz = J("org.ow2.proactive.scripting.Script")            
+            sscript = new(J("org.ow2.proactive.scripting.SimpleScript"),value,"parscript") 
             tscript = new(J("org.ow2.proactive.scripting.TaskScript"),sscript)            
             return(object@javaObject$setScript(tscript))                          
           } 
@@ -114,7 +114,11 @@ setMethod("toString","PATask",
               output <- str_c(output,"  description : ",jo$getDescription(),"\n")
             }
             if (!is.null(jo$getScript())) {     
-              output <- str_c(output,"  R script : ",jo$getScript()$toString(),"\n")
+              output <- str_c(output,"  R script : \n{\n")       
+              tscript <- jo$getScript()
+              script_text <- tscript$getScript()
+              output <- str_c(output, script_text)
+              output <- str_c(output,"}\n")
             }
             
             if (length(object@inputfiles) > 0) {      

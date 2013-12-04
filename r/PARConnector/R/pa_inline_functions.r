@@ -244,7 +244,20 @@ j_try_catch <- defmacro(FUN, .print.error = TRUE, .handler = NULL, .default.hand
   return(space)
 }
 
-
+# macro which escapes parameters to evaluatable strings
+.param.to.remote.eval <- defmacro(param, expr = {
+  # print(str_c("eval(parse(text = '",deparse(substitute(param)),"'))"))
+  .ptre.lines <- deparse(substitute(param))
+  .ptre.output <- "eval(parse(text = c("
+  for (.ptre.i in 1:length(.ptre.lines)) {
+    .ptre.output <- str_c(.ptre.output,"\"",str_replace_all(.ptre.lines[.ptre.i],fixed("\""),"\\\""),"\"")
+    if (.ptre.i < length(.ptre.lines)) {
+      .ptre.output <- str_c(.ptre.output,", ")
+    }
+  }
+  .ptre.output <- str_c(.ptre.output,")))")
+  return(.ptre.output)
+})
 
 .cat_list <- function(ll) {
   cat(.toString_list(ll))  
