@@ -17,10 +17,12 @@ setClass(
 )
 
 PATask <- function(name) {
+  
   tsk <- new (Class="PATask", javaObject = new(J("org.ow2.proactive.scheduler.common.task.ScriptTask")), dependencies = list())
   setName(tsk,name)
   return (tsk)
 }
+
 
 
 setMethod("getJavaObject", "PATask",
@@ -66,6 +68,11 @@ setReplaceMethod("addDependency" ,"PATask" ,
                    jo = object@javaObject
                    jo$addDependence(getJavaObject(value))
                    return(object)
+                 }
+)
+setMethod("getDependencies" ,"PATask" ,
+                 function(object) {
+                   return(object@dependencies)
                  }
 )
 

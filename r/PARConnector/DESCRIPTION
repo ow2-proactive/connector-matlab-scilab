@@ -23,4 +23,5 @@ Collate:
      PAJobStatus.r
      PAJobResult.r
      PASolve_saveDependencies.r
+     PA.r
      PASolve.r

@@ -58,9 +58,10 @@ setMethod("pushFile", "PAFile",
                 filepath <- object@filepath
               }
             }
-                        
-            PAPushFile(toupper(object@space),pathdest, filename, filepath )                      
-            
+            tryCatch (         
+              return(PAPushFile(toupper(object@space),pathdest, filename, filepath )),                      
+              Exception = function(e) { print(str_c("Warning, file ",filepath," not found"))} 
+              )
           } 
 )
 

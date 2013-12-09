@@ -16,9 +16,9 @@ setClass(
 
 PAJob <- function() {
   object = new (Class="PAJob", javaObject = .jnew(J("org.ow2.proactive.scheduler.common.job.TaskFlowJob")), tasks = list())
-  setName(object, "PARJob")
+  setName(object, str_c("PARJob",.peekNewSolveId()))
   setDescription(object, "ProActive R Job")
-  object@hash <- str_replace_all(toString(.generateSpaceHash()),fixed("-"), "_")
+  object@hash <- .getSpaceHash()
   return(object)
 }
 

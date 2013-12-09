@@ -112,6 +112,10 @@ setGeneric(
   name="addDependency<-",
   def=function(object,value) {standardGeneric("addDependency<-" )}  
 ) 
+setGeneric(
+  name="getDependencies",
+  def=function(object) {standardGeneric("getDependencies" )}  
+) 
 
 setGeneric(
   name="addInputFiles<-",
@@ -169,8 +173,22 @@ setGeneric(
 
 cacheEnv <- new.env()
 
+PADebug <- function(debug=FALSE) {  
+  if (exists("is.debug", envir=cacheEnv)){
+    is.debug <- get("is.debug", envir=cacheEnv)
+  } else {
+    is.debug <- FALSE
+  }
+  
+  if (nargs() == 1) {
+    is.debug <- debug        
+  }
+  assign("is.debug", is.debug, envir=cacheEnv)
+  return(is.debug)
+}
+
 # returns a growing id used in PASolve
-.getNewSolveId <- function() {  
+.peekNewSolveId <- function() {  
   # emulating local static variable
   if (exists("pasolve.id", envir=cacheEnv)){
     id <- get("pasolve.id", envir=cacheEnv)
@@ -178,34 +196,55 @@ cacheEnv <- new.env()
     id <- 0
   }   
   id <- id + 1
-  
-  assign("pasolve.id", id, envir=cacheEnv)
-    
+      
   return(id)
 }
 
-.pa.debug = FALSE
-
-PADebug <- function(debug=TRUE) {  
-  if (nargs() == 1) { 
-    env <- parent.env(environment())
-    unlockBinding(".pa.debug", env)
-    .pa.debug <<- debug
-    lockBinding(".pa.debug", env)
+.commitNewSolveId <- function() {
+  id <- .peekNewSolveId()
+  assign("pasolve.id", id, envir=cacheEnv)
+  if (exists("space.hash", envir=cacheEnv)){
+    remove("space.hash", envir=cacheEnv)
   }
-  return(.pa.debug)
+  if (exists("patask.id", envir=cacheEnv)){
+    remove("patask.id", envir=cacheEnv)
+  }
 }
+
+.getNewTaskName <- function() {
+  if (exists("patask.id", envir=cacheEnv)){
+    id <- get("patask.id", envir=cacheEnv)
+  } else {
+    id <- 0
+  }   
+  id <- id + 1
+  assign("patask.id", id, envir=cacheEnv)
+  
+  return(str_c("t",id))
+}
+
+
+
 
 # computes a hash based on the hostname & the solve id & a time stamp
 # this is to guaranty that files used by a job will be put in a unique folder
-.generateSpaceHash <- function() {
-  id <- .getNewSolveId()
-  localhost <- J("java.net.InetAddress")$getLocalHost()
-  hname <- localhost$getHostName()
-  time <- Sys.time()
-  full_str <- str_c(hname, toString(id), time)
-  j_str <- .jnew(J("java.lang.String"),full_str)
-  return(j_str$hashCode())
+
+.getSpaceHash <- function() {
+  
+  if (exists("space.hash", envir=cacheEnv)){
+    hash <- get("space.hash", envir=cacheEnv)
+  } else {
+    id <- .peekNewSolveId()
+    localhost <- J("java.net.InetAddress")$getLocalHost()
+    hname <- localhost$getHostName()
+    time <- Sys.time()
+    full_str <- str_c(hname, toString(id), time)
+    j_str <- .jnew(J("java.lang.String"),full_str)
+    hcode <- j_str$hashCode()
+    hash <- str_replace_all(toString(hcode),fixed("-"), "_")
+    assign("space.hash", hash, envir=cacheEnv)
+  }     
+  return(hash)
 }
 
 .default.javaexp.handler = function(e, .print.error=TRUE) {
