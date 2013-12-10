@@ -18,6 +18,9 @@ Collate:
      PAPushFile.r
      PAPullFile.r
      PADeleteFile.r
+     PAJobState.r
+     PAState.r
+     PAGetResult.r
      PASchedulerStatus.r
      PATaskStatus.r
      PAJobStatus.r

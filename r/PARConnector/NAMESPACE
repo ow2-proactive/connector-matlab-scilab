@@ -13,6 +13,9 @@ export(PADeleteFile)
 export(PAWaitFor)
 export(PAWaitAny)
 export(PADebug)
+export(PAJobState)
+export(PAState)
+export(PAGetResult)
 exportClasses(
     PAFile,
     PATask,
