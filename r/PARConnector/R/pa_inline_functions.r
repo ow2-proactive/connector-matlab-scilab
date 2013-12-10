@@ -64,6 +64,12 @@ setGeneric(
 ) 
 
 setGeneric(
+  name="getQuoteExp",
+  def=function(object) {standardGeneric("getQuoteExp")}  
+)
+
+
+setGeneric(
   name="getInputFiles",
   def=function(object,value) {standardGeneric("getInputFiles" )}  
 )
@@ -135,12 +141,12 @@ setGeneric(
 ### PAJobResult
 setGeneric(
   name="PAWaitFor",
-  def=function(paresult, ...) {standardGeneric("PAWaitFor" )}  
+  def=function(paresult = .last.result, ...) {standardGeneric("PAWaitFor" )}  
 )
 
 setGeneric(
   name="PAWaitAny",
-  def=function(paresult, ...) {standardGeneric("PAWaitAny" )}  
+  def=function(paresult = .last.result, ...) {standardGeneric("PAWaitAny" )}  
 )
 
 ### PAFile
@@ -170,21 +176,39 @@ setGeneric(
   def=function(object) {standardGeneric("getSelector")}  
 )
 
+setGeneric(
+  name="isFileTransfer",
+  def=function(object) {standardGeneric("isFileTransfer")}  
+)
+
 
 cacheEnv <- new.env()
 
-PADebug <- function(debug=FALSE) {  
-  if (exists("is.debug", envir=cacheEnv)){
-    is.debug <- get("is.debug", envir=cacheEnv)
+PAClient <- function(client = NULL) {
+  if (exists(".scheduler.client", envir=cacheEnv)){
+    .scheduler.client <- get(".scheduler.client", envir=cacheEnv)
   } else {
-    is.debug <- FALSE
+    .scheduler.client <- NULL
+  }
+  if (nargs() == 1) {
+    .scheduler.client <- client        
+  }
+  assign(".scheduler.client", .scheduler.client, envir=cacheEnv)
+  return(.scheduler.client)
+}
+
+PADebug <- function(debug=FALSE) {  
+  if (exists(".is.debug", envir=cacheEnv)){
+    .is.debug <- get(".is.debug", envir=cacheEnv)
+  } else {
+    .is.debug <- FALSE
   }
   
   if (nargs() == 1) {
-    is.debug <- debug        
+    .is.debug <- debug        
   }
-  assign("is.debug", is.debug, envir=cacheEnv)
-  return(is.debug)
+  assign(".is.debug", .is.debug, envir=cacheEnv)
+  return(.is.debug)
 }
 
 # returns a growing id used in PASolve
@@ -247,8 +271,8 @@ PADebug <- function(debug=FALSE) {
   return(hash)
 }
 
-.default.javaexp.handler = function(e, .print.error=TRUE) {
-  if (.print.error || PADebug()) {
+.default.javaexp.handler = function(e, .print.stack=TRUE) {
+  if (.print.stack || PADebug()) {
     if (PADebug()) {
       print("Java Error in :")
       traceback(4)
@@ -258,14 +282,14 @@ PADebug <- function(debug=FALSE) {
   stop(e)
 }
 
-j_try_catch <- defmacro(FUN, .print.error = TRUE, .handler = NULL, .default.handler = .default.javaexp.handler, expr={
+j_try_catch <- defmacro(FUN, .print.stack = TRUE, .handler = NULL, .default.handler = .default.javaexp.handler, expr={
   tryCatch ({
     return (FUN)
   } , Exception = function(e) {
     if (is.null(.handler)) {
-      .default.handler(e, .print.error=.print.error)
+      .default.handler(e, .print.stack=.print.stack)
     } else {
-      .handler(e, .print.error=.print.error, .default.handler = .default.handler)
+      .handler(e, .print.stack=.print.stack, .default.handler = .default.handler)
     }
   })
 })

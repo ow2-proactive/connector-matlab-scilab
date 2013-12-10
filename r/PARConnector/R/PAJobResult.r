@@ -25,8 +25,9 @@ setMethod(
   }
 )
 
-setMethod("PAWaitFor","PAJobResult", 
-          function(paresult, timeout = .Machine$integer.max, client = .scheduler.client, callback = identity) {
+setClassUnion("PAJobResultOrMissing", c("PAJobResult", "missing"))
+
+setMethod("PAWaitFor","PAJobResultOrMissing", function(paresult = .last.result, timeout = .Machine$integer.max, client = PAClient(), callback = identity) {
             
             if (client == NULL || is.jnull(client) ) {
               stop("You are not currently connected to the scheduler, use PAConnect")
@@ -61,15 +62,17 @@ setMethod("PAWaitFor","PAJobResult",
               } else {
                 # transferring output files
                 tasks <- paresult@job@tasks
-                for (k in 1:length(tasks)) {
-                  outfiles <- tasks[[k]]@outputfiles
-                  if (length(outfiles) > 0) {
-                    for (j in 1:length(outfiles)) {
-                      pafile <- outfiles[[j]]
+                
+                outfiles <- tasks[[i]]@outputfiles
+                if (length(outfiles) > 0) {
+                  for (j in 1:length(outfiles)) {
+                    pafile <- outfiles[[j]]
+                    if (isFileTransfer(pafile)) {
                       pullFile(pafile, client = paresult@client)
                     }
                   }
                 }
+                
                 
                 jobj <- tresult$value()              
                 if (class(jobj) == "jobjRef") {               

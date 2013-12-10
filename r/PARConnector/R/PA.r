@@ -25,7 +25,97 @@
   return(tmpfilelist)
 }
 
-PA <- function(funcOrFuncName, ..., varies=NULL, merge = FALSE, input.files=list(), output.files=list(), in.dir = getwd(), out.dir = getwd(), client = .scheduler.client, .debug = PADebug()) {
+.splitFilePatternWithSpace <- function(filePath) {
+  space <- str_extract(filePath,   "\\$[a-zA-Z]+:")
+  if(is.na(space)) {
+    return(NULL)
+  } else {
+    newpath <- str_extract(filePath,fixed(space),"")
+    return(list(space = str_sub(space,2L,-2L), path = newpath))
+  }
+}
+
+.createAndTransferPAFileFromPattern <- function(pattern, hash, dir, hasDependency, isOutput) {
+  # check if the pattern contains a space pattern
+  pair <- .splitFilePatternWithSpace(pattern)
+  if (is.null(pair)) {
+    # if no explicit space pattern, try to infer it
+    if(hasDependency && !isOutput) {
+      # by default we say that the space is remote if task has dependencies
+      space <- "USER"   
+    } else {
+      space <- "LOCAL"   
+    }
+    path <- pattern
+    
+  } else {
+    space <- toupper(pair("space"))
+    path <- pair("path")
+  }
+  
+  if (space == "LOCAL") {
+    # if it's a local file, we transfer it to the user space
+    pafile <- PAFile(path, hash = hash, working.dir = dir)
+    if (!isOutput) {
+      pushFile(pafile, client = client)
+    }
+  } else {
+    # if it's a remote file, no transfer, no hash used
+    pafile <- PAFile(pathdest = path, space = space)
+  }
+  return (pafile)
+}
+
+.findCardinality <- function(dots, varies) {
+  maxlength <- 1
+  for (i in 1:length(dots)) {   
+    if (is.null(varies) || is.element(i, varies) || (!is.null(names(dots[i])) && is.element(names(dots[i]),varies))) {      
+      maxlength = max(maxlength, length(dots[[i]]))
+    }
+  }
+  return(maxlength)
+}
+
+# Merging
+PAM <- function(funcOrFuncName, ..., varies=NULL, input.files=list(), output.files=list(), in.dir = getwd(), out.dir = getwd(), client = PAClient(), .debug = PADebug()) {  
+  dots <- list(...)
+  
+  # if we are merging find all list of tasks in parameters, construct new function call
+  newcall <- list(funcOrFuncName)
+  for (i in 1:length(dots)) {   
+    if ((typeof(dots[[i]]) == "list") && (length(dots[[i]]) > 0) && (class(dots[[i]]) == "PATask") ) {
+      for (j in 1:length(dots[[i]])) {
+        newcall <- c(newcall,dots[[i]][[k]])
+      }
+    } else {
+      newcall <- c(newcall,dots[[i]])
+    }
+  }
+  newcall <- c(newcall,varies=varies,input.files=input.files, output.files=output.files, in.dir = in.dir, out.dir = out.dir, client = client, .debug = .debug)
+  return(do.call("PA",newcall))
+}
+
+# Splitting / Scattering
+PAS <- function(funcOrFuncName, ..., varies=NULL, input.files=list(), output.files=list(), in.dir = getwd(), out.dir = getwd(), client = PAClient(), .debug = PADebug()) {    
+  
+  dots <- list(...)
+  
+  maxlength <- .findCardinality(dots, varies)
+  
+  task <- PA(funcOrFuncName, ..., varies=list(),input.files=input.files, output.files=output.files, in.dir = in.dir, out.dir = out.dir, client = client, .debug = .debug)
+  if (length(task) > 1) {
+    stop(paste0("Internal Error : Unexpected task list length, expected 1, received ",length(task)))
+  }
+  
+  scatteredTasks <- list()
+  for (i in 1:maxlength) {
+    scatteredTasks[[i]] <- PACloneTaskWithIndex(task[[1]], i)
+  }
+  return(scatteredTasks)
+}
+
+# Standard Parametric sweep
+PA <- function(funcOrFuncName, ..., varies=NULL, input.files=list(), output.files=list(), in.dir = getwd(), out.dir = getwd(), client = PAClient(), .debug = PADebug()) {
   if (is.character(funcOrFuncName)) {
     fun <- match.fun(funcOrFuncName)
     funname <- funcOrFuncName
@@ -34,42 +124,27 @@ PA <- function(funcOrFuncName, ..., varies=NULL, merge = FALSE, input.files=list
       stop("unexpected type for parameter funcOrFuncName ",typeof(funcOrFuncName), ", consider using function name instead")
     }
     fun <- funcOrFuncName
-    funname <- "fun"
+    funname <- ".pasolve.fun"
   }
+  
+  if (client == NULL || is.jnull(client) ) {
+    stop("You are not currently connected to the scheduler, use PAConnect")
+  } 
+  
   dots <- list(...)
   repldots <- list()
   
+  depVariableNames <- NULL
+  newenvir <-  new.env()
   
-  if (merge) {
-    # if we are merging find all list of tasks in parameters, construct new function call
-    newcall <- list(funcOrFuncName)
-    for (i in 1:length(dots)) {   
-      if ((typeof(dots[[i]]) == "list") && (length(dots[[i]]) > 0) && (class(dots[[i]]) == "PATask") ) {
-        for (j in 1:length(dots[[i]])) {
-          newcall <- c(newcall,dots[[i]][[k]])
-        }
-      } else {
-        newcall <- c(newcall,dots[[i]])
-      }
-    }
-    newcall <- c(newcall,varies=varies,merge=FALSE,input.files=input.files, output.files=output.files, in.dir = in.dir, out.dir = out.dir, client = client, .debug = .debug)
-    return(do.call("PA",newcall))
-  } 
+    
   # compute maxlength (i.e. the length of the parameter which has the biggest length)
-  maxlength <- 0
-  for (i in 1:length(dots)) {   
-    if (is.null(varies) || is.element(i, varies) || (!is.null(names(dots[i])) && is.element(names(dots[i]),varies))) {      
-      maxlength = max(maxlength, length(dots[[i]]))
-    }
-  }
-  
-  if (maxlength == 0) {
-    error("No varying argument")
-  }
+  maxlength <- .findCardinality(dots,varies)
+      
   
   # harmonize parameters (i.e. extends each varying parameter to match the size of the biggest, by relooping)
   for (i in 1:length(dots)) {   
-    handletype <- is.element(typeof(dots[[i]]), c("logical", "integer", "double", "complex", "raw", "list"))
+    handletype <- is.element(typeof(dots[[i]]), c("logical", "character", "integer", "double", "complex", "raw", "list"))
     
     if (handletype && ((is.null(varies) || is.element(i, varies) || (!is.null(names(dots[i])) && is.element(names(dots[i]),varies))))) {
       len <- length(dots[[i]])
@@ -99,6 +174,12 @@ PA <- function(funcOrFuncName, ..., varies=NULL, merge = FALSE, input.files=list
           tmplist[[j]] <- dots[[i]]
         } 
         repldots[[i]] <- tmplist
+        
+        # if the parameter is a function, check for its dependencies
+        if (typeof(dots[[i]]) == "closure") {
+          pairlist <- .PASolve_computeDependencies(dots[[i]], namelist <- depVariableNames, newenvir <- newenvir, envir=environment(dots[[i]]),.do.verbose=.debug)    
+          depVariableNames <- pairlist[["variableNames"]]
+        }
       }
     }
   } 
@@ -153,16 +234,20 @@ PA <- function(funcOrFuncName, ..., varies=NULL, merge = FALSE, input.files=list
       rapply(tmp.output.files, function(x) fof <<- c(fof,x))
       final.output.files[[i]] <- fof 
     }      
-  }
+  }  
+  
   
   # compute function dependencies
   if (typeof(fun) == "closure") {
     # save function dependencies and push it to the space, only for closure  
     envir <- environment(fun)   
-    if (!exists("fun",envir)) {
-      assign("fun",fun,envir=envir)
+    # save the function in the environment if it has been given as a lambda
+    if (typeof(funcOrFuncName) == "closure") {
+      assign(funname,fun,envir=envir)
     }
-    pairlist <- .PASolve_computeDependencies("fun", envir=envir,.do.verbose=.debug)    
+    
+    pairlist <- .PASolve_computeDependencies(funname, namelist <- depVariableNames, newenvir <- newenvir, envir=envir,.do.verbose=.debug)    
+    depVariableNames <- c(depVariableNames, pairlist[["variableNames"]])
   }
   
   # Create list of PATask
@@ -185,23 +270,18 @@ PA <- function(funcOrFuncName, ..., varies=NULL, merge = FALSE, input.files=list
       if (class(final.param.list[[i]][[j]]) == "PATask") {
         # replace the parameter with the expression evaluated on the node only
         deptsk <- final.param.list[[i]][[j]]
-        deptskname <- getName(deptsk)
-        final.param.list[[i]][[j]] <- bquote(results[[.(deptskname)]])
+        final.param.list[[i]][[j]] <- getQuoteExp(deptsk)
         # set this task as dependant
         addDependency(t) <- deptsk        
-      } 
+      }       
     }
     
     PASolveCall <- as.call(c(fun,final.param.list[[i]]))
     
-    if (typeof(fun) == "closure") {
-      assign("PASolveCall", PASolveCall, envir = pairlist[["newenvir"]])
-      
-      save(list = c(pairlist[["subpair"]],"PASolveCall"),file = env_file, envir = pairlist[["newenvir"]]);     
-    } else {
-      save(PASolveCall,file = env_file);
-    }
-    
+    # save function call and all dependencies in a file
+    assign("PASolveCall", PASolveCall, envir = newenvir)
+    save(list = c(depVariableNames,"PASolveCall"),file = env_file, envir = newenvir); 
+            
     
     pasolvefile <- PAFile(basename(env_file),hash = hash,working.dir = file.path(str_replace_all(tempdir(),fixed("\\"), "/"),hash))
     pushFile(pasolvefile, client = client)      
@@ -218,16 +298,22 @@ PA <- function(funcOrFuncName, ..., varies=NULL, merge = FALSE, input.files=list
     total_script <- str_c(total_script, "ifelse(file.exists(\"",basename(env_file),"\"),load(\"",basename(env_file),"\"),stop(\"Could not find PASolve environment file : ",basename(env_file)," \"))\n")   
     if (.debug) {
       total_script <- str_c(total_script, "print(\"[DEBUG] Environment :\")\n")
-      total_script <- str_c(total_script,"print(ls())\n")      
+      total_script <- str_c(total_script,"print(ls())\n")     
+      total_script <- str_c(total_script, "print(\"[DEBUG] PASolveCall :\")\n")
+      total_script <- str_c(total_script, "print(PASolveCall)\n")
     }
     total_script <- str_c(total_script, "result <- eval(PASolveCall)\n")
+    if (.debug) {
+      total_script <- str_c(total_script, "print(\"[DEBUG] Result :\")\n")
+      total_script <- str_c(total_script, "print(result)\n")
+    }
     setScript(t,total_script)  
     
     if (length(input.files) > 0) {
       tmp.input.files <- final.input.files[[i]]
-      for (j in 1:length(tmp.input.files)) {
-        pafile <- PAFile(tmp.input.files[[j]], hash = hash, working.dir = in.dir)
-        pushFile(pafile, client = client)
+      for (j in 1:length(tmp.input.files)) {        
+        pafile <- .createAndTransferPAFileFromPattern(tmp.input.files[[j]], hash, in.dir, length(getDependencies(t)) > 0, FALSE)
+        
         addInputFiles(t) <- pafile      
       }
     }
@@ -236,7 +322,8 @@ PA <- function(funcOrFuncName, ..., varies=NULL, merge = FALSE, input.files=list
     if (length(output.files) > 0) {
       tmp.output.files <- final.output.files[[i]]
       for (j in 1:length(tmp.output.files)) {
-        pafile <- PAFile(tmp.output.files[[j]], hash = hash, working.dir = out.dir)
+        pafile <- .createAndTransferPAFileFromPattern(tmp.output.files[[j]], hash, out.dir, length(getDependencies(t)) > 0, TRUE)
+        
         addOutputFiles(t) <- pafile
       }
     }

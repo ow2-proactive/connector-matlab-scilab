@@ -1,5 +1,5 @@
 PAConnect <- function(url, login, pwd, 
-                      cred=NULL, .print.error = TRUE) {
+                      cred=NULL, .print.stack = TRUE) {
   if (missing(url)) {
     url <- readline("REST URL:")
   } 
@@ -15,15 +15,15 @@ PAConnect <- function(url, login, pwd,
     
   
   j_try_catch({
-    client <<- new(J("org.ow2.proactive.scheduler.rest.SchedulerClient"))
+    client <- new(J("org.ow2.proactive.scheduler.rest.SchedulerClient"))
     client$init(url, login, pwd)
-  } , .handler = function(e,.print.error,.default.handler) {
+  } , .handler = function(e,.print.stack,.default.handler) {
     print(str_c("Error in PAConnect(",url,") :"))
-    .default.handler(e,.print.error)
-  })
+    .default.handler(e,.print.stack)
+  }, .print.stack = .print.stack)
      
-  .scheduler.client <<- client
+  PAClient(client)
                
   
-  return (.scheduler.client)
+  return (client)
 }

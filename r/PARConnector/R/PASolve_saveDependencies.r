@@ -1,4 +1,4 @@
-.doSaveDependencies <- function(funcOrFuncName,envir=NULL, newenvir=new.env(),.buffer={},.do.verbose=PADebug()) {
+.doSaveDependencies <- function(funcOrFuncName, envir=NULL, newenvir=new.env(), .buffer={}, .do.verbose=PADebug()) {
   if (typeof(funcOrFuncName) == "character") {
     # if in buffer, then already inspected
     if (is.element(funcOrFuncName, .buffer)) {
@@ -9,9 +9,9 @@
       print(str_c(" // processing function: '", funcOrFuncName,"'"))
     }
     if (is.null(envir)) {
-      func <- tryCatch( get(funcOrFuncName), error = function(e) {message(e);return(NULL)} );
+      func <- tryCatch( get(funcOrFuncName), Exception = function(e) {warning(e);return(NULL)} );
     } else {
-      func <- tryCatch( get(funcOrFuncName,envir), error = function(e) {message(e);return(NULL)} );
+      func <- tryCatch( get(funcOrFuncName,envir), Exception = function(e) {warning(e);return(NULL)} );
     }
     if (is.null(func)) {
       return(list(NULL,.buffer))
@@ -22,6 +22,9 @@
     assign(funcOrFuncName, func, envir=newenvir);
     
   } else {
+    if (.do.verbose) {
+      print(str_c(" // processing closure"))
+    }
     func <- funcOrFuncName;
     out <- {};
   }
@@ -30,10 +33,13 @@
     envir <- environment(func)
   }
   globs <- findGlobals(func)
+  if (.do.verbose) {
+    print(str_c(" // // found : ", toString(globs)))
+  }
   
   
   for (varName in globs) {
-    var <- tryCatch( get(varName,envir), error = function(e) {message(e);return(NULL)} );
+    var <- tryCatch( get(varName,envir), Exception = function(e) {warning(e);return(NULL)} );
     if (!is.null(var)) {
       envirvar <- environment(var)
       pck <- environmentName(envirvar);
@@ -61,8 +67,8 @@
   return(list(out,.buffer))
 };
 
-.doSaveListDependencies <- function(lstvarName,envir=NULL, newenvir=new.env(),.buffer={},.do.verbose=PADebug()) {
-  lstvar <- tryCatch( get(lstvarName,envir), error = function(e) {message(e);return(NULL)} );
+.doSaveListDependencies <- function(lstvarName, envir=NULL, newenvir=new.env(), .buffer={}, .do.verbose=PADebug()) {
+  lstvar <- tryCatch( get(lstvarName,envir), Exception = function(e) {warning(e);return(NULL)} );
   assign(lstvarName, lstvar, envir=newenvir);
   for(el in lstvar) {
     toelem = typeof(el);
@@ -86,10 +92,11 @@
   # print(str_c(file," saved"))
 };
 
-.PASolve_computeDependencies <- function(funname,envir=environment(),.do.verbose=PADebug()) {
-  newenvir <- new.env()
-  func <- get(funname,envir)
-  assign(funname, func, envir = newenvir)
-  outsubpair <- .doSaveDependencies(funname,newenvir=newenvir,.do.verbose=.do.verbose)
-  return(list(subpair = outsubpair[[1]],newenvir = newenvir))
+.PASolve_computeDependencies <- function(funcOrFunName, envir = environment(), variableNames = NULL, newenvir = new.env(), .do.verbose=PADebug()) {
+  if (typeof(funcOrFunName) == "character") {
+    func <- get(funcOrFunName,envir)
+    assign(funcOrFunName, func, envir = newenvir)
+  }
+  subpair <- .doSaveDependencies(funcOrFunName, envir = envir, newenvir = newenvir, .buffer = variableNames, .do.verbose=.do.verbose)
+  return(list(variableNames = c(variableNames,subpair[[1]]), newenvir = newenvir))
 }

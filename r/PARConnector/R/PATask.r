@@ -6,20 +6,26 @@ setClass(
      javaObject = "jobjRef",
      dependencies = "list",
      inputfiles = "list",
-     outputfiles = "list"
+     outputfiles = "list",
+     scatter.index = "numeric"
   ),
   prototype=prototype(
     javaObject = new(J("org.ow2.proactive.scheduler.common.task.ScriptTask")),
     dependencies = list(),
     inputfiles = list(),
-    outputfiles = list()
+    outputfiles = list(),
+    scatter.index = 0
   )
 )
 
-PATask <- function(name) {
-  
-  tsk <- new (Class="PATask", javaObject = new(J("org.ow2.proactive.scheduler.common.task.ScriptTask")), dependencies = list())
+PATask <- function(name, scatter.index = 0) {  
+  tsk <- new (Class="PATask", javaObject = new(J("org.ow2.proactive.scheduler.common.task.ScriptTask")), dependencies = list(), scatter.index = scatter.index)
   setName(tsk,name)
+  return (tsk)
+}
+
+PACloneTaskWithIndex <- function(task, scatter.index) {  
+  tsk <- new (Class="PATask", javaObject = task@javaObject, dependencies = task@dependencies, inputfiles =  task@inputfiles, outputfiles = task@outputfiles, scatter.index = scatter.index)
   return (tsk)
 }
 
@@ -57,6 +63,16 @@ setMethod("setScript", "PATask",
             sscript = new(J("org.ow2.proactive.scripting.SimpleScript"),value,"parscript") 
             tscript = new(J("org.ow2.proactive.scripting.TaskScript"),sscript)            
             return(object@javaObject$setScript(tscript))                          
+          } 
+)
+
+setMethod("getQuoteExp", "PATask",
+          function(object) {
+            if (object@scatter.index == 0) {
+              return(bquote(results[[.(getName(object))]]))
+            } else {
+              return(bquote(results[[.(getName(object))]][[.(object@scatter.index)]]))                       
+            }
           } 
 )
 

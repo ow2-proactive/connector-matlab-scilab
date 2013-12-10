@@ -1,5 +1,5 @@
 PAPullFile <- function(space, pathname, outputFile, 
-                       client = .scheduler.client, .nb.tries = 2) {
+                       client = PAClient(), .nb.tries = 2) {
   
   if (client == NULL || is.jnull(client) ) {
     stop("You are not currently connected to the scheduler, use PAConnect")
@@ -13,14 +13,16 @@ PAPullFile <- function(space, pathname, outputFile,
       pulled <- J(client, "pullFile", .getSpaceName(space),pathname, outputFile)
       .nb.tries <- 0      
     },
-    .handler = function(e, .print.error, .default.handler) {
+    .handler = function(e, .print.stack, .default.handler) {
       .nb.tries <<- .nb.tries - 1
       if (.nb.tries <= 0) {
-        print(str_c("Error in PAPullFile(",space,",",pathname,",",outputFile,") :"))
-        .default.handler(e, .print.error)       
+        if (.print.stack) {
+          print(str_c("Error in PAPullFile(",space,",",pathname,",",outputFile,") : ",e$jobj$getMessage()))
+        }
+        .default.handler(e, .print.stack)       
       }   
     }
-    )
+    ,.print.stack = FALSE)
   }
   return (pulled)
 }
