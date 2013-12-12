@@ -7,25 +7,27 @@ setClass(
      dependencies = "list",
      inputfiles = "list",
      outputfiles = "list",
-     scatter.index = "numeric"
+     scatter.index = "numeric",
+     file.index = "numeric"
   ),
   prototype=prototype(
     javaObject = new(J("org.ow2.proactive.scheduler.common.task.ScriptTask")),
     dependencies = list(),
     inputfiles = list(),
     outputfiles = list(),
-    scatter.index = 0
+    scatter.index = 0,
+    file.index = 0
   )
 )
 
-PATask <- function(name, scatter.index = 0) {  
-  tsk <- new (Class="PATask", javaObject = new(J("org.ow2.proactive.scheduler.common.task.ScriptTask")), dependencies = list(), scatter.index = scatter.index)
+PATask <- function(name, scatter.index = 0, file.index = 0) {  
+  tsk <- new (Class="PATask", javaObject = new(J("org.ow2.proactive.scheduler.common.task.ScriptTask")), dependencies = list(), scatter.index = scatter.index, file.index = file.index)
   setName(tsk,name)
   return (tsk)
 }
 
-PACloneTaskWithIndex <- function(task, scatter.index) {  
-  tsk <- new (Class="PATask", javaObject = task@javaObject, dependencies = task@dependencies, inputfiles =  task@inputfiles, outputfiles = task@outputfiles, scatter.index = scatter.index)
+PACloneTaskWithIndex <- function(task, scatter.index, file.index) {  
+  tsk <- new (Class="PATask", javaObject = task@javaObject, dependencies = task@dependencies, inputfiles =  task@inputfiles, outputfiles = task@outputfiles, scatter.index = scatter.index, file.index = file.index)
   return (tsk)
 }
 

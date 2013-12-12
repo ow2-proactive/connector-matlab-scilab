@@ -1,27 +1,95 @@
 .replaceFilePatterns <- function(filePath, dots, repldots,ii) {
-  # this function replace all patterns in one input file for a given index i in 1..maxlength 
-  tmpfilelist <- list()
-  # for each input file, replace all matching parameters patterns             
-  for (jj in 1:length(dots)) { 
-    nm = names(dots[jj])
-    if (is.null(nm) || nchar(nm) == 0) {
-      pattern = str_c("%",jj,"%")
-    } else {
-      pattern = str_c("%",nm,"%")
+  # this function replace all patterns in one input file for a given index ii in 1..maxlength 
+  tmpfilelist <- list(filePath)
+  # for each input file, replace all matching parameters patterns 
+  
+  namesvector <- Filter(function(x) x != "",names(dots))  
+  
+  # extract patterns in filePath
+  patterns <- str_extract_all(filePath, "%[^ %]+%")
+  if (length(patterns) > 0) {
+    for (jj in 1:length(patterns)) { 
+      pattern <- patterns[[jj]]
+      # weirdly str_extract returns an array of size 1 containing a character vector of size 0 when no pattern is found 
+      if (length(pattern) > 0) {
+        param <- str_sub(pattern,2L,-2L)
+        if (param == "inherit") {
+          
+        } else {
+          # we evaluate the pattern parameter as index of dots, 
+          # the param pattern can be a name or an integer expression
+          if(is.element(param,namesvector)) {
+            index <- eval(parse(text=str_c("\"",param,"\"")))
+            val <- repldots[[index]][[ii]]  
+            withlengthtype <- is.element(typeof(val), c("logical", "integer", "double", "complex", "raw", "list"))
+            if(withlengthtype) {
+              replval <- list()
+              for (kk in 1:length(val)) {
+                replval[[kk]] <- val[[kk]]
+              }
+            } else {
+              replval <- list(val) 
+            }
+          } else {
+            index <- eval(parse(text=param))
+            if (length(index) == 1) {
+              val <- repldots[[index]][[ii]]
+              
+              withlengthtype <- is.element(typeof(val), c("logical", "integer", "double", "complex", "raw", "list"))
+              if(withlengthtype) {
+                replval <- list()
+                for (kk in 1:length(val)) {
+                  replval[[kk]] <- val[[kk]]
+                }
+              } else {
+                replval <- list(val) 
+              }
+              
+            } else {
+              replval <- list()
+              for (kk in 1:length(index)) {
+                replval[[kk]] <- repldots[[index[[kk]]]][[ii]]  
+              }           
+            }         
+          }
+          # the process is based on successive replacements, if the size of the current replacement iteration is not big enough, 
+          # we replicate the base list accordingly
+          if (length(tmpfilelist) < length(replval)) {
+            tmpfilelist <- rep(tmpfilelist,length(replval))
+          }
+          
+          # length of replval and tmpfilelist should now be equal
+          for (kk in 1:length(replval)) {
+            val <- replval[[kk]]
+            if (class(val) == "PATask") {
+              if (val@file.index == 0) {
+                stop("Error when replacing pattern ",pattern,", in ",filePath,", PATask parameter specified ",getName(val)," does not contain a file index")
+              }
+              tmpfilelist[[kk]] <- gsub(pattern, val@file.index, tmpfilelist[[kk]],fixed=TRUE)
+            } else {
+              withlengthtype <- is.element(typeof(replval), c("logical", "integer", "double", "complex", "raw", "list"))
+              if (!withlengthtype) {
+                stop("Error when replacing pattern ",pattern,", in ",filePath,", type of parameter ",param,"(",typeof(val),") cannot be used as replacement")
+              }
+              tmpfilelist[[kk]] <- tryCatch( 
+{gsub(pattern, val, tmpfilelist[[kk]],fixed=TRUE)}, 
+warning = function(e) {print(str_c("Unexpected warning when replacing pattern ", pattern, " in filePath ", filePath, " (replacement class is ", class(val), ") : ")); stop(e)},
+error = function(e) {print(str_c("Error when replacing pattern ", pattern, " in filePath ", filePath, " (replacement class is ", class(val), ") : ")); stop(e)} )
+            }
+          }
+        }            
+      }
     }
-    replval <- repldots[[jj]][[ii]] 
-    withlengthtype <- is.element(typeof(replval), c("logical", "integer", "double", "complex", "raw", "list"))
-    
-    # if length(repval) > 1 an array of indexes will be expanded to a list of files, used by a single task
-    if (grepl(pattern, filePath, fixed = TRUE)) {
-      for (kk in 1:length(replval)) {      
-        tmpfilelist[[kk]] <- gsub(pattern,replval[[kk]], filePath,fixed=TRUE)      
-      } 
-    } else {
-      tmpfilelist[[1]] <- filePath
-    }       
-    
-  }       
+  }
+
+  # at the end verify that there are no remaining pattern in the list
+  for (kk in 1:length(tmpfilelist)) { 
+    unmatched <- str_extract_all(tmpfilelist[[kk]], "%[[:alnum:]]+%")
+    if ((!is.na(unmatched)) && (length(unmatched[[1]]) > 0)) {
+      stop("There are unmatched pattern in filePath ",filePath, " : ",toString(unmatched), " please verify that the pattern correspond to an existing parameter")
+    }
+  }
+  
   return(tmpfilelist)
 }
 
@@ -77,21 +145,45 @@
 }
 
 # Merging
-PAM <- function(funcOrFuncName, ..., varies=NULL, input.files=list(), output.files=list(), in.dir = getwd(), out.dir = getwd(), client = PAClient(), .debug = PADebug()) {  
+# if named parameters are used for merging tasks, a list containing the results will be created
+PAM <- function(funcOrFuncName, ..., varies=list(), input.files=list(), output.files=list(), in.dir = getwd(), out.dir = getwd(), client = PAClient(), .debug = PADebug()) {  
   dots <- list(...)
   
   # if we are merging find all list of tasks in parameters, construct new function call
   newcall <- list(funcOrFuncName)
-  for (i in 1:length(dots)) {   
-    if ((typeof(dots[[i]]) == "list") && (length(dots[[i]]) > 0) && (class(dots[[i]]) == "PATask") ) {
-      for (j in 1:length(dots[[i]])) {
-        newcall <- c(newcall,dots[[i]][[k]])
+  newcallindex <- 2
+  for (i in 1:length(dots)) { 
+    nm <- names(dots[i])    
+    if ((typeof(dots[[i]]) == "list") && (length(dots[[i]]) > 0) && (class(dots[[i]][[1]]) == "PATask") ) {      
+      if (length(nm) > 0 && nchar(nm) > 0) {
+          tmplist <- list()
+          for (j in 1:length(dots[[i]])) {        
+            tmplist[[j]] <- dots[[i]][[j]]
+          }
+          newcall[[nm]] <- tmplist
+        } else {
+          for (j in 1:length(dots[[i]])) {     
+            newcall[[newcallindex]] <- dots[[i]][[j]]
+            newcallindex <- newcallindex+1
+          }
+        }             
+    } else {  
+      if (length(nm) > 0 && nchar(nm) > 0) {
+        newcall[[nm]] <- dots[[i]]
+      } else {
+        newcall[[newcallindex]] <- dots[[i]]
       }
-    } else {
-      newcall <- c(newcall,dots[[i]])
-    }
+      newcallindex <- newcallindex+1
+    }    
   }
-  newcall <- c(newcall,varies=varies,input.files=input.files, output.files=output.files, in.dir = in.dir, out.dir = out.dir, client = client, .debug = .debug)
+  
+  newcall[["varies"]] <- varies
+  newcall[["input.files"]] <- input.files
+  newcall[["output.files"]] <- output.files
+  newcall[["in.dir"]] <- in.dir
+  newcall[["out.dir"]] <- out.dir
+  newcall[["client"]] <- client
+  newcall[[".debug"]] <- .debug
   return(do.call("PA",newcall))
 }
 
@@ -99,17 +191,20 @@ PAM <- function(funcOrFuncName, ..., varies=NULL, input.files=list(), output.fil
 PAS <- function(funcOrFuncName, ..., varies=NULL, input.files=list(), output.files=list(), in.dir = getwd(), out.dir = getwd(), client = PAClient(), .debug = PADebug()) {    
   
   dots <- list(...)
-  
-  maxlength <- .findCardinality(dots, varies)
-  
+   
+  # we generate a task with a forced cardinality of 1
   task <- PA(funcOrFuncName, ..., varies=list(),input.files=input.files, output.files=output.files, in.dir = in.dir, out.dir = out.dir, client = client, .debug = .debug)
   if (length(task) > 1) {
     stop(paste0("Internal Error : Unexpected task list length, expected 1, received ",length(task)))
   }
   
+  # now we find the real cardinality of the task (with the provided varies parameter)
+  maxlength <- .findCardinality(dots, varies)
+  
+  # we generate as many tasks corresponding to this cardinality
   scatteredTasks <- list()
   for (i in 1:maxlength) {
-    scatteredTasks[[i]] <- PACloneTaskWithIndex(task[[1]], i)
+    scatteredTasks[[i]] <- PACloneTaskWithIndex(task[[1]], i, i)
   }
   return(scatteredTasks)
 }
@@ -261,7 +356,7 @@ PA <- function(funcOrFuncName, ..., varies=NULL, input.files=list(), output.file
   patasknames <- ""
   for (i in 1:maxlength) {
     tname <- .getNewTaskName()
-    t <- PATask(tname) 
+    t <- PATask(tname, file.index = i) 
     patasknames <- c(patasknames,tname)
     env_file <- str_replace_all(file.path(hash.tmp.dir,str_c("PASolve_",tname,".rdata")),fixed("\\"), "/") 
     

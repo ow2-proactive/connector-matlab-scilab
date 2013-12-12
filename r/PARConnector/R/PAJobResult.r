@@ -25,6 +25,19 @@ setMethod(
   }
 )
 
+setMethod(
+  f="[[",
+  signature="PAJobResult",
+  definition = function(x,i,j,drop) {
+    if (is.numeric(i)) {
+      selected.names <- x@task.names[i]        
+    } else if (is.character(i)) {
+      selected.names <- i    
+    }
+    return (new (Class="PAJobResult" , job = x@job, job.id = x@job.id, task.names = selected.names, client=x@client))
+  }
+)
+
 setClassUnion("PAJobResultOrMissing", c("PAJobResult", "missing"))
 
 setMethod("PAWaitFor","PAJobResultOrMissing", function(paresult = .last.result, timeout = .Machine$integer.max, client = PAClient(), callback = identity) {

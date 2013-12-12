@@ -9,9 +9,9 @@
       print(str_c(" // processing function: '", funcOrFuncName,"'"))
     }
     if (is.null(envir)) {
-      func <- tryCatch( get(funcOrFuncName), Exception = function(e) {warning(e);return(NULL)} );
+      func <- tryCatch( get(funcOrFuncName), error = function(e) {warning("[Resolve Dependencies] When running get(",toString(funcOrFuncName),") : ",e);return(NULL)} );
     } else {
-      func <- tryCatch( get(funcOrFuncName,envir), Exception = function(e) {warning(e);return(NULL)} );
+      func <- tryCatch( get(funcOrFuncName,envir), error = function(e) {warning("[Resolve Dependencies] When running get(",toString(funcOrFuncName),",envir) : ",e);return(NULL)} );
     }
     if (is.null(func)) {
       return(list(NULL,.buffer))
@@ -39,7 +39,7 @@
   
   
   for (varName in globs) {
-    var <- tryCatch( get(varName,envir), Exception = function(e) {warning(e);return(NULL)} );
+    var <- tryCatch( get(varName,envir), error = function(e) {warning("[Resolve Dependencies] When running get(",varName,",envir) : ",e);return(NULL)} );
     if (!is.null(var)) {
       envirvar <- environment(var)
       pck <- environmentName(envirvar);
@@ -68,7 +68,7 @@
 };
 
 .doSaveListDependencies <- function(lstvarName, envir=NULL, newenvir=new.env(), .buffer={}, .do.verbose=PADebug()) {
-  lstvar <- tryCatch( get(lstvarName,envir), Exception = function(e) {warning(e);return(NULL)} );
+  lstvar <- tryCatch( get(lstvarName,envir), error = function(e) {warning("[Resolve Dependencies] When running get(",toString(lstvarName),",envir) : ",e);return(NULL)} );
   assign(lstvarName, lstvar, envir=newenvir);
   for(el in lstvar) {
     toelem = typeof(el);

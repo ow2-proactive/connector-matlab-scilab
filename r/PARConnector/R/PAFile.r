@@ -137,8 +137,7 @@ setMethod("getSelector", "PAFile",
                 filepath <- str_c(str_replace_all(object@filepath,fixed("\\"), "/"))
               } else {
                 filepath <- str_c(object@hash,"/",str_replace_all(object@filepath,fixed("\\"), "/"))
-              }
-              return(filepath)
+              }              
             } else {              
               if (object@filepath == "") {
                 # remote file, no transfer
@@ -150,13 +149,13 @@ setMethod("getSelector", "PAFile",
               } else {
                 # local file with transfer
                 if (object@hash == "") {
-                  destpath <- str_c(str_replace_all(object@pathdest,fixed("\\"), "/"),"/",basename(object@filepath))                        
+                  filepath <- str_c(str_replace_all(object@pathdest,fixed("\\"), "/"),"/",basename(object@filepath))                        
                 } else {
-                  destpath <- str_c(object@hash,"/",str_replace_all(object@pathdest,fixed("\\"), "/"),"/",basename(object@filepath))    
+                  filepath <- str_c(object@hash,"/",str_replace_all(object@pathdest,fixed("\\"), "/"),"/",basename(object@filepath))    
                 }
-              }
-              return(destpath)
+              }              
             }
+            return(filepath)
           }
 )
 

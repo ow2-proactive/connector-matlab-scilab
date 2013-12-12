@@ -33,7 +33,13 @@ print_job_data <- function(job.data)  {
 }
 
 
-PAState <- function(client = .scheduler.client) {
+PAState <- function(client = PAClient()) {
+  
+  if (client == NULL || is.jnull(client) ) {
+    stop("You are not currently connected to the scheduler, use PAConnect")
+  } 
+  
+  
   job.infos <- j_try_catch ({
     return (J(client,"getJobs", as.integer(0), as.integer(-1), NULL, NULL));
   })

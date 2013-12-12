@@ -23,6 +23,12 @@ PASolve <- function(..., client = PAClient(), .debug = PADebug()) {
   if (length(dots) == 0) {
     stop("Not enough arguments")
   }
+  
+  if (client == NULL || is.jnull(client) ) {
+    stop("You are not currently connected to the scheduler, use PAConnect")
+  } 
+  
+  
   cl <- class(dots[[1]])
   if ((cl == "function") || (cl == "character")) {
     # simplified syntax (a simple parametric sweep) => rebuild a new call
