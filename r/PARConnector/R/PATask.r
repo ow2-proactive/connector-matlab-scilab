@@ -8,7 +8,8 @@ setClass(
      inputfiles = "list",
      outputfiles = "list",
      scatter.index = "numeric",
-     file.index = "numeric"
+     file.index = "numeric", 
+     file.index.function = "function"
   ),
   prototype=prototype(
     javaObject = new(J("org.ow2.proactive.scheduler.common.task.ScriptTask")),
@@ -16,18 +17,19 @@ setClass(
     inputfiles = list(),
     outputfiles = list(),
     scatter.index = 0,
-    file.index = 0
+    file.index = 0,
+    file.index.function = toString
   )
 )
 
-PATask <- function(name, scatter.index = 0, file.index = 0) {  
-  tsk <- new (Class="PATask", javaObject = new(J("org.ow2.proactive.scheduler.common.task.ScriptTask")), dependencies = list(), scatter.index = scatter.index, file.index = file.index)
+PATask <- function(name, scatter.index = 0, file.index = 0, file.index.function = toString) {  
+  tsk <- new (Class="PATask", javaObject = new(J("org.ow2.proactive.scheduler.common.task.ScriptTask")), dependencies = list(), scatter.index = scatter.index, file.index = file.index, file.index.function = file.index.function)
   setName(tsk,name)
   return (tsk)
 }
 
-PACloneTaskWithIndex <- function(task, scatter.index, file.index) {  
-  tsk <- new (Class="PATask", javaObject = task@javaObject, dependencies = task@dependencies, inputfiles =  task@inputfiles, outputfiles = task@outputfiles, scatter.index = scatter.index, file.index = file.index)
+PACloneTaskWithIndex <- function(task, scatter.index, file.index, file.index.function = toString) {  
+  tsk <- new (Class="PATask", javaObject = task@javaObject, dependencies = task@dependencies, inputfiles =  task@inputfiles, outputfiles = task@outputfiles, scatter.index = scatter.index, file.index = file.index, file.index.function = file.index.function)
   return (tsk)
 }
 
@@ -78,7 +80,15 @@ setMethod("getQuoteExp", "PATask",
           } 
 )
 
-
+setMethod("getFileIndex", "PATask",
+          function(object) {
+            if (object@file.index == 0) {
+              return("")
+            } else {
+              return(object@file.index.function(object@file.index))
+            }
+          }
+)
 
 setReplaceMethod("addDependency" ,"PATask" ,
                  function(object,value) {

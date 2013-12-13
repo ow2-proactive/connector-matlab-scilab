@@ -1,7 +1,29 @@
-.replaceFilePatterns <- function(filePath, dots, repldots,ii) {
+
+
+.createReplacementFunction <- function(envir) {
+  return (function(i) { toString(get(".replacement.list",envir)[[i]])})
+}
+
+.withlengthtype <- function(val) {
+   return(is.element(typeof(val), c("logical", "integer", "character", "double", "complex", "raw", "list")))
+}
+
+.appendFileIndex <- function(index,val,envir) {
+  repl <- get(".replacement.list",envir) 
+  if ( index > length(repl)) {
+    for (i in length(repl)+1:index ) {
+      repl[[i]] <- ""
+    }
+  }
+  repl[[index]] <- str_c(repl[[index]], val)
+  assign(".replacement.list",repl,envir)
+}
+
+.replaceFilePatterns <- function(filePath, dots, repldots,ii, envir) {
   # this function replace all patterns in one input file for a given index ii in 1..maxlength 
   tmpfilelist <- list(filePath)
   # for each input file, replace all matching parameters patterns 
+  
   
   namesvector <- Filter(function(x) x != "",names(dots))  
   
@@ -12,17 +34,26 @@
       pattern <- patterns[[jj]]
       # weirdly str_extract returns an array of size 1 containing a character vector of size 0 when no pattern is found 
       if (length(pattern) > 0) {
-        param <- str_sub(pattern,2L,-2L)
-        if (param == "inherit") {
-          
+        param <- str_sub(pattern,2L,-2L)       
+        # we evaluate the pattern parameter as index of dots, 
+        # the param pattern can be a name or an integer expression
+        if(is.element(param,namesvector)) {
+          index <- eval(parse(text=str_c("\"",param,"\"")))
+          val <- repldots[[index]][[ii]]  
+          if(.withlengthtype(val)) {
+            replval <- list()
+            for (kk in 1:length(val)) {
+              replval[[kk]] <- val[[kk]]
+            }
+          } else {
+            replval <- list(val) 
+          }
         } else {
-          # we evaluate the pattern parameter as index of dots, 
-          # the param pattern can be a name or an integer expression
-          if(is.element(param,namesvector)) {
-            index <- eval(parse(text=str_c("\"",param,"\"")))
-            val <- repldots[[index]][[ii]]  
-            withlengthtype <- is.element(typeof(val), c("logical", "integer", "double", "complex", "raw", "list"))
-            if(withlengthtype) {
+          index <- eval(parse(text=param))
+          if (length(index) == 1) {
+            val <- repldots[[index]][[ii]]
+            
+            if(.withlengthtype(val)) {
               replval <- list()
               for (kk in 1:length(val)) {
                 replval[[kk]] <- val[[kk]]
@@ -30,28 +61,14 @@
             } else {
               replval <- list(val) 
             }
+            
           } else {
-            index <- eval(parse(text=param))
-            if (length(index) == 1) {
-              val <- repldots[[index]][[ii]]
-              
-              withlengthtype <- is.element(typeof(val), c("logical", "integer", "double", "complex", "raw", "list"))
-              if(withlengthtype) {
-                replval <- list()
-                for (kk in 1:length(val)) {
-                  replval[[kk]] <- val[[kk]]
-                }
-              } else {
-                replval <- list(val) 
-              }
-              
-            } else {
-              replval <- list()
-              for (kk in 1:length(index)) {
-                replval[[kk]] <- repldots[[index[[kk]]]][[ii]]  
-              }           
-            }         
-          }
+            replval <- list()
+            for (kk in 1:length(index)) {
+              replval[[kk]] <- repldots[[index[[kk]]]][[ii]]  
+            }           
+          }         
+          
           # the process is based on successive replacements, if the size of the current replacement iteration is not big enough, 
           # we replicate the base list accordingly
           if (length(tmpfilelist) < length(replval)) {
@@ -62,17 +79,18 @@
           for (kk in 1:length(replval)) {
             val <- replval[[kk]]
             if (class(val) == "PATask") {
-              if (val@file.index == 0) {
+              if (val@file.index == "") {
                 stop("Error when replacing pattern ",pattern,", in ",filePath,", PATask parameter specified ",getName(val)," does not contain a file index")
               }
-              tmpfilelist[[kk]] <- gsub(pattern, val@file.index, tmpfilelist[[kk]],fixed=TRUE)
-            } else {
-              withlengthtype <- is.element(typeof(replval), c("logical", "integer", "double", "complex", "raw", "list"))
-              if (!withlengthtype) {
-                stop("Error when replacing pattern ",pattern,", in ",filePath,", type of parameter ",param,"(",typeof(val),") cannot be used as replacement")
-              }
+              # we store the replacement in the replacement list, this replacement knowledge will be store in the PATask
+              # either kk or ii should be varying at the same time, append to the replacement list the replacement done
+              .appendFileIndex(max(kk,ii), getFileIndex(val), envir)             
+              tmpfilelist[[kk]] <- gsub(pattern, getFileIndex(val), tmpfilelist[[kk]],fixed=TRUE)
+            } else {              
+              # we store the replacement in the replacement list, this replacement knowledge will be store in the PATask
+              .appendFileIndex(max(kk,ii), toString(val), envir)
               tmpfilelist[[kk]] <- tryCatch( 
-{gsub(pattern, val, tmpfilelist[[kk]],fixed=TRUE)}, 
+{gsub(pattern,  toString(val), tmpfilelist[[kk]],fixed=TRUE)}, 
 warning = function(e) {print(str_c("Unexpected warning when replacing pattern ", pattern, " in filePath ", filePath, " (replacement class is ", class(val), ") : ")); stop(e)},
 error = function(e) {print(str_c("Error when replacing pattern ", pattern, " in filePath ", filePath, " (replacement class is ", class(val), ") : ")); stop(e)} )
             }
@@ -81,7 +99,7 @@ error = function(e) {print(str_c("Error when replacing pattern ", pattern, " in 
       }
     }
   }
-
+  
   # at the end verify that there are no remaining pattern in the list
   for (kk in 1:length(tmpfilelist)) { 
     unmatched <- str_extract_all(tmpfilelist[[kk]], "%[[:alnum:]]+%")
@@ -204,7 +222,7 @@ PAS <- function(funcOrFuncName, ..., varies=NULL, input.files=list(), output.fil
   # we generate as many tasks corresponding to this cardinality
   scatteredTasks <- list()
   for (i in 1:maxlength) {
-    scatteredTasks[[i]] <- PACloneTaskWithIndex(task[[1]], i, i)
+    scatteredTasks[[i]] <- PACloneTaskWithIndex(task[[1]], i, i, task[[1]]@file.index.function)
   }
   return(scatteredTasks)
 }
@@ -226,8 +244,7 @@ PA <- function(funcOrFuncName, ..., varies=NULL, input.files=list(), output.file
     stop("You are not currently connected to the scheduler, use PAConnect")
   } 
   
-  dots <- list(...)
-  repldots <- list()
+  dots <- list(...)  
   
   depVariableNames <- NULL
   newenvir <-  new.env()
@@ -235,6 +252,8 @@ PA <- function(funcOrFuncName, ..., varies=NULL, input.files=list(), output.file
     
   # compute maxlength (i.e. the length of the parameter which has the biggest length)
   maxlength <- .findCardinality(dots,varies)
+  
+  repldots <- vector("list", maxlength)
       
   
   # harmonize parameters (i.e. extends each varying parameter to match the size of the biggest, by relooping)
@@ -282,7 +301,7 @@ PA <- function(funcOrFuncName, ..., varies=NULL, input.files=list(), output.file
   # now, for each original parameter, we have produced a list.
   # we want instead for each remote function call, the list of parameters associated
   # this is equivalent to a matrix transposition, but for lists :
-  final.param.list <- list() 
+  final.param.list <- vector("list", maxlength)
   
   for (i in 1:maxlength) {
     tmp.param.list <- list()
@@ -301,13 +320,15 @@ PA <- function(funcOrFuncName, ..., varies=NULL, input.files=list(), output.file
     final.param.list[[i]] = tmp.param.list    
   }  
   
+  .replacement.list <- list()
+  
   # pattern replacements in input files  
-  final.input.files <- list()  
+  final.input.files <- vector("list", maxlength)
   if (length(input.files) > 0) {
     for (i in 1:maxlength) {
       tmp.input.files <- list();
       for (j in 1:length(input.files)) {
-        tmp.input.files[[j]] <- .replaceFilePatterns(input.files[[j]], dots, repldots,i);               
+        tmp.input.files[[j]] <- .replaceFilePatterns(input.files[[j]], dots, repldots,i,environment());               
       }  
       # merge all list received into one
       fif <- list()
@@ -317,12 +338,12 @@ PA <- function(funcOrFuncName, ..., varies=NULL, input.files=list(), output.file
   }
   
   # pattern replacements in output files  
-  final.output.files <- list()  
+  final.output.files <- vector("list", maxlength)
   if (length(output.files) > 0) {
     for (i in 1:maxlength) {
       tmp.output.files <- list();
       for (j in 1:length(output.files)) {
-        tmp.output.files[[j]] <- .replaceFilePatterns(output.files[[j]], dots, repldots,i);               
+        tmp.output.files[[j]] <- .replaceFilePatterns(output.files[[j]], dots, repldots,i,environment());               
       }   
       # merge all list received into one
       fof <- list()
@@ -356,7 +377,11 @@ PA <- function(funcOrFuncName, ..., varies=NULL, input.files=list(), output.file
   patasknames <- ""
   for (i in 1:maxlength) {
     tname <- .getNewTaskName()
-    t <- PATask(tname, file.index = i) 
+    if (is.null(.replacement.list[[i]])) {
+      t <- PATask(tname, file.index = i) 
+    } else {
+      t <- PATask(tname, file.index = i, file.index.function = .createReplacementFunction(environment())) 
+    }
     patasknames <- c(patasknames,tname)
     env_file <- str_replace_all(file.path(hash.tmp.dir,str_c("PASolve_",tname,".rdata")),fixed("\\"), "/") 
     
