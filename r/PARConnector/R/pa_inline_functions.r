@@ -67,6 +67,10 @@ setGeneric(
   name="getQuoteExp",
   def=function(object) {standardGeneric("getQuoteExp")}  
 )
+setGeneric(
+  name="getFileIndex",
+  def=function(object) {standardGeneric("getFileIndex")}  
+)
 
 
 setGeneric(
