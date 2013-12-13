@@ -34,6 +34,22 @@ setGeneric(
   name="setProjectName",
   def=function(object,value) {standardGeneric("setProjectName")}  
 ) 
+setGeneric(
+  name="getPriority",
+  def=function(object,value) {standardGeneric("getPriority")}  
+)
+setGeneric(
+  name="setPriority",
+  def=function(object,value) {standardGeneric("setPriority")}  
+) 
+setGeneric(
+  name="setCancelJobOnError",
+  def=function(object,value) {standardGeneric("setCancelJobOnError")}  
+) 
+setGeneric(
+  name="isCancelJobOnError",
+  def=function(object,value) {standardGeneric("isCancelJobOnError")}  
+) 
 
 setGeneric(
   name="addTask<-",

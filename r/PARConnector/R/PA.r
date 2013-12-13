@@ -377,7 +377,7 @@ PA <- function(funcOrFuncName, ..., varies=NULL, input.files=list(), output.file
   patasknames <- ""
   for (i in 1:maxlength) {
     tname <- .getNewTaskName()
-    if (is.null(.replacement.list[[i]])) {
+    if (length(.replacement.list) < i) {
       t <- PATask(tname, file.index = i) 
     } else {
       t <- PATask(tname, file.index = i, file.index.function = .createReplacementFunction(environment())) 

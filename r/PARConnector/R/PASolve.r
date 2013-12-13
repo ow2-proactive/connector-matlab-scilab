@@ -16,7 +16,7 @@
   }
 }
 
-PASolve <- function(..., client = PAClient(), .debug = PADebug()) {  
+PASolve <- function(..., client = PAClient(), .debug = PADebug(), jobName = str_c("PARJob",.peekNewSolveId()) , jobDescription = "ProActive R Job", priority = "normal", .cancelOnError = TRUE) {  
   
   dots <- list(...)
   
@@ -39,7 +39,9 @@ PASolve <- function(..., client = PAClient(), .debug = PADebug()) {
   jobresult <- tryCatch (
 {  
   .peekNewSolveId()
-  job <- PAJob()
+  job <- PAJob(jobName, jobDescription)
+  setPriority(job, priority)
+  setCancelJobOnError(job, .cancelOnError)
   task.names <- NULL
   all.tasks <- list()
   
