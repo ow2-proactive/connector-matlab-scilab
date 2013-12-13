@@ -215,6 +215,18 @@ PADebug <- function(debug=FALSE) {
   return(.is.debug)
 }
 
+PAHandler <- function(e, .print.stack=TRUE) {    
+  if (.print.stack || PADebug()) {
+    if (PADebug()) {
+      print("Java Error in :")
+      traceback(4)
+    }
+    e$jobj$printStackTrace()
+  }
+  stop(e)
+}
+
+
 # returns a growing id used in PASolve
 .peekNewSolveId <- function() {  
   # emulating local static variable
@@ -275,25 +287,14 @@ PADebug <- function(debug=FALSE) {
   return(hash)
 }
 
-.default.javaexp.handler = function(e, .print.stack=TRUE) {
-  if (.print.stack || PADebug()) {
-    if (PADebug()) {
-      print("Java Error in :")
-      traceback(4)
-    }
-    e$jobj$printStackTrace()
-  }
-  stop(e)
-}
-
-j_try_catch <- defmacro(FUN, .print.stack = TRUE, .handler = NULL, .default.handler = .default.javaexp.handler, expr={
+j_try_catch <- defmacro(FUN, .print.stack = TRUE, .handler = NULL, expr={
   tryCatch ({
     return (FUN)
   } , Exception = function(e) {
     if (is.null(.handler)) {
-      .default.handler(e, .print.stack=.print.stack)
+      PAHandler(e, .print.stack=.print.stack)
     } else {
-      .handler(e, .print.stack=.print.stack, .default.handler = .default.handler)
+      .handler(e, .print.stack=.print.stack)
     }
   })
 })

@@ -17,9 +17,9 @@ PAConnect <- function(url, login, pwd,
   j_try_catch({
     client <- new(J("org.ow2.proactive.scheduler.rest.SchedulerClient"))
     client$init(url, login, pwd)
-  } , .handler = function(e,.print.stack,.default.handler) {
+  } , .handler = function(e,.print.stack) {
     print(str_c("Error in PAConnect(",url,") :"))
-    .default.handler(e,.print.stack)
+    PAHandler(e,.print.stack)
   }, .print.stack = .print.stack)
      
   PAClient(client)
