@@ -4,19 +4,21 @@ setClass(
   Class="PAJob", 
   representation = representation(
        javaObject = "jobjRef",
-       tasks = "list"
-       
+       tasks = "list",
+       hash = "character"            
     ),
   prototype=prototype(
     javaObject = .jnew(J("org.ow2.proactive.scheduler.common.job.TaskFlowJob")),
-    tasks = list()
+    tasks = list(),
+    hash = "NOTSET"
   )
 )
 
-PAJob <- function() {
+PAJob <- function(jobName,jobDescription) {
   object = new (Class="PAJob", javaObject = .jnew(J("org.ow2.proactive.scheduler.common.job.TaskFlowJob")), tasks = list())
-  setName(object, "PARJob")
-  setDescription(object, "ProActive R Job")
+  setName(object, jobName)
+  setDescription(object, jobDescription)
+  object@hash <- .getSpaceHash()
   return(object)
 }
 
@@ -32,9 +34,25 @@ setMethod("getJavaObject", "PAJob",
 
 setReplaceMethod("addTask" ,"PAJob" ,
           function(object,value) {
-            object@tasks <- c(object@tasks,value)
+            tsk <- value
+            object@tasks <- c(object@tasks,tsk)
             jo = object@javaObject
-            jo$addTask(getJavaObject(value))
+            jtsk <- getJavaObject(tsk)
+            if (length(tsk@inputfiles) > 0) {
+              for (i in 1:length(tsk@inputfiles)) {
+                pafile <- tsk@inputfiles[[i]]
+                setHash(pafile)<-object@hash
+                jtsk$addInputFiles(getSelector(pafile), getMode(pafile,TRUE))
+              }
+            }
+            if (length(tsk@outputfiles) > 0) {
+              for (i in 1:length(tsk@outputfiles)) {
+                pafile <- tsk@outputfiles[[i]]
+                setHash(pafile)<-object@hash
+                jtsk$addOutputFiles(getSelector(pafile), getMode(pafile,FALSE))
+              }
+            }
+            jo$addTask(jtsk)
             return(object)
           }
 )
@@ -74,7 +92,28 @@ setMethod("setDescription", "PAJob",
             return(object@javaObject$setDescription(value))                          
           } 
 )
-
+setMethod("getPriority", "PAJob",
+          function(object) {
+            return(object@javaObject$getPriority()$toString())                          
+          } 
+)
+setMethod("setPriority", "PAJob",
+          function(object,value) {
+            JobPriority <- J("org.ow2.proactive.scheduler.common.job.JobPriority")
+            prio <- JobPriority$findPriority(value)
+            return(object@javaObject$setPriority(prio))                          
+          } 
+)
+setMethod("setCancelJobOnError", "PAJob",
+          function(object,value) {            
+            return(object@javaObject$setCancelJobOnError(value))                          
+          } 
+)
+setMethod("isCancelJobOnError", "PAJob",
+          function(object) {
+            return(object@javaObject$isCancelJobOnError())                          
+          } 
+)
 
 
 setMethod("toString" ,c("PAJob"),
@@ -95,6 +134,9 @@ setMethod("toString" ,c("PAJob"),
             if (!is.null(jo$getPriority())) { 
               output<- str_c(output,"  jobPriority : ",jo$getPriority()$toString(),"\n")
             }
+            
+            output<- str_c(output,"  cancelOnError : ",jo$isCancelJobOnError(),"\n")
+            
             if (!is.null(jo$getInputSpace())) {      
               output <- str_c(output,"  inputSpace : ",jo$getInputSpace(),"\n")
             }
@@ -117,7 +159,17 @@ setMethod("toString" ,c("PAJob"),
               }              
               output <- str_c(output,"\n")
             }
-            output <- str_c(output,"\n")
+            
+            if (length(object@tasks) > 0) {      
+              output <- str_c(output,"  tasks contents : \n{\n")
+              for (i in 1:length(object@tasks)) {
+                output <- str_c(output,toString(object@tasks[[i]]))
+                
+                output <- str_c(output,"\n")
+                
+              }              
+              output <- str_c(output,"}\n")
+            }
             return(output)
           } 
 )

@@ -4,7 +4,7 @@ setClass(
     job = "PAJob",
     job.id = "character",
     task.names = "character",
-    client = "jobjRef"   
+    client = "jobjRef"
   )  
 )
 
@@ -25,15 +25,34 @@ setMethod(
   }
 )
 
-setMethod("PAWaitFor","PAJobResult", 
-          function(paresult, timeout = .Machine$integer.max, client = .scheduler.client, callback = identity) {
+setMethod(
+  f="[[",
+  signature="PAJobResult",
+  definition = function(x,i,j,drop) {
+    if (is.numeric(i)) {
+      selected.names <- x@task.names[i]        
+    } else if (is.character(i)) {
+      selected.names <- i    
+    }
+    return (new (Class="PAJobResult" , job = x@job, job.id = x@job.id, task.names = selected.names, client=x@client))
+  }
+)
+
+setClassUnion("PAJobResultOrMissing", c("PAJobResult", "missing"))
+
+setMethod("PAWaitFor","PAJobResultOrMissing", function(paresult = .last.result, timeout = .Machine$integer.max, client = PAClient(), callback = identity) {
+            
+            if (client == NULL || is.jnull(client) ) {
+              stop("You are not currently connected to the scheduler, use PAConnect")
+            }             
+            
             tnames <- paresult@task.names
             task.list <- .jnew(J("java.util.ArrayList"))
             for (i in 1:length(tnames)) {
               task.list$add(tnames[i])
             }           
             tryCatch ({
-            listentry <- client$waitForAllTasks(paresult@job.id,task.list,.jlong(timeout))
+              listentry <- client$waitForAllTasks(paresult@job.id,task.list,.jlong(timeout))
             } , Exception = function(e) {
               e$jobj$printStackTrace()
               stop()
@@ -41,16 +60,43 @@ setMethod("PAWaitFor","PAJobResult",
             answer <- list()
             for (i in 1:length(tnames)) {              
               entry <- listentry$get(as.integer(i-1))             
-              tresult <- entry$getValue()              
-              jobj <- tresult$value()              
-              if (class(jobj) == "jobjRef") {               
-                rexp <- J("org.rosuda.jrs.RexpConvert")$jobj2rexp(jobj)                
-                eng <- .jengine()                
-                eng.assign("tmpoutput",rexp)                
-                answer[[i]] <- callback(tmpoutput)
+              tresult <- entry$getValue()  
+              # print logs                 
+              jlogs <- tresult$getOutput()         
+              logs <- jlogs$getAllLogs(TRUE)
+              if (!is.null(logs)) {
+                # cat(str_c(tnames[i], " : ","\n"))
+                cat(logs)
+                cat("\n")
+              }
+              
+              if(tresult$hadException()) {     
+                answer[[i]] <- simpleError(tresult$value())
               } else {
-                answer[[i]] <- callback(jobj)
-              }                           
+                # transferring output files
+                tasks <- paresult@job@tasks
+                
+                outfiles <- tasks[[i]]@outputfiles
+                if (length(outfiles) > 0) {
+                  for (j in 1:length(outfiles)) {
+                    pafile <- outfiles[[j]]
+                    if (isFileTransfer(pafile)) {
+                      pullFile(pafile, client = paresult@client)
+                    }
+                  }
+                }
+                
+                
+                jobj <- tresult$value()              
+                if (class(jobj) == "jobjRef") {               
+                  rexp <- J("org.rosuda.jrs.RexpConvert")$jobj2rexp(jobj)                
+                  eng <- .jengine()                
+                  eng.assign("tmpoutput",rexp)                  
+                  answer[[i]] <- callback(tmpoutput)
+                } else {                              
+                  answer[[i]] <- callback(jobj)      
+                } 
+              }
             }
             return(answer)
             

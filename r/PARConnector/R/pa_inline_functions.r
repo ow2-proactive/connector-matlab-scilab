@@ -34,6 +34,22 @@ setGeneric(
   name="setProjectName",
   def=function(object,value) {standardGeneric("setProjectName")}  
 ) 
+setGeneric(
+  name="getPriority",
+  def=function(object,value) {standardGeneric("getPriority")}  
+)
+setGeneric(
+  name="setPriority",
+  def=function(object,value) {standardGeneric("setPriority")}  
+) 
+setGeneric(
+  name="setCancelJobOnError",
+  def=function(object,value) {standardGeneric("setCancelJobOnError")}  
+) 
+setGeneric(
+  name="isCancelJobOnError",
+  def=function(object,value) {standardGeneric("isCancelJobOnError")}  
+) 
 
 setGeneric(
   name="addTask<-",
@@ -62,6 +78,16 @@ setGeneric(
   name="setDescription",
   def=function(object,value) {standardGeneric("setDescription" )}  
 ) 
+
+setGeneric(
+  name="getQuoteExp",
+  def=function(object) {standardGeneric("getQuoteExp")}  
+)
+setGeneric(
+  name="getFileIndex",
+  def=function(object) {standardGeneric("getFileIndex")}  
+)
+
 
 setGeneric(
   name="getInputFiles",
@@ -112,6 +138,10 @@ setGeneric(
   name="addDependency<-",
   def=function(object,value) {standardGeneric("addDependency<-" )}  
 ) 
+setGeneric(
+  name="getDependencies",
+  def=function(object) {standardGeneric("getDependencies" )}  
+) 
 
 setGeneric(
   name="addInputFiles<-",
@@ -131,10 +161,187 @@ setGeneric(
 ### PAJobResult
 setGeneric(
   name="PAWaitFor",
-  def=function(paresult, ...) {standardGeneric("PAWaitFor" )}  
+  def=function(paresult = .last.result, ...) {standardGeneric("PAWaitFor" )}  
+)
+
+setGeneric(
+  name="PAWaitAny",
+  def=function(paresult = .last.result, ...) {standardGeneric("PAWaitAny" )}  
+)
+
+### PAFile
+
+setGeneric(
+  name="setHash<-",
+  def=function(object, value) {standardGeneric("setHash<-")}  
+)
+
+setGeneric(
+  name="pushFile",
+  def=function(object, ...) {standardGeneric("pushFile")}  
+)
+
+setGeneric(
+  name="pullFile",
+  def=function(object, ...) {standardGeneric("pullFile")}  
+)
+
+setGeneric(
+  name="getMode",
+  def=function(object,input) {standardGeneric("getMode")}  
+)
+
+setGeneric(
+  name="getSelector",
+  def=function(object) {standardGeneric("getSelector")}  
+)
+
+setGeneric(
+  name="isFileTransfer",
+  def=function(object) {standardGeneric("isFileTransfer")}  
 )
 
 
+cacheEnv <- new.env()
+
+PAClient <- function(client = NULL) {
+  if (exists(".scheduler.client", envir=cacheEnv)){
+    .scheduler.client <- get(".scheduler.client", envir=cacheEnv)
+  } else {
+    .scheduler.client <- NULL
+  }
+  if (nargs() == 1) {
+    .scheduler.client <- client        
+  }
+  assign(".scheduler.client", .scheduler.client, envir=cacheEnv)
+  return(.scheduler.client)
+}
+
+PADebug <- function(debug=FALSE) {  
+  if (exists(".is.debug", envir=cacheEnv)){
+    .is.debug <- get(".is.debug", envir=cacheEnv)
+  } else {
+    .is.debug <- FALSE
+  }
+  
+  if (nargs() == 1) {
+    .is.debug <- debug        
+  }
+  assign(".is.debug", .is.debug, envir=cacheEnv)
+  return(.is.debug)
+}
+
+PAHandler <- function(e, .print.stack=TRUE) {    
+  if (.print.stack || PADebug()) {
+    if (PADebug()) {
+      print("Java Error in :")
+      traceback(4)
+    }
+    e$jobj$printStackTrace()
+  }
+  stop(e)
+}
+
+
+# returns a growing id used in PASolve
+.peekNewSolveId <- function() {  
+  # emulating local static variable
+  if (exists("pasolve.id", envir=cacheEnv)){
+    id <- get("pasolve.id", envir=cacheEnv)
+  } else {
+    id <- 0
+  }   
+  id <- id + 1
+      
+  return(id)
+}
+
+.commitNewSolveId <- function() {
+  id <- .peekNewSolveId()
+  assign("pasolve.id", id, envir=cacheEnv)
+  if (exists("space.hash", envir=cacheEnv)){
+    remove("space.hash", envir=cacheEnv)
+  }
+  if (exists("patask.id", envir=cacheEnv)){
+    remove("patask.id", envir=cacheEnv)
+  }
+}
+
+.getNewTaskName <- function() {
+  if (exists("patask.id", envir=cacheEnv)){
+    id <- get("patask.id", envir=cacheEnv)
+  } else {
+    id <- 0
+  }   
+  id <- id + 1
+  assign("patask.id", id, envir=cacheEnv)
+  
+  return(str_c("t",id))
+}
+
+
+
+
+# computes a hash based on the hostname & the solve id & a time stamp
+# this is to guaranty that files used by a job will be put in a unique folder
+
+.getSpaceHash <- function() {
+  
+  if (exists("space.hash", envir=cacheEnv)){
+    hash <- get("space.hash", envir=cacheEnv)
+  } else {
+    id <- .peekNewSolveId()
+    localhost <- J("java.net.InetAddress")$getLocalHost()
+    hname <- localhost$getHostName()
+    time <- Sys.time()
+    full_str <- str_c(hname, toString(id), time)
+    j_str <- .jnew(J("java.lang.String"),full_str)
+    hcode <- j_str$hashCode()
+    hash <- str_replace_all(toString(hcode),fixed("-"), "_")
+    assign("space.hash", hash, envir=cacheEnv)
+  }     
+  return(hash)
+}
+
+j_try_catch <- defmacro(FUN, .print.stack = TRUE, .handler = NULL, expr={
+  tryCatch ({
+    return (FUN)
+  } , Exception = function(e) {
+    if (is.null(.handler)) {
+      PAHandler(e, .print.stack=.print.stack)
+    } else {
+      .handler(e, .print.stack=.print.stack)
+    }
+  })
+})
+
+.getSpaceName <- function(space) {
+  if (toupper(space) == "INPUT") {
+    return ("INPUTSPACE")
+  } else if (toupper(space) == "OUTPUT") {
+    return ("OUTPUTSPACE")
+  } else if (toupper(space) == "GLOBAL") {
+    return ("GLOBALSPACE")
+  } else if (toupper(space) == "USER") {
+    return ("USERSPACE")
+  }
+  return(space)
+}
+
+# macro which escapes parameters to evaluatable strings
+.param.to.remote.eval <- defmacro(param, expr = {
+  # print(str_c("eval(parse(text = '",deparse(substitute(param)),"'))"))
+  .ptre.lines <- deparse(substitute(param))
+  .ptre.output <- "eval(parse(text = c("
+  for (.ptre.i in 1:length(.ptre.lines)) {
+    .ptre.output <- str_c(.ptre.output,"\"",str_replace_all(.ptre.lines[.ptre.i],fixed("\""),"\\\""),"\"")
+    if (.ptre.i < length(.ptre.lines)) {
+      .ptre.output <- str_c(.ptre.output,", ")
+    }
+  }
+  .ptre.output <- str_c(.ptre.output,")))")
+  return(.ptre.output)
+})
 
 .cat_list <- function(ll) {
   cat(.toString_list(ll))  

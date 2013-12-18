@@ -1,5 +1,5 @@
 PAConnect <- function(url, login, pwd, 
-                      cred=NULL) {
+                      cred=NULL, .print.stack = TRUE) {
   if (missing(url)) {
     url <- readline("REST URL:")
   } 
@@ -12,15 +12,18 @@ PAConnect <- function(url, login, pwd,
       pwd <- readline("Password:")
     }
   }
+    
   
-  tryCatch ({
-    .scheduler.client <<- new(J("org.ow2.proactive.scheduler.rest.SchedulerClient"))
-    .scheduler.client$init(url, login, pwd)
-  } , Exception = function(e) {
-    print("Error in PAConnect(...):")
-    e$jobj$printStackTrace()
-    stop()
-  })
+  j_try_catch({
+    client <- new(J("org.ow2.proactive.scheduler.rest.SchedulerClient"))
+    client$init(url, login, pwd)
+  } , .handler = function(e,.print.stack) {
+    print(str_c("Error in PAConnect(",url,") :"))
+    PAHandler(e,.print.stack)
+  }, .print.stack = .print.stack)
+     
+  PAClient(client)
+               
   
-  return (.scheduler.client)
+  return (client)
 }
