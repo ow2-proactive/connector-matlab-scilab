@@ -119,7 +119,7 @@ public final class PARScriptFactory extends RScriptFactory {
 		// Update the current process 'Path' environment variable
 		try {
 			String varValue = System.getenv("Path");
-			Environment.setenv("Path", varValue + fs + rLibrarayPath, true);
+			Environment.setenv("Path", varValue + File.pathSeparator + rLibrarayPath, true);
 		} catch (Exception e) {
 			throw new IllegalStateException(
 					"Unable to add R lib to Path environment variable " + rLibrarayPath, e);
