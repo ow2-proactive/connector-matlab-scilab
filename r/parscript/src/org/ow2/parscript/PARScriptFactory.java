@@ -100,7 +100,11 @@ public final class PARScriptFactory extends RScriptFactory {
 		// Get the architecture of the jvm not the os
 		String sunArchDataModel = System.getProperty("sun.arch.data.model");
 		String rLibrarayPath = rHome + fs + "bin" + fs;
-		String jriLibraryPath = rHome + fs + "library" + fs + "rJava" + fs + "jri" + fs;
+		String rJavaPath = rHome + fs + "library" + fs + "rJava";
+		if (!new File(rJavaPath).exists()) {
+			throw new IllegalStateException("Unable to locate rJava in " + rJavaPath);
+		}
+		String jriLibraryPath = rJavaPath + fs + "jri" + fs;
 		// Use correct libraries depending on jvm architecture 
 		if ("32".equals(sunArchDataModel)) {
 			rLibrarayPath += "i386";
@@ -128,8 +132,16 @@ public final class PARScriptFactory extends RScriptFactory {
 	
 	private static void dynamicAddLibraryPathLinux(final String rHome) {
 		String fs = java.io.File.separator;
+		String rJavaPath = rHome + fs + "site-library" + fs + "rJava";
+		if (!new File(rJavaPath).exists()) {
+			Exception e = new IllegalStateException("Unable to locate rJava in " + rJavaPath);
+			rJavaPath = rHome + fs + "library" + fs + "rJava";
+			if (!new File(rJavaPath).exists()) {
+				throw new IllegalStateException("Unable to locate rJava in " + rJavaPath, e);
+			}
+		}
 		// Dynamically add to java library path
-		String jriLibraryPath = rHome + fs + "site-library" + fs + "rJava" + fs + "jri" + fs;
+		String jriLibraryPath = rJavaPath + fs + "jri" + fs;
 		try {
 			PARScriptFactory.addLibraryPath(jriLibraryPath);
 		} catch (Exception e) {
