@@ -62,8 +62,7 @@ setMethod("getScript", "PATask",
 
 
 setMethod("setScript", "PATask",
-          function(object,value) {            
-            s_clz = J("org.ow2.proactive.scripting.Script")            
+          function(object,value) {                      
             sscript = new(J("org.ow2.proactive.scripting.SimpleScript"),value,"parscript") 
             tscript = new(J("org.ow2.proactive.scripting.TaskScript"),sscript)            
             return(object@javaObject$setScript(tscript))                          
@@ -129,9 +128,11 @@ setReplaceMethod("addOutputFiles" ,"PATask" ,
                  }
 )
 
-setReplaceMethod("addSelectionScript" ,"PATask" ,
-                 function(object,value) {
-                   object@selectionScripts <- c(object@selectionScripts, value)
+setMethod("addSelectionScript" ,"PATask" ,
+                 function(object,value,engine,is.dynamic) {          
+                   sscript = new(J("org.ow2.proactive.scripting.SelectionScript"),value,engine,is.dynamic)
+                   jo = object@javaObject    
+                   jo$addSelectionScript(sscript)              
                    return(object)
                  }
 )

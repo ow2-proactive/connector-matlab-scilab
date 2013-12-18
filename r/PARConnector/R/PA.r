@@ -164,7 +164,7 @@ error = function(e) {print(str_c("Error when replacing pattern ", pattern, " in 
 
 # Merging
 # if named parameters are used for merging tasks, a list containing the results will be created
-PAM <- function(funcOrFuncName, ..., varies=list(), input.files=list(), output.files=list(), in.dir = getwd(), out.dir = getwd(), client = PAClient(), .debug = PADebug()) {  
+PAM <- function(funcOrFuncName, ..., varies=list(), input.files=list(), output.files=list(), in.dir = getwd(), out.dir = getwd(), hostname.selection = NULL, client = PAClient(), .debug = PADebug()) {  
   dots <- list(...)
   
   # if we are merging find all list of tasks in parameters, construct new function call
@@ -200,18 +200,19 @@ PAM <- function(funcOrFuncName, ..., varies=list(), input.files=list(), output.f
   newcall[["output.files"]] <- output.files
   newcall[["in.dir"]] <- in.dir
   newcall[["out.dir"]] <- out.dir
+  newcall[["hostname.selection"]] <- hostname.selection
   newcall[["client"]] <- client
   newcall[[".debug"]] <- .debug
   return(do.call("PA",newcall))
 }
 
 # Splitting / Scattering
-PAS <- function(funcOrFuncName, ..., varies=NULL, input.files=list(), output.files=list(), in.dir = getwd(), out.dir = getwd(), client = PAClient(), .debug = PADebug()) {    
+PAS <- function(funcOrFuncName, ..., varies=NULL, input.files=list(), output.files=list(), in.dir = getwd(), out.dir = getwd(), hostname.selection = NULL, client = PAClient(), .debug = PADebug()) {    
   
   dots <- list(...)
    
   # we generate a task with a forced cardinality of 1
-  task <- PA(funcOrFuncName, ..., varies=list(),input.files=input.files, output.files=output.files, in.dir = in.dir, out.dir = out.dir, client = client, .debug = .debug)
+  task <- PA(funcOrFuncName, ..., varies=list(),input.files=input.files, output.files=output.files, in.dir = in.dir, out.dir = out.dir, hostname.selection = hostname.selection, client = client, .debug = .debug)
   if (length(task) > 1) {
     stop(paste0("Internal Error : Unexpected task list length, expected 1, received ",length(task)))
   }
@@ -228,7 +229,7 @@ PAS <- function(funcOrFuncName, ..., varies=NULL, input.files=list(), output.fil
 }
 
 # Standard Parametric sweep
-PA <- function(funcOrFuncName, ..., varies=NULL, input.files=list(), output.files=list(), in.dir = getwd(), out.dir = getwd(), client = PAClient(), .debug = PADebug()) {
+PA <- function(funcOrFuncName, ..., varies=NULL, input.files=list(), output.files=list(), in.dir = getwd(), out.dir = getwd(), hostname.selection = NULL, client = PAClient(), .debug = PADebug()) {
   if (is.character(funcOrFuncName)) {
     fun <- match.fun(funcOrFuncName)
     funname <- funcOrFuncName
@@ -427,7 +428,16 @@ PA <- function(funcOrFuncName, ..., varies=NULL, input.files=list(), output.file
       total_script <- str_c(total_script, "print(\"[DEBUG] Result :\")\n")
       total_script <- str_c(total_script, "print(result)\n")
     }
-    setScript(t,total_script)  
+    setScript(t,total_script) 
+    
+    
+    # add selection script if hostname.selection is provided
+    if (!is.null(hostname.selection)) {
+      sspath <- system.file("extdata", "checkHostName.js", package="PARConnector")
+      sscontents <- readChar(sspath, file.info(sspath)$size)
+      sscontents <- str_replace_all(sscontents, fixed("args[0]"), str_c("\"",toString(hostname.selection),"\""))
+      addSelectionScript(t,sscontents,"JavaScript",FALSE)
+    }
     
     if (length(input.files) > 0) {
       tmp.input.files <- final.input.files[[i]]

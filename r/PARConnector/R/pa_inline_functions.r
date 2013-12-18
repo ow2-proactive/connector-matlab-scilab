@@ -154,8 +154,8 @@ setGeneric(
 )
 
 setGeneric(
-  name="addSelectionScript<-",
-  def=function(object,value) {standardGeneric("addSelectionScript<-" )}  
+  name="addSelectionScript",
+  def=function(object,value,engine,is.dynamic) {standardGeneric("addSelectionScript" )}  
 )
 
 ### PAJobResult

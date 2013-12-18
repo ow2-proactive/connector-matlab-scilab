@@ -12,7 +12,7 @@ PAPushFile <- function(space, path, fileName, inputFile,
       if (.print.stack) {
         print(str_c("Error in PAPushFile(",space,",",path,",",fileName,",",inputFile,") : ", e$jobj$getMessage()))
       }
-    PAHandle(e,.print.stack)
+    PAHandler(e,.print.stack)
   },.print.stack = .print.stack)
   return (pushed)
 }

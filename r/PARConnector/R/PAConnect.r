@@ -1,7 +1,7 @@
 PAConnect <- function(url, login, pwd, 
                       cred=NULL, .print.stack = TRUE) {
   if (missing(url)) {
-    url <- readline("REST URL:")
+    url <- readline("Scheduler REST url:")
   } 
   
   if (is.null(cred)) {
@@ -9,7 +9,11 @@ PAConnect <- function(url, login, pwd,
       login <- readline("Login:")
     }
     if (missing(pwd)) {
-      pwd <- readline("Password:")
+      if (exists(".rs.askForPassword")) {
+        pwd <- .rs.askForPassword(str_c("Password for ",login))
+      } else {
+        pwd <- readline("Password:")
+      }
     }
   }
     

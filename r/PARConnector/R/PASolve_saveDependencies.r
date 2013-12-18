@@ -6,7 +6,20 @@
     }
     
     if (.do.verbose) {
-      print(str_c(" // processing function: '", funcOrFuncName,"'"))
+      print(str_c(" // processing variable: '", funcOrFuncName,"'"))
+    }
+    
+    # reserved functions
+    if (is.element(funcOrFuncName, c("install.packages","library","require"))) {
+      return(list(NULL,.buffer))
+    }
+    envName <- environmentName(envir)
+    # todo automatic library loading
+    if (!is.element(envName, c("","R_GlobalEnv"))) {
+      if (.do.verbose) {
+        print( "package ",envName, " is required")
+      }
+      return(list(NULL,.buffer))
     }
     if (is.null(envir)) {
       func <- tryCatch( get(funcOrFuncName), error = function(e) {warning("[Resolve Dependencies] When running get(",toString(funcOrFuncName),") : ",e);return(NULL)} );
@@ -19,6 +32,9 @@
     .buffer <- append(.buffer,funcOrFuncName)
     out <- {funcOrFuncName};
     # assign the variable in my private environment
+    if (.do.verbose) {
+      print(str_c(" // variable '", funcOrFuncName,"' added to environment"))
+    }
     assign(funcOrFuncName, func, envir=newenvir);
     
   } else {
@@ -70,6 +86,7 @@
 .doSaveListDependencies <- function(lstvarName, envir=NULL, newenvir=new.env(), .buffer={}, .do.verbose=PADebug()) {
   lstvar <- tryCatch( get(lstvarName,envir), error = function(e) {warning("[Resolve Dependencies] When running get(",toString(lstvarName),",envir) : ",e);return(NULL)} );
   assign(lstvarName, lstvar, envir=newenvir);
+  out <- {};
   for(el in lstvar) {
     toelem = typeof(el);
     if (toelem == "list") {
