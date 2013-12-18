@@ -49,7 +49,7 @@ public class TestLocalspace {
 		org.junit.Assert.assertNotNull("No result from R script", resPath);
 		org.junit.Assert.assertEquals(
 				"R script working directory is incorrect", f.getCanonicalPath(),
-				resPath.replace("/", "\\"));
+				resPath.replace("/", File.separator));
 	}
 
 	class MockedDSFO implements DataSpacesFileObject {

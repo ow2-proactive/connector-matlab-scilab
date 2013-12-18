@@ -84,7 +84,7 @@
 
 	<target name='test' depends='dist' >
 		<mkdir dir="${report}" />
-		<junit haltonfailure="yes">
+		<junit haltonfailure="yes" showoutput="yes">
 			<classpath>
 				<path refid="classpath"/>
 				<pathelement location="${target}"/>

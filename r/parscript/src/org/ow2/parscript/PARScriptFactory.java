@@ -47,7 +47,11 @@ public final class PARScriptFactory extends RScriptFactory {
 
 	@Override
 	public ScriptEngine getScriptEngine() {
-		this.setLibraryPath();
+		// Check if the path to rJava is already setted
+		String libPath = System.getProperty("java.library.path");
+		if (libPath == null || !libPath.contains("jri")) {
+			this.setLibraryPath();
+		}
 		return PARScriptEngine.create();
 	}
 
@@ -66,27 +70,32 @@ public final class PARScriptFactory extends RScriptFactory {
 							"Unable to locate R homedir, it seems R is not installed", e);
 				}
 			} else {
-				// Nothing to do on Linux, maybe check in path ...
+				File usual = new File("/usr/lib/R");
+				if (usual.exists()) {
+					rHome = usual.getAbsolutePath();
+					// Set the current process 'R_HOME' environment variable 
+					try {
+						Environment.setenv("R_HOME", rHome, true);
+					} catch (Exception e) {
+						throw new IllegalStateException(
+								"Unable to set R_HOME environment variable to " + rHome, e);
+					}
+				}
 			}
 			if (rHome == null) {
 				throw new IllegalStateException(
 						"Unable to locate R homedir, be sure the R_HOME env variable is defined");
 			}
 		}
-		// Check if the path to rJava is already setted
-		String libPath = System.getProperty("java.library.path");
-		if (libPath != null && libPath.contains("jri")) {
-			return;
-		}
 		// Add the library path
 		if (isWindows) {
-			this.dynamicAddLibraryPath(rHome, "Path");
+			dynamicAddLibraryPathWindows(rHome);
 		} else {
-			this.dynamicAddLibraryPath(rHome, "LD_LIBRARY_PATH");
+			dynamicAddLibraryPathLinux(rHome);
 		}
 	}
 
-	private void dynamicAddLibraryPath(final String rHome, final String libPathVarName) {				
+	private static void dynamicAddLibraryPathWindows(final String rHome) {
 		String fs = java.io.File.separator;
 		// Get the architecture of the jvm not the os
 		String sunArchDataModel = System.getProperty("sun.arch.data.model");
@@ -107,16 +116,27 @@ public final class PARScriptFactory extends RScriptFactory {
 			throw new IllegalStateException(
 					"Unable to add jri to library path " + jriLibraryPath, e);
 		}
-		// Update the current process 'libPathVarName' environment variable
+		// Update the current process 'Path' environment variable
 		try {
-			String varValue = System.getenv(libPathVarName);
-			Environment.setenv(libPathVarName, varValue + File.pathSeparator + rLibrarayPath, true);
+			String varValue = System.getenv("Path");
+			Environment.setenv("Path", varValue + fs + rLibrarayPath, true);
 		} catch (Exception e) {
 			throw new IllegalStateException(
-					"Unable to add R lib to " + libPathVarName + " environment variable " + rLibrarayPath, e);
+					"Unable to add R lib to Path environment variable " + rLibrarayPath, e);
 		}
-	}	
-
+	}
+	
+	private static void dynamicAddLibraryPathLinux(final String rHome) {
+		String fs = java.io.File.separator;
+		// Dynamically add to java library path
+		String jriLibraryPath = rHome + fs + "site-library" + fs + "rJava" + fs + "jri" + fs;
+		try {
+			PARScriptFactory.addLibraryPath(jriLibraryPath);
+		} catch (Exception e) {
+			throw new IllegalStateException(
+					"Unable to add jri to library path " + jriLibraryPath, e);
+		}
+	}
 	/**
 	 * Adds the specified path to the java library path
 	 * 
