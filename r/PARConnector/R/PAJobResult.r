@@ -71,7 +71,7 @@ setMethod("PAWaitFor","PAJobResultOrMissing", function(paresult = .last.result, 
               }
               
               if(tresult$hadException()) {     
-                answer[[i]] <- simpleError(tresult$value())
+                answer[[tnames[i]]] <- simpleError(tresult$value())
               } else {
                 # transferring output files
                 tasks <- paresult@job@tasks
@@ -92,9 +92,9 @@ setMethod("PAWaitFor","PAJobResultOrMissing", function(paresult = .last.result, 
                   rexp <- J("org.rosuda.jrs.RexpConvert")$jobj2rexp(jobj)                
                   eng <- .jengine()                
                   eng.assign("tmpoutput",rexp)                  
-                  answer[[i]] <- callback(tmpoutput)
+                  answer[[tnames[i]]] <- callback(tmpoutput)
                 } else {                              
-                  answer[[i]] <- callback(jobj)      
+                  answer[[tnames[i]]] <- callback(jobj)      
                 } 
               }
             }
@@ -106,7 +106,9 @@ setMethod("PAWaitFor","PAJobResultOrMissing", function(paresult = .last.result, 
 
 setMethod("toString","PAJobResult",
           function(x, ...) {
-            object <- x                
+            object <- x 
+            output.list <- list()
+            
             job.name = getName(object@job)
             state <- object@client$getJobState(object@job.id)
             task.states.list <- state$getTasks()
@@ -114,9 +116,22 @@ setMethod("toString","PAJobResult",
             if (task.states.list$size() > 0) {              
               for (i in 0:(task.states.list$size()-1)) {
                 task.state <- task.states.list$get(as.integer(i))
-                if (is.element(task.state$getName(), object@task.names)) {             
-                  output <- str_c(output, task.state$getName(), " : ",  task.state$getStatus()$toString(), " (",task.state$getProgress(),"%)","\n")
+                if (is.element(task.state$getName(), object@task.names)) {
+                  taskindex <- strtoi(str_sub(task.state$getName(),2))
+                  status <- task.state$getStatus()$toString()
+                  if (status == "Running") {
+                    output.list[[taskindex]] <- str_c(task.state$getName(), " : ",  task.state$getStatus()$toString(), " at ",task.state$getTaskInfo()$getExecutionHostName()," (",task.state$getProgress(),"%)")
+                  } else if (status == "Finished") {
+                    date <- new(J("java.util.Date"),.jlong(task.state$getTaskInfo()$getFinishedTime()))
+                    output.list[[taskindex]] <- str_c(task.state$getName(), " : ",  task.state$getStatus()$toString(), " at ", date$toString())
+                  } else {
+                    output.list[[taskindex]] <- str_c(task.state$getName(), " : ",  task.state$getStatus()$toString())
+                  }
+                  
                 }
+              }
+              for (i in 1:length(output.list)) {
+                output <- str_c(output,output.list[[i]],"\n")
               }
             }
             return(output)

@@ -2,6 +2,7 @@
   tname <- getName(task)
   task.names <- get("task.names",envir)
   all.tasks <- get("all.tasks",envir)
+  
   if (!is.element(tname,task.names)) {
     task.names <- c(task.names,tname)
     all.tasks <- c(all.tasks, task)
@@ -52,6 +53,11 @@ PASolve <- function(..., client = PAClient(), .debug = PADebug(), jobName = str_
       .compute.task.dependencies(tasklist[[j]],environment())    
     }
   }
+  # sort tasks by their names
+  unordered <- unlist(lapply(task.names, function(x)strtoi(str_sub(x,2))))
+  new.indexes <- sort(unordered,index.return=TRUE)
+  task.names <- task.names[new.indexes[["ix"]]]
+  all.tasks <- all.tasks[new.indexes[["ix"]]]
   
   for (i in 1:length(all.tasks)) {
     addTask(job) <- all.tasks[[i]]
@@ -62,7 +68,7 @@ PASolve <- function(..., client = PAClient(), .debug = PADebug(), jobName = str_
     cat(toString(job))
   }
   jobid <- j_try_catch(client$submit(getJavaObject(job)))
-  cat(str_c("Job submitted (id : ",jobid$value(),")","\n"))
+  cat(str_c("Job submitted (id : ",jobid$value(),")","\n"," with tasks : ",toString(task.names)))
   
   jobresult <- PAJobResult(job, jobid$value(),  task.names, client)  
   .last.result <<- jobresult

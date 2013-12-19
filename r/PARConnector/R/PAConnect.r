@@ -28,6 +28,6 @@ PAConnect <- function(url, login, pwd,
      
   PAClient(client)
                
-  
+  cat("Connected to Scheduler at ",url,"\n")
   return (client)
 }

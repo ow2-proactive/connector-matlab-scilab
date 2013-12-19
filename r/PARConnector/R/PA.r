@@ -127,7 +127,7 @@ error = function(e) {print(str_c("Error when replacing pattern ", pattern, " in 
   if (is.null(pair)) {
     # if no explicit space pattern, try to infer it
     if(hasDependency && !isOutput) {
-      # by default we say that the space is remote if task has dependencies
+      # by default we say that the space is remote if task has dependencies and file is not an output file
       space <- "USER"   
     } else {
       space <- "LOCAL"   
@@ -428,6 +428,7 @@ PA <- function(funcOrFuncName, ..., varies=NULL, input.files=list(), output.file
       total_script <- str_c(total_script, "print(\"[DEBUG] Result :\")\n")
       total_script <- str_c(total_script, "print(result)\n")
     }
+    total_script <- str_c(total_script, "set_progress(100)\n")
     setScript(t,total_script) 
     
     
