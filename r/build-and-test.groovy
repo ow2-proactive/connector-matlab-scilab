@@ -49,7 +49,7 @@ def rcheckProcess = [rExe, 'CMD', 'check', '--no-codoc', '--no-manual', '--no-mu
 rcheckProcess.inputStream.eachLine {
 	println '>> ' + it
 }
-assert rcheckProcess.waitFor() == 0 : "!!! It seems R CHECK failed !!!"
+assert rcheckProcess.waitFor() == 0 : 'It seems R CMD check failed'
 
 println '\n######################\n#   BUILDING PARConnector ... \n######################'
 def distDir = new File(homeDir, 'dist')
@@ -59,23 +59,28 @@ def rbuildProcess = [rExe, 'CMD', 'build', parConnectorDir.getAbsolutePath()].ex
 rbuildProcess.inputStream.eachLine {
 	println '>> ' + it
 }
-assert rbuildProcess.waitFor() == 0 : "!!! It seems R BUILD failed !!!"
+assert rbuildProcess.waitFor() == 0 : 'It seems R CMD build failed'
+
+assert distDir.listFiles().length > 0 : 'The dist dir is empty'
+def archiveFile = distDir.listFiles().first();
+println "------------------> " +archiveFile
+assert archiveFile.getName().endsWith('.tar.gz') : 'It seems the archive was not build correctly'
 
 println '\n######################\n#   REMOVING previous PARConnector ... \n######################'
 def removeProcess = [rExe, 'CMD', 'REMOVE', '--library='+rLibraryPath, 'PARConnector'].execute(newEnv, homeDir)
 removeProcess.inputStream.eachLine {
 	println '>> ' + it
 }
-assert removeProcess.waitFor() == 0 : "!!! It seems REMOVING previous failed !!!"
+assert removeProcess.waitFor() == 0 : 'It seems R CMD remove failed'
 
 println '\n######################\n#   INSTALLING PARConnector ... \n######################'
 //for /f "tokens=*" %%a in ('dir /b /od') do set newest=%%a
 //%R_EXE% CMD INSTALL  --library="%R_HOME%\library" %newest%
-//def removeProcess = [rExe, 'CMD', 'INSTALL', '--preclean', '--no-test-load', '--library='+rLibraryPath, 'PARConnector'].execute(newEnv, homeDir)
-//removeProcess.inputStream.eachLine {
-//	println '>> ' + it
-//}
-//assert removeProcess.waitFor() == 0 : "!!! It seems R BUILD failed !!!"
+def installProcess = [rExe, 'CMD', 'INSTALL', '--library='+rLibraryPath, archiveFile.getAbsolutePath()].execute(newEnv, homeDir)
+installProcess.inputStream.eachLine {
+	println '>> ' + it
+}
+assert installProcess.waitFor() == 0 : "It seems R CMD install failed'
 
 /*
 echo ************************************************************
