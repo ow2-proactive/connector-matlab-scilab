@@ -21,7 +21,7 @@ assert rHome != null : '!!! Unable to locate R home dir, the R_HOME env var is u
 // ! THIS IS A FIX FOR rJava that requires JAVA_HOME to be the location of the JRE !
 def javaHome = System.getenv()['JAVA_HOME']+fs+'jre'
 def paArch = System.getenv()['PROGRAMFILES(X86)'] != null ? 'x64' : 'i386'
-def rExe = rHome+fs+bin+fs+paArch+fs+'R.exe'
+def rExe = rHome+fs+'bin'+fs+paArch+fs+'R.exe'
 def env = ['R_HOME='+rHome, 'JAVA_HOME='+javaHome]
 
 println '\n######################\n#   CHECKING R packages from package sources ... \n######################'
