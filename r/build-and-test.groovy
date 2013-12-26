@@ -15,23 +15,25 @@ if ('r' != homeDir.getName()) {
 	rDir = new File(homeDir, 'r')
 	if (rDir.exists()) {
 		homeDir = rDir
-	} else {
-		'!!! Please run the script from r dir or from the parent of r dir !!!'
+		} else {
+			throw new IllegalStateException('!!! Please run the script from r dir or from the parent of r dir !!!')
+		}
 	}
-}
 
-def parConnectorDir = new File(homeDir, 'PARConnector')
-assert parConnectorDir.exists() : '!!! Unable to PARConnector dir !!!'
+	def parConnectorDir = new File(homeDir, 'PARConnector')
+	assert parConnectorDir.exists() : '!!! Unable to PARConnector dir !!!'
 
-def schedHome = System.getenv()['SCHEDULER_340']
-assert schedHome != null : '!!! Unable to locate Scheduler 3.4.0 home dir, the SCHEDULER_340 env var is undefined !!!'
+	def schedHome = System.getenv()['SCHEDULER_340']
+	assert schedHome != null : '!!! Unable to locate Scheduler 3.4.0 home dir, the SCHEDULER_340 env var is undefined !!!'
 
-def rHome = System.getenv()['R_HOME']
-assert rHome != null : '!!! Unable to locate R home dir, the R_HOME env var is undefined !!!'
+	def rHome = System.getenv()['R_HOME']
+	assert rHome != null : '!!! Unable to locate R home dir, the R_HOME env var is undefined !!!'
 
 def rLibraryDir = new File(rHome,'library') // check if on linux it works
 def rLibraryPath = rLibraryDir.getAbsolutePath()
 // todo check for rJava
+
+def testsDir = new File(homeDir,'tests')
 
 // ! THIS IS A FIX FOR rJava that requires JAVA_HOME to be the location of the JRE !
 def newEnv = []
@@ -80,23 +82,23 @@ def installProcess = [rExe, 'CMD', 'INSTALL', '--library='+rLibraryPath, archive
 installProcess.inputStream.eachLine {
 	println '>> ' + it
 }
-assert installProcess.waitFor() == 0 : "It seems R CMD install failed'
+assert installProcess.waitFor() == 0 : 'It seems R CMD install failed'
+
+println '\n######################\n#   RUNNING integration tests ... \n######################'
+//%R_EXE% --vanilla < ..\tests\test.R
+def rTestFile = new File(testsDir, 'test.R')
+def testProcess = [rExe, '--vanilla', '<', rTestFile].execute(newEnv, homeDir)
+testProcess.out << rTestFile.getText()
+testProcess.out.close()
+testProcess.inputStream.eachLine {
+	println '>> ' + it
+}
+assert testProcess.waitFor() == 0 : 'It seems R CMD install failed'
 
 /*
-echo ************************************************************
-echo ********* RUNNING integration tests                *********
-echo ************************************************************
-%R_EXE% --vanilla < ..\tests\test.R
-*/
-
-
-//rem %R_EXE% CMD check --no-codoc --no-manual --no-multiarch PARConnector
-//IF ERRORLEVEL 1 GOTO :exit
-
-/*
-try {   
+try {
 	println '\n######################\n#   Starting the Scheduler using start-server.js ... \n######################'
-	schedProcess = ["jrunscript", "start-server.js"].execute(null, new File(schedHome+'/bin'))
+	schedProcess = ["jrunscript", "start-server.js"].execute(null, new File(schedHome, 'bin'))
 	try {
 		schedProcess.inputStream.eachLine {
 			println '>> ' + it
@@ -112,11 +114,9 @@ try {
 				def stdin = schedProcess.getOutputStream();
 				stdin.write('exit\n'.getBytes() );
 				stdin.flush();
-				} catch (e) {e.printStackTrace()}
+				} catch (e) {e.printStackTrace()}	
 				calcServerProcess.waitForOrKill(500)
-				schedProcess.waitFor();
+				schedProcess.waitFor();	
 			}
 		}
-	}
-}
-*/
+		*/
