@@ -48,9 +48,7 @@ def rExe = rHome+fs+'bin'+fs+paArch+fs+'R.exe'
 println '\n######################\n#   CHECKING R packages from package sources ... \n######################'
 (new File(homeDir, 'PARConnector.Rcheck')).deleteDir()
 def rcheckProcess = [rExe, 'CMD', 'check', '--no-codoc', '--no-manual', '--no-multiarch', 'PARConnector'].execute(newEnv, homeDir)
-rcheckProcess.inputStream.eachLine {
-	println '>> ' + it
-}
+rcheckProcess.waitForProcessOutput(System.out, System.err)
 assert rcheckProcess.waitFor() == 0 : 'It seems R CMD check failed'
 
 println '\n######################\n#   BUILDING PARConnector ... \n######################'
@@ -59,30 +57,21 @@ distDir.deleteDir()
 distDir.mkdir()
 assert distDir.exists() : 'No dist dir ? ' + distDir
 def rbuildProcess = [rExe, 'CMD', 'build', parConnectorDir.getAbsolutePath()].execute(newEnv, distDir)
-rbuildProcess.inputStream.eachLine {
-	println '>> ' + it
-}
+rbuildProcess.waitForProcessOutput(System.out, System.err)
 assert rbuildProcess.waitFor() == 0 : 'It seems R CMD build failed'
 
 assert distDir.listFiles().length > 0 : 'The dist dir is empty'
 def archiveFile = distDir.listFiles().first();
-println "------------------> " +archiveFile
 assert archiveFile.getName().endsWith('.tar.gz') : 'It seems the archive was not build correctly'
 
 println '\n######################\n#   REMOVING previous PARConnector ... \n######################'
 def removeProcess = [rExe, 'CMD', 'REMOVE', '--library='+rLibraryPath, 'PARConnector'].execute(newEnv, homeDir)
-removeProcess.inputStream.eachLine {
-	println '>> ' + it
-}
-assert removeProcess.waitFor() == 0 : 'It seems R CMD remove failed'
+removeProcess.waitForProcessOutput(System.out, System.err)
+//assert removeProcess.waitFor() == 0 : 'It seems R CMD remove failed'
 
 println '\n######################\n#   INSTALLING PARConnector ... \n######################'
-//for /f "tokens=*" %%a in ('dir /b /od') do set newest=%%a
-//%R_EXE% CMD INSTALL  --library="%R_HOME%\library" %newest%
 def installProcess = [rExe, 'CMD', 'INSTALL', '--library='+rLibraryPath, archiveFile.getAbsolutePath()].execute(newEnv, homeDir)
-installProcess.inputStream.eachLine {
-	println '>> ' + it
-}
+installProcess.waitForProcessOutput(System.out, System.err)
 assert installProcess.waitFor() == 0 : 'It seems R CMD install failed'
 
 println '\n######################\n#   RUNNING integration tests ... \n######################'
@@ -91,9 +80,7 @@ def rTestFile = new File(testsDir, 'test.R')
 def testProcess = [rExe, '--vanilla', '<', rTestFile].execute(newEnv, homeDir)
 testProcess.out << rTestFile.getText()
 testProcess.out.close()
-testProcess.inputStream.eachLine {
-	println '>> ' + it
-}
+testProcess.waitForProcessOutput(System.out, System.err)
 assert testProcess.waitFor() == 0 : 'It seems R CMD install failed'
 
 /*
