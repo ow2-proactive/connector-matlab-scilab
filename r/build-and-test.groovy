@@ -19,16 +19,21 @@ def rHome = System.getenv()['R_HOME']
 assert rHome != null : '!!! Unable to locate R home dir, the R_HOME env var is undefined !!!'
 
 // ! THIS IS A FIX FOR rJava that requires JAVA_HOME to be the location of the JRE !
-def javaHome = System.getenv()['JAVA_HOME']+fs+'jre'
+def currentEnv = System.getenv();
+currentEnv['JAVA_HOME'] = System.getenv()['JAVA_HOME']+fs+'jre';
+def newEnv = []
+currentEnv.each() {k,v -> newEnv << k+'='+'v'}
+
+println '----> new env = ' + newEnv
+
 def paArch = System.getenv()['PROGRAMFILES(X86)'] != null ? 'x64' : 'i386'
 def rExe = rHome+fs+'bin'+fs+paArch+fs+'R.exe'
-def env = ['R_HOME='+rHome, 'JAVA_HOME='+javaHome]
 
 println '\n######################\n#   CHECKING R packages from package sources ... \n######################'
 
 // Delete previous checks
 (new File(rtoolboxDir, 'PARConnector.Rcheck')).deleteDir(); 
-def rcheckProcess = [rExe, 'CMD', 'check', '--no-codoc', '--no-manual', '--no-multiarch', 'PARConnector'].execute(env, rtoolboxDir)
+def rcheckProcess = [rExe, 'CMD', 'check', '--no-codoc', '--no-manual', '--no-multiarch', 'PARConnector'].execute(newEnv, rtoolboxDir)
 rcheckProcess.inputStream.eachLine {
 	println '>> ' + it
 }
