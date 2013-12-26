@@ -15,19 +15,19 @@ if ('r' != homeDir.getName()) {
 	rDir = new File(homeDir, 'r')
 	if (rDir.exists()) {
 		homeDir = rDir
-		} else {
-			throw new IllegalStateException('!!! Please run the script from r dir or from the parent of r dir !!!')
-		}
+	} else {
+		throw new IllegalStateException('!!! Please run the script from r dir or from the parent of r dir !!!')
 	}
+}
 
-	def parConnectorDir = new File(homeDir, 'PARConnector')
-	assert parConnectorDir.exists() : '!!! Unable to PARConnector dir !!!'
+def parConnectorDir = new File(homeDir, 'PARConnector')
+assert parConnectorDir.exists() : '!!! Unable to PARConnector dir !!!'
 
-	def schedHome = System.getenv()['SCHEDULER_340']
-	assert schedHome != null : '!!! Unable to locate Scheduler 3.4.0 home dir, the SCHEDULER_340 env var is undefined !!!'
+def schedHome = System.getenv()['SCHEDULER_340']
+assert schedHome != null : '!!! Unable to locate Scheduler 3.4.0 home dir, the SCHEDULER_340 env var is undefined !!!'
 
-	def rHome = System.getenv()['R_HOME']
-	assert rHome != null : '!!! Unable to locate R home dir, the R_HOME env var is undefined !!!'
+def rHome = System.getenv()['R_HOME']
+assert rHome != null : '!!! Unable to locate R home dir, the R_HOME env var is undefined !!!'
 
 def rLibraryDir = new File(rHome,'library') // check if on linux it works
 def rLibraryPath = rLibraryDir.getAbsolutePath()
@@ -57,6 +57,7 @@ println '\n######################\n#   BUILDING PARConnector ... \n#############
 def distDir = new File(homeDir, 'dist')
 distDir.deleteDir()
 distDir.mkdir()
+assert distDir.exists() : 'No dist dir ? ' + distDir
 def rbuildProcess = [rExe, 'CMD', 'build', parConnectorDir.getAbsolutePath()].execute(newEnv, distDir)
 rbuildProcess.inputStream.eachLine {
 	println '>> ' + it
