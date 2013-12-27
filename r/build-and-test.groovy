@@ -7,14 +7,13 @@
 // - runs the integration test that uses PARConnector api functions and submit jobs
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-def run(command, env, dir) {
-	println 'Running ' + command
+// Executes a command and redirects stdout/stderr
+def run = {command, env, dir ->
+	println 'Running ' + command.join(" ")
 	def proc = command.execute(env, dir)
 	proc.waitForProcessOutput(System.out, System.err)
 	return proc
 }
-
-def fs = File.separator
 
 // Check that the current dir is 'r' or its parent
 def homeDir = new File(System.getProperty('user.dir'));
@@ -26,6 +25,8 @@ if ('r' != homeDir.getName()) {
 		throw new IllegalStateException('!!! Please run the script from r dir or from the parent of r dir !!!')
 	}
 }
+
+def fs = File.separator
 
 def parConnectorDir = new File(homeDir, 'PARConnector')
 assert parConnectorDir.exists() : '!!! Unable to PARConnector dir !!!'
@@ -45,7 +46,7 @@ def testsDir = new File(homeDir,'tests')
 // ! THIS IS A FIX FOR rJava that requires JAVA_HOME to be the location of the JRE !
 def newEnv = []
 System.getenv().each() {k,v ->
-	if ('JAVA_HOME'.equals(k)) { v = v+fs+'jre' }	
+	if ('JAVA_HOME'.equals(k)) { v = v+fs+'jre' }
 	newEnv << k+'='+v
 }
 
@@ -53,9 +54,9 @@ def paArch = System.getenv()['ProgramFiles(x86)'] != null ? 'x64' : 'i386'
 def rExe = rHome+fs+'bin'+fs+paArch+fs+'R.exe'
 
 println '\n######################\n#   CHECKING R packages from package sources ... \n######################'
-(new File(homeDir, 'PARConnector.Rcheck')).deleteDir()
-proc = run([rExe, 'CMD', 'check', '--no-codoc', '--no-manual', '--no-multiarch', 'PARConnector'], newEnv, homeDir)
-assert proc.waitFor() == 0 : 'It seems R CMD check failed'
+//(new File(homeDir, 'PARConnector.Rcheck')).deleteDir()
+//proc = run([rExe, 'CMD', 'check', '--no-codoc', '--no-manual', '--no-multiarch', 'PARConnector'], newEnv, homeDir)
+//assert proc.waitFor() == 0 : 'It seems R CMD check failed'
 
 println '\n######################\n#   BUILDING PARConnector ... \n######################'
 def distDir = new File(homeDir, 'dist')
@@ -78,18 +79,21 @@ println '\n######################\n#   INSTALLING PARConnector ... \n###########
 proc = run([rExe, 'CMD', 'INSTALL', '--no-multiarch', '--library='+rLibraryPath, archiveFile.getAbsolutePath()], newEnv, homeDir)
 assert proc.waitFor() == 0 : 'It seems R CMD install failed'
 
-println '\n######################\n#   RUNNING integration tests ... \n######################'
-//%R_EXE% --vanilla < ..\tests\test.R
-def rTestFile = new File(testsDir, 'test.R')
-proc = [rExe, '--vanilla', '<', rTestFile].execute(newEnv, homeDir)
-proc.out << rTestFile.getText()
-proc.out.close()
-proc.waitForProcessOutput(System.out, System.err)
-assert proc.waitFor() == 0 : 'It seems R CMD install failed'
+println '\n######################\n#   COPYING parscript + deps to scheduler addons ... \n######################'
+def ant = new AntBuilder()
+ant.copy(todir: schedHome+'/addons/') {
+    fileset(dir: parConnectorDir.getPath() + '/inst/java/') {
+        include(name: "JRI.jar")
+        include(name: "JRS.jar")
+        include(name: "JRIEngine.jar")
+        include(name: "REngine.jar")
+        include(name: "RserveEngine.jar")
+        include(name: "parscript.jar")
+    }
+}
 
-/*
 try {
-	println '\n######################\n#   Starting the Scheduler using start-server.js ... \n######################'
+	println '\n######################\n#   STARTING the Scheduler using start-server.js ... \n######################'
 	schedProcess = ["jrunscript", "start-server.js"].execute(null, new File(schedHome, 'bin'))
 	try {
 		schedProcess.inputStream.eachLine {
@@ -98,17 +102,21 @@ try {
 				throw new Exception('ready')
 			}
 		}
-		} catch (e) {}
+	} catch (e) {}
 
-		} finally {
-			println '\n######################\n#   Shutting down the Scheduler ... \n######################'    
-			try { 
-				def stdin = schedProcess.getOutputStream();
-				stdin.write('exit\n'.getBytes() );
-				stdin.flush();
-				} catch (e) {e.printStackTrace()}	
-				calcServerProcess.waitForOrKill(500)
-				schedProcess.waitFor();	
-			}
-		}
-		*/
+	println '\n######################\n#   RUNNING integration tests ... \n######################'	
+	def rTestFile = new File(testsDir, 'test.R')
+	proc = [rExe, '--vanilla', '<', rTestFile].execute(newEnv, homeDir)
+	proc.out << rTestFile.getText()
+	proc.out.close()
+	proc.waitForProcessOutput(System.out, System.err)
+	assert proc.waitFor() == 0 : 'It seems integration tests failed'
+
+} finally {
+	println '\n######################\n#   SHUTTING down the Scheduler ... \n######################'    
+	try {
+		schedProcess.out << 'exit\n';
+		schedProcess.out.close();
+	} catch (e) {e.printStackTrace()}
+	schedProcess.waitFor();	
+}
