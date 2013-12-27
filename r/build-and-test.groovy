@@ -7,6 +7,13 @@
 // - runs the integration test that uses PARConnector api functions and submit jobs
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+def run(command, env, dir) {
+	println 'Running ' + command
+	def proc = command.execute(env, dir)
+	proc.waitForProcessOutput(System.out, System.err)
+	return proc
+}
+
 def fs = File.separator
 
 // Check that the current dir is 'r' or its parent
@@ -47,41 +54,38 @@ def rExe = rHome+fs+'bin'+fs+paArch+fs+'R.exe'
 
 println '\n######################\n#   CHECKING R packages from package sources ... \n######################'
 (new File(homeDir, 'PARConnector.Rcheck')).deleteDir()
-def rcheckProcess = [rExe, 'CMD', 'check', '--no-codoc', '--no-manual', '--no-multiarch', 'PARConnector'].execute(newEnv, homeDir)
-rcheckProcess.waitForProcessOutput(System.out, System.err)
-assert rcheckProcess.waitFor() == 0 : 'It seems R CMD check failed'
+proc = run([rExe, 'CMD', 'check', '--no-codoc', '--no-manual', '--no-multiarch', 'PARConnector'], newEnv, homeDir)
+assert proc.waitFor() == 0 : 'It seems R CMD check failed'
 
 println '\n######################\n#   BUILDING PARConnector ... \n######################'
 def distDir = new File(homeDir, 'dist')
 distDir.deleteDir()
 distDir.mkdir()
 assert distDir.exists() : 'No dist dir ? ' + distDir
-def rbuildProcess = [rExe, 'CMD', 'build', parConnectorDir.getAbsolutePath()].execute(newEnv, distDir)
-rbuildProcess.waitForProcessOutput(System.out, System.err)
-assert rbuildProcess.waitFor() == 0 : 'It seems R CMD build failed'
+
+proc = run([rExe, 'CMD', 'build', parConnectorDir.getAbsolutePath()], newEnv, distDir)
+assert proc.waitFor() == 0 : 'It seems R CMD build failed'
 
 assert distDir.listFiles().length > 0 : 'The dist dir is empty'
 def archiveFile = distDir.listFiles().first();
 assert archiveFile.getName().endsWith('.tar.gz') : 'It seems the archive was not build correctly'
 
 println '\n######################\n#   REMOVING previous PARConnector ... \n######################'
-def removeProcess = [rExe, 'CMD', 'REMOVE', '--library='+rLibraryPath, 'PARConnector'].execute(newEnv, homeDir)
-removeProcess.waitForProcessOutput(System.out, System.err)
+proc = run([rExe, 'CMD', 'REMOVE', '--library='+rLibraryPath, 'PARConnector'], newEnv, homeDir)
 //assert removeProcess.waitFor() == 0 : 'It seems R CMD remove failed'
 
 println '\n######################\n#   INSTALLING PARConnector ... \n######################'
-def installProcess = [rExe, 'CMD', 'INSTALL', '--library='+rLibraryPath, archiveFile.getAbsolutePath()].execute(newEnv, homeDir)
-installProcess.waitForProcessOutput(System.out, System.err)
-assert installProcess.waitFor() == 0 : 'It seems R CMD install failed'
+proc = run([rExe, 'CMD', 'INSTALL', '--no-multiarch', '--library='+rLibraryPath, archiveFile.getAbsolutePath()], newEnv, homeDir)
+assert proc.waitFor() == 0 : 'It seems R CMD install failed'
 
 println '\n######################\n#   RUNNING integration tests ... \n######################'
 //%R_EXE% --vanilla < ..\tests\test.R
 def rTestFile = new File(testsDir, 'test.R')
-def testProcess = [rExe, '--vanilla', '<', rTestFile].execute(newEnv, homeDir)
-testProcess.out << rTestFile.getText()
-testProcess.out.close()
-testProcess.waitForProcessOutput(System.out, System.err)
-assert testProcess.waitFor() == 0 : 'It seems R CMD install failed'
+proc = [rExe, '--vanilla', '<', rTestFile].execute(newEnv, homeDir)
+proc.out << rTestFile.getText()
+proc.out.close()
+proc.waitForProcessOutput(System.out, System.err)
+assert proc.waitFor() == 0 : 'It seems R CMD install failed'
 
 /*
 try {
