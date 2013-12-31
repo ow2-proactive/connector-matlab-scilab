@@ -56,6 +56,10 @@ class TestRscript extends TestCase {
 		assert proc.waitFor() == 0 : 'It seems integration test failed'
 	}
 
+	String getName() {
+		return rTestFile.getName()
+	}
+
 	TestRscript(){ super('testRScript') }
 }
 
