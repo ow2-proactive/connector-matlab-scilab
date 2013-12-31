@@ -93,7 +93,7 @@ class Context {
 		assert parConnectorDir.exists() : '!!! Unable to locate PARConnector dir !!!'
 		assert schedHome != null : '!!! Unable to locate Scheduler 3.4.0 home dir, the SCHEDULER_340 env var is undefined !!!'
 		assert rHome != null : '!!! Unable to locate R home dir, the R_HOME env var is undefined !!!'
-		assert distDir.exists() : 'No dist dir ? ' + distDir
+		//assert distDir.exists() : 'No dist dir ? ' + distDir
 	}
 
 	void build(){		
