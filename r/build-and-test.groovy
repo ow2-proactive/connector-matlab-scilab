@@ -1,10 +1,19 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Integration test for the PARConnector with Scheduler 3.4.0
 // 
+// MainTest class:
+// - creates a Context that fires a check and build of the PARConnector package
+// - creates a TestSetup that wraps the tests with scheduler start/stop
+// - creates a junit test case for each r script locates in 'tests' dir
+// 
+// Context class:
 // - builds the PARConnector
 // - copies the contents to the scheduler's home addons directory
 // - starts the rm+scheduler+4nodes using the standard start-server.js script
-// - runs the integration test that uses PARConnector api functions and submit jobs
+//
+// TestRScript class:
+// - behaves as a single method junit test case
+// - runs a r script and checks the exit value
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 import junit.extensions.TestSetup;
