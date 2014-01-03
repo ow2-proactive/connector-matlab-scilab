@@ -123,11 +123,15 @@ class Context {
 			// LD_LIBRARY_PATH=/home/jenkins/shared/java/x86_64/sun/jdk1.7.0_45/jre/lib/amd64:/home/jenkins/shared/java/x86_64/sun/jdk1.7.0_45/jre/lib/amd64/server/		
 			def libDir = new File(jreHome, 'lib')
 			assert libDir.exists() : "!!! Unable to locate the lib dir inside the jre dir !!!"
-			def soDir = new File(libDir, 'amd64')
-			if (soDir.exists()) { // 64 bits jre
-				newEnv << 'LD_LIBRARY_PATH='+soDir+File.pathSeparator+(new File(soDir, 'server'))
-			} else { // 32 bits jre
-				newEnv << 'LD_LIBRARY_PATH='+soDir+File.pathSeparator+(new File(soDir, 'client'))
+
+			def so64Dir = new File(libDir, 'amd64')
+			if (so64Dir.exists()) { // 64 bits jre
+				newEnv << 'LD_LIBRARY_PATH='+so64Dir+File.pathSeparator+(new File(so64Dir, 'server'))
+			} 
+			
+			def so32Dir = new File(libDir, 'i386')
+			if (so32Dir.exists()){ // 32 bits jre
+				newEnv << 'LD_LIBRARY_PATH='+so32Dir+File.pathSeparator+(new File(so32Dir, 'client'))
 			}
 		}
 	}
