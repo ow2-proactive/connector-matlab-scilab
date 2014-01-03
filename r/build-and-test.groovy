@@ -1,5 +1,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Integration test for the PARConnector with Scheduler 3.4.0
+// JAVA_HOME must be at least a jdk 1.7
+// R_HOME must be at least R 3.0.2
 // 
 // MainTest class:
 // - creates a Context that fires a check and build of the PARConnector package
@@ -32,16 +34,16 @@ class MainTest extends TestCase {
 		def ts = new TestSuite();
 
         def testSetup = new TestSetup(ts) {
-            protected void setUp(  ) throws Exception {            	
-                ctx.startScheduler()        
+            protected void setUp(  ) throws Exception {
+                ctx.startScheduler()
             }
 
             protected void tearDown(  ) throws Exception {
-            	ctx.stopScheduler()                
+            	ctx.stopScheduler()
             }
         };
 
-        ctx.testsDir.listFiles().each {			
+        ctx.testsDir.listFiles().each {
 			def t = new TestRscript()
 			t.ctx = ctx
 			t.rTestFile = it
@@ -54,9 +56,9 @@ class MainTest extends TestCase {
 
 class TestRscript extends TestCase {
 	def ctx
-	def rTestFile	
+	def rTestFile
 
-	void testRScript(){		
+	void testRScript(){
 		println '\n######################\n#   RUNNING integration test ' + rTestFile + ' ... \n######################'			
 		def proc = [ctx.rExe, '--vanilla', '<', rTestFile].execute(ctx.newEnv, ctx.homeDir)
 		proc.out << rTestFile.getText()
@@ -73,48 +75,68 @@ class TestRscript extends TestCase {
 }
 
 class Context {	
+	def isWindows = System.properties['os.name'].toLowerCase().contains('windows')
 	def schedHome = System.getenv()['SCHEDULER_340']
-
 	def rHome = System.getenv()['R_HOME']
-	def arch = System.getenv()['ProgramFiles(x86)'] != null ? 'x64' : 'i386'
-	def rExe = rHome+File.separator+'bin'+File.separator+arch+File.separator+'R.exe'
-
-	// Check that the current dir is 'r' or its parent
-	def cd = new File(System.getProperty('user.dir'));
-	def homeDir = cd.getName() == 'r' ? cd : new File(cd, 'r');
-	def distDir = new File(homeDir, 'dist');
-	def parConnectorDir = new File(homeDir, 'PARConnector');
-	def testsDir = new File(homeDir,'tests')
-
-	def rLibraryDir = new File(rHome,'library') // check if on linux it works
-	def rLibraryPath = rLibraryDir.getAbsolutePath()
-	// todo check for rJava	
-	
-	def newEnv = [];
-
+		
+	def rExe, homeDir, distDir, parConnectorDir, testsDir, rLibraryDir, rLibraryPath
+	def newEnv = []
 	def schedProcess
 
-	public Context(){
+	void check(){
+		assert schedHome != null : '!!! Unable to locate Scheduler 3.4.0 home dir, the SCHEDULER_340 env var is undefined !!!'
+		assert rHome != null : '!!! Unable to locate R home dir, the R_HOME env var is undefined !!!'
+
+		// Locate r binary
+		def fs = File.separator
+		if (isWindows) {
+			def arch = System.getenv()['ProgramFiles(x86)'] != null ? 'x64' : 'i386'
+			rExe = rHome+fs+'bin'+fs+arch+fs+'R.exe'
+			rLibraryDir = new File(rHome,'library')
+		} else {
+			rExe = rHome+fs+'bin'+fs+'R'
+			//rLibraryDir = new File(rHome,'site-library')
+			rLibraryDir = new File(System.getenv()['R_LIBS_USER'])
+			assert rLibraryDir.exists() : '!!! Unable to locate R library, please set R_LIBS_USER env var !!!'
+		}
+		rLibraryPath = rLibraryDir.getAbsolutePath()
+		// todo check for rJava	
+
+		// Check that the current dir is 'r' or its parent
+		def cd = new File(System.getProperty('user.dir'));
+		homeDir = cd.getName() == 'r' ? cd : new File(cd, 'r');
+		distDir = new File(homeDir, 'dist');
+		parConnectorDir = new File(homeDir, 'PARConnector');
+		testsDir = new File(homeDir,'tests')
+
+		assert parConnectorDir.exists() : '!!! Unable to locate PARConnector dir !!!'
+		
+		def jreHome = System.getenv()['JAVA_HOME'] + fs + 'jre'
+		assert (new File(jreHome)).exists() : "!!! Unable to locate the jre !!!"
+
 		// ! THIS IS A FIX FOR rJava that requires JAVA_HOME to be the location of the JRE !
 		System.getenv().each() {k,v ->
-			if ('JAVA_HOME'.equals(k)) { v = v+File.separator+'jre' }
+			if ('JAVA_HOME'.equals(k)) { v = jreHome }
 			newEnv << k+'='+v
+		}
+		if (!isWindows) {
+			// LD_LIBRARY_PATH=/home/jenkins/shared/java/x86_64/sun/jdk1.7.0_45/jre/lib/amd64:/home/jenkins/shared/java/x86_64/sun/jdk1.7.0_45/jre/lib/amd64/server/		
+			def libDir = new File(jreHome, 'lib')
+			assert libDir.exists() : "!!! Unable to locate the lib dir inside the jre dir !!!"
+			def soDir = new File(libDir, 'amd64')
+			if (soDir.exists()) { // 64 bits jre
+				newEnv << 'LD_LIBRARY_PATH='+soDir+File.pathSeparator+(new File(soDir, 'server'))
+			} else { // 32 bits jre
+				newEnv << 'LD_LIBRARY_PATH='+soDir+File.pathSeparator+(new File(soDir, 'client'))
+			}
 		}
 	}
 
-	void check(){
-		assert parConnectorDir.exists() : '!!! Unable to locate PARConnector dir !!!'
-		assert schedHome != null : '!!! Unable to locate Scheduler 3.4.0 home dir, the SCHEDULER_340 env var is undefined !!!'
-		assert rHome != null : '!!! Unable to locate R home dir, the R_HOME env var is undefined !!!'
-		//assert distDir.exists() : 'No dist dir ? ' + distDir
-	}
-
-	void build(){		
-		
+	void build(){
 		println '\n######################\n#   CHECKING R packages from package sources ... \n######################'
 		(new File(homeDir, 'PARConnector.Rcheck')).deleteDir()
 		assert run([rExe, 'CMD', 'check', '--no-codoc', '--no-manual', '--no-multiarch', 'PARConnector'], newEnv, homeDir
-			).waitFor() == 0 : 'It seems R CMD check failed'	
+			).waitFor() == 0 : 'It seems R CMD check failed'
 	    
 		distDir.deleteDir()
 		distDir.mkdir()
