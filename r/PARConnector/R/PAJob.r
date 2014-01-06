@@ -35,20 +35,18 @@ setMethod("getJavaObject", "PAJob",
 setReplaceMethod("addTask" ,"PAJob" ,
           function(object,value) {
             tsk <- value
-            object@tasks <- c(object@tasks,tsk)
+            object@tasks[[getName(tsk)]] <- tsk
             jo = object@javaObject
             jtsk <- getJavaObject(tsk)
             if (length(tsk@inputfiles) > 0) {
               for (i in 1:length(tsk@inputfiles)) {
-                pafile <- tsk@inputfiles[[i]]
-                setHash(pafile)<-object@hash
+                pafile <- tsk@inputfiles[[i]]                
                 jtsk$addInputFiles(getSelector(pafile), getMode(pafile,TRUE))
               }
             }
             if (length(tsk@outputfiles) > 0) {
               for (i in 1:length(tsk@outputfiles)) {
-                pafile <- tsk@outputfiles[[i]]
-                setHash(pafile)<-object@hash
+                pafile <- tsk@outputfiles[[i]]                
                 jtsk$addOutputFiles(getSelector(pafile), getMode(pafile,FALSE))
               }
             }

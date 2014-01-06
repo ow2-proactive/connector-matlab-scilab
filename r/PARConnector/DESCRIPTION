@@ -4,7 +4,7 @@ Date: 2013-11-22
 Title: ProActive R Connector
 Author: The ProActive Team
 Maintainer: The ProActive Team <proactive@ow2.org>
-Description: Distributed/Cloud Computing with ProActive Scheduler
+Description: Parallel execution of R functions and split/merge workflows using ProActive Scheduler
 Depends: R (>= 3.0.0), utils (>= 3.0.0), rJava (>= 0.9-4), gtools (>= 3.1), codetools (>= 0.2-8), stringr (>= 0.6.2), methods
 SystemRequirements: Java (>= 1.7)
 License: AGPL-3

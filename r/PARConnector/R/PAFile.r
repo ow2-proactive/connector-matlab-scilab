@@ -42,7 +42,7 @@ setReplaceMethod("setHash", "PAFile",
                  
 
 setMethod("pushFile", "PAFile",
-          function(object, hash, client = PAClient()) {  
+          function(object, client = PAClient()) {  
             if (object@filepath == "") {
               stop("Cannot transfer file if no local path is provided")
             }
@@ -177,8 +177,12 @@ setMethod("toString","PAFile",
               } else {
                 filepath <- x@filepath
               }
-              if (x@pathdest == "") {              
-                output <- str_c(filepath," ",ifelse(input,"->","<-")," $",x@space,"/", x@hash,"/",x@filepath)
+              if (x@pathdest == "") {        
+                if (x@hash == "") {
+                  output <- str_c(filepath," ",ifelse(input,"->","<-")," $",x@space,"/",x@filepath)
+                } else {
+                  output <- str_c(filepath," ",ifelse(input,"->","<-")," $",x@space,"/", x@hash,"/",x@filepath)
+                }
               } else {
                 output <- str_c(filepath," ",ifelse(input,"->","<-")," $",x@space, "/",x@pathdest,"/",basename(x@filepath))
               }

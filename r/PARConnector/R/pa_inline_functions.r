@@ -159,14 +159,52 @@ setGeneric(
 )
 
 ### PAJobResult
+
+
+
+#' Waits for all results controlled by  a PAJobResult object
+#'
+#' PAWaitFor is used on a PAJobResult object to block the R interpreter until all results are available.
+#' The R result objects will be then returned inside a list. 
+#' It is possible to wait for a subset instead of the whole list by using subscript indexing : PAWaitFor(res[1:3]) will wait for only the results at index 1,2,3.
+#'
+#' @param paresult a PAJobResult object
+#' @param timeout a long value specifying an optional timeout in milisecond
+#' @param callback a single parameter function which can be called when results are received. It can be useful to udapte graphical user interfaces for examples. Default to NULL.
+#' 
+#' @return A list of results
+#' 
+#' @seealso \code{\link{PASolve}} and \code{\link{PAWaitAny}}
+#' 
+#' @export
+#' @docType methods
+#' @rdname PAWaitFor-methods
 setGeneric(
   name="PAWaitFor",
-  def=function(paresult = .last.result, ...) {standardGeneric("PAWaitFor" )}  
+  def=function(paresult = PALastResult(), ...) {standardGeneric("PAWaitFor" )}  
 )
 
+
+#' Waits for the first available result among a list of results controlled by a PAJobResult object
+#'
+#' PAWaitAny is used on a PAJobResult object to block the R interpreter until the first result is available.
+#' The R result object will be then returned as a factor, named by the task name. 
+#' If the PAWaitAny is called a second time, then the second result will be waited and returned. After all results are consumed, a call to PAWaitAny will return NA.
+#'
+#' @param paresult a PAJobResult object
+#' @param timeout a long value specifying an optional timeout in milisecond
+#' @param callback a single parameter function which can be called when results are received. It can be useful to udapte graphical user interfaces for examples. Default to NULL.
+#'
+#' @return A result
+#' 
+#' @seealso \code{\link{PASolve}} and \code{\link{PAWaitFor}}
+#' 
+#' @export
+#' @docType methods
+#' @rdname PAWaitAny-methods
 setGeneric(
   name="PAWaitAny",
-  def=function(paresult = .last.result, ...) {standardGeneric("PAWaitAny" )}  
+  def=function(paresult = PALastResult(), ...) {standardGeneric("PAWaitAny" )}  
 )
 
 ### PAFile
@@ -217,6 +255,14 @@ PAClient <- function(client = NULL) {
   return(.scheduler.client)
 }
 
+#' sets PARConnector Debug mode
+#'
+#' PADebug can be used either to set the Debug mode to on/off or to know the current state of the debug mode.
+#' 
+#' In Debug mode a lot of verbose information will be printed (detailed content of PATask created, code analysis debugging, remote execution trace)
+#' 
+#' @param debug to set the debug mode to on (TRUE) or off (FALSE)
+#' @return the current or new state of the debug mode
 PADebug <- function(debug=FALSE) {  
   if (exists(".is.debug", envir=cacheEnv)){
     .is.debug <- get(".is.debug", envir=cacheEnv)
@@ -240,6 +286,19 @@ PAHandler <- function(e, .print.stack=TRUE) {
     e$jobj$printStackTrace()
   }
   stop(e)
+}
+
+PALastResult <- function(res = NULL) {    
+  if (exists(".last.result", envir=cacheEnv)){
+    .last.result <- get(".last.result", envir=cacheEnv)
+  } else {
+    .last.result <- NULL
+  }
+  if (nargs() == 1) {
+    .last.result <- res        
+  }
+  assign(".last.result", .last.result, envir=cacheEnv)
+  return(.last.result)
 }
 
 

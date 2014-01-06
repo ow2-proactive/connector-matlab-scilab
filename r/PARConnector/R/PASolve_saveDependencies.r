@@ -15,10 +15,10 @@
     }
     envName <- environmentName(envir)
     # todo automatic library loading
-    if (!is.element(envName, c("","R_GlobalEnv"))) {
-      if (.do.verbose) {
-        print( "package ",envName, " is required")
-      }
+    if (!is.element(envName, c("","base", "datasets", "graphics", "methods", "stats", "utils", "R_GlobalEnv"))) {
+      
+      print(str_c("Package ",envName, " is required"))
+      
       return(list(NULL,.buffer))
     }
     if (is.null(envir)) {

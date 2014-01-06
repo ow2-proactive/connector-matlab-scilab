@@ -73,6 +73,13 @@ print_task_data <- function(task.info)  {
                   "#NODES KILLED"))
 }
 
+#' Retrieves information about a ProActive job
+#' 
+#' \code{PAJobState} prints a formatted table diplaying the state of a ProActive job. 
+#' 
+#'  @param job.id id of the proactive job 
+#'  @param client connection handle to the scheduler, if not provided the handle created by the last call to \code{\link{PAConnect}} will be used
+#'  @seealso  \code{\link{PAState}}
 PAJobState <- function(job.id, 
                        client =  PAClient()) {
   
@@ -81,8 +88,9 @@ PAJobState <- function(job.id,
   } 
   
   
+  
   job.state <- j_try_catch ({
-    return (J(client,"getJobState", job.id));
+    return (J(client,"getJobState", toString(job.id)));
   })
   job.info <- job.state$getJobInfo()
   
