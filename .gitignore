@@ -4,3 +4,4 @@ classes/
 junitReports/
 dist/
 dev/scheduling
+.Rproj.user
