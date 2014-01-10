@@ -71,14 +71,17 @@
         
         # if the pattern is a named param, evaluate its value 
         if(is.element(param,namesvector)) {
-          index <- eval(parse(text=str_c("\"",param,"\"")))
+          name <- eval(parse(text=str_c("\"",param,"\"")))
+          
+          # we find the index corresponding to the named parameter
+          index <- which(names(dots) == name)
           
           # we evaluate the parameter for the given index ii
           val <- repldots[[index]][[ii]]  
           
           # create a replacement list for a single parameter          
           replval <- .createReplacementList(val)
-                    
+          
         } else {
           # if the pattern is an integer expression, evaluate its value (we mind find more than one param, for e.g. 1:4 )
           index <- eval(parse(text=param))
@@ -98,56 +101,56 @@
               current_param <- index[[kk]]
               replval[[kk]] <- repldots[[current_param]][[ii]]  
             }           
-          }         
-          
-          # now that we have a list of replacements to make, check the current list of filepaths,
-          # as the process is based on successive replacements, if the current list of filpaths is not big enough, 
-          # extend it to match the replval length 
-          if (length(tmpfilelist) < length(replval)) {
-            tmpfilelist <- rep(tmpfilelist,length(replval))
           }
-          
-          # length of replval and tmpfilelist should now be equal, we iterate over the replval list to do all replacements
-          for (kk in 1:length(replval)) {
-            val <- replval[[kk]]
-            if (class(val) == "PATask") {
-              # if the replacement found if of class PATask, then it refers to a dependent Task, we extract from the task the replacement needed and use this info as replacement
-              if (val@file.index == "") {
-                stop("Error when replacing pattern ",pattern,", in ",filePath,", PATask parameter specified ",getName(val)," does not contain a file index")
-              }
-              # additionally, we store the replacement in the replacement memory list (which is used to memorize replacements done), this replacement knowledge will be stored in the PATask
-              # either kk or ii should be varying at the same time
-              .addReplacementToMemoryList(max(kk,ii), getFileIndex(val), envir)   
-              
-              # Replacement : (the getFileIndex(val) extracts from the task the replacement to do)
-              
-              tmpfilelist[[kk]] <- tryCatch( 
+        }
+        
+        # now that we have a list of replacements to make, check the current list of filepaths,
+        # as the process is based on successive replacements, if the current list of filpaths is not big enough, 
+        # extend it to match the replval length 
+        if (length(tmpfilelist) < length(replval)) {
+          tmpfilelist <- rep(tmpfilelist,length(replval))
+        }
+        
+        # length of replval and tmpfilelist should now be equal, we iterate over the replval list to do all replacements
+        for (kk in 1:length(replval)) {
+          val <- replval[[kk]]
+          if (class(val) == "PATask") {
+            # if the replacement found if of class PATask, then it refers to a dependent Task, we extract from the task the replacement needed and use this info as replacement
+            if (val@file.index == "") {
+              stop("Error when replacing pattern ",pattern,", in ",filePath,", PATask parameter specified ",getName(val)," does not contain a file index")
+            }
+            # additionally, we store the replacement in the replacement memory list (which is used to memorize replacements done), this replacement knowledge will be stored in the PATask
+            # either kk or ii should be varying at the same time
+            .addReplacementToMemoryList(max(kk,ii), getFileIndex(val), envir)   
+            
+            # Replacement : (the getFileIndex(val) extracts from the task the replacement to do)
+            
+            tmpfilelist[[kk]] <- tryCatch( 
 {gsub(pattern,  getFileIndex(val), tmpfilelist[[kk]],fixed=TRUE)}, 
 warning = function(e) {print(str_c("Unexpected warning when replacing pattern ", pattern, " in filePath ", filePath, " (replacement class is ", class(getFileIndex(val)), ") : ")); stop(e)},
 error = function(e) {print(str_c("Error when replacing pattern ", pattern, " in filePath ", filePath, " (replacement class is ", class(getFileIndex(val)), ") : ")); stop(e)} )
-              
-             
-            } else {   
-              # if the replacement found is something else than PATask, we do the replacement and memorize it
-              # this replacement knowledge will be stored in the PATask
-              
-              .addReplacementToMemoryList(max(kk,ii), toString(val), envir)
-              
-              # Replacement : 
-              tmpfilelist[[kk]] <- tryCatch( 
+            
+            
+          } else {   
+            # if the replacement found is something else than PATask, we do the replacement and memorize it
+            # this replacement knowledge will be stored in the PATask
+            
+            .addReplacementToMemoryList(max(kk,ii), toString(val), envir)
+            
+            # Replacement : 
+            tmpfilelist[[kk]] <- tryCatch( 
 {gsub(pattern,  toString(val), tmpfilelist[[kk]],fixed=TRUE)}, 
 warning = function(e) {print(str_c("Unexpected warning when replacing pattern ", pattern, " in filePath ", filePath, " (replacement class is ", class(val), ") : ")); stop(e)},
 error = function(e) {print(str_c("Error when replacing pattern ", pattern, " in filePath ", filePath, " (replacement class is ", class(val), ") : ")); stop(e)} )
-            }
           }
-        }            
-      }
+        }
+      }                
     }
   }
   
   # at the end verify that there are no remaining pattern in the list
   for (kk in 1:length(tmpfilelist)) { 
-    unmatched <- str_extract_all(tmpfilelist[[kk]], "%[[:alnum:]]+%")
+    unmatched <- str_extract_all(tmpfilelist[[kk]], "%[^ %]+%")
     if ((!is.na(unmatched)) && (length(unmatched[[1]]) > 0)) {
       stop("There are unmatched pattern in filePath ",filePath, " : ",toString(unmatched), " please verify that the pattern correspond to an existing parameter")
     }
@@ -554,16 +557,17 @@ PA <- function(funcOrFuncName, ..., varies=NULL, input.files=list(), output.file
       len <- length(dots[[i]])
       nb_rep <- maxlength %/% len
       rem <- maxlength %% len
+      nm <- names(dots[i])
       if (rem != 0) {
         # TODO display a warning if the biggest length is not a multiple of this parameter's length
       } 
-      if (is.null(names(dots[i])) || nchar(names(dots[i])) == 0)  {
+      if (is.null(nm) || nchar(nm) == 0)  {
         repldots[[i]] <- as.list(rep(dots[[i]],nb_rep,len = maxlength))
         
       } else {        
         tmplist <- as.list(rep(dots[[i]],nb_rep,len = maxlength))
         
-        names(tmplist) <- rep(names(dots[i]),maxlength)
+        names(tmplist) <- rep(nm,maxlength)
         repldots[[i]] <- tmplist                      
       }
       

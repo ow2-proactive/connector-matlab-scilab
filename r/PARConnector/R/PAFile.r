@@ -69,7 +69,7 @@ setMethod("pushFile", "PAFile",
             }
             tryCatch (         
               return(PAPushFile(toupper(object@space),pathdest, filename, filepath, .print.stack = FALSE )),                      
-              Exception = function(e) { print(str_c("error occurred when trying to push file ",filepath))} 
+              Exception = function(e) { print(str_c("error occurred when trying to push file ",filepath," -> ",toupper(object@space),":",pathdest,"/",filename))} 
               )
           } 
 )
@@ -106,7 +106,7 @@ setMethod("pullFile", "PAFile",
             
             tryCatch (         
               return(PAPullFile(toupper(object@space),pathname, filepath, .print.stack = FALSE  )),                      
-              Exception = function(e) { print(str_c("Warning, error occurred when trying to pull file ",filepath))} 
+              Exception = function(e) { print(str_c("Warning, error occurred when trying to pull file ",toupper(object@space),":",pathname," -> ",filepath))} 
             )                     
             
           } 

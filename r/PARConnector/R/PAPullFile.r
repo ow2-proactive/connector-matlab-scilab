@@ -25,6 +25,12 @@ PAPullFile <- function(space, pathname, outputFile,
   
   pulled <- FALSE
   
+  # convert to absolute path
+  jfile <- .jnew(J("java.io.File"),outputFile)
+  if (!jfile$isAbsolute()) {
+    outputFile <- file.path(getwd(),outputFile)
+  }
+  
   while(.nb.tries > 0) {    
     j_try_catch(
     {
