@@ -62,7 +62,7 @@ class TestRscript extends TestCase {
 
 	void testRScript(){
 		println '\n######################\n#   RUNNING integration test ' + rTestFile + ' ... \n######################'			
-		def proc = [ctx.rExe, '--vanilla', '<', rTestFile].execute(ctx.newEnv, ctx.homeDir)
+		def proc = [ctx.rExe, '--quiet' ,'--vanilla', '<', rTestFile].execute(ctx.newEnv, ctx.homeDir)
 		proc.out << rTestFile.getText()
 		proc.out.close()
 		proc.waitForProcessOutput(System.out, System.err)
