@@ -1,4 +1,4 @@
-source("tests/utils.r")
+source("functionalTests/utils.r")
 
 library("PARConnector");
 

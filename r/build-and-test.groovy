@@ -62,7 +62,7 @@ class TestRscript extends TestCase {
 
 	void testRScript(){
 		println '\n######################\n#   RUNNING integration test ' + rTestFile + ' ... \n######################'			
-		def proc = [ctx.rExe, '--quiet' ,'--vanilla', '--args','QUITONERROR', '<', rTestFile].execute(ctx.newEnv, ctx.homeDir)
+		def proc = [ctx.rExe, '--quiet' ,'--vanilla', '--args','QUITONERROR', '<', rTestFile].execute(ctx.newEnv, ctx.parConnectorDir)
 		proc.out << rTestFile.getText()
 		proc.out.close()
 		proc.waitForProcessOutput(System.out, System.err)
@@ -109,7 +109,7 @@ class Context {
 		homeDir = cd.getName() == 'r' ? cd : new File(cd, 'r');
 		distDir = new File(homeDir, 'dist');
 		parConnectorDir = new File(homeDir, 'PARConnector');
-		testsDir = new File(parConnectorDir,'tests')
+		testsDir = new File(parConnectorDir,'functionalTests')
 
 		assert parConnectorDir.exists() : '!!! Unable to locate PARConnector dir !!!'
 		

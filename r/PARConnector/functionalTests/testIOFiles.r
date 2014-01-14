@@ -1,4 +1,4 @@
-source("tests/utils.r")
+source("functionalTests/utils.r")
 
 library("PARConnector");
 cat("*** Trying to connect to http://localhost:8080/rest/rest ***","\n") 
