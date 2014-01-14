@@ -203,7 +203,7 @@ setMethod("PAWaitAny","PAJobResultOrMissing", function(paresult = PALastResult()
 
 
 setMethod("toString","PAJobResult",
-          function(x, ...) {
+          function(x, width = NULL, ...) {
             object <- x 
             output.list <- list()
             
@@ -239,5 +239,11 @@ setMethod("toString","PAJobResult",
 setMethod("show" ,"PAJobResult" ,
           function(object) {
             cat(toString(object))                                 
+          } 
+)
+
+setMethod("print" ,"PAJobResult" ,
+          function(x,...) {
+            print(toString(object))                                 
           } 
 )

@@ -1,3 +1,5 @@
+source("tests/utils.r")
+
 library("PARConnector");
 cat("*** Trying to connect to http://localhost:8080/rest/rest ***","\n") 
 PAConnect(url='http://localhost:8080/rest/rest', login='demo', pwd='demo');
@@ -26,7 +28,7 @@ print(val)
 if (!all(unlist(val) == mapply(min, 1:n, n:1))) {
   msg <- paste0("Error when comparing val=",val, " with mapply(min, 1:n, n:1)=",mapply(min, 1:n, n:1) ,"\n")
   stop(msg) 
-}
+}    
 
 # named params
 

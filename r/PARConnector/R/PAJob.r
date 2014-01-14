@@ -115,7 +115,7 @@ setMethod("isCancelJobOnError", "PAJob",
 
 
 setMethod("toString" ,c("PAJob"),
-          function(x, ...) {
+          function(x, width = NULL, ...) {
             object <- x
             jo = object@javaObject
             output <- "ProActive Job\n"
@@ -179,7 +179,7 @@ setMethod("show" ,"PAJob",
 )
 
 setMethod("print" ,"PAJob" ,
-          function(x) {
+          function(x, ...) {
             print(toString(x))                                 
           } 
 )

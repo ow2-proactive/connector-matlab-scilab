@@ -139,7 +139,7 @@ setMethod("addSelectionScript" ,"PATask" ,
 
 
 setMethod("toString","PATask",
-  function(x) {
+  function(x, width = NULL, ...) {
             object <- x
             output <- "ProActive Task\n"  
             jo = object@javaObject
@@ -224,7 +224,7 @@ setMethod("show" ,"PATask" ,
 )
 
 setMethod("print" ,"PATask" ,
-          function(x) {
+          function(x, ...) {
             print(toString(x))                                 
           } 
 )

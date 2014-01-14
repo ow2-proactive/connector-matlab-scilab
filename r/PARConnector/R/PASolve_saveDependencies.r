@@ -10,7 +10,7 @@
     }
     
     # reserved functions
-    if (is.element(funcOrFuncName, c("install.packages","library","require"))) {
+    if (is.element(funcOrFuncName, c("install.packages","library","require", "set_progress"))) {
       return(list(NULL,.buffer))
     }
     envName <- environmentName(envir)
@@ -55,27 +55,29 @@
   
   
   for (varName in globs) {
-    var <- tryCatch( get(varName,envir), error = function(e) {warning("[Resolve Dependencies] When running get(",varName,",envir) : ",e);return(NULL)} );
-    if (!is.null(var)) {
-      envirvar <- environment(var)
-      pck <- environmentName(envirvar);
-      if ((pck != ".Primitive") && (pck != "base")) {
-        tovar <- typeof(var);
-        # assign the variable in my private environment
-        assign(varName, var, envir=newenvir);
-        if (tovar == "closure") {
-          outsubpair <- .doSaveDependencies(varName,envir=envirvar,newenvir=newenvir, .buffer=.buffer ,.do.verbose=.do.verbose)
-          out <- union(out, outsubpair[[1]]);
-          .buffer <- union(.buffer, outsubpair[[2]]);
-          
-        } else if (tovar == "list") {
-          out <- union(out, varName); # adding the function variable in the list to the output
-          outsubpair <- .doSaveListDependencies(varName,envir=envirvar,newenvir=newenvir, .buffer=.buffer ,.do.verbose=.do.verbose) # adding the dependencies of this variable
-          out <- union(out, outsubpair[[1]]);
-          .buffer <- union(.buffer, outsubpair[[2]]);  # merging the already parsed functions
-          
-        } else if (is.element(tovar,c("symbol","logical","integer", "double", "complex", "character","list","raw"))) {
-          out <- union(out, varName)
+    if (!is.element(varName, c("install.packages","library","require", "set_progress", "inputspace","outputspace","globalspace","userspace"))) {
+      var <- tryCatch( get(varName,envir), error = function(e) {warning("[Resolve Dependencies] When running get(",varName,",envir) : ",e);return(NULL)} );
+      if (!is.null(var)) {
+        envirvar <- environment(var)
+        pck <- environmentName(envirvar);
+        if ((pck != ".Primitive") && (pck != "base")) {
+          tovar <- typeof(var);
+          # assign the variable in my private environment
+          assign(varName, var, envir=newenvir);
+          if (tovar == "closure") {
+            outsubpair <- .doSaveDependencies(varName,envir=envirvar,newenvir=newenvir, .buffer=.buffer ,.do.verbose=.do.verbose)
+            out <- union(out, outsubpair[[1]]);
+            .buffer <- union(.buffer, outsubpair[[2]]);
+            
+          } else if (tovar == "list") {
+            out <- union(out, varName); # adding the function variable in the list to the output
+            outsubpair <- .doSaveListDependencies(varName,envir=envirvar,newenvir=newenvir, .buffer=.buffer ,.do.verbose=.do.verbose) # adding the dependencies of this variable
+            out <- union(out, outsubpair[[1]]);
+            .buffer <- union(.buffer, outsubpair[[2]]);  # merging the already parsed functions
+            
+          } else if (is.element(tovar,c("symbol","logical","integer", "double", "complex", "character","list","raw"))) {
+            out <- union(out, varName)
+          }
         }
       }
     }

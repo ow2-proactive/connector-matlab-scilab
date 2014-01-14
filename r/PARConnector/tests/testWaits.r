@@ -1,4 +1,7 @@
+source("tests/utils.r")
+
 library("PARConnector");
+
 cat("*** Trying to connect to http://localhost:8080/rest/rest ***","\n") 
 PAConnect(url='http://localhost:8080/rest/rest', login='demo', pwd='demo');
 cat("Sucessfully connected !!", "\n");
@@ -13,7 +16,6 @@ for (i in 1:n) {
 }
 
 print(val)
-
 
 if (!all(unlist(val) == sin(1:n))) {
   msg <- paste0("Error when comparing val=",val, " with sin(1:n)=",sin(1:n),"\n")
@@ -35,3 +37,4 @@ if (!all(unlist(val) == sin(1:n))) {
   msg <- paste0("Error when comparing val=",val, " with sin(1:n)=",sin(1:n) ,"\n" )
   stop(msg)  
 }
+

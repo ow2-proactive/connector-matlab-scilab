@@ -1,5 +1,12 @@
 # Some function usefull  for tests
 
+# error handler to quit the R session on error
+options(
+  error = bquote(
+{ifelse(is.element("QUITONERROR",commandArgs(TRUE)), 
+        q(save = "no", status=1), stop("Error during test"))
+}))
+
 # Create nb files named like prefix1, prefix2, ... prefixn
 createFiles <- function(prefix, nb) {
   for (i in 1:nb) {
