@@ -203,8 +203,13 @@ public class PARScriptEngine extends RScriptEngine {
 		if (dsfo == null) {
 			return;
 		}
+		String path = null;	
 		try {
-			String path = dsfo.getRealURI().replace("file://", "");
+			path = convertToRPath(dsfo);
+		} catch (Exception e){
+			path = dsfo.getRealURI();
+		}
+		try {
 			super.engine.assign("userspace", new REXPString(path));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -217,8 +222,13 @@ public class PARScriptEngine extends RScriptEngine {
 		if (dsfo == null) {
 			return;
 		}
+		String path = null;	
 		try {
-			String path = dsfo.getRealURI().replace("file://", "");
+			path = convertToRPath(dsfo);
+		} catch (Exception e){
+			path = dsfo.getRealURI();
+		}
+		try {
 			super.engine.assign("globalspace", new REXPString(path));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -231,8 +241,13 @@ public class PARScriptEngine extends RScriptEngine {
 		if (dsfo == null) {
 			return;
 		}
+		String path = null;	
 		try {
-			String path = dsfo.getRealURI().replace("file://", "");
+			path = convertToRPath(dsfo);
+		} catch (Exception e){
+			path = dsfo.getRealURI();
+		}
+		try {
 			super.engine.assign("inputspace", new REXPString(path));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -244,9 +259,14 @@ public class PARScriptEngine extends RScriptEngine {
 				.get(TaskLauncher.DS_OUTPUT_BINDING_NAME);
 		if (dsfo == null) {
 			return;
+		}		
+		String path = null;
+		try {
+			path = convertToRPath(dsfo);
+		} catch (Exception e){
+			path = dsfo.getRealURI();
 		}
 		try {
-			String path = dsfo.getRealURI().replace("file://", "");
 			super.engine.assign("outputspace", new REXPString(path));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -254,16 +274,11 @@ public class PARScriptEngine extends RScriptEngine {
 	}
 
 	/** R paths are not antislash friendly */
-	private String convertToRPath(DataSpacesFileObject dsfo) {
+	private String convertToRPath(DataSpacesFileObject dsfo) throws Exception {
 		String path = dsfo.getRealURI();
-		URI uri = null;
-		try {
-			uri = new URI(path);
-			File f = new File(uri);
-			path = f.getCanonicalPath();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		URI uri = new URI(path);
+		File f = new File(uri);
+		path = f.getCanonicalPath();
 		return path.replace("\\", "/");
 	}
 
