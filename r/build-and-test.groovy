@@ -174,6 +174,11 @@ class Context {
 		        include(name: "parscript.jar")
 		    }
 		}
+
+		println '\n######################\n#   CLEANING scheduler .logs and DB dirs ... \n######################'
+		(new File(schedHome, '.logs')).deleteDir()
+		(new File(schedHome, 'SCHEDULER_DB')).deleteDir()
+		(new File(schedHome, 'RM_DB')).deleteDir()
 	}
 
 	void startScheduler() {
