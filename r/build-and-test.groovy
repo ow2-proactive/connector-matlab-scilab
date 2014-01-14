@@ -6,7 +6,7 @@
 // MainTest class:
 // - creates a Context that fires a check and build of the PARConnector package
 // - creates a TestSetup that wraps the tests with scheduler start/stop
-// - creates a junit test case for each r script locates in 'tests' dir
+// - creates a junit test case for each r script which name starts with 'test' in 'tests' dir
 // 
 // Context class:
 // - builds the PARConnector
@@ -47,7 +47,9 @@ class MainTest extends TestCase {
 			def t = new TestRscript()
 			t.ctx = ctx
 			t.rTestFile = it
-			ts.addTest(t);
+			if ( it.getName().startsWith("test") ) {
+				ts.addTest(t);
+			}
 		}
 
 		return testSetup
@@ -171,7 +173,7 @@ class Context {
 		        include(name: "RserveEngine.jar")
 		        include(name: "parscript.jar")
 		    }
-		}		
+		}
 	}
 
 	void startScheduler() {
