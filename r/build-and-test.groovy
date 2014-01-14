@@ -109,7 +109,7 @@ class Context {
 		homeDir = cd.getName() == 'r' ? cd : new File(cd, 'r');
 		distDir = new File(homeDir, 'dist');
 		parConnectorDir = new File(homeDir, 'PARConnector');
-		testsDir = new File(homeDir, 'PARConnector','tests')
+		testsDir = new File(parConnectorDir,'tests')
 
 		assert parConnectorDir.exists() : '!!! Unable to locate PARConnector dir !!!'
 		
