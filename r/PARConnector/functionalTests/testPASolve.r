@@ -14,7 +14,7 @@ val <- PAWaitFor(res)
 print(val)
 
 if (!all(unlist(val) == sin(1:n))) {
-  msg <- paste0("Error when comparing val=",val, " with sin(1:3)=",sin(1:n) ,"\n")
+  msg <- paste0("Error when comparing val=",toString(unlist(val)), " with sin(1:3)=",toString(sin(1:n)) ,"\n")
   stop(msg) 
 }
 
@@ -26,7 +26,7 @@ val <- PAWaitFor(res)
 print(val)
 
 if (!all(unlist(val) == mapply(min, 1:n, n:1))) {
-  msg <- paste0("Error when comparing val=",val, " with mapply(min, 1:n, n:1)=",mapply(min, 1:n, n:1) ,"\n")
+  msg <- paste0("Error when comparing val=",toString(unlist(val)), " with mapply(min, 1:n, n:1)=",toString(mapply(min, 1:n, n:1)),"\n")
   stop(msg) 
 }    
 
@@ -37,7 +37,7 @@ val <- PAWaitFor(res)
 print(val)
 
 if (!all(unlist(val) == mapply(min, 1:n, n:1, NA, na.rm = TRUE))) {
-  msg <- paste0("Error when comparing val=",val, " with mapply(min, 1:n, n:1, NA, na.rm = TRUE)=",mapply(min, 1:n, n:1, NA, na.rm = TRUE) ,"\n")
+  msg <- paste0("Error when comparing val=",toString(unlist(val)), " with mapply(min, 1:n, n:1, NA, na.rm = TRUE)=",toString(mapply(min, 1:n, n:1, NA, na.rm = TRUE)) ,"\n")
   stop(msg) 
 }
 
@@ -49,7 +49,7 @@ val <- PAWaitFor(res)
 print(val)
 
 if (!all(unlist(val) == c(1,1,2,3,4,2,1,2,3,4,3,1,2,3,4,4,1,2,3,4))) {
-  msg <- paste0("Error when comparing val=",val, " with c(1,1,2,3,4,2,1,2,3,4,3,1,2,3,4,4,1,2,3,4)\n")
+  msg <- paste0("Error when comparing val=",toString(unlist(val)), " with c(1,1,2,3,4,2,1,2,3,4,3,1,2,3,4,4,1,2,3,4)\n")
   stop(msg) 
 }
 
@@ -60,6 +60,6 @@ val <- PAWaitFor(res)
 print(val)
 
 if (!all(unlist(val) == c(1,2,3,4,1,1,2,3,4,2,1,2,3,4,3,1,2,3,4,4))) {
-  msg <- paste0("Error when comparing val=",val, " with c(1,2,3,4,1,1,2,3,4,2,1,2,3,4,3,1,2,3,4,4)\n")
+  msg <- paste0("Error when comparing val=",toString(unlist(val)), " with c(1,2,3,4,1,1,2,3,4,2,1,2,3,4,3,1,2,3,4,4)\n")
   stop(msg) 
 }

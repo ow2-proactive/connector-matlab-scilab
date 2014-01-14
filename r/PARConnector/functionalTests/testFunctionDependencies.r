@@ -19,7 +19,7 @@ val <- PAWaitFor(res)
 print(val)
 
 if (!all(unlist(val) == 1:3)) {
-  msg <- paste0("Error when comparing val=",val, " with foo(1:3)=",1:3,"\n")
+  msg <- paste0("Error when comparing val=",toString(val), " with foo(1:3)=",toString(1:3),"\n")
   stop(msg) 
 }
 
@@ -33,6 +33,6 @@ val <- PAWaitFor(res)
 print(val)
 
 if (!all(unlist(val) == 1:3)) {
-  msg <- paste0("Error when comparing val=",val, " with foo(1:3)=",1:3,"\n")
+  msg <- paste0("Error when comparing val=",toString(val), " with foo(1:3)=",toString(1:3),"\n")
   stop(msg) 
 }

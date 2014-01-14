@@ -16,6 +16,6 @@ val <- PAWaitFor(r)
 print(val)
 
 if (val[["t6"]] != 30) {
-  msg <- paste0("Error when comparing val[t6]=",val[["t6"]], " with sum(1,2^2,3^2,4^2)=",30,"\n")
+  msg <- paste0("Error when comparing val[t6]=",val[["t6"]], " with sum(1,2^2,3^2,4^2)=30\n")
   stop(msg) 
 }
