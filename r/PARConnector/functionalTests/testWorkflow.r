@@ -14,7 +14,7 @@ r=PASolve(
       PA(function(x) {x*x},
          PAS("identity", 1:4)))) 
 
-val <- PAWaitFor(r)
+val <- PAWaitFor(r,240000)
 print(val)
 
 if (val[["t6"]] != 30) {

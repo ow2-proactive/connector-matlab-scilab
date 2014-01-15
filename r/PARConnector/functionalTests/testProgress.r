@@ -30,11 +30,11 @@ res
 Sys.sleep(4)
 res
 Sys.sleep(4)
-val <- PAWaitFor(res)
+val <- PAWaitFor(res,60000)
 print(val)
 
 if (!all(unlist(val) == 1:4)) {
-  msg <- paste0("Error when comparing val=",val, " with 1:4\n")
+  msg <- paste0("Error when comparing val=",toString(unlist(val)), " with 1:4\n")
   stop(msg) 
 }
 
@@ -44,5 +44,5 @@ printspaces <- function(x) {
 } 
 # check that spaces urls are correct
 res <- PASolve(printspaces,c("local","input","output", "global","user"))
-val <- PAWaitFor(res)
+val <- PAWaitFor(res,60000)
 print(val)

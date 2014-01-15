@@ -24,7 +24,7 @@ createFiles("in_", n)
 removeFiles("out_", n)
 
 res <- PASolve(copyfile, 1:n, input.files="in_%1%", output.files="out_%1%")
-val <- PAWaitFor(res)
+val <- PAWaitFor(res,60000)
 print(val)
 
 for (i in 1:n) {
@@ -40,7 +40,7 @@ createFiles("in_", n)
 removeFiles("out_", n)
 
 res <- PASolve(PA(copyfile,index=1:n, input.files="in_%index%",output.files="out_%index%"))
-val <- PAWaitFor(res)
+val <- PAWaitFor(res,60000)
 print(val)
 
 for (i in 1:n) {

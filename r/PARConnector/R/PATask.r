@@ -160,11 +160,13 @@ setMethod("toString","PATask",
             if (length(object@inputfiles) > 0) {      
               output <- str_c(output,"  input files : ")
               for (i in 1:length(object@inputfiles)) {
-                output <- str_c(output,toString(object@inputfiles[[i]]))
+                output <- str_c(output,toString(object@inputfiles[[i]]))                
                 if (i < length(object@inputfiles)) {
                   output <- str_c(output,", ")
                 }
               }       
+              output <- str_c(output,"\n")
+              output <- str_c(output,jo$getInputFilesList()$toString())
               output <- str_c(output,"\n")
             }
             
@@ -175,7 +177,9 @@ setMethod("toString","PATask",
                 if (i < length(object@outputfiles)) {
                   output <- str_c(output,", ")
                 }
-              }       
+              }    
+              output <- str_c(output,"\n")
+              output <- str_c(output, jo$getOutputFilesList()$toString())
               output <- str_c(output,"\n")
             }
                         
