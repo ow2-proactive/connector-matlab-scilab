@@ -702,7 +702,7 @@ PA <- function(funcOrFuncName, ..., varies=NULL, input.files=list(), output.file
     pasolvefile <- PAFile(basename(env_file),hash = hash,working.dir = file.path(str_replace_all(tempdir(),fixed("\\"), "/"),hash))
     pushFile(pasolvefile, client = client)      
     
-    
+    addInputFiles(t) <- pasolvefile 
      
     if (isolate.io.files) {
       # if input/output files are isolated the workdir will be set to the hash directory
@@ -766,8 +766,7 @@ PA <- function(funcOrFuncName, ..., varies=NULL, input.files=list(), output.file
         
         addInputFiles(t) <- pafile      
       }
-    }
-    addInputFiles(t) <- pasolvefile   
+    }      
     
     if (length(output.files) > 0) {
       tmp.output.files <- final.output.files[[i]]
