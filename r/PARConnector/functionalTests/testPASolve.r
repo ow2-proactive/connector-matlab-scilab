@@ -24,7 +24,7 @@ if (!all(unlist(val) == sin(1:n))) {
 
 
 res <- PASolve('min',1:n, n:1)
-val <- PAWaitFor(res,60000)
+val <- PAWaitFor(res,TEN_MINUTES)
 print(val)
 
 if (!all(unlist(val) == mapply(min, 1:n, n:1))) {
@@ -35,7 +35,7 @@ if (!all(unlist(val) == mapply(min, 1:n, n:1))) {
 # named params
 
 res <- PASolve('min',1:n, n:1, NA, na.rm = TRUE)
-val <- PAWaitFor(res,60000)
+val <- PAWaitFor(res,TEN_MINUTES)
 print(val)
 
 if (!all(unlist(val) == mapply(min, 1:n, n:1, NA, na.rm = TRUE))) {
@@ -47,7 +47,7 @@ if (!all(unlist(val) == mapply(min, 1:n, n:1, NA, na.rm = TRUE))) {
 # unvarying parameters, identified by index
 
 res <- PASolve('c',1:4, 1:4, varies = list(1))
-val <- PAWaitFor(res,60000)
+val <- PAWaitFor(res,TEN_MINUTES)
 print(val)
 
 if (!all(unlist(val) == c(1,1,2,3,4,2,1,2,3,4,3,1,2,3,4,4,1,2,3,4))) {
@@ -58,7 +58,7 @@ if (!all(unlist(val) == c(1,1,2,3,4,2,1,2,3,4,3,1,2,3,4,4,1,2,3,4))) {
 # unvarying parameters, identified by name
 
 res <- PASolve('append',x=1:4, values=1:4, varies = list("values"))
-val <- PAWaitFor(res,60000)
+val <- PAWaitFor(res,TEN_MINUTES)
 print(val)
 
 if (!all(unlist(val) == c(1,2,3,4,1,1,2,3,4,2,1,2,3,4,3,1,2,3,4,4))) {

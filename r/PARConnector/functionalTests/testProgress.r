@@ -30,7 +30,7 @@ res
 Sys.sleep(4)
 res
 Sys.sleep(4)
-val <- PAWaitFor(res,60000)
+val <- PAWaitFor(res, TEN_MINUTES)
 print(val)
 
 if (!all(unlist(val) == 1:4)) {
@@ -44,5 +44,5 @@ printspaces <- function(x) {
 } 
 # check that spaces urls are correct
 res <- PASolve(printspaces,c("local","input","output", "global","user"))
-val <- PAWaitFor(res,60000)
+val <- PAWaitFor(res, TEN_MINUTES)
 print(val)

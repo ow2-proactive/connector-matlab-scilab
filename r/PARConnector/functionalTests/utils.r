@@ -1,4 +1,7 @@
-# Some function usefull  for tests
+# Some function usefull functions for tests
+
+# Default timeout for PAWaitFor
+TEN_MINUTES <- 1000 * 60 * 60
 
 # error handler to quit the R session on error
 options(

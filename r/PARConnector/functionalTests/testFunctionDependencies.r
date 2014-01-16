@@ -17,7 +17,7 @@ bar <- function(x)foo(x)
 
 # use foo as main function
 res <- PASolve(foo,1:3)
-val <- PAWaitFor(res,60000)
+val <- PAWaitFor(res, TEN_MINUTES)
 print(val)
 
 if (!all(unlist(val) == 1:3)) {
@@ -31,7 +31,7 @@ boo <- function(f,x)f(x)
 
 res <- PASolve(boo,foo,1:3)
 
-val <- PAWaitFor(res,60000)
+val <- PAWaitFor(res, TEN_MINUTES)
 print(val)
 
 if (!all(unlist(val) == 1:3)) {

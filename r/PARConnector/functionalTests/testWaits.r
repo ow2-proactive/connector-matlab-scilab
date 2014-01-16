@@ -38,14 +38,14 @@ n <- 4
 res <- PASolve('sin',1:n)
 val <- list()
 for (i in 1:n) {
-  v <- PAWaitFor(res[i],60000)
+  v <- PAWaitFor(res[i], 60000)
   val <- c(val, v)
 }
 
 print(val)
 
 if (!all(unlist(val) == sin(1:n))) {
-  msg <- paste0("Error when comparing val=",toString(unlist(val)), " with sin(1:n)=",toString(sin(1:n)),"\n")
+  msg <- paste0("Error when comparing val=",toString(unlist(val)), " with sin(1:n)=", toString(sin(1:n)),"\n")
   stop(msg)   
 }
 # test PAWaitAny
@@ -53,7 +53,7 @@ n <- 4
 res <- PASolve('sin',1:n)
 val <- list()
 for (i in 1:n) {
-  v <- PAWaitAny(res,60000)
+  v <- PAWaitAny(res, 60000)
   tn <- names(v)
   ind <- strtoi(substr(tn,2,nchar(tn)))
   val[ind] <- v
@@ -61,7 +61,7 @@ for (i in 1:n) {
 
 print(val)
 if (!all(unlist(val) == sin(1:n))) {
-  msg <- paste0("Error when comparing val=",toString(unlist(val)), " with sin(1:n)=",toString(sin(1:n)) ,"\n" )
+  msg <- paste0("Error when comparing val=",toString(unlist(val)), " with sin(1:n)=", toString(sin(1:n)) ,"\n" )
   stop(msg)  
 }
 
