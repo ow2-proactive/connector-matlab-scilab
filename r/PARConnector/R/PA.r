@@ -679,7 +679,7 @@ PA <- function(funcOrFuncName, ..., varies=NULL, input.files=list(), output.file
       t <- PATask(tname, file.index = i, file.index.function = .createReplacementFunction(repl.envir)) 
     }
     patasknames <- c(patasknames,tname)
-    env_file <- str_replace_all(file.path(hash.tmp.dir,str_c("PASolve_",tname,".rdata")),fixed("\\"), "/") 
+    env_file <- str_replace_all(file.path(hash.tmp.dir,str_c("pasolve_",tname,".rdata")),fixed("\\"), "/") 
     
     # look for dependendent tasks in parameter list    
     for (j in 1:length(final.param.list[[i]])) {
