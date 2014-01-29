@@ -60,7 +60,7 @@
 	
 	<target name='compile' depends='lib'>
 		<mkdir dir='${bin}'/>
-		<javac srcdir='${src}' destdir='${bin}' source='1.7' target='1.6'>
+		<javac srcdir='${src}' destdir='${bin}' source='1.6' target='1.6'>
 			<classpath refid='classpath'/>
 		</javac>
 	</target>
