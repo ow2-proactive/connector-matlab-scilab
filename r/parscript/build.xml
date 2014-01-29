@@ -68,6 +68,12 @@
 	<target name='dist' depends='compile'>
 		<jar jarfile='${target}' basedir='${bin}' excludes='**/test/'>
 			<service type='javax.script.ScriptEngineFactory' provider='org.ow2.parscript.PARScriptFactory'/>
+			<tstamp>
+    			<format property="TODAY" pattern="yyyy-MM-dd HH:mm:ss" />
+  			</tstamp>
+			<manifest>
+		    	<attribute name="Built-Date" value="${TODAY}"/>
+		  	</manifest>
 		</jar>
 		<copy file='${target}' todir='${env.SCHEDULER_HOME}/addons'/>
 	</target>
