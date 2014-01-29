@@ -78,6 +78,8 @@ class TestRscript extends TestCase {
 
 class Context {	
 	def isWindows = System.properties['os.name'].toLowerCase().contains('windows')
+	def isMac = System.getProperty("os.name").toLowerCase().contains('mac')
+	def isLinux = System.getProperty("os.name").toLowerCase().contains('nux')
 	def schedHome = System.getenv()['SCHEDULER_340']
 	def rHome = System.getenv()['R_HOME']
 		
@@ -95,11 +97,10 @@ class Context {
 			def arch = System.getenv()['ProgramFiles(x86)'] != null ? 'x64' : 'i386'
 			rExe = rHome+fs+'bin'+fs+arch+fs+'R.exe'
 			rLibraryDir = new File(rHome,'library')
-		} else {
-			rExe = rHome+fs+'bin'+fs+'R'
-			//rLibraryDir = new File(rHome,'site-library')
-			rLibraryDir = new File(System.getenv()['R_LIBS_USER'])
-			assert rLibraryDir.exists() : '!!! Unable to locate R library, please set R_LIBS_USER env var !!!'
+		} else { // for isLinux and isMac
+			rExe = rHome+fs+'bin'+fs+'R'			
+			rLibraryDir = new File(System.getenv()['R_LIBS'])
+			assert rLibraryDir.exists() : '!!! Unable to locate R library, please set R_LIBS env var !!!'
 		}
 		rLibraryPath = rLibraryDir.getAbsolutePath()
 		// todo check for rJava	
@@ -112,28 +113,36 @@ class Context {
 		testsDir = new File(parConnectorDir,'functionalTests')
 
 		assert parConnectorDir.exists() : '!!! Unable to locate PARConnector dir !!!'
-		
-		def jreHome = System.getenv()['JAVA_HOME'] + fs + 'jre'
-		assert (new File(jreHome)).exists() : "!!! Unable to locate the jre !!!"
 
-		// ! THIS IS A FIX FOR rJava that requires JAVA_HOME to be the location of the JRE !
-		System.getenv().each() {k,v ->
-			if ('JAVA_HOME'.equals(k)) { v = jreHome }
-			newEnv << k+'='+v
+		if (isWindows || isLinux) {
+			def jreHome = System.getenv()['JAVA_HOME'] + fs + 'jre'
+			assert (new File(jreHome)).exists() : "!!! Unable to locate the jre !!!"
+			// ! THIS IS A FIX FOR rJava that requires JAVA_HOME to be the location of the JRE !
+			System.getenv().each() {k,v ->
+				if ('JAVA_HOME'.equals(k)) { v = jreHome }
+				newEnv << k+'='+v
+			}
+			if (isLinux) {
+				// LD_LIBRARY_PATH=/home/jenkins/shared/java/x86_64/sun/jdk1.7.0_45/jre/lib/amd64:/home/jenkins/shared/java/x86_64/sun/jdk1.7.0_45/jre/lib/amd64/server/		
+				def libDir = new File(jreHome, 'lib')
+				assert libDir.exists() : "!!! Unable to locate the lib dir inside the jre dir !!!"
+
+				def so64Dir = new File(libDir, 'amd64')
+				if (so64Dir.exists()) { // 64 bits jre
+					newEnv << 'LD_LIBRARY_PATH='+so64Dir+File.pathSeparator+(new File(so64Dir, 'server'))
+				} 
+				
+				def so32Dir = new File(libDir, 'i386')
+				if (so32Dir.exists()){ // 32 bits jre
+					newEnv << 'LD_LIBRARY_PATH='+so32Dir+File.pathSeparator+(new File(so32Dir, 'client'))
+				}
+			}
 		}
-		if (!isWindows) {
-			// LD_LIBRARY_PATH=/home/jenkins/shared/java/x86_64/sun/jdk1.7.0_45/jre/lib/amd64:/home/jenkins/shared/java/x86_64/sun/jdk1.7.0_45/jre/lib/amd64/server/		
-			def libDir = new File(jreHome, 'lib')
-			assert libDir.exists() : "!!! Unable to locate the lib dir inside the jre dir !!!"
-
-			def so64Dir = new File(libDir, 'amd64')
-			if (so64Dir.exists()) { // 64 bits jre
-				newEnv << 'LD_LIBRARY_PATH='+so64Dir+File.pathSeparator+(new File(so64Dir, 'server'))
-			} 
-			
-			def so32Dir = new File(libDir, 'i386')
-			if (so32Dir.exists()){ // 32 bits jre
-				newEnv << 'LD_LIBRARY_PATH='+so32Dir+File.pathSeparator+(new File(so32Dir, 'client'))
+		if (isMac) {
+			// By default it seems the apple's java6 installation is a mixed jre and jdk
+			def jreHome = System.getenv()['JAVA_HOME']					
+			System.getenv().each() {k,v ->				
+				newEnv << k+'='+v
 			}
 		}
 	}
