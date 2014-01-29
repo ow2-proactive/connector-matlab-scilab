@@ -11,6 +11,10 @@
 	<property environment='env'/>
 	<property name='pasdir' location='${env.SCHEDULER_HOME}/dist/lib'/>
 
+	<tstamp>
+    	<format property="TODAY" pattern="yyyy-MM-dd HH:mm:ss" />
+  	</tstamp>	
+
 	<target name='all' depends='clean, dist, doc, test'/>
 
 	<target name='clean'>
@@ -68,9 +72,6 @@
 	<target name='dist' depends='compile'>
 		<jar jarfile='${target}' basedir='${bin}' excludes='**/test/'>
 			<service type='javax.script.ScriptEngineFactory' provider='org.ow2.parscript.PARScriptFactory'/>
-			<tstamp>
-    			<format property="TODAY" pattern="yyyy-MM-dd HH:mm:ss" />
-  			</tstamp>
 			<manifest>
 		    	<attribute name="Built-Date" value="${TODAY}"/>
 		  	</manifest>
