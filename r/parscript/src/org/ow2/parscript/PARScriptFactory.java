@@ -94,7 +94,7 @@ public final class PARScriptFactory extends RScriptFactory {
 					throw new IllegalStateException("Unable to locate R homedir, the R_HOME env variable must be defined", e);
 				}
 			}
-			dynamicAddLibraryPathLinuxMac(rHome, "library");
+			dynamicAddLibraryPathMac(rHome);
 		} else {
 			// On Linux try to locate from usual install path
 			if (isBlank) {
@@ -108,7 +108,7 @@ public final class PARScriptFactory extends RScriptFactory {
 					throw new IllegalStateException("Unable to locate R homedir, the R_HOME env variable must be defined", e);
 				}
 			}			
-			dynamicAddLibraryPathLinuxMac(rHome, "site-library");
+			dynamicAddLibraryPathLinux(rHome);
 		}
 	}
 
@@ -153,13 +153,39 @@ public final class PARScriptFactory extends RScriptFactory {
 		}
 	}
 
-	private static void dynamicAddLibraryPathLinuxMac(final String rHome, String defaultPackagesDirname) {
+	private static void dynamicAddLibraryPathMac(final String rHome) {
 		String fs = java.io.File.separator;
-		String packagesLibraryPath = rHome + fs + defaultPackagesDirname;
+		String packagesLibraryPath = rHome + fs + "library";
 		// If R_LIBS env var is defined locate rJava there
 		String rLibs = System.getenv("R_LIBS");
 		if (!StringUtils.isBlank(rLibs)) {
-			packagesLibraryPath = rLibs;
+			if (new File(rLibs + fs + "rJava").exists()) {
+				packagesLibraryPath = rLibs;
+			}
+		}
+		String rJavaPath = packagesLibraryPath + fs + "rJava";
+		if (!new File(rJavaPath).exists()) {
+			throw new IllegalStateException("Unable to locate rJava package in " + rJavaPath + " the R_LIBS env variable must be defined");
+		}
+		// Dynamically add to java library path
+		String jriLibraryPath = rJavaPath + fs + "jri" + fs;
+		try {
+			PARScriptFactory.addLibraryPath(jriLibraryPath);
+		} catch (Exception e) {
+			throw new IllegalStateException(
+					"Unable to add jri to library path " + jriLibraryPath, e);
+		}
+	}
+
+	private static void dynamicAddLibraryPathLinux(final String rHome) {
+		String fs = java.io.File.separator;
+		String packagesLibraryPath = rHome + fs + "site-library";
+		// If R_LIBS env var is defined locate rJava there
+		String rLibs = System.getenv("R_LIBS");
+		if (!StringUtils.isBlank(rLibs)) {
+			if (new File(rLibs + fs + "rJava").exists()) {
+				packagesLibraryPath = rLibs;
+			}
 		}
 		String rJavaPath = packagesLibraryPath + fs + "rJava";
 		if (!new File(rJavaPath).exists()) {
