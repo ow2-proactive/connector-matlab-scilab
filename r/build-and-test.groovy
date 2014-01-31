@@ -140,8 +140,8 @@ class Context {
 		}
 		if (isMac) {
 			// By default it seems the apple's java6 installation is a mixed jre and jdk
-			def jreHome = System.getenv()['JAVA_HOME']					
-			System.getenv().each() {k,v ->				
+			def jreHome = System.getenv()['JAVA_HOME']
+			System.getenv().each() {k,v ->
 				newEnv << k+'='+v
 			}
 		}
@@ -193,14 +193,22 @@ class Context {
 	void startScheduler() {
 		println '\n######################\n#   STARTING the Scheduler using start-server.js ... \n######################'
 		schedProcess = ["jrunscript", "start-server.js"].execute(null, new File(schedHome, 'bin'))
+
 		try {
 			schedProcess.inputStream.eachLine {
 				println '>> ' + it
-				if (it.contains('terminate all')) {	
-					throw new Exception('ready')
+				if (it.contains('terminate all')) {
+					throw new Exception()
 				}
 			}
 		} catch (e) {}
+
+		try {
+			int value = schedProcess.exitValue();
+			if (value != 0) {
+				throw new Exception("Could not start the Scheduler, start-server.js exited with code " + value);
+			}
+		} catch (IllegalThreadStateException e) {/* the process is still running */}
 	}
 
 	void stopScheduler() {
