@@ -65,7 +65,7 @@ r=PASolve(
       output.files="out")
 ) 
 
-val <- PAWaitFor(r)
+val <- PAWaitFor(r, TEN_MINUTES)
 print(val)
 
 if (val[["t6"]] != "out") {

@@ -38,7 +38,7 @@ n <- 4
 res <- PASolve('sin',1:n)
 val <- list()
 for (i in 1:n) {
-  v <- PAWaitFor(res[i], 60000)
+  v <- PAWaitFor(res[i], TEN_MINUTES)
   val <- c(val, v)
 }
 

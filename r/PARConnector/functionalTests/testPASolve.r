@@ -12,7 +12,7 @@ n <- 4
 # single param
 
 res <- PASolve('sin',1:n)
-val <- PAWaitFor(res)
+val <- PAWaitFor(res, TEN_MINUTES)
 print(val)
 
 if (!all(unlist(val) == sin(1:n))) {
