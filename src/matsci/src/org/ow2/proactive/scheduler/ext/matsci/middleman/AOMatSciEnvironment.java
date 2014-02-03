@@ -1914,6 +1914,9 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                 }
                 // we maybe serve the pending waitXXX method if there is one and if the necessary results are collected
                 maybeServePending(service);
+            } catch (InterruptedException ex) {
+                printLog(ex, LogMode.FILEONLY);
+                throw new RuntimeException(ex);
             } catch (Throwable ex) {
                 printLog(ex, LogMode.FILEONLY);
             }

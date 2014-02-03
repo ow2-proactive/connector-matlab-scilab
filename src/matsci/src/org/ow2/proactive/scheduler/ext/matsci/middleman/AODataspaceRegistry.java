@@ -36,6 +36,10 @@
  */
 package org.ow2.proactive.scheduler.ext.matsci.middleman;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+
 import org.objectweb.proactive.Body;
 import org.objectweb.proactive.InitActive;
 import org.objectweb.proactive.RunActive;
@@ -46,10 +50,6 @@ import org.objectweb.proactive.extensions.vfsprovider.FileSystemServerDeployer;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.DataspaceRegistry;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.data.Pair;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.data.UnReifiable;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
 
 
 /**
@@ -169,8 +169,12 @@ public class AODataspaceRegistry implements DataspaceRegistry, RunActive, InitAc
     @Override
     public void runActivity(Body body) {
         Service service = new Service(body);
-        while (!terminated) {
-            service.blockingServeOldest();
+        try {
+            while (!terminated) {
+                service.blockingServeOldest();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
