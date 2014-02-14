@@ -1,7 +1,9 @@
 <project name='rscript' default='all' basedir='.'>
 
+	<property name="version" value="0.9"/>
+
 	<property name='dist' location='dist'/>
-	<property name='target' location='${dist}/parscript.jar'/>
+	<property name='target' location='${dist}/parscript-${version}.jar'/>
 	<property name='src' location='src'/>
 	<property name='bin' location='bin'/>
 	<property name='doc' location='doc'/>
@@ -74,6 +76,7 @@
 			<service type='javax.script.ScriptEngineFactory' provider='org.ow2.parscript.PARScriptFactory'/>
 			<manifest>
 		    	<attribute name="Built-Date" value="${TODAY}"/>
+		    	<attribute name="Version" value="${version}"/>
 		  	</manifest>
 		</jar>
 		<copy file='${target}' todir='${env.SCHEDULER_HOME}/addons'/>
