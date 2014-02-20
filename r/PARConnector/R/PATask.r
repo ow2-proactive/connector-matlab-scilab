@@ -166,8 +166,6 @@ setMethod("toString","PATask",
                 }
               }       
               output <- str_c(output,"\n")
-              output <- str_c(output,jo$getInputFilesList()$toString())
-              output <- str_c(output,"\n")
             }
             
             if (length(object@outputfiles) > 0) {
@@ -178,8 +176,6 @@ setMethod("toString","PATask",
                   output <- str_c(output,", ")
                 }
               }    
-              output <- str_c(output,"\n")
-              output <- str_c(output, jo$getOutputFilesList()$toString())
               output <- str_c(output,"\n")
             }
                         
