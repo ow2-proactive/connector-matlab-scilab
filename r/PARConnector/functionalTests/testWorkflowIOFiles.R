@@ -61,7 +61,7 @@ r=PASolve(
          PAS(split, 1:4, input.files="in", output.files="split_%1%"),
          input.files="split_%1%",
          output.files="out_%1%"),
-      input.files="out_%1:4%",
+      input.files="out_%1%", # should expand into out_1, out_2, out_3, out_4
       output.files="out")
 ) 
 

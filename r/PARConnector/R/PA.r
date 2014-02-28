@@ -327,8 +327,7 @@ PAM <- function(funcOrFuncName, ..., varies=list(), input.files=list(), output.f
   }
   
   newcall[["varies"]] <- varies
-  newcall[["input.files"]] <- input.files
-  newcall[["output.files"]] <- output.files
+  # input/output files will be treated later
   newcall[["in.dir"]] <- in.dir
   newcall[["out.dir"]] <- out.dir
   newcall[["hostname.selection"]] <- hostname.selection
@@ -338,7 +337,55 @@ PAM <- function(funcOrFuncName, ..., varies=list(), input.files=list(), output.f
   newcall[["isolate.io.files"]] <- isolate.io.files
   newcall[["client"]] <- client
   newcall[[".debug"]] <- .debug
-  return(do.call("PA",newcall))
+
+  # Fix the strange default value of the 'varies' parameter
+  if (0 == length(varies)) {
+    varies <- NULL
+  }
+
+  # Reuse the standard pattern replacement from PA() then merge all input/output files
+  # into a single list
+
+  # Save current task id and restore it later
+  id <- get("patask.id", envir=cacheEnv)
+  multipleTasksList <- PA(funcOrFuncName, ... ,
+          varies = varies,
+          input.files=input.files, output.files=output.files,
+          in.dir=in.dir, out.dir=out.dir,
+          hostname.selection=hostname.selection,
+          ip.selection = ip.selection,
+          property.selection.name=property.selection.name,
+          property.selection.value = property.selection.value,
+          isolate.io.files = isolate.io.files,
+          client = client, .debug = .debug)
+  # Restore the task id
+  assign("patask.id", id, envir=cacheEnv)
+
+  # The merge task is created by a call to PA() with flatten arguments (ie dots)
+  singleTaskList <- (do.call("PA",newcall))
+  mergeTask <- singleTaskList[[1]]
+
+  # For each task in mutlipleTasksList add all input/output files to the merge task
+  for (task in multipleTasksList) {
+    nbFiles <- length(task@inputfiles)
+    # Skip the first .rdata file and get only the user defined inputfiles
+    if (nbFiles > 1) {
+      for (file in task@inputfiles[2:nbFiles]) { # file is a PAFile object
+          if (!is.null(file)) {
+            addInputFiles(mergeTask) <- file
+          }
+      }
+    }
+    # Add all output files
+    for (file in task@outputfiles) { # file is a PAFile object
+        if (!is.null(file)) {
+          addOutputFiles(mergeTask) <- file
+        }
+    }
+  }
+
+  singleTaskList[[1]] <- mergeTask
+  return(singleTaskList)
 }
 
 #' Creates a single split PATask which can be used in combination with \code{\link{PA}} and \code{\link{PAM}} to create split/merge workflows
