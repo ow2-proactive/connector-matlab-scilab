@@ -162,7 +162,7 @@ class Context {
 
 		assert distDir.listFiles().length > 0 : 'The dist dir is empty'
 		def archiveFile = distDir.listFiles().first();
-		assert archiveFile.getName().endsWith('.tgz') : 'It seems the archive was not build correctly'
+		assert archiveFile.getName().endsWith('.tar.gz') : 'It seems the archive was not build correctly'
 	
 		println '\n######################\n#   REMOVING previous PARConnector ... \n######################'
 		run([rExe, 'CMD', 'REMOVE', '--library='+rLibraryPath, 'PARConnector'], newEnv, homeDir
