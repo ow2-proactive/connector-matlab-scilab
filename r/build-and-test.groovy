@@ -158,11 +158,11 @@ class Context {
 
 		println '\n######################\n#   BUILDING PARConnector ... \n######################'
 		assert  run([rExe, 'CMD', 'INSTALL','--build','--preclean', '--with-keep.source','--no-multiarch', parConnectorDir.getAbsolutePath()], newEnv, distDir
-			).waitFor() == 0 : 'It seems R CMD build failed'
+			).waitFor() == 0 : 'It seems R CMD INSTALL --build failed'
 
 		assert distDir.listFiles().length > 0 : 'The dist dir is empty'
 		def archiveFile = distDir.listFiles().first();
-		assert archiveFile.getName().endsWith('.zip') : 'It seems the archive was not build correctly'
+		assert archiveFile.getName().endsWith('.tgz') : 'It seems the archive was not build correctly'
 	
 		println '\n######################\n#   REMOVING previous PARConnector ... \n######################'
 		run([rExe, 'CMD', 'REMOVE', '--library='+rLibraryPath, 'PARConnector'], newEnv, homeDir
