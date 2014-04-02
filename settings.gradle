@@ -1,0 +1,21 @@
+include 'common:matsci-common-data'
+include 'common:matsci-common-client'
+include 'common:matsci-common-middleman'
+include 'common:matsci-common-middleman:matsci-common-middleman-stub'
+include 'common:matsci-common-worker'
+include 'common:matsci-common-test'
+
+include 'matlab:matlab-data'
+include 'matlab:matlab-client'
+include 'matlab:matlab-middleman'
+include 'matlab:matlab-worker'
+include 'matlab:matlab-test'
+
+include 'scilab:scilab-data'
+include 'scilab:scilab-client'
+include 'scilab:scilab-middleman'
+include 'scilab:scilab-worker'
+include 'scilab:scilab-test'
+
+
+

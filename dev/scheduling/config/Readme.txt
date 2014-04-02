@@ -1,1 +1,0 @@
-## This folder contains config files from the scheduler

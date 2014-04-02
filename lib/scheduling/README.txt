@@ -1,1 +1,0 @@
-This directory contains the librairies imported from the Scheduling project.

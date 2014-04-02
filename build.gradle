@@ -1,0 +1,536 @@
+apply plugin: 'base'
+
+buildscript {
+    repositories {
+//        if (project.hasProperty('local'))
+            mavenLocal()
+        mavenCentral()
+        maven { url 'http://repo.activeeon.com/content/repositories/snapshots/' }
+        maven { url 'http://repo.activeeon.com/content/repositories/releases/' }
+        maven { url 'http://repo.activeeon.com/content/repositories/thirdparty/' }
+        maven { url 'http://spoon.gforge.inria.fr/repositories/releases/' }
+    }
+
+    dependencies {
+        classpath "org.objectweb.proactive:programming-build-utils:${programmingVersion}"
+        // needed at runtime by AntStubGenerator...
+        classpath("org.objectweb.proactive:programming-core:${programmingVersion}") {
+            exclude module: 'xercesImpl' // messing with documentation plugin
+        }
+        classpath 'org.ow2.proactive:documentation:1.0.0-SNAPSHOT'
+        classpath 'org.ow2.proactive:serialver-gradle:1.0-SNAPSHOT'
+    }
+}
+
+allprojects {
+    apply plugin: 'maven'
+
+    group = 'org.ow2.proactive.matsci'
+    version = matsciVersion
+
+    rootProject.buildscript.repositories.each {
+        repositories.add(it)
+    }
+
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+                repository(url: "http://repo.activeeon.com/content/repositories/snapshots/") {
+                    authentication(userName: "${System.getProperty('nexusUsername')}",
+                            password: "${System.getProperty('nexusPassword')}")
+                }
+            }
+        }
+    }
+}
+
+ext.serialver = matsciSerialver
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'idea'
+
+    configurations {
+        provided
+
+        provided.extendsFrom(compile)
+    }
+
+    sourceSets {
+        main {compileClasspath += configurations.provided }
+    }
+
+    idea {
+        module {
+            scopes.PROVIDED.plus += configurations.provided
+        }
+    }
+
+    dependencies {
+        testCompile 'junit:junit:4.11'
+    }
+
+    task serialver(type: InsertSerialVersionUIDTask) {
+        serialver = rootProject.serialver
+    }
+
+    sourceCompatibility = "1.6"
+    targetCompatibility = "1.6"
+}
+
+def functionalTestConfiguration = {
+
+    forkEvery 1
+    include 'functionaltests/**'
+    include 'unittests/**'
+    include 'unitTests/**'
+    systemProperties << ['url': System.getProperty("url")]
+    systemProperties << ['pa.rm.home': rootDir.absolutePath]
+    systemProperties << ['pa.scheduler.home': rootDir.absolutePath]
+    systemProperties << ['proactive.test.timeout': 600000]
+    systemProperties << ['java.awt.headless': 'true']
+    testLogging {
+        exceptionFormat = 'full'
+    }
+    beforeTest { descriptor ->
+        logger.lifecycle("Running: " + descriptor)
+    }
+
+    def clean = {
+        logger.lifecycle("Killing all proactive processes")
+        project.javaexec {
+            main = "org.ow2.tests.ProcessCleaner"
+            classpath = project.sourceSets.test.runtimeClasspath
+        }
+    }
+
+    finalizedBy project.task(project.name + '-clean', { doLast clean })
+    doFirst clean
+}
+
+project(':common:matsci-common-data') {
+}
+
+project(':common:matsci-common-client') {
+    dependencies {
+        compile project(':common:matsci-common-data')
+        compile 'jdbm:jdbm2:2.4'
+        runtime project(':common:matsci-common-middleman:matsci-common-middleman-stub')
+    }
+
+}
+
+project(':common:matsci-common-middleman') {
+    dependencies {
+        compile 'commons-codec:commons-codec:1.6'
+        compile 'jdbm:jdbm2:2.4'
+        compile 'log4j:log4j:1.2.14'
+        compile "org.objectweb.proactive:programming-core:${programmingVersion}"
+        compile "org.objectweb.proactive:programming-extension-annotation:${programmingVersion}"
+        compile "org.objectweb.proactive:programming-extension-vfsprovider:${programmingVersion}"
+        compile "org.ow2.proactive:scheduler-client:${schedulingVersion}"
+        compile "org.ow2.proactive:common-client:${schedulingVersion}"
+        compile "org.ow2.proactive:scheduler-api:${schedulingVersion}"
+        compile "org.ow2.proactive:scheduler-cli:${schedulingVersion}"
+        compile "org.ow2.proactive:dataspace-smartproxy:${schedulingVersion}"
+
+        compile project(':common:matsci-common-client')
+        compile project(':common:matsci-common-data')
+
+        runtime "org.objectweb.proactive:programming-extension-rmissl:${programmingVersion}"
+        runtime "org.objectweb.proactive:programming-extension-pnp:${programmingVersion}"
+        runtime "org.objectweb.proactive:programming-extension-pnpssl:${programmingVersion}"
+        runtime "org.objectweb.proactive:programming-extension-amqp:${programmingVersion}"
+        runtime "org.objectweb.proactive:programming-extension-pamr:${programmingVersion}"
+        runtime 'org.slf4j:slf4j-log4j12:1.5.3'
+
+    }
+    task stub(type: StubTask) {
+        classes = ['org.ow2.proactive.scheduler.ext.matsci.middleman.AOMatSciEnvironment',
+                'org.ow2.proactive.scheduler.ext.matsci.middleman.AODataspaceRegistry',
+                'org.ow2.proactive.scheduler.ext.matsci.middleman.MatSciJVMProcessInterfaceImpl']
+    }
+
+}
+
+project(':common:matsci-common-middleman:matsci-common-middleman-stub') {
+    configurations {
+        rmic
+    }
+    dependencies {
+        rmic project(':common:matsci-common-middleman')
+    }
+    task rmic << {
+        sourceSets.main.output.classesDir.mkdirs()
+        project(':common:matsci-common-middleman').sourceSets.main.output.classesDir.mkdirs()
+        ant.rmic(base: project(':common:matsci-common-middleman').sourceSets.main.output.classesDir, destdir: sourceSets.main.output.classesDir, classpath: configurations.rmic.asPath, includes: "**/org/ow2/proactive/scheduler/ext/matsci/middleman/AOMatSciEnvironment.class **/org/ow2/proactive/scheduler/ext/matsci/middleman/AODataspaceRegistry.class **/org/ow2/proactive/scheduler/ext/matsci/middleman/MatSciJVMProcessInterfaceImpl.class")
+    }
+    jar.dependsOn rmic
+}
+
+project(':common:matsci-common-worker') {
+    dependencies {
+        compile project(':common:matsci-common-data')
+        compile 'jdom:jdom:1.0'
+        provided 'log4j:log4j:1.2.14'
+        provided "org.objectweb.proactive:programming-core:${programmingVersion}"
+        provided "org.ow2.proactive:scheduler-api:${schedulingVersion}"
+        provided 'org.slf4j:slf4j-log4j12:1.5.3'
+    }
+}
+
+project(':common:matsci-common-test') {
+    dependencies {
+        compile 'commons-io:commons-io:2.4'
+        compile "org.objectweb.proactive:programming-extension-rmissl:${programmingVersion}"
+        compile "org.objectweb.proactive:programming-extension-pnp:${programmingVersion}"
+        compile "org.objectweb.proactive:programming-extension-pnpssl:${programmingVersion}"
+        compile "org.objectweb.proactive:programming-extension-amqp:${programmingVersion}"
+        compile "org.objectweb.proactive:programming-extension-pamr:${programmingVersion}"
+        compile "org.objectweb.proactive:programming-core:${programmingVersion}"
+        compile "org.ow2.proactive:scheduler-client:${schedulingVersion}"
+        compile "org.ow2.proactive:rm-client:${schedulingVersion}"
+        compile "org.ow2.proactive:rm-node:${schedulingVersion}"
+        compile 'junit:junit:4.11'
+        compile project(':common:matsci-common-data')
+    }
+}
+
+project(':matlab:matlab-data') {
+    dependencies {
+        compile project(':common:matsci-common-data')
+    }
+}
+
+project(':matlab:matlab-client') {
+    dependencies {
+        compile project(':common:matsci-common-client')
+        compile project(':common:matsci-common-data')
+        compile project(':matlab:matlab-data')
+        compile 'jdbm:jdbm2:2.4'
+    }
+
+}
+
+project(':matlab:matlab-middleman') {
+    dependencies {
+        compile 'commons-codec:commons-codec:1.6'
+        compile 'jdbm:jdbm2:2.4'
+
+        compile "org.objectweb.proactive:programming-core:${programmingVersion}"
+        compile "org.objectweb.proactive:programming-extension-annotation:${programmingVersion}"
+        compile "org.objectweb.proactive:programming-extension-vfsprovider:${programmingVersion}"
+        compile "org.ow2.proactive:scheduler-client:${schedulingVersion}"
+        compile "org.ow2.proactive:common-client:${schedulingVersion}"
+        compile "org.ow2.proactive:scheduler-api:${schedulingVersion}"
+        compile "org.ow2.proactive:dataspace-smartproxy:${schedulingVersion}"
+
+        compile project(':common:matsci-common-client')
+        compile project(':common:matsci-common-data')
+        compile project(':common:matsci-common-middleman')
+        compile project(':matlab:matlab-data')
+        compile project(':matlab:matlab-client')
+        compile project(':matlab:matlab-worker')
+
+
+    }
+    task stub(type: StubTask) {
+        classes = ['org.ow2.proactive.scheduler.ext.matlab.middleman.AOMatlabEnvironment']
+    }
+}
+
+project(':matlab:matlab-worker') {
+    dependencies {
+        compile 'com.activeeon.proactive:matlabcontrol:3.1.0'
+        compile 'com.activeeon.proactive:licensesaver-api:1.0.0'
+        provided "org.objectweb.proactive:programming-core:${programmingVersion}"
+        provided "org.objectweb.proactive:programming-extension-dataspaces:${programmingVersion}"
+        provided "org.ow2.proactive:scheduler-api:${schedulingVersion}"
+        provided "org.ow2.proactive:scheduler-node:${schedulingVersion}"
+
+        compile project(':common:matsci-common-data')
+        compile project(':common:matsci-common-worker')
+        compile project(':matlab:matlab-data')
+    }
+}
+
+project(':scilab:scilab-data') {
+    dependencies {
+        compile project(':common:matsci-common-data')
+    }
+}
+
+project(':scilab:scilab-client') {
+    dependencies {
+        compile project(':common:matsci-common-client')
+        compile project(':common:matsci-common-data')
+        compile project(':scilab:scilab-data')
+        compile 'jdbm:jdbm2:2.4'
+    }
+}
+
+project(':scilab:scilab-middleman') {
+    dependencies {
+        compile 'commons-codec:commons-codec:1.6'
+        compile 'jdbm:jdbm2:2.4'
+
+        compile "org.objectweb.proactive:programming-core:${programmingVersion}"
+        compile "org.objectweb.proactive:programming-extension-annotation:${programmingVersion}"
+        compile "org.objectweb.proactive:programming-extension-vfsprovider:${programmingVersion}"
+        compile "org.ow2.proactive:scheduler-client:${schedulingVersion}"
+        compile "org.ow2.proactive:common-client:${schedulingVersion}"
+        compile "org.ow2.proactive:scheduler-api:${schedulingVersion}"
+        compile "org.ow2.proactive:dataspace-smartproxy:${schedulingVersion}"
+
+        compile project(':common:matsci-common-client')
+        compile project(':common:matsci-common-data')
+        compile project(':common:matsci-common-middleman')
+        compile project(':scilab:scilab-data')
+        compile project(':scilab:scilab-client')
+        compile project(':scilab:scilab-worker')
+
+
+    }
+    task stub(type: StubTask) {
+        classes = ['org.ow2.proactive.scheduler.ext.scilab.middleman.AOScilabEnvironment']
+    }
+}
+
+project(':scilab:scilab-worker') {
+    dependencies {
+        provided "org.objectweb.proactive:programming-core:${programmingVersion}"
+        provided "org.objectweb.proactive:programming-extension-dataspaces:${programmingVersion}"
+        provided "org.ow2.proactive:scheduler-api:${schedulingVersion}"
+        provided "org.ow2.proactive:scheduler-node:${schedulingVersion}"
+
+        compile project(':common:matsci-common-data')
+        compile project(':common:matsci-common-worker')
+        compile project(':scilab:scilab-data')
+    }
+}
+
+
+configurations {
+    scilabclient
+    scilabmiddleman
+    scilabworker
+    matlabclient
+    matlabmiddleman
+    matlabworker
+    schedulerjar
+    schedulerconfig
+    schedulercustomlibs
+}
+
+dependencies {
+    scilabclient project(':scilab:scilab-client')
+    scilabmiddleman project(':scilab:scilab-middleman')
+    scilabworker project(':scilab:scilab-worker')
+    matlabclient project(':matlab:matlab-client')
+    matlabmiddleman project(':matlab:matlab-middleman')
+    matlabworker project(':matlab:matlab-worker')
+    schedulerjar "org.ow2.proactive:scheduler-server:${schedulingVersion}"
+    schedulerjar "org.ow2.proactive:scheduler-server:${schedulingVersion}:tests"
+    schedulerjar "org.ow2.proactive:rm-server:${schedulingVersion}:tests"
+    schedulerconfig group: "org.ow2.proactive", name: "Scheduling", version: schedulingVersion, classifier: "static", ext: "zip"
+    schedulercustomlibs group: "org.ow2.proactive", name: "Scheduling", version: schedulingVersion, classifier: "libs", ext: "zip"
+}
+
+task distMatlabToolbox(type: Copy) {
+    from project(':matlab:matlab-client').file('src/matlab')
+    into "$buildDir/matlab/PAConnector"
+}
+
+task distMatlabLibsClient(type: Copy) {
+    from configurations.matlabclient
+    into "$buildDir/matlab/PAConnector/lib/client"
+}
+distMatlabLibsClient.mustRunAfter distMatlabToolbox
+task distMatlabLibsMiddleman(type: Copy) {
+    from configurations.matlabmiddleman
+    into "$buildDir/matlab/PAConnector/lib/middleman"
+}
+distMatlabLibsMiddleman.mustRunAfter distMatlabToolbox
+task distMatlabWorker(type: Copy) {
+    from configurations.matlabworker
+    from project(':matlab:matlab-worker').file('src/main/resources')
+    into "$buildDir/matlab/PAConnector/lib/worker"
+}
+distMatlabWorker.mustRunAfter distMatlabToolbox
+
+task distMatlab(dependsOn: ['distMatlabToolbox', 'distMatlabLibsClient', 'distMatlabLibsMiddleman', 'distMatlabWorker']) {
+
+}
+
+task distScilabToolbox(type: Copy) {
+    from project(':scilab:scilab-client').file('src/scilab')
+    into "$buildDir/scilab/PAConnector"
+}
+
+task distScilabLibsClient(type: Copy) {
+    from configurations.scilabclient
+    into "$buildDir/scilab/PAConnector/lib/client"
+}
+distScilabLibsClient.mustRunAfter distScilabToolbox
+task distScilabLibsMiddleman(type: Copy) {
+    from configurations.scilabmiddleman
+    into "$buildDir/scilab/PAConnector/lib/middleman"
+}
+distScilabLibsMiddleman.mustRunAfter distScilabToolbox
+task distScilabWorker(type: Copy) {
+    from configurations.scilabworker
+    from project(':scilab:scilab-worker').file('src/main/resources')
+    into "$buildDir/scilab/PAConnector/lib/worker"
+}
+distScilabWorker.mustRunAfter distScilabToolbox
+
+task distScilab(dependsOn: ['distScilabToolbox', 'distScilabLibsClient', 'distScilabLibsMiddleman', 'distScilabWorker'])
+
+def mainArtifacts(configuration) {
+    configuration.resolvedConfiguration.firstLevelModuleDependencies.moduleArtifacts.file
+}
+
+def mainArtifactsAsZipTree(configuration) {
+    zipTree(mainArtifacts(configuration)[0][0])
+}
+
+task distSchedulerJar (type: Copy) {
+    from configurations.schedulerjar
+
+    from mainArtifactsAsZipTree(configurations.schedulercustomlibs)
+    into "$buildDir/scheduler/dist/lib"
+}
+
+task distSchedulerConfig (type: Copy) {
+    println configurations.schedulerconfig.files
+    from mainArtifactsAsZipTree(configurations.schedulerconfig)
+    into "$buildDir/scheduler"
+}
+
+task distScheduler(dependsOn: [distSchedulerJar, distSchedulerConfig])
+
+
+project(':scilab:scilab-test') {
+    dependencies {
+        testCompile "org.objectweb.proactive:programming-core:${programmingVersion}"
+        testCompile "org.ow2.proactive:scheduler-client:${schedulingVersion}"
+        testCompile "org.ow2.proactive:rm-client:${schedulingVersion}"
+
+        testCompile "org.ow2.proactive:scheduler-server:${schedulingVersion}:tests"
+        testCompile "org.ow2.proactive:rm-server:${schedulingVersion}:tests"
+        testCompile 'winp:winp:1.17-patched'
+
+        testCompile project(':common:matsci-common-test')
+        testCompile project(':common:matsci-common-data')
+        testCompile project(':scilab:scilab-client')
+        testCompile project(':scilab:scilab-middleman')
+    }
+
+    test.enabled = false
+
+    task scilabTest(type: Test) {
+
+        delete  "$rootProject.buildDir/scheduler/RM_DB",  "$rootProject.buildDir/scheduler/SCHEDULER_DB"
+
+        systemProperties << ['pa.scilab.home': "$rootProject.buildDir/scilab/PAconnector"]
+        systemProperties << ['scilab.bin.path': System.getProperty("scilab.bin.path")]
+        systemProperties << ['proactive.home': "$rootProject.buildDir/scheduler"]
+        systemProperties << ['pa.scheduler.home': "$rootProject.buildDir/scheduler"]
+        systemProperties << ['pa.rm.home': "$rootProject.buildDir/scheduler"]
+        systemProperties << ['pa.scheduler.properties.filepath': "$rootProject.buildDir/scheduler/config/scheduler/settings.ini"]
+        systemProperties << ['pa.rm.properties.filepath': "$rootProject.buildDir/scheduler/config/rm/settings.ini"]
+        systemProperties << ['log4j.configuration': "file:$rootProject.buildDir/scheduler/config/log4j/scheduler-log4j-server"]
+        systemProperties << ['pa.scheduler.db.hibernate.dropdb': 'true']
+        systemProperties << ['proactive.test.timeout': "1200000"]
+        systemProperties << ['scilab.test.leaks': 'true']
+
+
+        // systemProperties << ['proactive.test.login.admin': 'admin']
+        // systemProperties << ['proactive.test.password.admin': 'admin']
+        // systemProperties << ['proactive.test.fork': 'admin']
+
+        // uncomment for RunAsMe
+
+//        systemProperties << ['proactive.test.runAsMe': 'admin']
+//        systemProperties << ['pas.launcher.forkas.method': 'admin']
+//        systemProperties << ['proactive.test.login.user': 'demo']
+//        systemProperties << ['proactive.test.password.user': 'demo']
+    }
+
+    //test.dependsOn distScheduler
+    scilabTest.dependsOn distScilab
+    scilabTest.dependsOn distScheduler
+}
+
+project(':matlab:matlab-test') {
+    dependencies {
+        testCompile "org.objectweb.proactive:programming-core:${programmingVersion}"
+        testCompile "org.ow2.proactive:scheduler-client:${schedulingVersion}"
+        testCompile "org.ow2.proactive:rm-client:${schedulingVersion}"
+
+        testCompile "org.ow2.proactive:scheduler-server:${schedulingVersion}:tests"
+        testCompile "org.ow2.proactive:rm-server:${schedulingVersion}:tests"
+        testCompile 'winp:winp:1.17-patched'
+
+        testCompile project(':common:matsci-common-test')
+        testCompile project(':common:matsci-common-data')
+        testCompile project(':matlab:matlab-client')
+        testCompile project(':matlab:matlab-middleman')
+    }
+
+    test.enabled = false
+
+    task matlabTest(type: Test) {
+
+        delete  "$rootProject.buildDir/scheduler/RM_DB",  "$rootProject.buildDir/scheduler/SCHEDULER_DB"
+
+        systemProperties << ['pa.matlab.home': "$rootProject.buildDir/matlab/PAconnector"]
+        systemProperties << ['matlab.bin.path': System.getProperty("matlab.bin.path")]
+        systemProperties << ['proactive.home': "$rootProject.buildDir/scheduler"]
+        systemProperties << ['pa.scheduler.home': "$rootProject.buildDir/scheduler"]
+        systemProperties << ['pa.rm.home': "$rootProject.buildDir/scheduler"]
+        systemProperties << ['pa.scheduler.properties.filepath': "$rootProject.buildDir/scheduler/config/scheduler/settings.ini"]
+        systemProperties << ['pa.rm.properties.filepath': "$rootProject.buildDir/scheduler/config/rm/settings.ini"]
+        systemProperties << ['log4j.configuration': "file:$rootProject.buildDir/scheduler/config/log4j/scheduler-log4j-server"]
+        systemProperties << ['pa.scheduler.db.hibernate.dropdb': 'true']
+        systemProperties << ['proactive.test.timeout': "1200000"]
+
+
+        // systemProperties << ['proactive.test.login.admin': 'admin']
+        // systemProperties << ['proactive.test.password.admin': 'admin']
+        // systemProperties << ['proactive.test.fork': 'admin']
+
+        // uncomment for RunAsMe
+
+//        systemProperties << ['proactive.test.runAsMe': 'admin']
+//        systemProperties << ['pas.launcher.forkas.method': 'admin']
+//        systemProperties << ['proactive.test.login.user': 'demo']
+//        systemProperties << ['proactive.test.password.user': 'demo']
+    }
+
+    //test.dependsOn distScheduler
+    matlabTest.dependsOn distMatlab
+    matlabTest.dependsOn distScheduler
+}
+
+
+
+
+/*def distributedScilab = [project(':common'),
+        project(':scilab'),
+]
+
+def distributedMatlab = [project(':common'),
+        project(':matlab'),
+]
+
+task scilabDist(type: Copy) {
+    distributedScilab.distZip.outputs.files.each {
+        from zipTree(it.singleFile)
+    }
+    into "dist/"
+}
+
+proActiveDist.dependsOn distributedScilab.distZip       */
+
+
