@@ -2,7 +2,7 @@ apply plugin: 'base'
 
 buildscript {
     repositories {
-//        if (project.hasProperty('local'))
+        if (project.hasProperty('local'))
             mavenLocal()
         mavenCentral()
         maven { url 'http://repo.activeeon.com/content/repositories/snapshots/' }
