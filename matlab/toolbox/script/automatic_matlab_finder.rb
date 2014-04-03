@@ -90,9 +90,13 @@ class MatSciFinder
     @logout = JavaIO::PrintStream.new(foslog)
     @orig_jstdout = System.out
     @orig_jstderr = System.err
-    $stdout.reopen(logFileJava.toString(), "a")
-    $stdout.sync=true
-    $stderr.reopen $stdout
+    begin
+      $stdout.reopen(logFileJava.toString(), "a")
+      $stdout.sync=true
+      $stderr.reopen $stdout
+    rescue Exception => e
+      puts e.message + "\n" + e.backtrace.join("\n")
+    end
     System.setOut(@logout)
     System.setErr(@logout)
 
@@ -171,6 +175,22 @@ class MatSciFinder
     return false
   end
 
+  def aquireLock(fisorfos, shared)
+    confFileLock = nil
+    nbattempts = 0
+    while confFileLock == nil && nbattempts < 600
+      begin
+        confFileLock = fisorfos.getChannel().lock(0, Long::MAX_VALUE, shared)
+      rescue Exception => e
+        puts e.message + "\n" + e.backtrace.join("\n")
+        sleep(1)
+        puts "Error occurred while acquiring lock, retrying ..."
+        nbattempts+=1
+      end
+    end
+    return confFileLock
+  end
+
   # read all the configurations from the XML file
   def readConfigs()
     @confFiles.each do |confFile|
@@ -179,7 +199,10 @@ class MatSciFinder
         puts "Reading config in #{confFile}"
 
         fisconf = JavaIO::FileInputStream.new(confFile)
-        confFileLock = fisconf.getChannel().lock(0, Long::MAX_VALUE, true)
+        confFileLock = aquireLock(fisconf, true)
+        if confFileLock == nil
+          return false
+        end
         begin
           sxb = SAXBuilder.new
           doc = sxb.build(confFile)
@@ -585,7 +608,10 @@ def findMatlabMacInLine(line)
       end
 
       fos = JavaIO::FileOutputStream.new(@confFiles[0])
-      confFileLock = fos.getChannel().lock(0, Long::MAX_VALUE, false)
+      confFileLock = aquireLock(fos, false)
+      if confFileLock == nil
+        return false
+      end
       exception = false
       begin
         mwc = Element.new("MatSciWorkerConfiguration")
