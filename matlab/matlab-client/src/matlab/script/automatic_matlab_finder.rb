@@ -178,6 +178,22 @@ class MatSciFinder
     return false
   end
 
+  def aquireLock(fisorfos, shared)
+    confFileLock = nil
+    nbattempts = 0
+    while confFileLock == nil && nbattempts < 600
+      begin
+        confFileLock = fisorfos.getChannel().lock(0, Long::MAX_VALUE, shared)
+      rescue Exception => e
+        puts e.message + "\n" + e.backtrace.join("\n")
+        sleep(1)
+        puts "Error occurred while acquiring lock, retrying ..."
+        nbattempts+=1
+      end
+    end
+    return confFileLock
+  end
+
   # read all the configurations from the XML file
   def readConfigs()
     for i in 0..@confFiles.length-1 do
@@ -188,7 +204,7 @@ class MatSciFinder
         puts "Reading config in #{confFile}"
 
         fisconf = JavaIO::FileInputStream.new(confFile)
-        confFileLock = fisconf.getChannel().lock(0, Long::MAX_VALUE, true)
+        confFileLock = aquireLock(fisconf, true)
         begin
           dbFactory = DocumentBuilderFactory.newInstance()
           dBuilder = dbFactory.newDocumentBuilder()
@@ -600,7 +616,7 @@ def findMatlabMacInLine(line)
       end
 
       fos = JavaIO::FileOutputStream.new(@confFiles[0])
-      confFileLock = fos.getChannel().lock(0, Long::MAX_VALUE, false)
+      confFileLock = aquireLock(fos, false)
       exception = false
       begin
         dbFactory = DocumentBuilderFactory.newInstance()
