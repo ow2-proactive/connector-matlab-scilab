@@ -332,8 +332,8 @@ dependencies {
     schedulerjar "org.ow2.proactive:scheduler-server:${schedulingVersion}"
     schedulerjar "org.ow2.proactive:scheduler-server:${schedulingVersion}:tests"
     schedulerjar "org.ow2.proactive:rm-server:${schedulingVersion}:tests"
-    schedulerconfig group: "org.ow2.proactive", name: "Scheduling", version: schedulingVersion, classifier: "static", ext: "zip"
-    schedulercustomlibs group: "org.ow2.proactive", name: "Scheduling", version: schedulingVersion, classifier: "libs", ext: "zip"
+    schedulerconfig group: "org.ow2.proactive", name: "scheduling", version: schedulingVersion, classifier: "static", ext: "zip"
+    schedulercustomlibs group: "org.ow2.proactive", name: "scheduling", version: schedulingVersion, classifier: "libs", ext: "zip"
 }
 
 task distMatlabToolbox(type: Copy) {
