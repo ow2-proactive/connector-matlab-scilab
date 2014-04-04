@@ -2,8 +2,8 @@ apply plugin: 'base'
 
 buildscript {
     repositories {
-        if (project.hasProperty('local'))
-            mavenLocal()
+//        if (project.hasProperty('local'))
+//            mavenLocal()
         mavenCentral()
         maven { url 'http://repo.activeeon.com/content/repositories/snapshots/' }
         maven { url 'http://repo.activeeon.com/content/repositories/releases/' }
@@ -402,7 +402,6 @@ task distSchedulerJar (type: Copy) {
 }
 
 task distSchedulerConfig (type: Copy) {
-    println configurations.schedulerconfig.files
     from mainArtifactsAsZipTree(configurations.schedulerconfig)
     into "$buildDir/scheduler"
 }
@@ -433,7 +432,13 @@ project(':scilab:scilab-test') {
         delete  "$rootProject.buildDir/scheduler/RM_DB",  "$rootProject.buildDir/scheduler/SCHEDULER_DB"
 
         systemProperties << ['pa.scilab.home': "$rootProject.buildDir/scilab/PAconnector"]
-        systemProperties << ['scilab.bin.path': System.getProperty("scilab.bin.path")]
+
+        if (System.getenv("SCILAB_BIN_PATH") != null) {
+            systemProperties << ['scilab.bin.path': System.getenv("SCILAB_BIN_PATH") ]
+        } else {
+            systemProperties << ['scilab.bin.path': System.getProperty("scilab.bin.path")]
+        }
+
         systemProperties << ['proactive.home': "$rootProject.buildDir/scheduler"]
         systemProperties << ['pa.scheduler.home': "$rootProject.buildDir/scheduler"]
         systemProperties << ['pa.rm.home': "$rootProject.buildDir/scheduler"]
@@ -443,6 +448,8 @@ project(':scilab:scilab-test') {
         systemProperties << ['pa.scheduler.db.hibernate.dropdb': 'true']
         systemProperties << ['proactive.test.timeout': "1200000"]
         systemProperties << ['scilab.test.leaks': 'true']
+
+        println systemProperties
 
 
         // systemProperties << ['proactive.test.login.admin': 'admin']
@@ -485,7 +492,11 @@ project(':matlab:matlab-test') {
         delete  "$rootProject.buildDir/scheduler/RM_DB",  "$rootProject.buildDir/scheduler/SCHEDULER_DB"
 
         systemProperties << ['pa.matlab.home': "$rootProject.buildDir/matlab/PAconnector"]
-        systemProperties << ['matlab.bin.path': System.getProperty("matlab.bin.path")]
+        if (System.getenv("MATLAB_BIN_PATH") != null) {
+            systemProperties << ['matlab.bin.path': System.getenv("MATLAB_BIN_PATH")]
+        } else {
+            systemProperties << ['matlab.bin.path': System.getProperty("matlab.bin.path")]
+        }
         systemProperties << ['proactive.home': "$rootProject.buildDir/scheduler"]
         systemProperties << ['pa.scheduler.home': "$rootProject.buildDir/scheduler"]
         systemProperties << ['pa.rm.home': "$rootProject.buildDir/scheduler"]
