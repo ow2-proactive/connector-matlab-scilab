@@ -54,6 +54,7 @@ public class TestMultipleSubmit extends AbstractScilabTest {
 
     @org.junit.Test
     public void run() throws Throwable {
+        super.run();
         runCommand("TestMultipleSubmit", 2);
     }
 

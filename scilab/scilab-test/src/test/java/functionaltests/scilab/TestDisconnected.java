@@ -62,6 +62,7 @@ public class TestDisconnected extends AbstractScilabTest {
 
     @org.junit.Test
     public void run() throws Throwable {
+        super.run();
         for (int i = 1; i <= NB_ITER; i++) {
             runCommand(NB_ITER, i, "TestDisconnected");
         }

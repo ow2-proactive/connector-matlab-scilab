@@ -431,7 +431,7 @@ project(':scilab:scilab-test') {
 
         delete  "$rootProject.buildDir/scheduler/RM_DB",  "$rootProject.buildDir/scheduler/SCHEDULER_DB"
 
-        systemProperties << ['pa.scilab.home': "$rootProject.buildDir/scilab/PAconnector"]
+        systemProperties << ['pa.scilab.home': "$rootProject.buildDir/scilab/PAConnector"]
 
         if (System.getenv("SCILAB_BIN_PATH") != null) {
             systemProperties << ['scilab.bin.path': System.getenv("SCILAB_BIN_PATH") ]
@@ -491,7 +491,7 @@ project(':matlab:matlab-test') {
 
         delete  "$rootProject.buildDir/scheduler/RM_DB",  "$rootProject.buildDir/scheduler/SCHEDULER_DB"
 
-        systemProperties << ['pa.matlab.home': "$rootProject.buildDir/matlab/PAconnector"]
+        systemProperties << ['pa.matlab.home': "$rootProject.buildDir/matlab/PAConnector"]
         if (System.getenv("MATLAB_BIN_PATH") != null) {
             systemProperties << ['matlab.bin.path': System.getenv("MATLAB_BIN_PATH")]
         } else {

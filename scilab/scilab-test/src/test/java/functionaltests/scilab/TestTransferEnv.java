@@ -54,6 +54,7 @@ public class TestTransferEnv extends AbstractScilabTest {
 
     @org.junit.Test
     public void run() throws Throwable {
+        super.run();
         runCommand("TestTransferEnv", 1);
     }
 

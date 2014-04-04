@@ -54,6 +54,7 @@ public class TestPATask extends AbstractScilabTest {
 
     @org.junit.Test
     public void run() throws Throwable {
+        super.run();
         runCommand("TestPATask", 1);
     }
 

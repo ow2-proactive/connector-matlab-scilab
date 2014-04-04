@@ -203,7 +203,7 @@ public class AbstractScilabTest extends FunctionalTest {
         SchedulerCommandLine.killSchedulerCmdLine();
     }
 
-    @org.junit.Test
+    // install JIMS and build the toolbox
     public void run() throws Throwable {
         init();
 

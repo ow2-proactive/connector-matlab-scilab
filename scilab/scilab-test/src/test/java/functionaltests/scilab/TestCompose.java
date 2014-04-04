@@ -54,6 +54,7 @@ public class TestCompose extends AbstractScilabTest {
 
     @org.junit.Test
     public void run() throws Throwable {
+        super.run();
         runCommand("TestCompose", 1);
     }
 

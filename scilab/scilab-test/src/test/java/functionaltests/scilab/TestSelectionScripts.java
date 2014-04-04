@@ -54,6 +54,7 @@ public class TestSelectionScripts extends AbstractScilabTest {
 
     @org.junit.Test
     public void run() throws Throwable {
+        super.run();
         runCommand("TestSelectionScripts", 1);
     }
 
