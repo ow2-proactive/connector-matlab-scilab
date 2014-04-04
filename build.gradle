@@ -112,11 +112,21 @@ project(':common:matsci-common-data') {
 }
 
 project(':common:matsci-common-client') {
+    configurations {
+        rmic
+    }
+
     dependencies {
         compile project(':common:matsci-common-data')
         compile 'jdbm:jdbm2:2.4'
-        runtime project(':common:matsci-common-middleman:matsci-common-middleman-stub')
+        rmic project(':common:matsci-common-middleman')
     }
+
+    task rmic (dependsOn: project(':common:matsci-common-middleman').classes )<< {
+        sourceSets.main.output.classesDir.mkdirs()
+        ant.rmic(base: project(':common:matsci-common-middleman').sourceSets.main.output.classesDir, destdir: sourceSets.main.output.classesDir, classpath: configurations.rmic.asPath, includes: "**/org/ow2/proactive/scheduler/ext/matsci/middleman/AOMatSciEnvironment.class **/org/ow2/proactive/scheduler/ext/matsci/middleman/AODataspaceRegistry.class **/org/ow2/proactive/scheduler/ext/matsci/middleman/MatSciJVMProcessInterfaceImpl.class")
+    }
+    jar.dependsOn rmic
 
 }
 
@@ -134,7 +144,6 @@ project(':common:matsci-common-middleman') {
         compile "org.ow2.proactive:scheduler-cli:${schedulingVersion}"
         compile "org.ow2.proactive:dataspace-smartproxy:${schedulingVersion}"
 
-        compile project(':common:matsci-common-client')
         compile project(':common:matsci-common-data')
 
         runtime "org.objectweb.proactive:programming-extension-rmissl:${programmingVersion}"
@@ -151,21 +160,6 @@ project(':common:matsci-common-middleman') {
                 'org.ow2.proactive.scheduler.ext.matsci.middleman.MatSciJVMProcessInterfaceImpl']
     }
 
-}
-
-project(':common:matsci-common-middleman:matsci-common-middleman-stub') {
-    configurations {
-        rmic
-    }
-    dependencies {
-        rmic project(':common:matsci-common-middleman')
-    }
-    task rmic << {
-        sourceSets.main.output.classesDir.mkdirs()
-        project(':common:matsci-common-middleman').sourceSets.main.output.classesDir.mkdirs()
-        ant.rmic(base: project(':common:matsci-common-middleman').sourceSets.main.output.classesDir, destdir: sourceSets.main.output.classesDir, classpath: configurations.rmic.asPath, includes: "**/org/ow2/proactive/scheduler/ext/matsci/middleman/AOMatSciEnvironment.class **/org/ow2/proactive/scheduler/ext/matsci/middleman/AODataspaceRegistry.class **/org/ow2/proactive/scheduler/ext/matsci/middleman/MatSciJVMProcessInterfaceImpl.class")
-    }
-    jar.dependsOn rmic
 }
 
 project(':common:matsci-common-worker') {
@@ -229,7 +223,6 @@ project(':matlab:matlab-middleman') {
         compile project(':common:matsci-common-data')
         compile project(':common:matsci-common-middleman')
         compile project(':matlab:matlab-data')
-        compile project(':matlab:matlab-client')
         compile project(':matlab:matlab-worker')
 
 
@@ -286,7 +279,6 @@ project(':scilab:scilab-middleman') {
         compile project(':common:matsci-common-data')
         compile project(':common:matsci-common-middleman')
         compile project(':scilab:scilab-data')
-        compile project(':scilab:scilab-client')
         compile project(':scilab:scilab-worker')
 
 
