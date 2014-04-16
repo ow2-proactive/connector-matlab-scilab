@@ -72,6 +72,13 @@ class MatSciFinder
     tmpPath = System.getProperty("java.io.tmpdir")
     schedPath = System.getProperty("proactive.home")
 
+    if schedPath == nil
+      schedPath = System.getProperty("pa.scheduler.home")
+    end
+    if schedPath == nil
+      schedPath = System.getProperty("pa.rm.home")
+    end
+
     @hostname = InetAddress.getLocalHost().getHostName()
     @ipaddress = InetAddress.getLocalHost().getHostAddress()
 
@@ -199,6 +206,7 @@ class MatSciFinder
     for i in 0..@confFiles.length-1 do
       confFile = @confFiles[i]
       @corruptedConfigFiles[i] = false
+      puts "Looking for config file at #{confFile}"
       if confFile.exists()
 
         puts "Reading config in #{confFile}"
@@ -447,7 +455,12 @@ class MatSciFinder
     if !t1
       puts "is not readable"
     end
-    t2_1 = File.executable?(line)
+    begin
+      t2_1 = File.executable?(line)
+    rescue Exception => e
+      puts e.message + "\n" + e.backtrace.join("\n")
+      t2_1 = false
+    end
     jf = JavaIO::File.new(line)
     t2_2 = jf.canExecute()
     t2 = t2_1 || t2_2
