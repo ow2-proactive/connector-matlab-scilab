@@ -309,9 +309,7 @@ configurations {
     matlabclient
     matlabmiddleman
     matlabworker
-    schedulerjar
-    schedulerconfig
-    schedulercustomlibs
+    scheduler
 }
 
 dependencies {
@@ -321,11 +319,7 @@ dependencies {
     matlabclient project(':matlab:matlab-client')
     matlabmiddleman project(':matlab:matlab-middleman')
     matlabworker project(':matlab:matlab-worker')
-    schedulerjar "org.ow2.proactive:scheduler-server:${schedulingVersion}"
-    schedulerjar "org.ow2.proactive:scheduler-server:${schedulingVersion}:tests"
-    schedulerjar "org.ow2.proactive:rm-server:${schedulingVersion}:tests"
-    schedulerconfig group: "org.ow2.proactive", name: "scheduling", version: schedulingVersion, classifier: "static", ext: "zip"
-    schedulercustomlibs group: "org.ow2.proactive", name: "scheduling", version: schedulingVersion, classifier: "libs", ext: "zip"
+    scheduler group: "org.ow2.proactive", name: "scheduling", version: schedulingVersion, ext: "zip"
 }
 
 task distMatlabToolbox(type: Copy) {
@@ -386,20 +380,14 @@ def mainArtifactsAsZipTree(configuration) {
     zipTree(mainArtifacts(configuration)[0][0])
 }
 
-task distSchedulerJar (type: Copy) {
-    from configurations.schedulerjar
-
-    from mainArtifactsAsZipTree(configurations.schedulercustomlibs)
-    into "$buildDir/scheduler/dist/lib"
-}
-
-task distSchedulerConfig (type: Copy) {
-    from mainArtifactsAsZipTree(configurations.schedulerconfig)
+task distScheduler (type: Copy) {
+    from mainArtifactsAsZipTree(configurations.scheduler)
     into "$buildDir/scheduler"
+    eachFile { fileCopyDetails ->
+        fileCopyDetails.path = fileCopyDetails.path.replaceAll(/(.*\/?)scheduling-${schedulingVersion}\/(.*)/, '$1$2')
+    }
+    includeEmptyDirs = false
 }
-
-task distScheduler(dependsOn: [distSchedulerJar, distSchedulerConfig])
-
 
 project(':scilab:scilab-test') {
     dependencies {
