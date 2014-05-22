@@ -36,6 +36,16 @@
  */
 package org.ow2.proactive.scheduler.ext.scilab.worker;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.io.Serializable;
+import java.net.URI;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.log4j.Level;
 import org.objectweb.proactive.api.PAActiveObject;
 import org.objectweb.proactive.core.node.Node;
@@ -49,23 +59,11 @@ import org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveEnvFile;
 import org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveFile;
 import org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveZippedFile;
 import org.ow2.proactive.scheduler.ext.matsci.worker.util.MatSciEngineConfig;
-import org.ow2.proactive.scheduler.ext.matsci.worker.util.MatSciEngineConfigBase;
 import org.ow2.proactive.scheduler.ext.scilab.common.PASolveScilabGlobalConfig;
 import org.ow2.proactive.scheduler.ext.scilab.common.PASolveScilabTaskConfig;
 import org.ow2.proactive.scheduler.ext.scilab.common.exception.ScilabTaskException;
 import org.ow2.proactive.scheduler.ext.scilab.worker.util.ScilabEngineConfig;
 import org.ow2.proactive.scheduler.ext.scilab.worker.util.ScilabFinder;
-import org.ow2.proactive.scheduler.task.launcher.TaskLauncher;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.PrintWriter;
-import java.io.Serializable;
-import java.net.URI;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -178,7 +176,7 @@ public class ScilabExecutable extends JavaExecutable {
         }
 
         if (paconfig.isDebug()) {
-            ProActiveLogger.getLogger(TaskLauncher.class).setLevel(Level.DEBUG);
+            ProActiveLogger.getLogger(ScilabExecutable.class).setLevel(Level.DEBUG);
         }
 
         final String scilabCmd = this.scilabEngineConfig.getFullCommand();

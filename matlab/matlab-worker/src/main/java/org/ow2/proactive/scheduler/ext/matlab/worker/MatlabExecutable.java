@@ -64,7 +64,6 @@ import org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveEnvFile;
 import org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveFile;
 import org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveZippedFile;
 import org.ow2.proactive.scheduler.ext.matsci.worker.util.MatSciEngineConfig;
-import org.ow2.proactive.scheduler.task.launcher.TaskLauncher;
 
 
 /**
@@ -191,7 +190,7 @@ public class MatlabExecutable extends JavaExecutable {
             }
         }
         if (paconfig.isDebug()) {
-            ProActiveLogger.getLogger(TaskLauncher.class).setLevel(Level.DEBUG);
+            ProActiveLogger.getLogger(MatlabExecutable.class).setLevel(Level.DEBUG);
         }
 
         final String matlabCmd = this.matlabEngineConfig.getFullCommand();
