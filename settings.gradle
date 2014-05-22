@@ -17,5 +17,4 @@ include 'scilab:scilab-middleman'
 include 'scilab:scilab-worker'
 include 'scilab:scilab-test'
 
-
-
+rootProject.name = 'matlab_scilab_connector'

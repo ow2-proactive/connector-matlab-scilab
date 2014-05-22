@@ -525,3 +525,24 @@ task scilabDist(type: Copy) {
 proActiveDist.dependsOn distributedScilab.distZip       */
 
 
+apply plugin: 'java'
+
+task scilabDistZip(type: Zip) {
+    from "$buildDir/scilab/PAConnector"
+    include '**'
+    classifier 'scilab'
+    into("ProActiveScilabConnector-$matsciVersion")
+}
+scilabDistZip.dependsOn distScilab
+
+task matlabDistZip(type: Zip) {
+    from "$buildDir/matlab/PAConnector"
+    include '**'
+    classifier 'matlab'
+    into("ProActiveMatlabConnector-$matsciVersion")
+}
+matlabDistZip.dependsOn distMatlab
+
+artifacts {
+    archives scilabDistZip, matlabDistZip
+}
