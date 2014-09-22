@@ -46,6 +46,8 @@ import java.util.List;
  */
 public class PASolveZippedFile extends PASolveFile {
 
+    private static final long serialVersionUID = 60L;
+
     /**
      * Content if this zip (if applicable)
      */

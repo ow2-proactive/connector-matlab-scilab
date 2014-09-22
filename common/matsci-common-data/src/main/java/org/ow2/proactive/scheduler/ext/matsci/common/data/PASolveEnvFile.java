@@ -46,6 +46,8 @@ import java.util.List;
  */
 public class PASolveEnvFile extends PASolveFile {
 
+    private static final long serialVersionUID = 60L;
+
     private List<String> envGlobalNames = new ArrayList<String>();
 
     public PASolveEnvFile() {

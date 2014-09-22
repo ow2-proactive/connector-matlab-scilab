@@ -92,6 +92,8 @@ import org.apache.log4j.Level;
  */
 public class AOScilabEnvironment extends AOMatSciEnvironment<Boolean, ScilabResultsAndLogs> {
 
+    private static final long serialVersionUID = 60L;
+
     /**
      * Name of the middleman jobs backup
      */

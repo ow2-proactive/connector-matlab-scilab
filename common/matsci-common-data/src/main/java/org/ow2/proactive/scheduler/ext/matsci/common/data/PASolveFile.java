@@ -49,6 +49,8 @@ import java.io.Serializable;
  */
 public class PASolveFile implements Serializable {
 
+    private static final long serialVersionUID = 60L;
+
     /**
      * Source Dataspace of this File, if applicable
      */
