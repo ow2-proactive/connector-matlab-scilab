@@ -41,6 +41,7 @@ import java.io.File;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.ow2.proactive.scheduler.ext.common.util.IOTools;
 
 
@@ -49,6 +50,7 @@ import org.ow2.proactive.scheduler.ext.common.util.IOTools;
  *
  * @author The ProActive Team
  */
+@Ignore
 public class TestDisconnected extends AbstractMatlabTest {
     static final int NB_ITER = 3;
     private int index;
