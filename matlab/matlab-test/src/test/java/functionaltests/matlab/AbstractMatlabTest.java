@@ -214,9 +214,14 @@ public class AbstractMatlabTest extends FunctionalTest {
         if (System.getProperty("disable.popup") != null) {
           matlabCmd += "PAoptions('EnableDisconnectedPopup', false);";
         }
-        matlabCmd += String.format("RunUnitTest('%s', '%s', '%s', %d, '%s', %b);",
-                this.schedURI, this.credFile, this.mat_tb_home, nb_iter, testName, runAsMe);
+        matlabCmd += getMatlabFunction(nb_iter,testName,runAsMe);
         return pb.command(matlabExe, "-nodesktop", "-nosplash", "-logfile", logFile.getAbsolutePath(), "-r", matlabCmd);
+    }
+
+    // sub-classes may override it
+    protected String getMatlabFunction(int nb_iter, String testName, int runAsMe) {
+        return String.format("RunUnitTest('%s', '%s', '%s', %d, '%s', %b);",
+                this.schedURI, this.credFile, this.mat_tb_home, nb_iter, testName, runAsMe);
     }
 
     protected void runCommand(String testName, int nb_iter) throws Exception {

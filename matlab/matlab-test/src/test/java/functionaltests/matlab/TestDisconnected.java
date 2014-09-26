@@ -51,6 +51,7 @@ import org.ow2.proactive.scheduler.ext.common.util.IOTools;
  */
 public class TestDisconnected extends AbstractMatlabTest {
     static final int NB_ITER = 3;
+    private int index;
 
     @Before
     public void before() throws Exception {
@@ -59,44 +60,20 @@ public class TestDisconnected extends AbstractMatlabTest {
 
     @org.junit.Test
     public void run() throws Throwable {
-
-        for (int i = 1; i <= NB_ITER; i++) {
-            runCommand("TestDisconnected", NB_ITER, i);
+        for (this.index = 1; this.index <= NB_ITER; this.index++) {
+            runCommand("TestDisconnected", NB_ITER);
         }
     }
 
-    protected ProcessBuilder initCommand(String testName, int nb_iter, int index) throws Exception {
-        ProcessBuilder pb = new ProcessBuilder();
-        pb.directory(mat_tb_home);
-        pb.redirectErrorStream(true);
-        int runAsMe = 0;
-
-        if (System.getProperty("proactive.test.runAsMe") != null) {
-            runAsMe = 1;
-        }
-
-        logFile = new File(mat_tb_home, testName+".log");
-        if (logFile.exists()) {
-            logFile.delete();
-        }
-
-        if (System.getProperty("matlab.bin.path") != null) {
-            pb.command(System.getProperty("matlab.bin.path"), "-nodesktop", "-nosplash", "-logfile", logFile.getAbsolutePath(), "-r", "addpath('" +
-                    test_home + "');RunTestDisconnected('" + schedURI.toString() + "','" + credFile.toString() +
-                    "','" + mat_tb_home + "'," + nb_iter + "," + index + ",'" + testName + "'," + runAsMe +
-                    ");");
-        } else {
-            pb.command("matlab", "-nodesktop", "-nosplash", "-logfile", logFile.getAbsolutePath(), "-r", "addpath('" + test_home +
-                    "');RunTestDisconnected('" + schedURI.toString() + "','" + credFile.toString() + "','" +
-                    mat_tb_home + "'," + nb_iter + "," + index + ",'" + testName + "'," + runAsMe + ");");
-        }
-        return pb;
+    @Override
+    protected String getMatlabFunction(int nb_iter, String testName, int runAsMe) {
+        return String.format("RunTestDisconnected('%s', '%s', '%s', %d, %d, '%s', %b);",
+                super.schedURI, super.credFile, super.mat_tb_home, nb_iter, this.index, testName, runAsMe);
     }
 
-
-    protected void runCommand(String testName, int nb_iter, int index) throws Exception {
-
-        ProcessBuilder pb = initCommand(testName, nb_iter, index);
+    @Override
+    protected void runCommand(String testName, int nb_iter) throws Exception {
+        ProcessBuilder pb = initCommand(testName, nb_iter);
         System.out.println("Running command : " + pb.command());
 
         File okFile = new File(mat_tb_home + fs + "ok.tst");

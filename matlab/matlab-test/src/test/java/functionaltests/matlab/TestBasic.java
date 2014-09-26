@@ -54,9 +54,7 @@ public class TestBasic extends AbstractMatlabTest {
 
     @org.junit.Test
     public void run() throws Throwable {
-
         runCommand("TestBasic", 1);
-
     }
 
     @After
