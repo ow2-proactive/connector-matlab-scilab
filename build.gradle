@@ -404,6 +404,8 @@ project(':scilab:scilab-test') {
         testCompile project(':common:matsci-common-data')
         testCompile project(':scilab:scilab-client')
         testCompile project(':scilab:scilab-middleman')
+
+        testRuntime fileTree(dir: "$rootProject.buildDir/scheduler/dist/lib", include: ['*.jar'])
     }
 
     test.enabled = false
@@ -425,7 +427,7 @@ project(':scilab:scilab-test') {
         systemProperties << ['pa.rm.home': "$rootProject.buildDir/scheduler"]
         systemProperties << ['pa.scheduler.properties.filepath': "$rootProject.buildDir/scheduler/config/scheduler/settings.ini"]
         systemProperties << ['pa.rm.properties.filepath': "$rootProject.buildDir/scheduler/config/rm/settings.ini"]
-        systemProperties << ['log4j.configuration': "file:$rootProject.buildDir/scheduler/config/log4j/scheduler-log4j-server"]
+        systemProperties << ['log4j.configuration': "file:$rootProject.buildDir/scheduler/config/log/server.properties"]
         systemProperties << ['pa.scheduler.db.hibernate.dropdb': 'true']
         systemProperties << ['proactive.test.timeout': "1200000"]
         systemProperties << ['scilab.test.leaks': 'true']
@@ -464,15 +466,20 @@ project(':matlab:matlab-test') {
         testCompile project(':common:matsci-common-data')
         testCompile project(':matlab:matlab-client')
         testCompile project(':matlab:matlab-middleman')
+        
+        testRuntime fileTree(dir: "$rootProject.buildDir/scheduler/dist/lib", include: ['*.jar'])
     }
 
     test.enabled = false
 
     task matlabTest(type: Test) {
+        // remove sched DBs to ensure that job index starts at 1
+        delete  "$rootProject.buildDir/scheduler/data/RM_DB",  "$rootProject.buildDir/scheduler/data/SCHEDULER_DB"
 
-        delete  "$rootProject.buildDir/scheduler/RM_DB",  "$rootProject.buildDir/scheduler/SCHEDULER_DB"
+        testLogging.showStandardStreams = true
 
         systemProperties << ['pa.matlab.home': "$rootProject.buildDir/matlab/PAConnector"]
+
         if (System.getenv("MATLAB_BIN_PATH") != null) {
             systemProperties << ['matlab.bin.path': System.getenv("MATLAB_BIN_PATH")]
         } else {
@@ -483,11 +490,10 @@ project(':matlab:matlab-test') {
         systemProperties << ['pa.rm.home': "$rootProject.buildDir/scheduler"]
         systemProperties << ['pa.scheduler.properties.filepath': "$rootProject.buildDir/scheduler/config/scheduler/settings.ini"]
         systemProperties << ['pa.rm.properties.filepath': "$rootProject.buildDir/scheduler/config/rm/settings.ini"]
-        systemProperties << ['log4j.configuration': "file:$rootProject.buildDir/scheduler/config/log4j/scheduler-log4j-server"]
+        systemProperties << ['log4j.configuration': "file:$rootProject.buildDir/scheduler/config/log/server.properties"]
         systemProperties << ['pa.scheduler.db.hibernate.dropdb': 'true']
         systemProperties << ['proactive.test.timeout': "1200000"]
-
-
+        systemProperties << ['disable.popup': 'true']
         // systemProperties << ['proactive.test.login.admin': 'admin']
         // systemProperties << ['proactive.test.password.admin': 'admin']
         // systemProperties << ['proactive.test.fork': 'admin']

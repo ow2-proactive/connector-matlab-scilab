@@ -36,30 +36,28 @@
  */
 package functionaltests.matlab;
 
-import static junit.framework.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.PublicKey;
 
 import functionaltests2.SchedulerCommandLine;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.ow2.proactive.authentication.crypto.CredData;
 import org.ow2.proactive.authentication.crypto.Credentials;
 import org.ow2.proactive.resourcemanager.core.properties.PAResourceManagerProperties;
 import org.ow2.proactive.scheduler.common.SchedulerAuthenticationInterface;
 import org.ow2.proactive.scheduler.common.SchedulerConnection;
 import org.ow2.proactive.scheduler.core.properties.PASchedulerProperties;
-import org.ow2.proactive.scheduler.ext.common.util.IOTools;
 import org.ow2.proactive.scheduler.ext.matlab.client.embedded.MatlabTaskRepository;
 import org.ow2.proactive.scheduler.ext.matlab.middleman.AOMatlabEnvironment;
 import org.ow2.tests.FunctionalTest;
 
 import functionaltests.SchedulerTHelper;
+import static junit.framework.Assert.assertTrue;
+import org.apache.commons.io.IOUtils;
+import org.ow2.proactive.scheduler.ext.common.util.IOTools;
 
 
 /**
@@ -81,8 +79,6 @@ public class AbstractMatlabTest extends FunctionalTest {
 
     URI schedURI;
 
-    String localhost;
-
     protected String adminName = "demo";
     protected String adminPwd = "demo";
 
@@ -98,10 +94,7 @@ public class AbstractMatlabTest extends FunctionalTest {
 
         credFile = new File(test_home, "demo.cred");
 
-        localhost = InetAddress.getLocalHost().getHostName();
-
-        schedURI = new URI("rmi://" + localhost + ":" + SchedulerTHelper.RMI_PORT +
-                "/");
+        schedURI = new URI(SchedulerTHelper.schedulerUrl);
 
         // delete all db files
         File[] dbJobFiles = new File(TMPDIR).listFiles(new FilenameFilter() {
@@ -143,18 +136,15 @@ public class AbstractMatlabTest extends FunctionalTest {
 
     protected void start() throws Exception {
         init();
-        // remove sched DBs to ensure that job index starts at 1
-        File schedHome = new File(System.getProperty("pa.scheduler.home")).getCanonicalFile();
-        FileUtils.deleteDirectory(new File(schedHome, "RM_DB"));
-        FileUtils.deleteDirectory(new File(schedHome, "SCHEDULER_DB"));
 
-
-        SchedulerTHelper.startScheduler(true, System.getProperty(PASchedulerProperties.PA_SCHEDULER_PROPERTIES_FILEPATH),System.getProperty(PAResourceManagerProperties.PA_RM_PROPERTIES_FILEPATH), null);
-
+        String schedSettings = System.getProperty(PASchedulerProperties.PA_SCHEDULER_PROPERTIES_FILEPATH);
+        String rmSettings = System.getProperty(PAResourceManagerProperties.PA_RM_PROPERTIES_FILEPATH);                      
+        SchedulerTHelper.startScheduler(true, schedSettings, rmSettings, null);
+        
         SchedulerAuthenticationInterface auth = SchedulerTHelper.getSchedulerAuth();
 
         PublicKey pubKey = auth.getPublicKey();
-        Credentials cred = null;
+        Credentials cred;
         if (System.getProperty("proactive.test.login.user") != null) {
             cred = Credentials.createCredentials(new CredData(
                 System.getProperty("proactive.test.login.user"), System
@@ -217,18 +207,16 @@ public class AbstractMatlabTest extends FunctionalTest {
         if (logFile.exists()) {
             logFile.delete();
         }
-
-        if (System.getProperty("matlab.bin.path") != null) {
-            pb.command(System.getProperty("matlab.bin.path"), "-nodesktop", "-nosplash", "-logfile", logFile.getAbsolutePath(), "-r", "addpath('" +
-                    test_home + "');RunUnitTest('" + schedURI.toString() + "','" + credFile.toString() + "','" +
-                    mat_tb_home + "'," + nb_iter + ",'" + testName + "'," + runAsMe + ");");
-        } else {
-            pb.command("matlab", "-nodesktop", "-nosplash", "-logfile", logFile.getAbsolutePath(), "-r", "addpath('" + test_home +
-                    "');RunUnitTest('" + schedURI.toString() + "','" + credFile.toString() + "','" + mat_tb_home +
-                    "'," + nb_iter + ",'" + testName + "'," + runAsMe + ");");
+        // If no property specified for matlab exe suppose it's in the PATH
+        String matlabExe = System.getProperty("matlab.bin.path", "matlab");
+        // Build the matlab command that will run the test
+        String matlabCmd = String.format("addpath('%s');", this.test_home);
+        if (System.getProperty("disable.popup") != null) {
+          matlabCmd += "PAoptions('EnableDisconnectedPopup', false);";
         }
-
-        return pb;
+        matlabCmd += String.format("RunUnitTest('%s', '%s', '%s', %d, '%s', %b);",
+                this.schedURI, this.credFile, this.mat_tb_home, nb_iter, testName, runAsMe);
+        return pb.command(matlabExe, "-nodesktop", "-nosplash", "-logfile", logFile.getAbsolutePath(), "-r", matlabCmd);
     }
 
     protected void runCommand(String testName, int nb_iter) throws Exception {
@@ -276,5 +264,4 @@ public class AbstractMatlabTest extends FunctionalTest {
 
         assertTrue(testName + " passed", okFile.exists());
     }
-
 }

@@ -5,3 +5,5 @@ junitReports/
 dist/
 dev/scheduling
 .Rproj.user
+/.nb-gradle/private/
+/.nb-gradle/profiles/private/
