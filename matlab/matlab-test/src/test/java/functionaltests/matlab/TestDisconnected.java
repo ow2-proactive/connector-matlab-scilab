@@ -67,7 +67,7 @@ public class TestDisconnected extends AbstractMatlabTest {
 
     @Override
     protected String getMatlabFunction(int nb_iter, String testName, int runAsMe) {
-        return String.format("RunTestDisconnected('%s', '%s', '%s', %d, %d, '%s', %b);",
+        return String.format("RunTestDisconnected('%s', '%s', '%s', %d, %d, '%s', %d);",
                 super.schedURI, super.credFile, super.mat_tb_home, nb_iter, this.index, testName, runAsMe);
     }
 

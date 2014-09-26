@@ -220,7 +220,7 @@ public class AbstractMatlabTest extends FunctionalTest {
 
     // sub-classes may override it
     protected String getMatlabFunction(int nb_iter, String testName, int runAsMe) {
-        return String.format("RunUnitTest('%s', '%s', '%s', %d, '%s', %b);",
+        return String.format("RunUnitTest('%s', '%s', '%s', %d, '%s', %d);",
                 this.schedURI, this.credFile, this.mat_tb_home, nb_iter, testName, runAsMe);
     }
 
