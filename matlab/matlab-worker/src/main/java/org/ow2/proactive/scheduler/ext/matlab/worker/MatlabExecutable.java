@@ -166,18 +166,6 @@ public class MatlabExecutable extends JavaExecutable {
         if (this.script == null || "".equals(this.script)) {
             throw new IllegalArgumentException("Unable to execute task, no script specified");
         }
-
-        // Initialize MATLAB location
-        this.initMatlabConfig();
-
-        // Initialize LOCAL SPACE
-        this.initLocalSpace();
-
-        // Initialize transfers
-        this.initTransferSource();
-        this.initTransferEnv();
-        this.initTransferInputFiles();
-        this.initTransferVariables();
     }
 
     @Override
@@ -192,6 +180,18 @@ public class MatlabExecutable extends JavaExecutable {
         if (paconfig.isDebug()) {
             ProActiveLogger.getLogger(MatlabExecutable.class).setLevel(Level.DEBUG);
         }
+        
+        // Initialize MATLAB location
+        this.initMatlabConfig();
+
+        // Initialize LOCAL SPACE
+        this.initLocalSpace();
+
+        // Initialize transfers
+        this.initTransferSource();
+        this.initTransferEnv();
+        this.initTransferInputFiles();
+        this.initTransferVariables();
 
         final String matlabCmd = this.matlabEngineConfig.getFullCommand();
         this.printLog("Acquiring MATLAB connection using " + matlabCmd);
