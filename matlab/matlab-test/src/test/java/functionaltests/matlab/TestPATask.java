@@ -38,7 +38,6 @@ package functionaltests.matlab;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 
 
 /**
@@ -46,7 +45,6 @@ import org.junit.Ignore;
  *
  * @author ProActive team
  */
-@Ignore
 public class TestPATask extends AbstractMatlabTest {
 
     @Before
