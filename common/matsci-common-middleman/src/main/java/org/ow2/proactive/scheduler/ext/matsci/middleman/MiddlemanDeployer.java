@@ -50,6 +50,8 @@ import org.objectweb.proactive.extensions.pamr.protocol.AgentID;
 import org.objectweb.proactive.extensions.pamr.protocol.MagicCookie;
 import org.objectweb.proactive.extensions.pamr.remoteobject.PAMRRemoteObjectFactory;
 import org.objectweb.proactive.extensions.pamr.remoteobject.util.socketfactory.PAMRSocketFactorySPI;
+import org.objectweb.proactive.extensions.pamr.PAMRConfig;
+import org.objectweb.proactive.extensions.pamr.remoteobject.util.socketfactory.PAMRSocketFactorySelector;
 import org.objectweb.proactive.utils.NamedThreadFactory;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.DataspaceRegistry;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.MatSciEnvironment;
@@ -58,6 +60,7 @@ import org.ow2.proactive.scheduler.ext.matsci.client.common.MatSciJVMProcessInte
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -131,6 +134,10 @@ public abstract class MiddlemanDeployer {
      * on this JVM and reinitialize the connection to the new router
      */
     protected void PAMRHook() {
+        if (!isRouterAccessible()) {
+            return;
+        }
+
         try {
             PAMRRemoteObjectFactory f = (PAMRRemoteObjectFactory) AbstractRemoteObjectFactory
                     .getRemoteObjectFactory("pamr");
@@ -277,6 +284,28 @@ public abstract class MiddlemanDeployer {
 
     }
 
+    /**
+     * Checks if can establish a connection at socket level with the PAMR router.
+     * @return true if can open a socket, false otherwise
+     */
+    public boolean isRouterAccessible() {
+        Socket s = null;
+        try {
+            InetAddress routerAddress = InetAddress.getByName(PAMRConfig.PA_NET_ROUTER_ADDRESS.getValue());
+            int routerPort = PAMRConfig.PA_NET_ROUTER_PORT.getValue();
+            s = PAMRSocketFactorySelector.get().createSocket(routerAddress.getHostAddress(), routerPort);
+            return s.isConnected();
+        }catch (Exception e){
+            return false;
+        } finally {
+            if (s != null) {
+                try {
+                    s.close();
+                } catch (Exception e) {}
+            }
+        }
+    }
+
     protected void submitMain() {
         tpe.submit(new MainRunnable());
     }
@@ -353,8 +382,8 @@ public abstract class MiddlemanDeployer {
         }
 
         @Override
-        public void run() {
-            PAMRHook();
+        public void run() {            
+            PAMRHook();            
             try {
                 init();
             } catch (Throwable e) {
