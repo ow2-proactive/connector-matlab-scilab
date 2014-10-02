@@ -152,19 +152,16 @@ end
 
 function deployJVM(sched,opt,url)
 deployer = org.ow2.proactive.scheduler.ext.matlab.client.embedded.util.MatlabJVMSpawnHelper.getInstance();
-home = getenv('JAVA_HOME');
-if isempty(home)
-    home = java.lang.System.getProperty('java.home');
+
+% Fix for MSC-259, use Matlab embedded JRE instead of bothering the user with missing JAVA_HOME
+exePathBuilder = java.lang.StringBuilder(java.lang.System.getProperty('java.home'));
+exePathBuilder.append(java.io.File.separator).append('bin').append(java.io.File.separator);
+exePathBuilder.append('java');
+if ispc()
+   exePathBuilder.append('.exe');
 end
-fs=filesep();
-if length(home) > 0
-    if ispc()
-        deployer.setJavaPath([home fs 'bin' fs 'java.exe']);
-    else
-        deployer.setJavaPath([home fs 'bin' fs 'java']);
-    end
-    
-end
+deployer.setJavaPath(exePathBuilder.toString());
+
 [pathstr, name, ext] = fileparts(mfilename('fullpath'));
 javafile = java.io.File(pathstr);
 matsci_dir = opt.MatSciDir;
