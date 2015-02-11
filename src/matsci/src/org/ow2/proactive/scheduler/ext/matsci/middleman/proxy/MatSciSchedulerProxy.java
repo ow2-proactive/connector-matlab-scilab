@@ -37,7 +37,7 @@ package org.ow2.proactive.scheduler.ext.matsci.middleman.proxy;
 import jdbm.PrimaryHashMap;
 import jdbm.RecordManager;
 import jdbm.RecordManagerFactory;
-import org.apache.commons.vfs.*;
+import org.apache.commons.vfs2.*;
 import org.objectweb.proactive.ActiveObjectCreationException;
 import org.objectweb.proactive.Body;
 import org.objectweb.proactive.EndActive;
@@ -178,7 +178,7 @@ public class MatSciSchedulerProxy extends SchedulerProxyUserInterface implements
     // instance per thread ?
     // See https://issues.apache.org/jira/browse/VFS-98
     /**
-     * The VFS {@link org.apache.commons.vfs.FileSystemManager} used for file transfer
+     * The VFS {@link org.apache.commons.vfs2.FileSystemManager} used for file transfer
      */
     transient protected FileSystemManager fsManager = null;
 

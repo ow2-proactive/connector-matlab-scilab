@@ -34,8 +34,8 @@
  */
 package org.ow2.proactive.scheduler.ext.matsci.middleman.proxy;
 
-import org.apache.commons.vfs.FileSelectInfo;
-import org.apache.commons.vfs.FileSelector;
+import org.apache.commons.vfs2.FileSelectInfo;
+import org.apache.commons.vfs2.FileSelector;
 import org.apache.log4j.Logger;
 import org.objectweb.proactive.core.util.log.ProActiveLogger;
 import org.objectweb.proactive.extensions.dataspaces.vfs.selector.fast.SelectorUtils;

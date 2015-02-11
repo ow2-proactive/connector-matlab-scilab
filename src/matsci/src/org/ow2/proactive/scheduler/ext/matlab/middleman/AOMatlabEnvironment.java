@@ -36,7 +36,7 @@
  */
 package org.ow2.proactive.scheduler.ext.matlab.middleman;
 
-import org.apache.commons.vfs.FileSystemException;
+import org.apache.commons.vfs2.FileSystemException;
 import org.apache.log4j.Level;
 import org.objectweb.proactive.core.body.exceptions.FutureMonitoringPingFailureException;
 import org.objectweb.proactive.core.util.log.ProActiveLogger;
