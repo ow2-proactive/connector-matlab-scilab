@@ -93,7 +93,7 @@
                 <term>Func</term>
                 <listitem>
                     <para>
-                        a string containing the name of thee function used by this task
+                        a string containing the name of the function used by this task
                     </para>
                 </listitem>
             </varlistentry>
@@ -333,3 +333,4 @@ Awaited (J:15)
         </simplelist>
     </refsection>
 </refentry>
+
