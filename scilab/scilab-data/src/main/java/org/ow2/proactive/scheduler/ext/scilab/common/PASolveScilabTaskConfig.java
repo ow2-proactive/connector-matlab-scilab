@@ -51,6 +51,8 @@ import java.util.List;
  */
 public class PASolveScilabTaskConfig extends PASolveMatSciTaskConfig {
 
+    private static final long serialVersionUID = 61L;
+
     /**
      * name of the scilab function used
      */

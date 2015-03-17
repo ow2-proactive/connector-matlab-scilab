@@ -92,6 +92,8 @@ import org.ow2.proactive.topology.descriptor.TopologyDescriptor;
  */
 public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResultsAndLogs> {
 
+    private static final long serialVersionUID = 61L;
+
     /**
      * Name of the middleman jobs backup
      */

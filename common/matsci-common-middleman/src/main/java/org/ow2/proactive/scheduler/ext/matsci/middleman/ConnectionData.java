@@ -45,6 +45,8 @@ import java.io.Serializable;
  * @author The ProActive Team
  */
 public class ConnectionData implements Serializable {
+
+    private static final long serialVersionUID = 61L;
     private String url;
     private String login;
     private Credentials credentials;

@@ -47,6 +47,8 @@ import java.util.Comparator;
  */
 public class IntStrComparator implements Comparator<String>, Serializable {
 
+    private static final long serialVersionUID = 61L;
+
     public IntStrComparator() {
 
     }
