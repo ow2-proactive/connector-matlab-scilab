@@ -46,7 +46,7 @@ function [val_k,index]=PAwaitAny(l,timeout)
         [val_k,err] = PAResult_PAwaitFor(pares);
         if ~isempty(err) then
             warning(err);
-            warning('PAwaitAny:Error occured')
+            warning('PAwaitAny:Error occurred')
             val_k = [];
         end
         jremove(RaL);

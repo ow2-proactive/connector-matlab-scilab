@@ -279,7 +279,7 @@ Job 4 removed.
 
 
 AVERTISSEMENT : PAResult:PAwaitFor Error during execution of task 2_0
-AVERTISSEMENT : PAWaitFor:Error occured
+AVERTISSEMENT : PAWaitFor:Error occurred
 (1):
 Job 4: Task 0_0
 [2012-12-03 16:31:008 precision][SCILAB]!-- error 4

@@ -62,7 +62,7 @@ function val_k=PAwaitFor(l,timeout)
             end
         end
         if anyerror then
-             warning('PAWaitFor:Error occured');
+             warning('PAWaitFor:Error occurred');
         end
         if ~allRes
             jremove(answers);
@@ -94,7 +94,7 @@ function val_k=PAwaitFor(l,timeout)
             try
                 unrei = jinvoke(PA_solver,'waitAll',jobid,taskids, tout);
             catch
-                // if an exception occur, it means the RMI stub is lost
+                // if an exception occurs, it means the RMI stub is lost
                 PAensureConnected();
                 unrei = jinvoke(PA_solver,'waitAll',jobid,taskids, tout);
             end
@@ -122,7 +122,7 @@ function val_k=PAwaitFor(l,timeout)
         end
 
         if anyerror then
-             warning('PAWaitFor:Error occured');
+             warning('PAWaitFor:Error occurred');
         end
         if ~allRes
             jremove(answers);

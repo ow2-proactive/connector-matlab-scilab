@@ -264,7 +264,7 @@ public class MatlabConnectionRImpl implements MatlabConnection {
     }
 
     public void launch() throws Exception {
-        fullcommand.append("catch ME" + nl + "disp('Error occured in .');" + nl + "disp(getReport(ME));" +
+        fullcommand.append("catch ME" + nl + "disp('Error occurred in .');" + nl + "disp(getReport(ME));" +
             nl + "end" + nl);
         // we remove all file handles possibily kept by matlab
         fullcommand.append("fclose('all');restoredefaultpath();");
