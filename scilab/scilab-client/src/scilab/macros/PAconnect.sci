@@ -135,7 +135,7 @@ function deployJVM(opt,uri)
     PA_jvminterface = jinvoke(deployer,'getJvmInterface');
         
     
-    disp('Connection to JVM successful');    
+    disp('Connection to the middleman JVM has succeeded, now trying to connect to the scheduler');
 endfunction
 
 function login(uri,credpath)
