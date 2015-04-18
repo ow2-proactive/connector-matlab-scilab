@@ -36,40 +36,12 @@
  */
 package org.ow2.proactive.scheduler.ext.matsci.middleman;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileDescriptor;
-import java.io.FileOutputStream;
-import java.io.FilenameFilter;
-import java.io.IOError;
-import java.io.IOException;
-import java.io.InvalidClassException;
-import java.io.PrintStream;
-import java.io.Serializable;
-import java.security.KeyException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.concurrent.TimeoutException;
-
-import javax.security.auth.login.LoginException;
-
 import jdbm.PrimaryHashMap;
 import jdbm.RecordManager;
 import jdbm.RecordManagerFactory;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.objectweb.proactive.ActiveObjectCreationException;
-import org.objectweb.proactive.Body;
-import org.objectweb.proactive.InitActive;
-import org.objectweb.proactive.RunActive;
-import org.objectweb.proactive.Service;
+import org.objectweb.proactive.*;
 import org.objectweb.proactive.api.PAActiveObject;
 import org.objectweb.proactive.core.ProActiveException;
 import org.objectweb.proactive.core.ProActiveRuntimeException;
@@ -84,45 +56,33 @@ import org.objectweb.proactive.core.util.log.Loggers;
 import org.objectweb.proactive.core.util.log.ProActiveLogger;
 import org.ow2.proactive.authentication.crypto.CredData;
 import org.ow2.proactive.authentication.crypto.Credentials;
-import org.ow2.proactive.scheduler.common.NotificationData;
-import org.ow2.proactive.scheduler.common.Scheduler;
-import org.ow2.proactive.scheduler.common.SchedulerAuthenticationInterface;
-import org.ow2.proactive.scheduler.common.SchedulerConnection;
-import org.ow2.proactive.scheduler.common.SchedulerEvent;
-import org.ow2.proactive.scheduler.common.SchedulerStatus;
-import org.ow2.proactive.scheduler.common.exception.AlreadyConnectedException;
-import org.ow2.proactive.scheduler.common.exception.NotConnectedException;
-import org.ow2.proactive.scheduler.common.exception.PermissionException;
-import org.ow2.proactive.scheduler.common.exception.SchedulerException;
-import org.ow2.proactive.scheduler.common.exception.UnknownJobException;
-import org.ow2.proactive.scheduler.common.exception.UnknownTaskException;
-import org.ow2.proactive.scheduler.common.job.JobInfo;
-import org.ow2.proactive.scheduler.common.job.JobResult;
-import org.ow2.proactive.scheduler.common.job.JobState;
-import org.ow2.proactive.scheduler.common.job.JobStatus;
-import org.ow2.proactive.scheduler.common.job.UserIdentification;
+import org.ow2.proactive.scheduler.common.*;
+import org.ow2.proactive.scheduler.common.exception.*;
+import org.ow2.proactive.scheduler.common.job.*;
 import org.ow2.proactive.scheduler.common.task.TaskInfo;
 import org.ow2.proactive.scheduler.common.task.TaskResult;
 import org.ow2.proactive.scheduler.common.task.dataspaces.InputAccessMode;
 import org.ow2.proactive.scheduler.common.task.dataspaces.OutputAccessMode;
+import org.ow2.proactive.scheduler.common.util.dsclient.SmartProxy;
 import org.ow2.proactive.scheduler.ext.common.util.BitMatrix;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.MatSciEnvironment;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.PASessionState;
-import org.ow2.proactive.scheduler.ext.matsci.client.common.data.MatSciJobInfo;
-import org.ow2.proactive.scheduler.ext.matsci.client.common.data.MatSciJobStatus;
-import org.ow2.proactive.scheduler.ext.matsci.client.common.data.Pair;
-import org.ow2.proactive.scheduler.ext.matsci.client.common.data.ResultsAndLogs;
-import org.ow2.proactive.scheduler.ext.matsci.client.common.data.TaskNameComparator;
-import org.ow2.proactive.scheduler.ext.matsci.client.common.data.UnReifiable;
+import org.ow2.proactive.scheduler.ext.matsci.client.common.data.*;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.exception.PASchedulerException;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.exception.PASchedulerExceptionType;
 import org.ow2.proactive.scheduler.ext.matsci.common.data.DSSource;
 import org.ow2.proactive.scheduler.ext.matsci.common.exception.MatSciTaskException;
-import org.ow2.proactive.scheduler.common.util.dsclient.ISchedulerEventListenerExtended;
-import org.ow2.proactive.scheduler.common.util.dsclient.SmartProxy;
+import org.ow2.proactive.scheduler.smartproxy.SmartProxyImpl;
+import org.ow2.proactive.scheduler.smartproxy.common.SchedulerEventListenerExtended;
 import org.ow2.proactive.scheduler.util.console.SchedulerModel;
 import org.ow2.proactive.utils.FileToBytesConverter;
 import org.ow2.proactive.utils.console.StdOutConsole;
+
+import javax.security.auth.login.LoginException;
+import java.io.*;
+import java.security.KeyException;
+import java.util.*;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -131,7 +91,7 @@ import org.ow2.proactive.utils.console.StdOutConsole;
  * @author The ProActive Team
  */
 public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, Serializable,
-        ISchedulerEventListenerExtended, InitActive, RunActive {
+        SchedulerEventListenerExtended, InitActive, RunActive {
 
     /**
      * Connection to the scheduler
@@ -141,12 +101,12 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
     /**
      * ProActive stub of the proxy to the scheduler with disconnected mode support
      */
-    protected SmartProxy sched_proxy;
+    protected SmartProxyImpl sched_proxy;
 
     /**
      * real object of the proxy
      */
-    protected SmartProxy sched_proxy_root;
+    protected SmartProxyImpl sched_proxy_root;
 
     /**
      * Connection to the scheduler console
@@ -810,7 +770,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         serviceThread = Thread.currentThread();
         bodyOnThis = PAActiveObject.getBodyOnThis();
 
-        sched_proxy_root = SmartProxy.getInstance();
+        sched_proxy_root = SmartProxyImpl.getInstance();
         try {
             sched_proxy = PAActiveObject.turnActive(sched_proxy_root, PAActiveObject.getNode());
         } catch (ActiveObjectCreationException e) {
