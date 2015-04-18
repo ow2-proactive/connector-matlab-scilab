@@ -73,9 +73,7 @@ import org.ow2.proactive.scheduler.ext.matsci.common.data.DSSource;
 import org.ow2.proactive.scheduler.ext.matsci.common.exception.MatSciTaskException;
 import org.ow2.proactive.scheduler.smartproxy.SmartProxyImpl;
 import org.ow2.proactive.scheduler.smartproxy.common.SchedulerEventListenerExtended;
-import org.ow2.proactive.scheduler.util.console.SchedulerModel;
 import org.ow2.proactive.utils.FileToBytesConverter;
-import org.ow2.proactive.utils.console.StdOutConsole;
 
 import javax.security.auth.login.LoginException;
 import java.io.*;
@@ -521,8 +519,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
             }
             schedulerKilled = (status == SchedulerStatus.KILLED);
 
-            this.model = SchedulerModel.getNewModel(false);
-            model.connectConsole(new StdOutConsole());
+            this.model = new SchedulerModel();
             model.connectScheduler(this.scheduler);
             if (shutDownHook != null) {
                 Runtime.getRuntime().removeShutdownHook(shutDownHook);
