@@ -63,7 +63,6 @@ import org.ow2.proactive.scheduler.common.task.TaskInfo;
 import org.ow2.proactive.scheduler.common.task.TaskResult;
 import org.ow2.proactive.scheduler.common.task.dataspaces.InputAccessMode;
 import org.ow2.proactive.scheduler.common.task.dataspaces.OutputAccessMode;
-import org.ow2.proactive.scheduler.common.util.dsclient.SmartProxy;
 import org.ow2.proactive.scheduler.ext.common.util.BitMatrix;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.MatSciEnvironment;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.PASessionState;
