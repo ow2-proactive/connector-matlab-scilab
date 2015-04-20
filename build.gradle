@@ -216,7 +216,7 @@ project(':matlab:matlab-middleman') {
         compile "org.ow2.proactive:scheduler-client:${schedulingVersion}"
         compile "org.ow2.proactive:common-client:${schedulingVersion}"
         compile "org.ow2.proactive:scheduler-api:${schedulingVersion}"
-        compile "org.ow2.proactive:dataspace-smartproxy:${schedulingVersion}"
+        compile "org.ow2.proactive:smartproxy:${schedulingVersion}"
 
         compile project(':common:matsci-common-client')
         compile project(':common:matsci-common-data')
@@ -272,7 +272,7 @@ project(':scilab:scilab-middleman') {
         compile "org.ow2.proactive:scheduler-client:${schedulingVersion}"
         compile "org.ow2.proactive:common-client:${schedulingVersion}"
         compile "org.ow2.proactive:scheduler-api:${schedulingVersion}"
-        compile "org.ow2.proactive:dataspace-smartproxy:${schedulingVersion}"
+        compile "org.ow2.proactive:smartproxy:${schedulingVersion}"
 
         compile project(':common:matsci-common-client')
         compile project(':common:matsci-common-data')
