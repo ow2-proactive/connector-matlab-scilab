@@ -57,6 +57,8 @@ import org.ow2.proactive.rm.util.process.ProcessTreeKiller;
  */
 public class SchedulerCommandLine implements Serializable {
 
+    private static final long serialVersionUID = 62L;
+
     private static Process p;
 
     static final String fs = System.getProperty("file.separator");
