@@ -7,3 +7,8 @@ dev/scheduling
 .Rproj.user
 /.nb-gradle/private/
 /.nb-gradle/profiles/private/
+*.iml
+.gradle
+.idea
+build/
+
