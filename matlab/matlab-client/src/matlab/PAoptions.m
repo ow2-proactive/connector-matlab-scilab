@@ -194,6 +194,14 @@
 %   EnableDisconnectedPopup
 %               a popup will appear when the matlab session finishes and some jobs are uncomplete (internal)
 %
+%   EnableFindDependencies (internal)
+%               are functions dependencies checked ? If not local matlab
+%               path will be added remotely
+%
+%   MatlabPathList (internal)
+%               can override local matlab path, in case find dependencies
+%               is disabled
+%
 %   WorkerTimeoutStart
 %               Timeout used to start the matlab engine (*10ms) (internal)
 %
@@ -507,6 +515,16 @@ inputs(j).default = true;
 inputs(j).check = logcheck;
 inputs(j).trans = logtrans;
 j=j+1;
+inputs(j).name = 'EnableFindDependencies';
+inputs(j).default = true;
+inputs(j).check = logcheck;
+inputs(j).trans = logtrans;
+j=j+1;
+inputs(j).name = 'MatlabPathList';
+inputs(j).default = '';
+inputs(j).check = listcheck;
+inputs(j).trans = listtrans;
+j=j+1;
 inputs(j).name = 'MatSciDir';
 inputs(j).default = matsci_dir;
 inputs(j).check = @ischar;
@@ -621,7 +639,7 @@ if ~exist('pa_options','var') == 1 || ~isstruct(pa_options)
         fid = fopen(optionpath, 'r');
     end
     try
-        C = textscan(fid, '%s = %[^\n]', 'CommentStyle', '%%');
+        C = textscan(fid, '%s = %[^\n\r]', 'CommentStyle', '%%');
         for i=1:length(C{1})
             for j=1:length(inputs)
                 if strcmp(C{1}{i},inputs(j).name)

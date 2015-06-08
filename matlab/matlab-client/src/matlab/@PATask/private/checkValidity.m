@@ -37,9 +37,11 @@
 function varargout=checkValidity(attrib, val)
 switch attrib    
     case 'Func'
-        if ~(isa(val, 'function_handle') || (isnumeric(val) && isempty(val)))
-            error('Func must be a function handle');
+        if ~(isa(val, 'function_handle') || (isnumeric(val) && isempty(val)) || ischar(val))
+            error('Func must be a function handle or string');
         end
+    case 'Object'
+        
     case 'Description'
         if ~(ischar(val) || (isnumeric(val) && isempty(val)))
             error('Description must be a string');

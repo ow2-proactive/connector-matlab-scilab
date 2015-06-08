@@ -15,40 +15,6 @@ java_import java.util.HashSet
 class ReserveMatlab
 
   def initialize
-    @toolboxmap = {
-        # Standard Matlab
-        "matlab" => %q!MATLAB!,
-        # Simulink
-        "simulink" => %q!SIMULINK!,
-        # Control System
-        "control" => %q!Control_Toolbox!,
-        # Curve Fitting Toolbox
-        "curvefit" => %q!Curve_Fitting_Toolbox!,
-        # Image Processing
-        "images" => %q!Image_Toolbox!,
-        # Compiler
-        "compiler" => %q!Compiler!,
-        # Neural Networks
-        "nnet" => %q!Neural_Network_Toolbox!,
-        # Optimization
-        "optim" => %q!Optimization_Toolbox!,
-        # PDE
-        "pde" => %q!PDE_Toolbox!,
-        # Robust Control
-        "robust" => %q!Robust_Toolbox!,
-        # Signal Processing
-        "signal" => %q!Signal_Toolbox!,
-        # Simulink Control Design
-        "slcontrol" => %q!Simulink_Control_Design!,
-        # Spline
-        "spline" => %q!Spline_Toolbox!,
-        # Statistics
-        "stats" => %q!Statistics_Toolbox!,
-        # Symbolic Maths
-        "symbolic" => %q!Symbolic_Toolbox!,
-        # System Identification
-        "ident" => %q!Identification_Toolbox!
-    }
 
     @nodeName = System.getProperty("node.name")
     if @nodeName == nil
@@ -83,11 +49,6 @@ class ReserveMatlab
   def close
     $stdout = @orig_stdout
     $stderr = @orig_stderr
-  end
-
-
-  def toolbox_code(tb)
-    return @toolboxmap[tb]
   end
 
 
@@ -142,7 +103,8 @@ class ReserveMatlab
         feat_set = HashSet.new();
 
         $args[3..$args.length].each do |a|
-          tcode = toolbox_code(a)
+          # The parameter contains the name of the toolbox
+          tcode = a
           log(tcode)
           feat_set.add(tcode)
 

@@ -34,12 +34,32 @@
 %   * ################################################################
 %   * $$PROACTIVE_INITIAL_DEV$$
 %   */
-function depmodules = findUsedToolboxes(functionName)
-global alreadyFoundFunctions
+function depmodules = findUsedToolboxes(obj, functionName)
+global alreadyFoundLibraries
 
-functionName = lower(functionName);
+opt = PAoptions();
 
-[list,builtins,classes] = depfun(functionName,'-quiet','-toponly');
+if ~opt.EnableFindDependencies
+    depmodules = {};
+    return
+end
+
+if ~isempty(obj)
+    functionName = class(obj);
+else
+    functionName = lower(functionName);
+end
+
+if ~isempty(alreadyFoundLibraries) && isfield(alreadyFoundLibraries, functionName)
+    depmodules = alreadyFoundLibraries.(functionName);
+    return
+end
+[fList, pList] = matlab.codetools.requiredFilesAndProducts(functionName);
+
+depmodules = {pList.Name};
+alreadyFoundLibraries.(functionName) = depmodules;
+
+return;
 
 root = matlabroot;
 alreadyFoundFunctions = {functionName};
@@ -73,6 +93,9 @@ found = max(cellfun(@(x)strcmp(x,functionName), alreadyFoundFunctions));
 if (~found)
     alreadyFoundFunctions = union(alreadyFoundFunctions, {functionName});
     [list,builtins,classes] = depfun(functionName,'-quiet','-toponly');
+    [fList, pList] = matlab.codetools.requiredFilesAndProducts(functionName)
+    display fList
+    display pList
     root = matlabroot;
 
     depmodules = {};

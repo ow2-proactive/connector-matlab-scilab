@@ -34,23 +34,44 @@
 %   * ################################################################
 %   * $$PROACTIVE_INITIAL_DEV$$
 %   */
-function [mfiles classdirs] = findDependency(functionName)
-global alreadyFoundFunctions
-alreadyFoundFunctions = [];
-functionName = lower(functionName);
-[list,builtins,classes] = depfun(functionName,'-quiet','-toponly');
-root = matlabroot;
-list=removeStd(list);
-if length(list) == 0
+function [mfiles classdirs] = findDependency(obj, functionName)
+global alreadyFoundFunctions alreadyFoundDependencies
+
+opt = PAoptions();
+
+if ~opt.EnableFindDependencies
+    mfiles = {};
+    classdirs = {};
+    return
+end
+
+if ~isempty(obj)
+    functionName = class(obj);
 else
-    alreadyFoundFunctions = {list{1}};
-    for i=2:length(list)
-        analyseFunc(list{i});
+    functionName = lower(functionName);
+end
+
+if ~isempty(alreadyFoundDependencies) && isfield(alreadyFoundDependencies, functionName)
+    mfiles = alreadyFoundDependencies.(functionName).mfiles;
+    classdirs = alreadyFoundDependencies.(functionName).classdirs;
+    return
+end
+
+[fList, pList] = matlab.codetools.requiredFilesAndProducts(functionName, 'toponly');
+root = matlabroot;
+fList=removeStd(fList);
+if length(fList) == 0
+else
+    alreadyFoundFunctions = [alreadyFoundFunctions {fList{1}}];
+    for i=2:length(fList)
+        analyseFunc(fList{i});
     end
 end
 aFF = alreadyFoundFunctions;
 clear global alreadyFoundFunctions;
 [mfiles classdirs] = splitClasses(aFF);
+alreadyFoundDependencies.(functionName).mfiles = mfiles;
+alreadyFoundDependencies.(functionName).classdirs = classdirs;
 %depmodules = setdiff(depmodules, {'shared','matlab'});
 %if ~length(depmodules)
 %    depmodules = {'matlab'};
@@ -103,7 +124,11 @@ found = max(cellfun(@(x)strcmp(x,functionPath), alreadyFoundFunctions));
 if (~found)
     alreadyFoundFunctions = union(alreadyFoundFunctions, {functionPath});
     [PATHSTR,functionName,EXT] = fileparts(functionPath);
-    [list,builtins,classes] = depfun(functionPath,'-quiet','-toponly');
+    try 
+        [list, pList] = matlab.codetools.requiredFilesAndProducts(functionName, 'toponly');
+    catch 
+        return 
+    end
     list=removeStd(list);
     root = matlabroot;
 
