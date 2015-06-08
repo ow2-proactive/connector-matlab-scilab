@@ -42,11 +42,11 @@ import java.util.HashMap;
 
 import org.apache.commons.io.FileUtils;
 import org.objectweb.proactive.utils.OperatingSystem;
+import org.ow2.proactive.process_tree_killer.ProcessTree;
 import org.ow2.proactive.resourcemanager.authentication.RMAuthentication;
 import org.ow2.proactive.resourcemanager.frontend.RMConnection;
 import org.ow2.proactive.scheduler.common.SchedulerConnection;
 import org.ow2.proactive.scheduler.ext.common.util.IOTools;
-import org.ow2.proactive.rm.util.process.ProcessTreeKiller;
 
 
 /**
@@ -116,8 +116,8 @@ public class SchedulerCommandLine implements Serializable {
         env.put("SchedulerTStarter", "SchedulerTStarter");
 
         // and eventually we kill remaining nodes
-        ProcessTreeKiller.get().kill(p, env);
         try {
+            ProcessTree.get().killAll(p, env);
             Thread.sleep(3000);
         } catch (InterruptedException e) {
             e.printStackTrace();
