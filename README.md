@@ -78,7 +78,7 @@ This will produce the following archives:
     ```
     - Read the documentation of Scilab Connector Toolbox from the Scilab help for more info on how to use the toolbox
 
-For further information, please refers to the Matlab toolbox and Scilab toolbox documentations available from within Matlab and Scilab;
+For further information, please refers to the Matlab toolbox and Scilab toolbox documentations available from within Matlab and Scilab.
 
 ## Contact
 
