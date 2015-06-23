@@ -73,6 +73,7 @@ subprojects {
 
     task serialver(type: serialver.InsertSerialVersionUIDTask) {
         serialver = rootProject.serialver
+        classpath += project.configurations.provided
     }
 
     sourceCompatibility = "1.7"
