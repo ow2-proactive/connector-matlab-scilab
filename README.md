@@ -1,5 +1,7 @@
 # ProActive Matlab/Scilab Connector
 
+[![Build Status](http://jenkins.activeeon.com/job/connector-matlab-scilab/badge/icon)](http://jenkins.activeeon.com/job/connector-matlab-scilab/)
+
 ProActive Matlab/Scilab connector is part of the [ProActive Parallel Scientific Toolbox](http://activeeon.com/parallel-scientific-toolbox) that aims to accelerate application deployment and execution by distributing and parallelizing executions but also managing data transfers on Desktop machines, Clusters, Grids and Clouds.
 
 ## Building from sources
