@@ -68,7 +68,7 @@ public class MatlabConnectionRImpl implements MatlabConnection {
     /**
      * System-dependent line separator
      */
-    public static final String nl = System.getProperty("line.separator");
+    public static final String nl = System.lineSeparator();
 
     /**
      * Pattern used to remove Matlab startup message from logs

@@ -94,7 +94,7 @@ public final class StackTraceUtil {
         //add the class name and any message passed to constructor
         final StringBuilder result = new StringBuilder("BOO-BOO: ");
         result.append(aThrowable.toString());
-        final String NEW_LINE = System.getProperty("line.separator");
+        final String NEW_LINE = System.lineSeparator();
         result.append(NEW_LINE);
 
         //add each element of the stack trace
