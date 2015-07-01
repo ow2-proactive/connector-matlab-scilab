@@ -312,11 +312,6 @@ endfunction
     inputs(j).check = 'prioritycheck';
     inputs(j).trans = 'id';
     j=j+1;
-    inputs(j).name = 'UseJobClassPath';
-    inputs(j).default = %t;
-    inputs(j).check = 'logcheck';
-    inputs(j).trans = 'logtrans';
-    j=j+1;
     inputs(j).name = 'WindowsStartupOptions';
     inputs(j).default = '-nw';
     inputs(j).check = 'ischarornull';

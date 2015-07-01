@@ -123,14 +123,6 @@
     Matlab will reuse this configuration file to decide whether a matlab task can be executed on the host or not (though
     it is possible to force a matlab research via execution options, see option <b>ForceMatlabSearch</b> in <a href="proactive_options.html">Configuring PAsolve behavior</a>).</p>
 
-<h4 class="title">Automatic Transfer of ProActive Matlab Connector Libraries to the ProActive Scheduler</h4>
-<p> When the Matlab Connector creates jobs understandable by the ProActive Scheduler, it will transfer along the ProActive
-    Matlab Connector libraries that will be used by the scheduler worker in order to create Matlab engines. Those libraries
-    are not installed in the ProActive Scheduler by default.
-    This transfer is done via the option <b>UseJobClassPath</b>. If this option is set to false, then no transfer will be done,
-    and the librairies will have to be copied manually on the scheduler server and workers installations.
-    </p>
-
 <a name="installation-4"></a>
 <p class="pagenavlink">
     <script language="Javascript">updateSectionId("installation-4");</script>
@@ -173,10 +165,9 @@
 
 
 <h4 class="title">Manual Installation of ProActive Matlab Connector Libraries to the ProActive Scheduler</h4>
-<p>If the option <b>UseJobClassPath</b> is set to false, the content of the directory <b>Matlab_Connector/scheduler-plugin</b> (not the directory itself, only the content) must be copied
+<p>The content of the directory <b>Matlab_Connector/scheduler-plugin</b> (not the directory itself, only the content) must be copied
     inside the <b>addons</b> directory of ProActive Scheduler and of every Matlab Worker which will be used as matlab workers.</p>
 <p>Manually installing the librairies used by Matlab Connector inside the scheduler reduces the overhead of transferring them each time through the network.</p>
-
 
 <a name="bottom_of_page"></a>
 
