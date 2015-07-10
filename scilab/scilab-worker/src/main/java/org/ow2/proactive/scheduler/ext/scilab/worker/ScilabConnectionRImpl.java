@@ -56,7 +56,7 @@ import java.util.Arrays;
  */
 public class ScilabConnectionRImpl implements ScilabConnection {
     protected StringBuilder fullcommand = new StringBuilder();
-    protected String nl = System.getProperty("line.separator");
+    protected String nl = System.lineSeparator();
 
     protected final String tmpDir = System.getProperty("java.io.tmpdir");
 

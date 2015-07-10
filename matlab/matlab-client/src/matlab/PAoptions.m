@@ -134,11 +134,6 @@
 %               Priority used by default for jobs submitted with PAsolve,
 %               default to 'Normal'
 %
-%   UseJobClassPath
-%               With this options set to true, the toolbox will use the jobClassPath feature of the scheduler, when submitting jobs
-%               jar files necessary to the matlab workers will be copied at each task execution. It will not be necessary to put the
-%               jars in the addons directory, but it will introduce an overhead
-%
 %   WindowsStartupOptions   char
 %               Options given to matlab worker processes started on windows operating systems
 %
@@ -459,11 +454,6 @@ inputs(j).name = 'Priority';
 inputs(j).default = 'Normal';
 inputs(j).check = @(x)(ischar(x) && ismember(x, {'Idle', 'Lowest', 'Low', 'Normal', 'High', 'Highest'}));
 inputs(j).trans = id;
-j=j+1;
-inputs(j).name = 'UseJobClassPath';
-inputs(j).default = true;
-inputs(j).check = logcheck;
-inputs(j).trans = logtrans;
 j=j+1;
 inputs(j).name = 'WindowsStartupOptions';
 inputs(j).default = '-automation -nodesktop -nosplash -nodisplay';

@@ -240,11 +240,6 @@ public class PASolveMatSciGlobalConfig implements Serializable {
      */
     protected String dirToClean;
 
-    /**
-     * Do we use the job classpath for Matlab/Scilab jars ?
-     */
-    protected boolean useJobClassPath = false;
-
     protected ArrayList<String> workerJars = new ArrayList<String>();
 
     public PASolveMatSciGlobalConfig() {
@@ -412,14 +407,6 @@ public class PASolveMatSciGlobalConfig implements Serializable {
 
     public void setForceMatSciSearch(boolean forceMatSciSearch) {
         this.forceMatSciSearch = forceMatSciSearch;
-    }
-
-    public boolean isUseJobClassPath() {
-        return useJobClassPath;
-    }
-
-    public void setUseJobClassPath(boolean useJobClassPath) {
-        this.useJobClassPath = useJobClassPath;
     }
 
     public ArrayList<String> getWorkerJars() {

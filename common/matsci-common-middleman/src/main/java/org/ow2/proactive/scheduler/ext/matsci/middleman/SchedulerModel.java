@@ -66,7 +66,7 @@ public class SchedulerModel {
 
     private static final Logger logger = Logger.getLogger(SchedulerModel.class);
 
-    protected static String newline = System.getProperty("line.separator");
+    protected static String newline = System.lineSeparator();
 
     protected Scheduler scheduler;
 

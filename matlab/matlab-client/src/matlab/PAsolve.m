@@ -546,7 +546,6 @@ solve_config.setDebug(opt.Debug);
 lgin = sched.PAgetlogin();
 solve_config.setLogin(lgin);
 solve_config.setPriority(opt.Priority);
-solve_config.setUseJobClassPath(opt.UseJobClassPath);
 solve_config.setTransferEnv(opt.TransferEnv);
 solve_config.setMatFileOptions(opt.TransferMatFileOptions);
 solve_config.setLicenseSaverURL(opt.LicenseSaverURL);

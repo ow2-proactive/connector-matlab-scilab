@@ -51,7 +51,7 @@ public class ScilabEngineConfig extends MatSciEngineConfigBase {
 
     private static OperatingSystem os = OperatingSystem.getOperatingSystem();
 
-    private static final String nl = System.getProperty("line.separator");
+    private static final String nl = System.lineSeparator();
 
     /**
      * Current Scilab configuration
