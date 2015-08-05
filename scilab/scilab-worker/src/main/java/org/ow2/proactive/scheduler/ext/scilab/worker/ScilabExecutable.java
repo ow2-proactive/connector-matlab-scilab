@@ -46,11 +46,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Level;
 import org.objectweb.proactive.api.PAActiveObject;
-import org.objectweb.proactive.core.node.Node;
 import org.objectweb.proactive.core.util.log.ProActiveLogger;
-import org.objectweb.proactive.extensions.dataspaces.api.DataSpacesFileObject;
 import org.objectweb.proactive.utils.OperatingSystem;
 import org.ow2.proactive.scheduler.common.task.TaskResult;
 import org.ow2.proactive.scheduler.common.task.executable.JavaExecutable;
@@ -64,6 +61,7 @@ import org.ow2.proactive.scheduler.ext.scilab.common.PASolveScilabTaskConfig;
 import org.ow2.proactive.scheduler.ext.scilab.common.exception.ScilabTaskException;
 import org.ow2.proactive.scheduler.ext.scilab.worker.util.ScilabEngineConfig;
 import org.ow2.proactive.scheduler.ext.scilab.worker.util.ScilabFinder;
+import org.apache.log4j.Level;
 
 
 /**
@@ -203,16 +201,12 @@ public class ScilabExecutable extends JavaExecutable {
         return result;
     }
 
-    @Override
-    public void kill() {
+    public void kill() { // TODO how to clean without kill?
         if (this.scilabConnection != null) {
             // Release the connection
             this.scilabConnection.release();
             this.scilabConnection = null;
         }
-
-        // The upper-class method will set this executable as killed
-        super.kill();
     }
 
     /**
@@ -266,18 +260,18 @@ public class ScilabExecutable extends JavaExecutable {
     }
 
     private void initLocalSpace() throws Exception {
-        final DataSpacesFileObject dsLocalSpace = this.getLocalSpace();
-        final String dsURI = dsLocalSpace.getRealURI();
+        final File dsLocalSpace = new File(".");
+        final String dsURI = dsLocalSpace.getAbsolutePath();
 
         if (!dsLocalSpace.exists()) {
             throw new IllegalStateException("Unable to execute task, the local space " + dsURI +
                 " doesn't exists");
         }
-        if (!dsLocalSpace.isReadable()) {
+        if (!dsLocalSpace.canRead()) {
             throw new IllegalStateException("Unable to execute task, the local space " + dsURI +
                 " is not readable");
         }
-        if (!dsLocalSpace.isWritable()) {
+        if (!dsLocalSpace.canWrite()) {
             throw new IllegalStateException("Unable to execute task, the local space " + dsURI +
                 " is not writable");
         }
@@ -404,9 +398,9 @@ public class ScilabExecutable extends JavaExecutable {
         String urllist = "NODE_URL_LIST = list( ";
         hostlist += "'" + PAActiveObject.getNode().getVMInformation().getHostName() + "',";
         urllist += "'" + PAActiveObject.getNode().getNodeInformation().getURL() + "',";
-        for (Node node : this.getNodes()) {
-            hostlist += "'" + node.getVMInformation().getHostName() + "',";
-            urllist += "'" + node.getNodeInformation().getURL() + "',";
+        for (String nodeURL : this.getNodesURL()) {
+            hostlist += "'" + nodeURL + "',";
+            urllist += "'" + nodeURL + "',";
         }
         hostlist = hostlist.substring(0, hostlist.length() - 1);
         urllist = urllist.substring(0, urllist.length() - 1);

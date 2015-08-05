@@ -36,8 +36,6 @@
  */
 package functionaltests.scilab;
 
-import static junit.framework.Assert.assertTrue;
-
 import java.io.File;
 import java.io.FilenameFilter;
 import java.net.InetAddress;
@@ -45,8 +43,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.PublicKey;
 
-import functionaltests2.SchedulerCommandLine;
-import org.apache.commons.io.FileUtils;
 import org.ow2.proactive.authentication.crypto.CredData;
 import org.ow2.proactive.authentication.crypto.Credentials;
 import org.ow2.proactive.resourcemanager.core.properties.PAResourceManagerProperties;
@@ -56,9 +52,13 @@ import org.ow2.proactive.scheduler.core.properties.PASchedulerProperties;
 import org.ow2.proactive.scheduler.ext.common.util.IOTools;
 import org.ow2.proactive.scheduler.ext.scilab.client.embedded.ScilabTaskRepository;
 import org.ow2.proactive.scheduler.ext.scilab.middleman.AOScilabEnvironment;
-import org.ow2.tests.FunctionalTest;
+import functionaltests2.SchedulerCommandLine;
+import org.apache.commons.io.FileUtils;
 
-import functionaltests.SchedulerTHelper;
+import functionaltests.utils.SchedulerFunctionalTest;
+import functionaltests.utils.SchedulerTHelper;
+
+import static junit.framework.Assert.assertTrue;
 
 
 /**
@@ -66,7 +66,7 @@ import functionaltests.SchedulerTHelper;
  *
  * @author The ProActive Team
  */
-public class AbstractScilabTest extends FunctionalTest {
+public class AbstractScilabTest extends SchedulerFunctionalTest {
 
     String fs = System.getProperty("file.separator");
 
@@ -100,8 +100,7 @@ public class AbstractScilabTest extends FunctionalTest {
 
         localhost = InetAddress.getLocalHost().getHostName();
 
-        schedURI = new URI("rmi://" + localhost + ":" + SchedulerTHelper.RMI_PORT +
-            "/");
+        schedURI = new URI(SchedulerTHelper.getLocalUrl());
 
         // delete all db files
         File[] dbJobFiles = new File(TMPDIR).listFiles(new FilenameFilter() {
@@ -148,9 +147,10 @@ public class AbstractScilabTest extends FunctionalTest {
         FileUtils.deleteDirectory(new File(schedHome, "RM_DB"));
         FileUtils.deleteDirectory(new File(schedHome, "SCHEDULER_DB"));
 
-        SchedulerTHelper.startScheduler(true, System.getProperty(PASchedulerProperties.PA_SCHEDULER_PROPERTIES_FILEPATH),System.getProperty(PAResourceManagerProperties.PA_RM_PROPERTIES_FILEPATH), null);
+        schedulerHelper.startScheduler(true,
+          getSchedulerPropertiesPath(), getRMPropertiesFilePath(), null);
 
-        SchedulerAuthenticationInterface auth = SchedulerTHelper.getSchedulerAuth();
+        SchedulerAuthenticationInterface auth = schedulerHelper.getSchedulerAuth();
 
         PublicKey pubKey = auth.getPublicKey();
         Credentials cred = null;
@@ -167,8 +167,24 @@ public class AbstractScilabTest extends FunctionalTest {
         adminCredentials = cred;
     }
 
+    private String getRMPropertiesFilePath() {
+        String property = System.getProperty(PAResourceManagerProperties.PA_RM_PROPERTIES_FILEPATH);
+        if (property == null || property.isEmpty()) {
+            return "./build/scheduler/config/scheduler/settings.ini";
+        }
+        return property;
+    }
+
+    private String getSchedulerPropertiesPath() {
+        String property = System.getProperty(PASchedulerProperties.PA_SCHEDULER_PROPERTIES_FILEPATH);
+        if (property == null || property.isEmpty()) {
+            return "./build/scheduler/config/scheduler/settings.ini";
+        }
+        return property;
+    }
+
     protected void end() throws Exception {
-        SchedulerTHelper.killSchedulerAndNodes();
+        schedulerHelper.killScheduler();
     }
 
     protected void startCmdLine(String uri, File proactiveConf) throws Exception {
