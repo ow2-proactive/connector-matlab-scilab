@@ -146,7 +146,6 @@ project(':common:matsci-common-middleman') {
 
         compile project(':common:matsci-common-data')
 
-        runtime "org.objectweb.proactive:programming-extension-rmissl:${programmingVersion}"
         runtime "org.objectweb.proactive:programming-extension-pnp:${programmingVersion}"
         runtime "org.objectweb.proactive:programming-extension-pnpssl:${programmingVersion}"
         runtime "org.objectweb.proactive:programming-extension-amqp:${programmingVersion}"
@@ -177,7 +176,6 @@ project(':common:matsci-common-worker') {
 project(':common:matsci-common-test') {
     dependencies {
         compile 'commons-io:commons-io:2.4'
-        compile "org.objectweb.proactive:programming-extension-rmissl:${programmingVersion}"
         compile "org.objectweb.proactive:programming-extension-pnp:${programmingVersion}"
         compile "org.objectweb.proactive:programming-extension-pnpssl:${programmingVersion}"
         compile "org.objectweb.proactive:programming-extension-amqp:${programmingVersion}"
