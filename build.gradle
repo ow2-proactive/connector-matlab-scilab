@@ -15,7 +15,7 @@ buildscript {
             exclude module: 'xercesImpl' // messing with documentation plugin
         }
         classpath 'org.ow2.proactive:documentation:1.0.0-SNAPSHOT'
-        classpath 'org.ow2.proactive:gradle-serialver:2.1'
+        classpath 'org.ow2.proactive:gradle-serialver:2.2'
     }
 }
 
@@ -74,7 +74,7 @@ subprojects {
     task serialver(type: serialver.InsertSerialVersionUIDTask) {
         serialver = rootProject.serialver
         overwrite = false
-        forceUIDOnThrowable = true
+        forceUIDOnException = true
         classpath += project.configurations.provided
     }
 
