@@ -37,12 +37,10 @@
 package functionaltests.matlab;
 
 
-import java.io.File;
-import java.io.FilenameFilter;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.security.PublicKey;
-
+import functionaltests.utils.SchedulerFunctionalTest;
+import functionaltests.utils.SchedulerTHelper;
+import functionaltests2.SchedulerCommandLine;
+import org.apache.commons.io.IOUtils;
 import org.ow2.proactive.authentication.crypto.CredData;
 import org.ow2.proactive.authentication.crypto.Credentials;
 import org.ow2.proactive.resourcemanager.core.properties.PAResourceManagerProperties;
@@ -52,11 +50,12 @@ import org.ow2.proactive.scheduler.core.properties.PASchedulerProperties;
 import org.ow2.proactive.scheduler.ext.common.util.IOTools;
 import org.ow2.proactive.scheduler.ext.matlab.client.embedded.MatlabTaskRepository;
 import org.ow2.proactive.scheduler.ext.matlab.middleman.AOMatlabEnvironment;
-import functionaltests2.SchedulerCommandLine;
-import org.apache.commons.io.IOUtils;
 
-import functionaltests.utils.SchedulerFunctionalTest;
-import functionaltests.utils.SchedulerTHelper;
+import java.io.File;
+import java.io.FilenameFilter;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.security.PublicKey;
 
 import static junit.framework.Assert.assertTrue;
 
@@ -139,8 +138,8 @@ public class AbstractMatlabTest extends SchedulerFunctionalTest {
         init();
 
         String schedSettings = System.getProperty(PASchedulerProperties.PA_SCHEDULER_PROPERTIES_FILEPATH);
-        String rmSettings = System.getProperty(PAResourceManagerProperties.PA_RM_PROPERTIES_FILEPATH);                      
-        schedulerHelper.startScheduler(true, schedSettings, rmSettings, null);
+        String rmSettings = System.getProperty(PAResourceManagerProperties.PA_RM_PROPERTIES_FILEPATH);
+        schedulerHelper = new SchedulerTHelper(true, schedSettings, rmSettings, null);
         
         SchedulerAuthenticationInterface auth = schedulerHelper.getSchedulerAuth();
 

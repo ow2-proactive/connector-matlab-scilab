@@ -36,13 +36,10 @@
  */
 package functionaltests.scilab;
 
-import java.io.File;
-import java.io.FilenameFilter;
-import java.net.InetAddress;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.security.PublicKey;
-
+import functionaltests.utils.SchedulerFunctionalTest;
+import functionaltests.utils.SchedulerTHelper;
+import functionaltests2.SchedulerCommandLine;
+import org.apache.commons.io.FileUtils;
 import org.ow2.proactive.authentication.crypto.CredData;
 import org.ow2.proactive.authentication.crypto.Credentials;
 import org.ow2.proactive.resourcemanager.core.properties.PAResourceManagerProperties;
@@ -52,11 +49,13 @@ import org.ow2.proactive.scheduler.core.properties.PASchedulerProperties;
 import org.ow2.proactive.scheduler.ext.common.util.IOTools;
 import org.ow2.proactive.scheduler.ext.scilab.client.embedded.ScilabTaskRepository;
 import org.ow2.proactive.scheduler.ext.scilab.middleman.AOScilabEnvironment;
-import functionaltests2.SchedulerCommandLine;
-import org.apache.commons.io.FileUtils;
 
-import functionaltests.utils.SchedulerFunctionalTest;
-import functionaltests.utils.SchedulerTHelper;
+import java.io.File;
+import java.io.FilenameFilter;
+import java.net.InetAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.security.PublicKey;
 
 import static junit.framework.Assert.assertTrue;
 
@@ -144,10 +143,9 @@ public class AbstractScilabTest extends SchedulerFunctionalTest {
 
         // remove sched DBs to ensure that job index starts at 1
         File schedHome = new File(System.getProperty("pa.scheduler.home")).getCanonicalFile();
-        FileUtils.deleteDirectory(new File(schedHome, "RM_DB"));
-        FileUtils.deleteDirectory(new File(schedHome, "SCHEDULER_DB"));
+        FileUtils.deleteDirectory(new File(schedHome, "db"));
 
-        schedulerHelper.startScheduler(true,
+        schedulerHelper = new SchedulerTHelper(true,
           getSchedulerPropertiesPath(), getRMPropertiesFilePath(), null);
 
         SchedulerAuthenticationInterface auth = schedulerHelper.getSchedulerAuth();
