@@ -136,20 +136,6 @@
             </para>
 
         </refsection>
-        <refsection>
-            <title>Automatic download of Scilab Connector libraries into the Scheduler</title>
-            <para>When the Scilab Connector creates jobs understandable by the ProActive Scheduler, it will transfer
-                along the ProActive
-                Scilab Connector libraries that will be used by the scheduler worker in order to create Scilab engines.
-                Those libraries
-                are not installed in the ProActive Scheduler by default.
-            </para>
-            <para>
-                This transfer is done via the option<emphasis>UseJobClassPath</emphasis>. If this option is set to
-                false, then no transfer will be done,
-                and the librairies will have to be copied manually on the scheduler server and workers installations.
-            </para>
-        </refsection>
     </refsection>
     <refsection>
         <title>Manual Configurations</title>
@@ -248,7 +234,7 @@
         </refsection>
         <refsection>
             <title>Manual Installation of ProActive Scilab Connector Libraries to the ProActive Scheduler</title>
-            <para>If the option <literal>UseJobClassPath</literal> is set to false, the content of the directory <literal>Scilab_Connector/scheduler-plugin</literal> (not the directory itself, only the content) must be copied
+            <para>The content of the directory <literal>Scilab_Connector/scheduler-plugin</literal> (not the directory itself, only the content) must be copied
                 inside the <literal>addons</literal> directory of ProActive Scheduler and of every Scilab Worker which will be used as matlab workers.</para>
             <para>Manually installing the librairies used by Scilab Connector inside the scheduler reduces the overhead of transferring them each time through the network.</para>
 

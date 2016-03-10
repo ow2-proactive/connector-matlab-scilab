@@ -66,7 +66,7 @@ public class SchedulerModel {
 
     private static final Logger logger = Logger.getLogger(SchedulerModel.class);
 
-    protected static String newline = System.getProperty("line.separator");
+    protected static String newline = System.lineSeparator();
 
     protected Scheduler scheduler;
 
@@ -400,7 +400,7 @@ public class SchedulerModel {
         List<String> list;
         try {
             List<JobInfo> jobs = scheduler.getJobs(0, -1, new JobFilterCriteria(false, true, true, true),
-                    JOB_SORT_PARAMS);
+                    JOB_SORT_PARAMS).getList();
 
             if (jobs.size() == 0) {
                 print("\n\tThere are no jobs handled by the Scheduler");

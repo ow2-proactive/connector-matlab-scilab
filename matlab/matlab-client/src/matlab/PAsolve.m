@@ -372,7 +372,7 @@ end
 
 end
 
-% Initalize used functions (check dependencies)
+% Initialize used functions (check dependencies)
 function [funcDatabase,allfuncs] = initFunctions(Tasks,task_config, NN, MM,sched)
 v=version;
 [vmaj rem] = strtok(v, '.');
@@ -381,7 +381,10 @@ vmin = strtok(rem, '.');
 vmin = str2num(vmin);
 funcDatabase = [];
 
-    function strf=convertFunc(foo)
+    function checkFunc(foo)
+        if ischar(foo)
+            return
+        end
         if vmaj > 7 || vmin > 2
             try
                 nargin(foo);
@@ -393,20 +396,25 @@ funcDatabase = [];
                 end
             end
         end
-        strf = func2str(foo);
-        if strf(1) ~= '@'
-            strf = strcat ('@', strf);
-        end
     end
 
-    function sp = findScriptParams(foo,foostr)
+    function sp = findScriptParams(obj, foo)
         % find the list of toolboxes used by the user function and give it as parameter to the script
-        if foostr(2) ~= '('
-            tblist = sched.findUsedToolboxes(func2str(foo));
-            tblist = union({'matlab'},tblist);
+        if ischar(foo)
+            tblist = sched.findUsedToolboxes(obj, foo);
+            if isempty(tblist)
+                tblist = {'MATLAB'};
+            end
         else
-            % if func is an anonymous function, we can't find dependencies
-            tblist = {'matlab'}
+            foostr = func2str(foo);
+            if foostr(2) ~= '('
+                %if not anonymous function
+                tblist = sched.findUsedToolboxes(obj, foostr);
+                tblist = [{'MATLAB'} tblist];
+            else
+                % if func is an anonymous function, we can't find dependencies
+                tblist = {'MATLAB'};
+            end
         end
         sp = javaArray('java.lang.String',length(tblist));
         for II=1:length(tblist)
@@ -417,16 +425,25 @@ funcDatabase = [];
 
 for i=1:NN
     for j=1:MM
-        if isa(Tasks(j,i).Func,'function_handle')
-            strfunc = convertFunc(Tasks(j,i).Func);
-            allfuncs(i,j).f = Tasks(j,i).Func;
-            allfuncs(i,j).s = strfunc;
-            if ~isfield(funcDatabase, strfunc(2:end))
-                % find the list of toolboxes used by the user function and give it as parameter to the script
-                sp = findScriptParams(allfuncs(i,j).f,allfuncs(i,j).s);
-                funcDatabase.(strfunc(2:end)).sp = sp;
+        if isa(Tasks(j,i).Func,'function_handle') || ischar(Tasks(j,i).Func)
+            checkFunc(Tasks(j,i).Func);
+            if (~isempty(Tasks(j,i).Object))
+                allfuncs(i,j).o = Tasks(j,i).Object;
+                allfuncs(i,j).f = Tasks(j,i).Func;
+                allfuncs(i,j).hash = ['H' char(org.ow2.proactive.scheduler.ext.common.util.IOTools.generateHash(strcat(class(Tasks(j,i).Object), '_', Tasks(j,i).Func)))]; 
             else
-                sp = funcDatabase.(strfunc(2:end)).sp;
+                allfuncs(i,j).o = [];
+                allfuncs(i,j).f = Tasks(j,i).Func;
+                allfuncs(i,j).hash = ['H' char(org.ow2.proactive.scheduler.ext.common.util.IOTools.generateHash(func2str(Tasks(j,i).Func)))];
+            end
+            
+            % allfuncs(i,j).s = strfunc;
+            if ~isfield(funcDatabase, allfuncs(i,j).hash)
+                % find the list of toolboxes used by the user function and give it as parameter to the script
+                sp = findScriptParams(allfuncs(i,j).o, allfuncs(i,j).f);
+                funcDatabase.(allfuncs(i,j).hash).sp = sp;
+            else
+                sp = funcDatabase.(allfuncs(i,j).hash).sp;
             end
             task_config(i,j).setToolboxesUsed(sp);
         else
@@ -529,7 +546,6 @@ solve_config.setDebug(opt.Debug);
 lgin = sched.PAgetlogin();
 solve_config.setLogin(lgin);
 solve_config.setPriority(opt.Priority);
-solve_config.setUseJobClassPath(opt.UseJobClassPath);
 solve_config.setTransferEnv(opt.TransferEnv);
 solve_config.setMatFileOptions(opt.TransferMatFileOptions);
 solve_config.setLicenseSaverURL(opt.LicenseSaverURL);
@@ -593,19 +609,23 @@ end
 
 
 % Initialize task config for Transfer source (zip function used)
-function [funcDatabase,taskFilesToClean] = initTransferSource(opt, fs, solveid,funcDatabase,sched,allfuncs, NN, MM,Tasks,keepaliveFunctionName,checktoolboxesFunctionName,taskFilesToClean,task_config,pa_dir,subdir, local_names,local_types, global_names, global_types)
+function [funcDatabase,taskFilesToClean] = initTransferSource(opt, fs, solveid, funcDatabase, sched, allfuncs, NN, MM,Tasks,keepaliveFunctionName,checktoolboxesFunctionName,taskFilesToClean,task_config,pa_dir,subdir, local_names,local_types, global_names, global_types)
 sourceZipBaseName = ['MatlabPAsolveSrc_' num2str(solveid)];
 
 
-    function  [zFN zFP]=buildZiplist(strfoo,ind,envziplist,paramziplist)
-        if ~isfield(funcDatabase, strfoo(2:end)) || ~isfield(funcDatabase.(strfoo(2:end)),'dep')
-            [mfiles classdirs] = sched.findDependency(strfoo(2:end));
-            funcDatabase.(strfoo(2:end)).dep.mfiles = mfiles;
-            funcDatabase.(strfoo(2:end)).dep.classdirs = classdirs;
+    function  [zFN zFP]=buildZiplist(obj, foo, hash, ind,envziplist,paramziplist)
+        if ~isfield(funcDatabase, hash) || ~isfield(funcDatabase.(hash),'dep')
+            if ~isempty(obj)
+                [mfiles classdirs] = sched.findDependency(obj, foo);
+            else
+                [mfiles classdirs] = sched.findDependency(obj, func2str(foo));
+            end
+            funcDatabase.(hash).dep.mfiles = mfiles;
+            funcDatabase.(hash).dep.classdirs = classdirs;
 
         else
-            mfiles = funcDatabase.(strfoo(2:end)).dep.mfiles;
-            classdirs = funcDatabase.(strfoo(2:end)).dep.classdirs;
+            mfiles = funcDatabase.(hash).dep.mfiles;
+            classdirs = funcDatabase.(hash).dep.classdirs;
         end
 
         z = union(mfiles, classdirs);
@@ -658,7 +678,7 @@ if opt.TransferEnv
         if ok
         else
             if ~isfield(funcDatabase, c) || ~isfield(funcDatabase.(c),'dep')
-                [envmfiles envclassdirs] = sched.findDependency(c);
+                [envmfiles envclassdirs] = sched.findDependency([], c);
                 funcDatabase.(c).dep.mfiles = envmfiles;
                 funcDatabase.(c).dep.classdirs = envclassdirs;
 
@@ -682,7 +702,7 @@ for i=1:NN
             if ismember(c, stdclasses) || iscom(argi{k}) || isjava(argi{k}) || isinterface(argi{k})
             else
                 if ~isfield(funcDatabase, c) || ~isfield(funcDatabase.(c),'dep')
-                    [parammfiles paramclassdirs] = sched.findDependency(c);
+                    [parammfiles paramclassdirs] = sched.findDependency([], c);
                     funcDatabase.(c).dep.mfiles = parammfiles;
                     funcDatabase.(c).dep.classdirs = paramclassdirs;
 
@@ -695,8 +715,8 @@ for i=1:NN
                 paramziplist = union(paramziplist, paramclassdirs);
             end
         end
-        [zFN zFP]=buildZiplist(allfuncs(i,j).s,[i j],envziplist,paramziplist);
-        sourceZip = org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveZippedFile(subdir,zFN);
+        [zFN zFP]=buildZiplist(allfuncs(i,j).o, allfuncs(i,j).f, allfuncs(i,j).hash, [i j], envziplist, paramziplist);
+        sourceZip = org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveZippedFile(subdir, zFN);
         task_config(i,j).addSourceFile(sourceZip);
         % taskFilesToClean{i}=[taskFilesToClean{i} {zFP}];
 
@@ -759,6 +779,13 @@ end
 % Initialize Task Config Input Parameters
 function [input,main,taskFilesToClean,outVarFiles]=initParameters(solveid,NN,MM,Tasks,opt,taskFilesToClean,task_config,allfuncs,pa_dir,subdir,fs)
 
+    function answer = topath(list)
+        answer = list{1};
+        for z = 2:length(list)
+            answer = [answer ';' list{z}];
+        end
+    end
+
 input = 'i=0;';
 
 variableInFileBaseName = ['MatlabPAsolveVarIn_' num2str(solveid)];
@@ -781,6 +808,8 @@ for i=1:NN
         if length(argi) == 0
             in.in1=true;
         else
+            in.obj = allfuncs(i,j).o;
+            in.foo = allfuncs(i,j).f;
             for k=1:length(argi)
                 in.(['in' num2str(k)]) = argi{k};
             end
@@ -806,11 +835,29 @@ for i=1:NN
         if j == MM
             outVarFiles{i} = outVarFP;
         end
+        
+        if ~opt.EnableFindDependencies
+            if isempty(opt.MatlabPathList)
+                pathlist = strsplit(userpath(),pathsep);
+                for z = 1:length(pathlist)
+                    main = [main 'addpath(''' pathlist{z} ''');'];
+                end
+            else
+                for z = 1:length(opt.MatlabPathList)
+                    main = [main 'addpath(''' opt.MatlabPathList{z} ''');'];
+                end
+            end
+        end
 
 
         % Creating the rest of the command (evaluation of the user
         % function)
-        main = [main 'out = ' allfuncs(i,j).s(2:end) '('];
+        if ~isempty(allfuncs(i,j).o)
+            main = [main 'out = obj.' allfuncs(i,j).f '('];
+        else
+            main = [main 'out = foo('];
+        end
+        
 
         if j > 1 && length(argi) > 0 && Tasks(j,i).Compose
             main = [main 'in' ','];

@@ -14,7 +14,10 @@
 %
 % Properties 
 %
-%       Func - a matlab function handle (the function to execute remotely)
+%       Func - a matlab function handle (the function to execute remotely) or an object method name
+%
+%       Object - in case an object method name is used, the object on which the function will be called.
+%       This object will be serialized and rebuilt on the remote matlab engine
 %       
 %       Params - a cell array containing the list of parameters for the
 %       "Func" function
@@ -144,6 +147,7 @@ if exist('lin','var') == 1  && exist('col','var') == 1
     end  
 else
     this.Func = [];
+    this.Object = [];
     this.Params = {};
     this.Description = [];
     this.InputFiles = [];

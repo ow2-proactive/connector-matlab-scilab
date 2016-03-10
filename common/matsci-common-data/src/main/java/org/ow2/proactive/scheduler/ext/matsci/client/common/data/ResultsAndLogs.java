@@ -75,7 +75,7 @@ public class ResultsAndLogs<R> implements Serializable {
      */
     protected MatSciTaskStatus status;
 
-    private static final String nl = System.getProperty("line.separator");
+    private static final String nl = System.lineSeparator();
 
     public ResultsAndLogs() {
     }

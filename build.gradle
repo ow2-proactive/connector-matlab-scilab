@@ -15,7 +15,7 @@ buildscript {
             exclude module: 'xercesImpl' // messing with documentation plugin
         }
         classpath 'org.ow2.proactive:documentation:1.0.0-SNAPSHOT'
-        classpath 'org.ow2.proactive:serialver-gradle:1.0-SNAPSHOT'
+        classpath 'org.ow2.proactive:gradle-serialver:2.2'
     }
 }
 
@@ -71,8 +71,11 @@ subprojects {
         testCompile 'junit:junit:4.11'
     }
 
-    task serialver(type: InsertSerialVersionUIDTask) {
+    task serialver(type: serialver.InsertSerialVersionUIDTask) {
         serialver = rootProject.serialver
+        overwrite = false
+        forceUIDOnException = true
+        classpath += project.configurations.provided
     }
 
     sourceCompatibility = "1.7"
@@ -141,11 +144,10 @@ project(':common:matsci-common-middleman') {
         compile "org.ow2.proactive:scheduler-client:${schedulingVersion}"
         compile "org.ow2.proactive:common-client:${schedulingVersion}"
         compile "org.ow2.proactive:scheduler-api:${schedulingVersion}"
-        compile "org.ow2.proactive:smartproxy:${schedulingVersion}"
+        compile "org.ow2.proactive:scheduler-smartproxy:${schedulingVersion}"
 
         compile project(':common:matsci-common-data')
 
-        runtime "org.objectweb.proactive:programming-extension-rmissl:${programmingVersion}"
         runtime "org.objectweb.proactive:programming-extension-pnp:${programmingVersion}"
         runtime "org.objectweb.proactive:programming-extension-pnpssl:${programmingVersion}"
         runtime "org.objectweb.proactive:programming-extension-amqp:${programmingVersion}"
@@ -158,6 +160,7 @@ project(':common:matsci-common-middleman') {
                 'org.ow2.proactive.scheduler.ext.matsci.middleman.AODataspaceRegistry',
                 'org.ow2.proactive.scheduler.ext.matsci.middleman.MatSciJVMProcessInterfaceImpl']
     }
+    serialver.dependsOn stub
 
 }
 
@@ -175,7 +178,6 @@ project(':common:matsci-common-worker') {
 project(':common:matsci-common-test') {
     dependencies {
         compile 'commons-io:commons-io:2.4'
-        compile "org.objectweb.proactive:programming-extension-rmissl:${programmingVersion}"
         compile "org.objectweb.proactive:programming-extension-pnp:${programmingVersion}"
         compile "org.objectweb.proactive:programming-extension-pnpssl:${programmingVersion}"
         compile "org.objectweb.proactive:programming-extension-amqp:${programmingVersion}"
@@ -216,7 +218,7 @@ project(':matlab:matlab-middleman') {
         compile "org.ow2.proactive:scheduler-client:${schedulingVersion}"
         compile "org.ow2.proactive:common-client:${schedulingVersion}"
         compile "org.ow2.proactive:scheduler-api:${schedulingVersion}"
-        compile "org.ow2.proactive:smartproxy:${schedulingVersion}"
+        compile "org.ow2.proactive:scheduler-smartproxy:${schedulingVersion}"
 
         compile project(':common:matsci-common-client')
         compile project(':common:matsci-common-data')
@@ -229,6 +231,7 @@ project(':matlab:matlab-middleman') {
     task stub(type: StubTask) {
         classes = ['org.ow2.proactive.scheduler.ext.matlab.middleman.AOMatlabEnvironment']
     }
+    serialver.dependsOn stub
 }
 
 project(':matlab:matlab-worker') {
@@ -272,7 +275,7 @@ project(':scilab:scilab-middleman') {
         compile "org.ow2.proactive:scheduler-client:${schedulingVersion}"
         compile "org.ow2.proactive:common-client:${schedulingVersion}"
         compile "org.ow2.proactive:scheduler-api:${schedulingVersion}"
-        compile "org.ow2.proactive:smartproxy:${schedulingVersion}"
+        compile "org.ow2.proactive:scheduler-smartproxy:${schedulingVersion}"
 
         compile project(':common:matsci-common-client')
         compile project(':common:matsci-common-data')
@@ -285,6 +288,7 @@ project(':scilab:scilab-middleman') {
     task stub(type: StubTask) {
         classes = ['org.ow2.proactive.scheduler.ext.scilab.middleman.AOScilabEnvironment']
     }
+    serialver.dependsOn stub
 }
 
 project(':scilab:scilab-worker') {

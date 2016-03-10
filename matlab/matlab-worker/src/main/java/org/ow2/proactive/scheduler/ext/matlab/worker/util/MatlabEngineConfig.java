@@ -66,7 +66,7 @@ public class MatlabEngineConfig extends MatSciEngineConfigBase {
 
     private String arch;
 
-    private static final String nl = System.getProperty("line.separator");
+    private static final String nl = System.lineSeparator();
 
     public MatlabEngineConfig(String home, String version, String binDir, String command, String arch) {
         this.home = home.replaceAll("" + '\u0000', "");

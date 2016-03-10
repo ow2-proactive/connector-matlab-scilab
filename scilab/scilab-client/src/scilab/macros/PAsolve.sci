@@ -304,7 +304,6 @@ function initSolveConfig(solve_config,opt)
     jinvoke(solve_config, 'setSharedAutomaticTransfer', opt.SharedAutomaticTransfer);
     jinvoke(solve_config, 'setJobDirectoryFullPath',curr_dir);
     jinvoke(solve_config,'setPriority',opt.Priority);
-    jinvoke(solve_config,'setUseJobClassPath',opt.UseJobClassPath);
     jinvoke(solve_config,'setNbExecutions',opt.NbTaskExecution);   
     //solve_config.setTransferEnv(opt.TransferEnv);       
     jinvoke(solve_config,'setWindowsStartupOptionsAsString',opt.WindowsStartupOptions);

@@ -51,6 +51,7 @@ if isequal(get(0,'FormatSpacing'),'compact')
         disp([name '(' num2str(k) ',' num2str(l) ')' ' =']);
     end
     dp2(X.Func,'Func')
+    dp2(X.Object, 'Object')
     dp2(X.Params,'Params')
     dp2(X.Description,'Description')
     dp2(X.InputFiles,'InputFiles')
@@ -69,6 +70,7 @@ else
         disp(' ');
     end
     dp2(X.Func,'Func')
+    dp2(X.Object, 'Object')
     dp2(X.Params,'Params')
     dp2(X.Description,'Description')
     dp2(X.InputFiles,'InputFiles')

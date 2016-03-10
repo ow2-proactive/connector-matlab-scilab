@@ -40,6 +40,8 @@ for i=1:length(fn)
             %             argins = {};
             %         end
             this.Func = value;
+        case 'Object'
+            this.Object = value;
         case 'Params'
             if iscell(value)
                 this.Params = value;

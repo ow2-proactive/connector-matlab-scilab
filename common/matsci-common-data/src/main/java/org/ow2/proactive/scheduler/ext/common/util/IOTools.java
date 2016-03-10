@@ -60,7 +60,7 @@ import java.util.concurrent.TimeoutException;
  */
 public class IOTools {
 
-    private static final String nl = System.getProperty("line.separator");
+    private static final String nl = System.lineSeparator();
 
     protected static final SimpleDateFormat ISO8601FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:sss");
 

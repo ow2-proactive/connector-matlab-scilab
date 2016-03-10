@@ -37,7 +37,6 @@
 package org.ow2.proactive.scheduler.ext.matlab.middleman;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -45,13 +44,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.TreeSet;
 
-import org.apache.commons.vfs2.FileSystemException;
-import org.apache.log4j.Level;
 import org.objectweb.proactive.core.body.exceptions.FutureMonitoringPingFailureException;
 import org.objectweb.proactive.core.util.log.ProActiveLogger;
 import org.ow2.proactive.scheduler.common.exception.JobCreationException;
 import org.ow2.proactive.scheduler.common.exception.UserException;
-import org.ow2.proactive.scheduler.common.job.JobEnvironment;
 import org.ow2.proactive.scheduler.common.job.JobId;
 import org.ow2.proactive.scheduler.common.job.JobPriority;
 import org.ow2.proactive.scheduler.common.job.TaskFlowJob;
@@ -83,6 +79,8 @@ import org.ow2.proactive.scripting.SelectionScript;
 import org.ow2.proactive.scripting.SimpleScript;
 import org.ow2.proactive.topology.descriptor.ThresholdProximityDescriptor;
 import org.ow2.proactive.topology.descriptor.TopologyDescriptor;
+import org.apache.commons.vfs2.FileSystemException;
+import org.apache.log4j.Level;
 
 
 /**
@@ -226,20 +224,6 @@ public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResu
             job.setPriority(JobPriority.findPriority(config.getPriority()));
             job.setCancelJobOnError(false);
             job.setDescription(gconf.getJobDescription());
-            if (config.isUseJobClassPath()) {
-                JobEnvironment je = new JobEnvironment();
-                try {
-                    ArrayList<String> workerJars = config.getWorkerJars();
-                    if (config.isDebug()) {
-                        printLog("Using jobClasspath : " + workerJars);
-                    }
-                    je.setJobClasspath(workerJars.toArray(new String[workerJars.size()]));
-                    job.setEnvironment(je);
-                } catch (IOException e) {
-                    printLog(e);
-                    throw new PASchedulerException(e);
-                }
-            }
 
             String pullUrl = config.getSharedPullPublicUrl();
             String pushUrl = config.getSharedPushPublicUrl();

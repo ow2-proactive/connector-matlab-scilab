@@ -134,11 +134,6 @@
 %               Priority used by default for jobs submitted with PAsolve,
 %               default to 'Normal'
 %
-%   UseJobClassPath
-%               With this options set to true, the toolbox will use the jobClassPath feature of the scheduler, when submitting jobs
-%               jar files necessary to the matlab workers will be copied at each task execution. It will not be necessary to put the
-%               jars in the addons directory, but it will introduce an overhead
-%
 %   WindowsStartupOptions   char
 %               Options given to matlab worker processes started on windows operating systems
 %
@@ -193,6 +188,14 @@
 %
 %   EnableDisconnectedPopup
 %               a popup will appear when the matlab session finishes and some jobs are uncomplete (internal)
+%
+%   EnableFindDependencies (internal)
+%               are functions dependencies checked ? If not local matlab
+%               path will be added remotely
+%
+%   MatlabPathList (internal)
+%               can override local matlab path, in case find dependencies
+%               is disabled
 %
 %   WorkerTimeoutStart
 %               Timeout used to start the matlab engine (*10ms) (internal)
@@ -452,11 +455,6 @@ inputs(j).default = 'Normal';
 inputs(j).check = @(x)(ischar(x) && ismember(x, {'Idle', 'Lowest', 'Low', 'Normal', 'High', 'Highest'}));
 inputs(j).trans = id;
 j=j+1;
-inputs(j).name = 'UseJobClassPath';
-inputs(j).default = true;
-inputs(j).check = logcheck;
-inputs(j).trans = logtrans;
-j=j+1;
 inputs(j).name = 'WindowsStartupOptions';
 inputs(j).default = '-automation -nodesktop -nosplash -nodisplay';
 inputs(j).check = @ischar;
@@ -506,6 +504,16 @@ inputs(j).name = 'EnableDisconnectedPopup';
 inputs(j).default = true;
 inputs(j).check = logcheck;
 inputs(j).trans = logtrans;
+j=j+1;
+inputs(j).name = 'EnableFindDependencies';
+inputs(j).default = true;
+inputs(j).check = logcheck;
+inputs(j).trans = logtrans;
+j=j+1;
+inputs(j).name = 'MatlabPathList';
+inputs(j).default = '';
+inputs(j).check = listcheck;
+inputs(j).trans = listtrans;
 j=j+1;
 inputs(j).name = 'MatSciDir';
 inputs(j).default = matsci_dir;
@@ -621,7 +629,7 @@ if ~exist('pa_options','var') == 1 || ~isstruct(pa_options)
         fid = fopen(optionpath, 'r');
     end
     try
-        C = textscan(fid, '%s = %[^\n]', 'CommentStyle', '%%');
+        C = textscan(fid, '%s = %[^\n\r]', 'CommentStyle', '%%');
         for i=1:length(C{1})
             for j=1:length(inputs)
                 if strcmp(C{1}{i},inputs(j).name)
