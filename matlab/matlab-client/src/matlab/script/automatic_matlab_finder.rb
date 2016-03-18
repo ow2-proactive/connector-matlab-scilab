@@ -64,7 +64,12 @@ class MatSciFinder
   # initialize the research
   def initialize
 
-    nodeName = System.getProperty("node.name")
+    begin
+      nodeName = org.objectweb.proactive.api.PAActiveObject.getNode().getNodeInformation().getName()
+    rescue Exception => e
+      puts e.message + "\n" + e.backtrace.join("\n")
+    end
+
     if nodeName == nil
       nodeName = "DummyNode"
     end
