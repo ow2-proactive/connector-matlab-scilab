@@ -215,7 +215,6 @@ public class AOScilabEnvironment extends AOMatSciEnvironment<Boolean, ScilabResu
             TaskFlowJob job = new TaskFlowJob();
             job.setName(gconf.getJobName() + " " + lastGenJobId++);
             job.setPriority(JobPriority.findPriority(config.getPriority()));
-            job.setCancelJobOnError(false);
             job.setDescription(gconf.getJobDescription());
 
             String pullUrl = config.getSharedPullPublicUrl();
