@@ -43,6 +43,8 @@ package org.ow2.proactive.scheduler.ext.matsci.common.exception;
  */
 public class MatSciTaskException extends RuntimeException {
 
+    private static final long serialVersionUID = 13L;
+
     public MatSciTaskException() {
         super();
     }

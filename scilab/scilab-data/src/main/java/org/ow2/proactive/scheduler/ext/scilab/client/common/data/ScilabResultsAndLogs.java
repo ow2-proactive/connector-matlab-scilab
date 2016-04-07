@@ -47,6 +47,8 @@ import org.ow2.proactive.scheduler.ext.matsci.client.common.data.ResultsAndLogs;
  */
 public class ScilabResultsAndLogs extends ResultsAndLogs<Boolean> {
 
+    private static final long serialVersionUID = 13L;
+
     public ScilabResultsAndLogs() {
         super();
     }

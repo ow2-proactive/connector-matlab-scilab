@@ -50,6 +50,8 @@ import java.util.TreeSet;
  */
 public class MatSciJobVolatileInfo<R> implements Serializable {
 
+    private static final long serialVersionUID = 13L;
+
     /**
      * Status of the job (status seen by the scheduler)
      */

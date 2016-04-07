@@ -133,6 +133,8 @@ import org.ow2.proactive.utils.console.StdOutConsole;
 public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, Serializable,
         ISchedulerEventListenerExtended, InitActive, RunActive {
 
+    private static final long serialVersionUID = 13L;
+
     /**
      * Connection to the scheduler
      */
@@ -2027,6 +2029,8 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
      *         Internal class for filtering requests in the queue
      */
     private class FindNotWaitFilter implements RequestFilter {
+
+    private static final long serialVersionUID = 13L;
 
         /**
          * Creates the filter
