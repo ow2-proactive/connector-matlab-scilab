@@ -260,25 +260,27 @@ public class ScilabExecutable extends JavaExecutable {
     }
 
     private void initLocalSpace() throws Exception {
-        final File dsLocalSpace = new File(".");
-        final String dsURI = dsLocalSpace.getAbsolutePath();
+        final File localSpaceFile = new File(getLocalSpace());
+        final URI localSpaceURI = localSpaceFile.toURI();
+        final String localSpaceURIstr = localSpaceURI .toString();
 
-        if (!dsLocalSpace.exists()) {
-            throw new IllegalStateException("Unable to execute task, the local space " + dsURI +
-                " doesn't exists");
+        if (!localSpaceFile.exists()) {
+            throw new IllegalStateException("Unable to execute task, the local space " + localSpaceURIstr +
+                    " doesn't exists");
         }
-        if (!dsLocalSpace.canRead()) {
-            throw new IllegalStateException("Unable to execute task, the local space " + dsURI +
-                " is not readable");
+        if (!localSpaceFile.canRead()) {
+            throw new IllegalStateException("Unable to execute task, the local space " + localSpaceURIstr +
+                    " is not readable");
         }
-        if (!dsLocalSpace.canWrite()) {
-            throw new IllegalStateException("Unable to execute task, the local space " + dsURI +
-                " is not writable");
+        if (!localSpaceFile.canWrite()) {
+            throw new IllegalStateException("Unable to execute task, the local space " + localSpaceURIstr +
+                    " is not writable");
         }
 
         // Create a temp dir in the root dir of the local space
-        this.localSpaceRootDir = new File(new URI(dsURI));
+        this.localSpaceRootDir = localSpaceFile.getCanonicalFile();
         this.tempSubDir = new File(this.localSpaceRootDir, paconfig.getJobSubDirOSPath()).getCanonicalFile();
+
         if (!tempSubDir.exists()) {
             tempSubDir.mkdirs();
         }
@@ -286,7 +288,7 @@ public class ScilabExecutable extends JavaExecutable {
         this.tempSubDirRel = paconfig.getJobSubDirPortablePath();
 
         // Set the local space of the global configuration
-        this.paconfig.setLocalSpace(new URI(dsURI));
+        this.paconfig.setLocalSpace(localSpaceURI);
     }
 
     private void initTransferSource() throws Exception {
