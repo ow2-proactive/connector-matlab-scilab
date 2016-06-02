@@ -46,8 +46,6 @@ end
 
 if ~isempty(obj)
     functionName = class(obj);
-else
-    functionName = lower(functionName);
 end
 
 if ~isempty(alreadyFoundLibraries) && isfield(alreadyFoundLibraries, functionName)
