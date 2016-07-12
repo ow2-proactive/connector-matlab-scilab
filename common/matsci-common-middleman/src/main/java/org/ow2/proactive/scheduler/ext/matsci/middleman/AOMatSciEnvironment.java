@@ -1704,7 +1704,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
     }
 
     /**
-     * @see org.ow2.proactive.scheduler.common.SchedulerEventListener#jobSubmittedEvent(org.ow2.proactive.scheduler.common.job.JobState)
+     * @see org.ow2.proactive.scheduler.common.SchedulerEventListener#jobUpdatedFullDataEvent(org.ow2.proactive.scheduler.common.job.JobState)
      */
     public void jobUpdatedFullDataEvent(JobState job) {
     }
