@@ -6,16 +6,14 @@ buildscript {
             mavenLocal()
         mavenCentral()
         maven { url 'http://repository.activeeon.com/content/groups/proactive/' }
+        maven { url 'http://dl.bintray.com/content/abashev/vfs-s3'}
     }
 
     dependencies {
-        classpath("org.objectweb.proactive:programming-build-utils:${programmingVersion}") {
-            exclude module: 'vfs-s3'
-        }
+        classpath "org.objectweb.proactive:programming-build-utils:${programmingVersion}"
         // needed at runtime by AntStubGenerator...
         classpath("org.objectweb.proactive:programming-core:${programmingVersion}") {
             exclude module: 'xercesImpl' // messing with documentation plugin
-            exclude module: 'vfs-s3'
         }
         classpath 'org.ow2.proactive:documentation:1.0.0-SNAPSHOT'
         classpath 'org.ow2.proactive:gradle-serialver:2.2'
@@ -141,15 +139,9 @@ project(':common:matsci-common-middleman') {
         compile 'commons-codec:commons-codec:1.6'
         compile 'jdbm:jdbm2:2.4'
         compile 'log4j:log4j:1.2.14'
-        compile("org.objectweb.proactive:programming-core:${programmingVersion}") {
-            exclude module: 'vfs-s3'
-        }
-        compile("org.objectweb.proactive:programming-extension-annotation:${programmingVersion}") {
-            exclude module: 'vfs-s3'
-        }
-        compile("org.objectweb.proactive:programming-extension-vfsprovider:${programmingVersion}") {
-            exclude module: 'vfs-s3'
-        }
+        compile "org.objectweb.proactive:programming-core:${programmingVersion}"
+        compile "org.objectweb.proactive:programming-extension-annotation:${programmingVersion}"
+        compile "org.objectweb.proactive:programming-extension-vfsprovider:${programmingVersion}"
         compile "org.ow2.proactive:scheduler-client:${schedulingVersion}"
         compile "org.ow2.proactive:common-client:${schedulingVersion}"
         compile "org.ow2.proactive:scheduler-api:${schedulingVersion}"
@@ -187,21 +179,11 @@ project(':common:matsci-common-worker') {
 project(':common:matsci-common-test') {
     dependencies {
         compile 'commons-io:commons-io:2.4'
-        compile("org.objectweb.proactive:programming-extension-pnp:${programmingVersion}") {
-            exclude module: 'vfs-s3'
-        }
-        compile("org.objectweb.proactive:programming-extension-pnpssl:${programmingVersion}") {
-            exclude module: 'vfs-s3'
-        }
-        compile("org.objectweb.proactive:programming-extension-amqp:${programmingVersion}") {
-            exclude module: 'vfs-s3'
-        }
-        compile("org.objectweb.proactive:programming-extension-pamr:${programmingVersion}") {
-            exclude module: 'vfs-s3'
-        }
-        compile("org.objectweb.proactive:programming-core:${programmingVersion}") {
-            exclude module: 'vfs-s3'
-        }
+        compile "org.objectweb.proactive:programming-extension-pnp:${programmingVersion}"
+        compile "org.objectweb.proactive:programming-extension-pnpssl:${programmingVersion}"
+        compile "org.objectweb.proactive:programming-extension-amqp:${programmingVersion}"
+        compile "org.objectweb.proactive:programming-extension-pamr:${programmingVersion}"
+        compile "org.objectweb.proactive:programming-core:${programmingVersion}"
         compile "org.ow2.proactive:scheduler-client:${schedulingVersion}"
         compile "org.ow2.proactive:rm-client:${schedulingVersion}"
         compile "org.ow2.proactive:rm-node:${schedulingVersion}"
@@ -231,15 +213,9 @@ project(':matlab:matlab-middleman') {
         compile 'commons-codec:commons-codec:1.6'
         compile 'jdbm:jdbm2:2.4'
 
-        compile("org.objectweb.proactive:programming-core:${programmingVersion}") {
-            exclude module: 'vfs-s3'
-        }
-        compile("org.objectweb.proactive:programming-extension-annotation:${programmingVersion}") {
-            exclude module: 'vfs-s3'
-        }
-        compile("org.objectweb.proactive:programming-extension-vfsprovider:${programmingVersion}") {
-            exclude module: 'vfs-s3'
-        }
+        compile "org.objectweb.proactive:programming-core:${programmingVersion}"
+        compile "org.objectweb.proactive:programming-extension-annotation:${programmingVersion}"
+        compile "org.objectweb.proactive:programming-extension-vfsprovider:${programmingVersion}"
         compile "org.ow2.proactive:scheduler-client:${schedulingVersion}"
         compile "org.ow2.proactive:common-client:${schedulingVersion}"
         compile "org.ow2.proactive:scheduler-api:${schedulingVersion}"
@@ -294,15 +270,9 @@ project(':scilab:scilab-middleman') {
         compile 'commons-codec:commons-codec:1.6'
         compile 'jdbm:jdbm2:2.4'
 
-        compile("org.objectweb.proactive:programming-core:${programmingVersion}") {
-            exclude module: 'vfs-s3'
-        }
-        compile("org.objectweb.proactive:programming-extension-annotation:${programmingVersion}") {
-            exclude module: 'vfs-s3'
-        }
-        compile("org.objectweb.proactive:programming-extension-vfsprovider:${programmingVersion}") {
-            exclude module: 'vfs-s3'
-        }
+        compile "org.objectweb.proactive:programming-core:${programmingVersion}"
+        compile "org.objectweb.proactive:programming-extension-annotation:${programmingVersion}"
+        compile "org.objectweb.proactive:programming-extension-vfsprovider:${programmingVersion}"
         compile "org.ow2.proactive:scheduler-client:${schedulingVersion}"
         compile "org.ow2.proactive:common-client:${schedulingVersion}"
         compile "org.ow2.proactive:scheduler-api:${schedulingVersion}"
