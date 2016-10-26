@@ -38,6 +38,8 @@ package org.ow2.proactive.scheduler.ext.matsci.worker.util;
 
 import org.objectweb.proactive.core.UniqueID;
 
+import java.util.Scanner;
+
 
 /**
  * MatSciEngineConfigBase
@@ -56,21 +58,25 @@ public abstract class MatSciEngineConfigBase implements MatSciEngineConfig {
         return currentConf;
     }
 
-    public static boolean infStrictVersion(String v1, String v2) {
-        String[] majmin1 = v1.split("\\.");
-        String[] majmin2 = v2.split("\\.");
-        int n = Math.min(majmin1.length, majmin2.length);
-        for (int i = 1; i < n; i++) {
-            if (Integer.parseInt(majmin1[i]) < Integer.parseInt(majmin2[i]))
-                return true;
-            else if (Integer.parseInt(majmin1[i]) > Integer.parseInt(majmin2[i]))
-                return false;
+    public static int compareVersions(String version1, String version2) {
+        Scanner s1 = new Scanner(version1);
+        Scanner s2 = new Scanner(version2);
+        s1.useDelimiter("\\.");
+        s2.useDelimiter("\\.");
+
+        while (s1.hasNextInt() && s2.hasNextInt()) {
+            int v1 = s1.nextInt();
+            int v2 = s2.nextInt();
+            if (v1 < v2) {
+                return -1;
+            } else if (v1 > v2) {
+                return 1;
+            }
         }
-        if (n < majmin1.length)
-            return false;
-        else if (n < majmin2.length)
-            return true;
-        return false;
+
+        if (s1.hasNextInt()) return 1; //v1 has an additional lower-level version number
+        if (s2.hasNextInt()) return -1; //v2 has an additional lower-level version number
+        return 0;
     }
 
     public static String getNodeName() throws Exception {

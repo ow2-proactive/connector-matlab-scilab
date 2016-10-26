@@ -36,12 +36,12 @@
  */
 package org.ow2.proactive.scheduler.ext.matsci.worker.util;
 
+import org.objectweb.proactive.utils.OperatingSystem;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import org.objectweb.proactive.utils.OperatingSystem;
 
 
 /**
@@ -85,13 +85,13 @@ public abstract class MatSciFinder {
                 }
                 continue;
             }
-            if (versionMin != null && MatSciEngineConfigBase.infStrictVersion(version, versionMin)) {
+            if (versionMin != null && MatSciEngineConfigBase.compareVersions(version, versionMin) < 0) {
                 if (debug) {
                     System.out.println("... too low");
                 }
                 continue;
             }
-            if (versionMax != null && MatSciEngineConfigBase.infStrictVersion(versionMax, version)) {
+            if (versionMax != null && MatSciEngineConfigBase.compareVersions(versionMax, version) < 0) {
                 if (debug) {
                     System.out.println("... too high");
                 }
