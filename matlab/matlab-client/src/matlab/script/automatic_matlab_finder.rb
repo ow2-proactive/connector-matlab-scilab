@@ -89,31 +89,6 @@ class MatSciFinder
 
     @configs = Array.new
 
-    # initialize logs
-    logFileJava = JavaIO::File.new(tmpPath, "AutomaticFindMatlab"+nodeName+".log")
-    if !logFileJava.exists()
-      logFileJava.createNewFile()
-      logFileJava.setReadable(true, false)
-      logFileJava.setWritable(true, false)
-    end
-
-    #logFile = File.new(logFileJava.toString(), "a");
-    @orig_stdout = STDOUT.clone
-    @orig_stderr = STDERR.clone
-    @foslog = JavaIO::FileOutputStream.new(logFileJava)
-    @logout = JavaIO::PrintStream.new(@foslog)
-    @orig_jstdout = System.out
-    @orig_jstderr = System.err
-    begin
-      $stdout.reopen(logFileJava.toString(), "a")
-      $stdout.sync=true
-      $stderr.reopen $stdout
-      System.setOut(@logout)
-      System.setErr(@logout)
-    rescue Exception => e
-      puts e.message + "\n" + e.backtrace.join("\n")
-    end
-
     # initialize conf file
     @confFiles = Array.new
     @confFiles << JavaIO::File.new(tmpPath, "MatlabWorkerConfiguration.xml").getCanonicalFile()
@@ -121,8 +96,6 @@ class MatSciFinder
       @confFiles << JavaIO::File.new(schedPath, "addons/MatlabWorkerConfiguration.xml").getCanonicalFile()
     end
     @corruptedConfigFiles = Array.new(@confFiles.length)
-    #@logWriter = JavaIO::PrintStream.new(JavaIO::BufferedOutputStream.new(JavaIO::FileOutputStream.new(logFile, true)));
-
   end
 
 
@@ -155,15 +128,8 @@ class MatSciFinder
     end
   end
 
-  # close streams
   def close()
-    #@logWriter.close();
-    STDOUT.reopen(@orig_stdout)
-    STDERR.reopen(@orig_stderr)
-    System.setOut(@orig_jstdout)
-    System.setErr(@orig_jstderr)
-    @logout.close()
-    @foslog.close()
+
   end
 
   # decide if we found a valid configuration
@@ -902,9 +868,9 @@ begin
     puts "no Matlab installation found"
   end
 
-#rescue Exception => e
-#  puts e.message + "\n" + e.backtrace.join("\n")
-#  raise java.lang.RuntimeException.new(e.message + "\n" + e.backtrace.join("\n"))
+rescue Exception => e
+  puts e.message + "\n" + e.backtrace.join("\n")
+  raise java.lang.RuntimeException.new(e.message + "\n" + e.backtrace.join("\n"))
 ensure
   begin
     mf.close()
