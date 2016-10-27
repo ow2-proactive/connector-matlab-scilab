@@ -26,11 +26,10 @@ function [ok, msg]=TestTopology(nbiter,timeout)
         t
 
         function [out]=myHello(in)
-            nl = NODE_LIST; 
             nul = NODE_URL_LIST;   
-            disp('Number of nodes used : ' + string(length(nl)));
-            for i=1:length(nl)
-                disp('Node n°' + string(i) + ': ' + nl(i) + ' ' + nul(i));
+            disp('Number of nodes used : ' + string(length(nul)));
+            for i=1:length(nul)
+                disp('Node n°' + string(i) + ': ' + nul(i));
             end
             disp('Hello '+in);
             printf('\n');

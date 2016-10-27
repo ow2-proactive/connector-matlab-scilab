@@ -36,12 +36,8 @@
  */
 package org.ow2.proactive.scheduler.ext.scilab.middleman;
 
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.TreeSet;
-
+import org.apache.commons.vfs2.FileSystemException;
+import org.apache.log4j.Level;
 import org.objectweb.proactive.core.body.exceptions.FutureMonitoringPingFailureException;
 import org.objectweb.proactive.core.util.log.ProActiveLogger;
 import org.ow2.proactive.scheduler.common.exception.JobCreationException;
@@ -78,8 +74,12 @@ import org.ow2.proactive.scripting.SelectionScript;
 import org.ow2.proactive.scripting.SimpleScript;
 import org.ow2.proactive.topology.descriptor.ThresholdProximityDescriptor;
 import org.ow2.proactive.topology.descriptor.TopologyDescriptor;
-import org.apache.commons.vfs2.FileSystemException;
-import org.apache.log4j.Level;
+
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.TreeSet;
 
 
 /**
@@ -245,16 +245,10 @@ public class AOScilabEnvironment extends AOMatSciEnvironment<Boolean, ScilabResu
 
                     JavaTask schedulerTask = new JavaTask();
 
-                    if (config.isFork()) {
-                        schedulerTask.setForkEnvironment(new ForkEnvironment());
-                    }
-
                     schedulerTask.setMaxNumberOfExecution(gconf.getNbExecutions());
 
                     // Being fixed in the scheduler trunk
-                    if (config.isRunAsMe()) {
-                        schedulerTask.setRunAsMe(true);
-
+                    if (config.isFork() || config.isRunAsMe()) {
                         // Fix for SCHEDULING-1308: With RunAsMe on windows the forked jvm can have a non-writable java.io.tmpdir
                         // With the following js script the forked jvm will inherit the scratchdir property or if undefined the java.io.tmpdir of the node jvm
                         final StringBuilder scriptsDir = new StringBuilder();
@@ -264,7 +258,7 @@ public class AOScilabEnvironment extends AOMatSciEnvironment<Boolean, ScilabResu
                         scriptsDir.append(File.separator);
 
                         final ForkEnvironment fe = new ForkEnvironment();
-                        final File forkenvFile = new File(scriptsDir + "forkenv.js");
+                        final File forkenvFile = new File(scriptsDir + "forkenv.groovy");
                         SimpleScript sc = null;
                         try {
                             sc = new SimpleScript(forkenvFile, new String[0]);
@@ -274,6 +268,10 @@ public class AOScilabEnvironment extends AOMatSciEnvironment<Boolean, ScilabResu
                         }
                         fe.setEnvScript(sc);
                         schedulerTask.setForkEnvironment(fe);
+
+                        if (config.isRunAsMe()) {
+                            schedulerTask.setRunAsMe(true);
+                        }
                     }
 
                     String tname = MatSciJobInfo.computeTNameFromIds(i, j);
