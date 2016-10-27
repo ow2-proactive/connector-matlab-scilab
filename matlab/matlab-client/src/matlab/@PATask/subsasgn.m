@@ -154,7 +154,7 @@ elseif length(S) == 2
                 'Not a supported subscripted assignment')
 
     end
-    builtin('subsasgn',this,newS,subList);
+    this = builtin('subsasgn',this,newS,subList);
     %eval(['this(' substr ')=subList;']);
     out=this;
 

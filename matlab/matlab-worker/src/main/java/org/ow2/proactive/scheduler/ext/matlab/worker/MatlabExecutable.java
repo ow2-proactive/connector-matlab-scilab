@@ -36,17 +36,7 @@
  */
 package org.ow2.proactive.scheduler.ext.matlab.worker;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.Serializable;
-import java.net.URI;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-
+import org.apache.log4j.Level;
 import org.objectweb.proactive.api.PAActiveObject;
 import org.objectweb.proactive.core.util.log.ProActiveLogger;
 import org.ow2.proactive.scheduler.common.task.TaskResult;
@@ -61,7 +51,13 @@ import org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveEnvFile;
 import org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveFile;
 import org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveZippedFile;
 import org.ow2.proactive.scheduler.ext.matsci.worker.util.MatSciEngineConfig;
-import org.apache.log4j.Level;
+
+import java.io.*;
+import java.net.URI;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -293,24 +289,25 @@ public class MatlabExecutable extends JavaExecutable {
      * @throws Exception
      */
     private void initLocalSpace() throws Exception {
-        final File dsLocalSpace = new File(".");
-        final String dsURI = dsLocalSpace.getAbsolutePath();
+        final File localSpaceFile = new File(getLocalSpace());
+        final URI localSpaceURI = localSpaceFile.toURI();
+        final String localSpaceURIstr = localSpaceURI .toString();
 
-        if (!dsLocalSpace.exists()) {
-            throw new IllegalStateException("Unable to execute task, the local space " + dsURI +
+        if (!localSpaceFile.exists()) {
+            throw new IllegalStateException("Unable to execute task, the local space " + localSpaceURIstr +
                 " doesn't exists");
         }
-        if (!dsLocalSpace.canRead()) {
-            throw new IllegalStateException("Unable to execute task, the local space " + dsURI +
+        if (!localSpaceFile.canRead()) {
+            throw new IllegalStateException("Unable to execute task, the local space " + localSpaceURIstr +
                 " is not readable");
         }
-        if (!dsLocalSpace.canWrite()) {
-            throw new IllegalStateException("Unable to execute task, the local space " + dsURI +
+        if (!localSpaceFile.canWrite()) {
+            throw new IllegalStateException("Unable to execute task, the local space " + localSpaceURIstr +
                 " is not writable");
         }
 
         // Create a temp dir in the root dir of the local space
-        this.localSpaceRootDir = new File(new URI(dsURI)).getCanonicalFile();
+        this.localSpaceRootDir = localSpaceFile.getCanonicalFile();
         this.tempSubDir = new File(this.localSpaceRootDir, paconfig.getJobSubDirOSPath()).getCanonicalFile();
 
         if (!tempSubDir.exists()) {
@@ -320,7 +317,7 @@ public class MatlabExecutable extends JavaExecutable {
         this.tempSubDirRel = paconfig.getJobSubDirPortablePath();
 
         // Set the local space of the global configuration
-        this.paconfig.setLocalSpace(new URI(dsURI));
+        this.paconfig.setLocalSpace(localSpaceURI);
     }
 
     /**

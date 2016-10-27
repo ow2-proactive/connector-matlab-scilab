@@ -47,8 +47,6 @@ end
 
 if ~isempty(obj)
     functionName = class(obj);
-else
-    functionName = lower(functionName);
 end
 
 if ~isempty(alreadyFoundDependencies) && isfield(alreadyFoundDependencies, functionName)
