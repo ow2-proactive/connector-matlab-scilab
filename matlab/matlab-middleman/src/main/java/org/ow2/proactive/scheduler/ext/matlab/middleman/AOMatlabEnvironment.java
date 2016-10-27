@@ -36,14 +36,8 @@
  */
 package org.ow2.proactive.scheduler.ext.matlab.middleman;
 
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.TreeSet;
-
+import org.apache.commons.vfs2.FileSystemException;
+import org.apache.log4j.Level;
 import org.objectweb.proactive.core.body.exceptions.FutureMonitoringPingFailureException;
 import org.objectweb.proactive.core.util.log.ProActiveLogger;
 import org.ow2.proactive.scheduler.common.exception.JobCreationException;
@@ -79,8 +73,14 @@ import org.ow2.proactive.scripting.SelectionScript;
 import org.ow2.proactive.scripting.SimpleScript;
 import org.ow2.proactive.topology.descriptor.ThresholdProximityDescriptor;
 import org.ow2.proactive.topology.descriptor.TopologyDescriptor;
-import org.apache.commons.vfs2.FileSystemException;
-import org.apache.log4j.Level;
+
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.TreeSet;
 
 
 /**
@@ -253,15 +253,9 @@ public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResu
 
                     JavaTask schedulerTask = new JavaTask();
 
-                    if (config.isFork()) {
-                        schedulerTask.setForkEnvironment(new ForkEnvironment());
-                    }
-
                     schedulerTask.setMaxNumberOfExecution(gconf.getNbExecutions());
 
-                    if (config.isRunAsMe()) {
-                        schedulerTask.setRunAsMe(true);
-
+                    if (config.isFork() || config.isRunAsMe()) {
                         final StringBuilder scriptsDir = new StringBuilder();
                         scriptsDir.append(config.getToolboxPath());
                         scriptsDir.append(File.separator);
@@ -270,7 +264,7 @@ public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResu
 
                         // Fix for SCHEDULING-1308: With RunAsMe on windows the forked jvm can have a non-writable java.io.tmpdir
                         final ForkEnvironment fe = new ForkEnvironment();
-                        final File forkenvFile = new File(scriptsDir + "forkenv.js");
+                        final File forkenvFile = new File(scriptsDir + "forkenv.groovy");
                         SimpleScript sc = null;
                         try {
                             sc = new SimpleScript(forkenvFile, new String[0]);
@@ -281,13 +275,16 @@ public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResu
                         fe.setEnvScript(sc);
                         schedulerTask.setForkEnvironment(fe);
 
-                        // Fix for SCHEDULING-1332: The MATLAB task with RunAsMe requires a js prescript
-                        final File preFile = new File(scriptsDir + "pre.js");
-                        try {
-                            schedulerTask.setPreScript(new SimpleScript(preFile, new String[0]));
-                        } catch (InvalidScriptException e) {
-                            printLog(e);
-                            throw new PASchedulerException(e);
+                        if (config.isRunAsMe()) {
+                            schedulerTask.setRunAsMe(true);
+                            // Fix for SCHEDULING-1332: The MATLAB task with RunAsMe requires a js prescript
+                            final File preFile = new File(scriptsDir + "pre.groovy");
+                            try {
+                                schedulerTask.setPreScript(new SimpleScript(preFile, new String[0]));
+                            } catch (InvalidScriptException e) {
+                                printLog(e);
+                                throw new PASchedulerException(e);
+                            }
                         }
                     }
 

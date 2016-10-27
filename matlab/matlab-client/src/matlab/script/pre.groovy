@@ -3,16 +3,10 @@
 // sets matlab.task.tmpdir (transmitted as env var to the MATLAB process) to
 // the java.io.tmpdir and matlab.prefdir to <java.io.tmpdir>/MatlabForkedTasksTmp/Task<id>/MatlabPrefdir
 
-importClass(java.lang.System);
-importClass(java.io.File);
-importClass(java.lang.Class);
 
+import org.apache.commons.io.FileUtils
 
-importClass(org.apache.commons.io.FileUtils);
-importClass(org.ow2.proactive.scheduler.task.launcher.TaskLauncher);
-
-
-var tmpDir = System.getProperty("java.io.tmpdir");
+tmpDir = System.getProperty("java.io.tmpdir");
 
 // Fix for SCHEDULING-1308: With RunAsMe on windows the forked jvm can have a non-writable java.io.tmpdir
 if (!new File(tmpDir).canWrite()) {
@@ -20,7 +14,7 @@ if (!new File(tmpDir).canWrite()) {
 }
 
 // Creates dir <NODE_TMPDIR || SCRATCH_DIR>/MatlabForkedTasksTmp
-var rootDir = new File(tmpDir, "MatlabForkedTasksTmp");
+rootDir = new File(tmpDir, "MatlabForkedTasksTmp");
 if (!rootDir.exists()) {
     if (!rootDir.mkdir()) {
         throw new RuntimeException("Unable to execute task, unable to mkdir " + rootDir);
@@ -32,10 +26,10 @@ rootDir.setWritable(true, false);
 rootDir.setExecutable(true, false);
 
 // Get the task id
-var taskId = System.getProperty(TaskLauncher.SchedulerVars.JAVAENV_TASK_ID_VARNAME.toString());
+taskId = variables.get(org.ow2.proactive.scheduler.task.SchedulerVars.PA_TASK_ID.toString());
 
 // Create task specific dir <NODE_TMPDIR || SCRATCH_DIR>/MatlabForkedTasksTmp/Task<id>
-var taskIdDir = new File(rootDir, "Task" + taskId);
+taskIdDir = new File(rootDir, "Task" + taskId);
 if (taskIdDir.exists()) {
     // Delete previous data
     FileUtils.deleteDirectory(taskIdDir);
@@ -48,10 +42,10 @@ taskIdDir.setReadable(true, false);
 taskIdDir.setWritable(true, false);
 taskIdDir.setExecutable(true, false);
 
-System.setProperty("matlab.task.tmpdir", taskIdDir);
+System.setProperty("matlab.task.tmpdir", taskIdDir.getAbsolutePath());
 
 // Create dir for MATLAB preferences
-var matlabPrefdir = new File(taskIdDir, "MatlabPrefdir");
+matlabPrefdir = new File(taskIdDir, "MatlabPrefdir");
 if (!matlabPrefdir.mkdir()) {
     throw new RuntimeException("Unable to execute task, unable to mkdir " + matlabPrefdir);
 }
@@ -60,4 +54,4 @@ matlabPrefdir.setWritable(true, false);
 matlabPrefdir.setExecutable(true, false);
 matlabPrefdir.deleteOnExit();
 
-System.setProperty("matlab.task.tmpdir", matlabPrefdir.getAbsolutePath());
+System.setProperty("matlab.prefdir", matlabPrefdir.getAbsolutePath());

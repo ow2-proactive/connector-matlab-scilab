@@ -66,14 +66,14 @@
 %       refer to ProActive Scheduler manual for more information on this setting.
 %       
 %       In case the topology parameters are used, the remote matlab engines
-%       can access the hostnames list of the Nodes used to run the task.
-%       This hostnames list can then be used to run parallel code on those
+%       can access the url list of the Nodes used to run the task.
+%       This list can then be used to run parallel code on those
 %       machines. As multiple ProActive Nodes can be deployed on the same
-%       host, the list may contain several times the same hostname. This
-%       list will be assigned to the variable NODE_LIST in the workspace
+%       host, the list may contain several times an url with the same hostname. This
+%       list will be assigned to the variable NODE_URL_LIST in the workspace
 %       calling the Func function. So, in order to retrieve this list,
 %       you'll need to add the following code to your Matlab function:
-%       nl = evalin('caller','NODE_LIST'); 
+%       nl = evalin('caller','NODE_URL_LIST');
 %        "nl" will be affected a cell array of strings. The first element of 
 %       this list is always the Node where the function Func is executed.
 %       The TestTopology function in the Tests folder provides an example

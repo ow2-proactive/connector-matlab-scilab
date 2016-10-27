@@ -37,7 +37,6 @@
 package org.ow2.proactive.scheduler.ext.scilab.worker;
 
 import org.apache.log4j.Level;
-import org.objectweb.proactive.api.PAActiveObject;
 import org.objectweb.proactive.core.util.log.ProActiveLogger;
 import org.objectweb.proactive.utils.OperatingSystem;
 import org.ow2.proactive.scheduler.common.task.TaskResult;
@@ -396,19 +395,12 @@ public class ScilabExecutable extends JavaExecutable {
     }
 
     private void loadTopologyNodeNames() throws Exception {
-        String hostlist = "NODE_LIST = list( ";
         String urllist = "NODE_URL_LIST = list( ";
-        hostlist += "'" + PAActiveObject.getNode().getVMInformation().getHostName() + "',";
-        urllist += "'" + PAActiveObject.getNode().getNodeInformation().getURL() + "',";
         for (String nodeURL : this.getNodesURL()) {
-            hostlist += "'" + nodeURL + "',";
             urllist += "'" + nodeURL + "',";
         }
-        hostlist = hostlist.substring(0, hostlist.length() - 1);
         urllist = urllist.substring(0, urllist.length() - 1);
-        hostlist += " );";
         urllist += " );";
-        scilabConnection.evalString(hostlist);
         scilabConnection.evalString(urllist);
     }
 

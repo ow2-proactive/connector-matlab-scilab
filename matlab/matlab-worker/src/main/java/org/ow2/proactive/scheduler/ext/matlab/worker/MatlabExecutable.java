@@ -37,7 +37,6 @@
 package org.ow2.proactive.scheduler.ext.matlab.worker;
 
 import org.apache.log4j.Level;
-import org.objectweb.proactive.api.PAActiveObject;
 import org.objectweb.proactive.core.util.log.ProActiveLogger;
 import org.ow2.proactive.scheduler.common.task.TaskResult;
 import org.ow2.proactive.scheduler.common.task.executable.JavaExecutable;
@@ -52,7 +51,11 @@ import org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveFile;
 import org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveZippedFile;
 import org.ow2.proactive.scheduler.ext.matsci.worker.util.MatSciEngineConfig;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.Serializable;
 import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -475,17 +478,11 @@ public class MatlabExecutable extends JavaExecutable {
     }
 
     private void loadTopologyNodeNames() throws Exception {
-        String hostlist = "NODE_LIST = { ";
         String urllist = "NODE_URL_LIST = { ";
-        hostlist += "'" + PAActiveObject.getNode().getVMInformation().getHostName() + "' ";
-        urllist += "'" + PAActiveObject.getNode().getNodeInformation().getURL() + "' ";
         for (String nodeUrl : this.getNodesURL()) {
-            hostlist += "'" + nodeUrl + "' ";
             urllist += "'" + nodeUrl + "' ";
         }
-        hostlist += " };";
         urllist += " };";
-        matlabConnection.evalString(hostlist);
         matlabConnection.evalString(urllist);
     }
 
