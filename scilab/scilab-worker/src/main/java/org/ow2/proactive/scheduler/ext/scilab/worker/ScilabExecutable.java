@@ -444,6 +444,7 @@ public class ScilabExecutable extends JavaExecutable {
         final String log = "[" + ISO8601FORMAT.format(d) + " " + HOSTNAME + "][" +
             this.getClass().getSimpleName() + "] " + message;
         getOut().println(log);
+        getOut().flush();
         if (this.outDebugWriter != null) {
             this.outDebugWriter.println(log);
             this.outDebugWriter.flush();
