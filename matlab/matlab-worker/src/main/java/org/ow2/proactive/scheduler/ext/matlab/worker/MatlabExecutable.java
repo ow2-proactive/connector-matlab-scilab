@@ -531,8 +531,8 @@ public class MatlabExecutable extends JavaExecutable {
         final Date d = new Date();
         final String log = "[" + ISO8601FORMAT.format(d) + " " + HOSTNAME + "][" +
             this.getClass().getSimpleName() + "] " + message;
-        System.out.println(log);
-        System.out.flush();
+        getOut().println(log);
+        getOut().flush();
         if (this.outDebug != null) {
             this.outDebug.println(log);
             this.outDebug.flush();
