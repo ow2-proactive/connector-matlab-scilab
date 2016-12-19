@@ -103,7 +103,7 @@ function deployJVM(opt,uri)
     addJavaObj(jarsjava);
     for i=1:size(jarfiles,1)
         jartmp = jnewInstance(String, jarfiles(i));
-        jarsjava(i-1) = jartmp;
+        jarsjava(i) = jartmp;
         addJavaObj(jartmp);
     end
     options = opt.JvmArguments;

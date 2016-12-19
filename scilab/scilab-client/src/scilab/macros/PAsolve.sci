@@ -45,7 +45,7 @@ function outputs = PAsolve(varargin)
             for j=1:MM
                 t_conf = jnewInstance(PASolveScilabTaskConfig);
                 addJavaObj(t_conf);
-                task_configs(i-1,j-1) = t_conf;
+                task_configs(i,j) = t_conf;
             end
         end
 
@@ -120,7 +120,7 @@ function outputs = PAsolve(varargin)
     taskinfo = struct('cleanDir',[], 'outFile',[], 'jobid',[], 'taskid',[] );
     results=list(NN);
     for i=1:NN
-        tidjava = jinvoke(ftnjava,'get',i-1);
+        tidjava = ftnjava(i);
         addJavaObj(tidjava);
         ftn(i) = string(tidjava);        
         taskinfo.cleanDir = dir_to_clean;
@@ -362,7 +362,7 @@ function taskFilesToClean = initTransferSource(task_configs,solve_config,opt,Tas
     jimport java.lang.String;
     for i=1:NN       
         for j=1:MM
-            t_conf = task_configs(i-1,j-1);
+            t_conf = task_configs(i,j);
             // Function
             Func = Tasks(j,i).Func;
             execstr(strcat(['functype = type(';Func;');']));
@@ -464,7 +464,7 @@ function initInputFiles(task_configs,solve_config,opt,Tasks,NN,MM)
     ddss = jnewInstance(DummyDSSource);
     for i=1:NN       
         for j=1:MM
-            t_conf = task_configs(i-1,j-1);
+            t_conf = task_configs(i,j);
             // Input Files
             ilen = size(Tasks(j,i).InputFiles);
                 if ilen > 0 then
@@ -495,7 +495,7 @@ function initOutputFiles(task_configs,solve_config,opt,Tasks,NN,MM)
     //addJavaObj(String);
     for i=1:NN       
         for j=1:MM
-            t_conf = task_configs(i-1,j-1);
+            t_conf = task_configs(i,j);
             // Output Files
                         ilen = size(Tasks(j,i).OutputFiles);
                             if ilen > 0 then
@@ -526,7 +526,7 @@ function [outVarFiles, inputscript, mainScript,taskFilesToClean] = initParameter
     curr_dir = pwd();
     for i=1:NN       
         for j=1:MM
-            t_conf = task_configs(i-1,j-1);
+            t_conf = task_configs(i,j);
             // Params
             argi = Tasks(j,i).Params;
             inVarFN = variableInFileBaseName + indToFile([i j]) + '.dat';
@@ -594,7 +594,7 @@ function initOtherTCAttributes(NN,MM, task_configs, Tasks)
     jimport java.net.URL;
     for i=1:NN       
         for j=1:MM
-            t_conf = task_configs(i-1,j-1);
+            t_conf = task_configs(i,j);
             if ~isempty(Tasks(j,i).Description) then
                 jinvoke(t_conf,'setDescription',Tasks(j,i).Description);
             end                        
