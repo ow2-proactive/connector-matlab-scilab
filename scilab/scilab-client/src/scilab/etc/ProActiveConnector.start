@@ -7,13 +7,7 @@ function ProActiveConnectorlib = startModule()
      if isdef("ProActiveConnectorlib") then
             warning("ProActiveConnector library is already loaded");
             //return;
-        end
-
-        // JIMS install check
-        if ~atomsIsInstalled('JIMS')
-            error('JIMS Atoms Module must be installed in order to use ProActive Connector Module');
-        end
-
+     end
 
     etc_tlbx = get_absolute_file_path('ProActiveConnector.start');
     if ~exists('PA_matsci_dir') | PA_matsci_dir == []

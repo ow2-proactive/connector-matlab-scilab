@@ -6,18 +6,10 @@ TOOLBOX_NAME = 'ProActiveConnector';
 TOOLBOX_TITLE = 'ProActive Connector';
 
 // Version Check
-try
-    version = getversion('scilab');
-    if version(1) < 5
-        error(gettext('Scilab 5.3.3 or more is required.'));
-    elseif version(1) == 5 & version(2) < 3
-        error(gettext('Scilab 5.3.3 or more is required.'));
-    elseif version(1) == 5 & version(2) == 3 & version(3) < 3
-        error(gettext('Scilab 5.3.3 or more is required.'));
-    end
-catch
-    error(gettext('Scilab 5.3.3 or more is required.'));
-end;
+version = getversion('scilab');
+if version(1) < 5 | (version(1) = 5 & version(2) < 5)
+	error(gettext('Scilab 5.5.0 or more is required.'));
+end
 
 disp('Build ProActive');
 
