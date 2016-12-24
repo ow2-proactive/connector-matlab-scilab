@@ -100,13 +100,9 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
     /** The temp directory */
     private static String tmpDir;
 
-    /** The ProActive node name */
-    private static String nodeName;
-
-    public MatlabConnectionMCImpl(final String tmpDir, final PrintStream outDebug, final String nodeName) {
+    public MatlabConnectionMCImpl(final String tmpDir, final PrintStream outDebug) {
         this.tmpDir = tmpDir;
         this.outDebug = outDebug;
-        this.nodeName = nodeName;
     }
 
     /**
@@ -115,10 +111,13 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
      *
      * @param matlabExecutablePath The full path to the MATLAB executable
      * @param workingDir the directory where to start MATLAB
+     * @param paconfig configuration of a Matlab PAsolve Job
+     * @param tconfig configuration of a Matlab Task
+     * @param taskId current task id
      * @throws org.ow2.proactive.scheduler.ext.matlab.common.exception.MatlabInitException if MATLAB could not be initialized
      */
     public void acquire(String matlabExecutablePath, File workingDir, PASolveMatlabGlobalConfig paconfig,
-            PASolveMatlabTaskConfig tconfig) throws MatlabInitException {
+            PASolveMatlabTaskConfig tconfig, final String taskId) throws MatlabInitException {
         RemoteMatlabProxyFactory proxyFactory;
         this.paconfig = paconfig;
         this.tconfig = tconfig;
@@ -142,7 +141,7 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
         try {
 
             processCreator = new CustomMatlabProcessCreator(matlabExecutablePath, workingDir,
-                this.startUpOptions, paconfig.isDebug());
+                this.startUpOptions, paconfig.isDebug(), taskId);
 
             proxyFactory = new RemoteMatlabProxyFactory(processCreator);
         } catch (MatlabConnectionException e) {
@@ -372,8 +371,6 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
 
         protected final String tmpDir = System.getProperty("java.io.tmpdir");
 
-        protected String nodeName;
-
         protected String[] startUpOptions;
         protected final String matlabLocation;
         protected final File workingDirectory;
@@ -386,17 +383,13 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
         static IOTools.LoggingThread lt1;
 
         public CustomMatlabProcessCreator(final String matlabLocation, final File workingDirectory,
-                String[] startUpOptions, boolean debug) {
+                String[] startUpOptions, boolean debug, final String taskId) {
             this.matlabLocation = matlabLocation;
             this.workingDirectory = workingDirectory;
             this.debug = debug;
             this.startUpOptions = startUpOptions;
-            try {
-                this.nodeName = MatSciEngineConfigBase.getNodeName();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            logFile = new File(tmpDir, "MatlabStart" + nodeName + ".log");
+
+            logFile = new File(tmpDir, "MatlabStart_" + taskId + ".log");
         }
 
         public Process createMatlabProcess(String runArg) throws Exception {
