@@ -53,8 +53,9 @@ import org.ow2.proactive.scheduler.ext.scilab.worker.util.ScilabEngineConfig;
 import org.ow2.proactive.scheduler.ext.scilab.worker.util.ScilabFinder;
 
 import java.io.File;
-import java.io.FileWriter;
-import java.io.PrintWriter;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.io.Serializable;
 import java.net.URI;
 import java.text.SimpleDateFormat;
@@ -69,31 +70,24 @@ import java.util.Map;
  * @author The ProActive Team
  */
 public class ScilabExecutable extends JavaExecutable {
-    /** The ISO8601 for debug format of the date that precedes the log message */
-    private static final SimpleDateFormat ISO8601FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:sss");
 
-    private static final String TMPDIR = System.getProperty("java.io.tmpdir");
+    private String tmpDir;
 
     private static String HOSTNAME;
-    private static String NODENAME;
-
-    private static OperatingSystem os;
-
-    private static char fs;
 
     static {
         try {
             HOSTNAME = java.net.InetAddress.getLocalHost().getHostName();
-            NODENAME = System.getProperty("node.name");
-            os = OperatingSystem.getOperatingSystem();
-            fs = os.fileSeparator();
         } catch (Exception e) {
         }
     }
 
+    /** The ISO8601 for debug format of the date that precedes the log message */
+    private static final SimpleDateFormat ISO8601FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:sss");
+
     /** For debug purpose see {@link ScilabExecutable#createLogFileOnDebug()} */
-    private PrintWriter outDebugWriter;
-    private FileWriter outFile;
+    private FileOutputStream debugfos;
+    private PrintStream outDebug;
 
     /** The global configuration */
     private PASolveScilabGlobalConfig paconfig;
@@ -106,7 +100,6 @@ public class ScilabExecutable extends JavaExecutable {
 
     /** The root of the local space and a temporary dir inside */
     private File localSpaceRootDir, tempSubDir;
-    private String tempSubDirRel;
 
     /** The connection to SCILAB from scilabcontrol API */
     private ScilabConnection scilabConnection;
@@ -122,14 +115,14 @@ public class ScilabExecutable extends JavaExecutable {
     @Override
     public void init(final Map<String, Serializable> args) throws Exception {
 
-        if (!new File(TMPDIR).canWrite()) {
-            throw new RuntimeException("Unable to execute task, TMPDIR : " + TMPDIR + " is not writable.");
+        this.tmpDir = System.getProperty("java.io.tmpdir");
+
+        if (!new File(this.tmpDir).canWrite()) {
+            throw new RuntimeException("Unable to execute task, TMPDIR : " + this.tmpDir + " is not writable.");
         }
 
-        Object obj;
-
         // Read global configuration
-        obj = args.get("global_config");
+        Object obj = args.get("global_config");
         if (obj != null) {
             this.paconfig = (PASolveScilabGlobalConfig) obj;
         }
@@ -181,9 +174,10 @@ public class ScilabExecutable extends JavaExecutable {
 
         // Acquire a connection to SCILAB
 
-        this.scilabConnection = new ScilabConnectionRImpl();
+        this.scilabConnection = new ScilabConnectionRImpl(this.tmpDir, this.outDebug);
 
-        scilabConnection.acquire(scilabCmd, this.localSpaceRootDir, this.paconfig, this.taskconfig);
+        final String taskId = (String) this.getVariables().get("PA_TASK_ID");
+        scilabConnection.acquire(scilabCmd, this.localSpaceRootDir, this.paconfig, this.taskconfig, taskId);
 
         Serializable result = null;
 
@@ -193,6 +187,7 @@ public class ScilabExecutable extends JavaExecutable {
         } finally {
             this.printLog("Closing SCILAB...");
             this.scilabConnection.release();
+            printLog(this.scilabConnection.getOutput(paconfig.isDebug()), true);
             printLog("End of Task");
             this.closeLogFileOnDebug();
         }
@@ -283,8 +278,6 @@ public class ScilabExecutable extends JavaExecutable {
         if (!tempSubDir.exists()) {
             tempSubDir.mkdirs();
         }
-
-        this.tempSubDirRel = paconfig.getJobSubDirPortablePath();
 
         // Set the local space of the global configuration
         this.paconfig.setLocalSpace(localSpaceURI);
@@ -437,7 +430,11 @@ public class ScilabExecutable extends JavaExecutable {
     }
 
     private void printLog(final String message) {
-        if (!this.paconfig.isDebug()) {
+        printLog(message, false);
+    }
+
+    private void printLog(final String message, boolean force) {
+        if (!this.paconfig.isDebug() && !force) {
             return;
         }
         final Date d = new Date();
@@ -445,12 +442,14 @@ public class ScilabExecutable extends JavaExecutable {
             this.getClass().getSimpleName() + "] " + message;
         getOut().println(log);
         getOut().flush();
-        if (this.outDebugWriter != null) {
-            this.outDebugWriter.println(log);
-            this.outDebugWriter.flush();
+
+        if (this.outDebug != null) {
+            this.outDebug.println(log);
+            this.outDebug.flush();
         }
 
     }
+
 
     /** Creates a log file in the java.io.tmpdir if debug is enabled */
     private void createLogFileOnDebug() throws Exception {
@@ -458,29 +457,32 @@ public class ScilabExecutable extends JavaExecutable {
             return;
         }
 
-        final File logFile = new File(ScilabExecutable.TMPDIR, "ScilabExecutable_" + NODENAME + ".log");
+        final String taskId = (String) this.getVariables().get("PA_TASK_ID");
+        final File logFile = new File(this.tmpDir, "ScilabExecutable_" + taskId + ".log");
         if (!logFile.exists()) {
             logFile.createNewFile();
         }
 
-        outFile = new FileWriter(logFile, false);
-        outDebugWriter = new PrintWriter(outFile);
+        try {
+            this.debugfos = new FileOutputStream(logFile);
+            this.outDebug = new PrintStream(this.debugfos);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void closeLogFileOnDebug() {
         try {
-            if (outDebugWriter != null) {
-                outDebugWriter.close();
+            if (this.outDebug != null) {
+                this.outDebug.close();
             }
         } catch (Exception e) {
-
         }
         try {
-            if (outFile != null) {
-                outFile.close();
+            if (this.debugfos != null) {
+                this.debugfos.close();
             }
         } catch (Exception e) {
-
         }
 
     }
