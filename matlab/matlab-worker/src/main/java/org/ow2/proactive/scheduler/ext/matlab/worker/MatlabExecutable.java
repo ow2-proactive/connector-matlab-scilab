@@ -529,8 +529,15 @@ public class MatlabExecutable extends JavaExecutable {
         final Date d = new Date();
         final String log = "[" + ISO8601FORMAT.format(d) + " " + HOSTNAME + "][" +
             this.getClass().getSimpleName() + "] " + message;
-        getOut().println(log);
-        getOut().flush();
+
+        // In case of non forked mode, the message is skipped after the first line break.
+        // To avoid this, lets print line per line
+        String[] lines = log.split(System.lineSeparator());
+        for (String line  : lines)
+        {
+            getOut().println(line);
+        }
+
         if (this.outDebug != null) {
             this.outDebug.println(log);
             this.outDebug.flush();
