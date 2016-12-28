@@ -102,10 +102,10 @@
 
 <p>Complete configuration and installation of the ProActive Scheduler is beyond the scope of this help, for more information, refer to:</p>
 
-<p><a href="http://proactive.inria.fr/release-doc/Scheduling/multiple_html/index.html">ProActive Scheduler Manual</a></p>
+<p><a href="http://doc.activeeon.com/latest/admin/ProActiveAdminGuide.html#_proactive_scheduler_configuration">ProActive Scheduler configuration</a></p>
 
-<p>On each <b>client host</b>, on the matlab prompt add the path to Matlab Connector Toolbox (the folder MC/toolbox):</p>
-<pre>addpath('D:\Matlab_Connector\toolbox');</pre>
+<p>On each <b>client host</b>, on the matlab prompt add the path to Matlab Connector Toolbox:</p>
+<pre>addpath('D:\Matlab_Connector');</pre>
 
 <a name="installation-3"></a>
 <p class="pagenavlink">
@@ -132,7 +132,7 @@
 <h4 class="title">Manual Configuration of Matlab Installations</h4>
 <p>It may happen though that on some hosts, Matlab is not installed in a typical location and the automatic script doesn't
     manage to find it. In that case it will be necessary to write a Matlab configuration file manually.</p>
-<p>A sample configuration file is located inside the <b>Matlab_Connector/scheduler-plugin</b> folder under the name MatlabWorkerConfiguration.xml</p>
+<p>A sample configuration file is located inside the <b>Matlab_Connector/lib/worker</b> folder under the name MatlabWorkerConfiguration.xml</p>
 <p>This file must be edited and put inside the <b>addons</b> directory of ProActive Scheduler. This must be done on ProActive Scheduler Server and on
     every hosts that will be used as Matlab workers for which the automatic configuration didn't work.</p>
 <p>If the scheduler is installed in a single directory shared by all workers (via NFS for example), then only one MatlabWorkerConfiguration.xml
@@ -165,7 +165,7 @@
 
 
 <h4 class="title">Manual Installation of ProActive Matlab Connector Libraries to the ProActive Scheduler</h4>
-<p>The content of the directory <b>Matlab_Connector/scheduler-plugin</b> (not the directory itself, only the content) must be copied
+<p>The content of the directory <b>Matlab_Connector/lib/worker</b> (not the directory itself, only the content) must be copied
     inside the <b>addons</b> directory of ProActive Scheduler and of every Matlab Worker which will be used as matlab workers.</p>
 <p>Manually installing the librairies used by Matlab Connector inside the scheduler reduces the overhead of transferring them each time through the network.</p>
 
