@@ -800,20 +800,22 @@ for i=1:NN
         argi = Tasks(j,i).Params;
         main ='';
 
+        % Creating input/output mat files paths
         inVarFN = [variableInFileBaseName indToFile([i j]) '.mat'];
         outVarFN = [variableOutFileBaseName indToFile([i j]) '.mat'];
         inVarFP = [pa_dir fs inVarFN];
         outVarFP = [pa_dir fs outVarFN];
-        % Creating input parameters mat files
-        if length(argi) == 0
-            in.in1=true;
-        else
-            in.obj = allfuncs(i,j).o;
-            in.foo = allfuncs(i,j).f;
-            for k=1:length(argi)
-                in.(['in' num2str(k)]) = argi{k};
-            end
+
+        % Set the handle user function and the PATask
+        in.obj = allfuncs(i,j).o;
+        in.foo = allfuncs(i,j).f;
+
+        % Retrieve user function inputs
+        for k=1:length(argi)
+            in.(['in' num2str(k)]) = argi{k};
         end
+
+        % Write user function inputs to mat files
         if (ischar(opt.TransferMatFileOptions) && length(opt.TransferMatFileOptions) > 0)
             save(inVarFP,'-struct','in',opt.TransferMatFileOptions);
         else
@@ -857,24 +859,29 @@ for i=1:NN
         else
             main = [main 'out = foo('];
         end
-        
 
+        % In case of Task compose set the full object as first param
         if j > 1 && length(argi) > 0 && Tasks(j,i).Compose
             main = [main 'in' ','];
         elseif j > 1 && Tasks(j,i).Compose
             main = [main 'in'];
         end
+
+        % Add the user function params
         if length(argi) > 0
             for k=1:length(argi)-1
                 main = [main 'in' num2str(k) ','];
             end
             main = [main 'in' num2str(length(argi))];
         end
+
+        % Debug?
         if opt.Debug
             main = [main ')'];
         else
             main = [main ');'];
         end
+
         task_config(i,j).setInputScript(input);
         task_config(i,j).setMainScript(main);
 
