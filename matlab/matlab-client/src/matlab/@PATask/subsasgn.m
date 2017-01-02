@@ -49,7 +49,7 @@ if length(S) == 1
     switch S.type
         case '.'
             checkValidity(S.subs,A);
-            out = builtin('subsasgn',this,S,A);
+            out=assign(this, S.subs, A);
         case '()'
             if strcmp(class(A),'PATask')                
                 if length(S.subs) == 1

@@ -510,20 +510,22 @@ t(1,1) =
 
     Func:       @factfile
     Params:
-    InputFiles: factfile_in.mat
-    OuputFiles: factfile_out.mat
+    InputFiles:
+    PAFile object: 1-by-1
+    OuputFiles:
+    PAFile object: 1-by-1
     Compose:       false
     Static:       false
     NbNodes: 1
     ThresholdProximity: 0
+
 >> a = 5;
 >> save('factfile_in.mat', 'a');
 >> r=PAsolve(t)
 Job submitted : 7
 Awaited (J:7)
 >> r.val
-
-[2016-12-28 15:46:005 XPS-P31F][MatlabExecutable]
+Job 7: Task 0_0
 [2016-12-28 15:46:005 XPS-P31F][MatlabExecutable]
 
 
@@ -531,19 +533,55 @@ ans =
 
      1
 
->> load('-mat','factfile_out.m')
+>> load('-mat','factfile_out.mat')
 >> disp(b)
 
    120
 </pre>
-<p>If you want to use more than one InputFile (resp OutputFile), use a PAFile array like this :</p>
+<p>If you want to use more than one InputFile (resp OutputFile), use a PAFile array. Here is an exemple with 2 InputFile.
+    Create the following function <b>product.m</b>:</p>
 <pre>
->> t.Func = @factfile;
+function res=product()
+load('-mat','intputfile1.mat')
+load('-mat','intputfile2.mat')
+res=a*b;
+
+>> t=PATask(1,1);
+>> t.Func = @product;
 >> t.Params = {};
->> f = PAFiles(2);
+>> f = PAFile(2);
 >> f(1).Path = 'intputfile1.mat';
 >> f(2).Path = 'intputfile2.mat';
 >> t.InputFiles = f;
+>> t
+
+t(1,1) =
+
+    Func:       @product
+    Params:
+    InputFiles:
+    PAFile object: 1-by-2
+    Compose:       false
+    Static:       false
+    NbNodes: 1
+    ThresholdProximity: 0
+
+>> a = 5;
+>> b = 10;
+>> save('intputfile1.mat','a');
+>> save('intputfile2.mat','b');
+>> r=PAsolve(t)
+Job submitted : 8
+Awaited (J:8)
+>> r.val
+Job 8: Task 0_0
+[2017-01-02 16:54:019 XPS-P31F][MatlabExecutable]
+
+
+ans =
+
+    50
+
 </pre>
 
 
