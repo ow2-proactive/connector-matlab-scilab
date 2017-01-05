@@ -48,6 +48,7 @@ end
 if length(S) == 1
     switch S.type
         case '.'
+            % here 'this' is scalar
             checkValidity(S.subs,A);
             out=assign(this, S.subs, A);
         case '()'
