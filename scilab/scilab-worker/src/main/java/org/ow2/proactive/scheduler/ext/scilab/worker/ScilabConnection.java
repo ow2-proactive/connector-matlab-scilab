@@ -57,10 +57,13 @@ public interface ScilabConnection {
      *
      * @param scilabExecutablePath The full path to the SCILAB executable
      * @param workingDir the directory where to start SCILAB
+     * @param paconfig configuration of a Scilab PAsolve Job
+     * @param tconfig configuration of a Scilab Task
+     * @param taskId current task id
      * @throws org.ow2.proactive.scheduler.ext.scilab.common.exception.ScilabInitException if SCILAB could not be initialized
      */
     public void acquire(String scilabExecutablePath, File workingDir, PASolveScilabGlobalConfig paconfig,
-            PASolveScilabTaskConfig tconfig) throws ScilabInitException;
+            PASolveScilabTaskConfig tconfig, final String taskId) throws ScilabInitException;
 
     /**
      * Used to send initialization scilab commands to the connection (in case of command grouping)
@@ -103,4 +106,10 @@ public interface ScilabConnection {
      * Used to send finalization scilab commands to the connection and launch the command buffer (in case of command grouping)
      */
     public void launch() throws Exception;
+
+    /**
+     * Returns the textual output of scilab (as stored in the log file)
+     * @return textual output
+     */
+    public String getOutput(boolean debug);
 }

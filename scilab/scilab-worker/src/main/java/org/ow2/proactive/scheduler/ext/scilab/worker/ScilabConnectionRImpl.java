@@ -38,7 +38,6 @@ package org.ow2.proactive.scheduler.ext.scilab.worker;
 
 import org.objectweb.proactive.utils.OperatingSystem;
 import org.ow2.proactive.scheduler.ext.common.util.IOTools;
-import org.ow2.proactive.scheduler.ext.matsci.worker.util.MatSciEngineConfigBase;
 import org.ow2.proactive.scheduler.ext.scilab.common.PASolveScilabGlobalConfig;
 import org.ow2.proactive.scheduler.ext.scilab.common.PASolveScilabTaskConfig;
 import org.ow2.proactive.scheduler.ext.scilab.common.exception.ScilabInitException;
@@ -47,6 +46,7 @@ import org.ow2.proactive.scheduler.ext.scilab.common.exception.ScilabTaskExcepti
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -57,10 +57,6 @@ import java.util.Arrays;
 public class ScilabConnectionRImpl implements ScilabConnection {
     protected StringBuilder fullcommand = new StringBuilder();
     protected String nl = System.lineSeparator();
-
-    protected final String tmpDir = System.getProperty("java.io.tmpdir");
-
-    protected String nodeName;
 
     protected String[] startUpOptions;
     protected String scilabLocation;
@@ -79,7 +75,9 @@ public class ScilabConnectionRImpl implements ScilabConnection {
 
     private static final String startPattern = "---- SCILAB START ----";
 
-    private PrintStream outDebug;
+    private final PrintStream outDebug;
+
+    private final String tmpDir;
 
     PASolveScilabGlobalConfig paconfig;
 
@@ -87,45 +85,34 @@ public class ScilabConnectionRImpl implements ScilabConnection {
 
     IOTools.LoggingThread lt1;
 
-    public ScilabConnectionRImpl() {
-
+    public ScilabConnectionRImpl(final String tmpDir, final PrintStream outDebug) {
+        this.tmpDir = tmpDir;
+        this.outDebug = outDebug;
     }
 
     public void acquire(String scilabExecutablePath, File workingDir, PASolveScilabGlobalConfig paconfig,
-            PASolveScilabTaskConfig tconfig) throws ScilabInitException {
+            PASolveScilabTaskConfig tconfig, final String taskId) throws ScilabInitException {
         this.scilabLocation = scilabExecutablePath;
         this.workingDirectory = workingDir;
         this.debug = paconfig.isDebug();
         this.paconfig = paconfig;
         this.tconfig = tconfig;
         this.TIMEOUT_START = paconfig.getWorkerTimeoutStart();
-        if (os == OperatingSystem.windows) {
+        if (this.os == OperatingSystem.windows) {
             this.startUpOptions = paconfig.getWindowsStartupOptions();
         } else {
             this.startUpOptions = paconfig.getLinuxStartupOptions();
         }
 
-        try {
-            this.nodeName = MatSciEngineConfigBase.getNodeName();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        logFile = new File(tmpDir, "ScilabStart_" + nodeName + ".log");
-        mainFuncFile = new File(workingDir, "PAMain.sce");
-        if (!mainFuncFile.exists()) {
+        this.logFile = new File(this.tmpDir, "ScilabStart_" + taskId + ".log");
+        this.mainFuncFile = new File(workingDir, "PAMain.sce");
+        if (!this.mainFuncFile.exists()) {
             try {
-                mainFuncFile.createNewFile();
+                this.mainFuncFile.createNewFile();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-
-        try {
-            createLogFileOnDebug();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
     }
 
     public void init() {
@@ -143,6 +130,23 @@ public class ScilabConnectionRImpl implements ScilabConnection {
 
             }
         }
+    }
+
+    @Override
+    public String getOutput(boolean debug) {
+        String output = "";
+        try {
+            if (debug) {
+                output = IOTools.readFileAsString(this.logFile, 20000, null, null);
+            } else {
+                output = IOTools.readFileAsString(this.logFile, 20000, this.startPattern, null);
+            }
+        } catch (InterruptedException e) {
+
+        } catch (TimeoutException e) {
+
+        }
+        return output;
     }
 
     public void evalString(String command) throws ScilabTaskException {
@@ -200,15 +204,12 @@ public class ScilabConnectionRImpl implements ScilabConnection {
         final ArrayList<String> commandList = new ArrayList<String>();
         commandList.add(this.scilabLocation);
         commandList.addAll(Arrays.asList(this.startUpOptions));
-        // TODO find a way to use a log file
-        //commandList.add("-logfile");
-        //commandList.add(logFile.toString());
         commandList.add("-f");
         commandList.add(runArg);
 
         String[] command = (String[]) commandList.toArray(new String[commandList.size()]);
 
-        ProcessBuilder b = new ProcessBuilder();
+        ProcessBuilder b = new ProcessBuilder().redirectOutput(this.logFile).redirectError(this.logFile);
         // invalid on windows ?
         b.directory(this.workingDirectory);
         b.command(command);
@@ -219,32 +220,4 @@ public class ScilabConnectionRImpl implements ScilabConnection {
 
     }
 
-    private void createLogFileOnDebug() throws Exception {
-        if (!this.debug) {
-            return;
-        }
-        String nodeName = MatSciEngineConfigBase.getNodeName();
-
-        String tmpPath = System.getProperty("java.io.tmpdir");
-
-        // log file writer used for debugging
-        File tmpDirFile = new File(tmpPath);
-        File nodeTmpDir = new File(tmpDirFile, nodeName);
-        if (!nodeTmpDir.exists()) {
-            nodeTmpDir.mkdirs();
-        }
-        File logFile = new File(tmpPath, "ScilabExecutable_" + nodeName + ".log");
-        if (!logFile.exists()) {
-            logFile.createNewFile();
-        }
-
-        try {
-            FileOutputStream outFile = new FileOutputStream(logFile);
-            PrintStream out = new PrintStream(outFile);
-
-            outDebug = out;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 }

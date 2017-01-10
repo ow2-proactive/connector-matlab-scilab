@@ -87,12 +87,10 @@ public class MatlabExecutable extends JavaExecutable {
     public static final String MATLAB_PREFDIR = "matlab.prefdir";
 
     protected static String HOSTNAME;
-    protected static String NODENAME;
 
     static {
         try {
             HOSTNAME = java.net.InetAddress.getLocalHost().getHostName();
-            NODENAME = System.getProperty("node.name");
         } catch (Exception e) {
         }
     }
@@ -118,7 +116,6 @@ public class MatlabExecutable extends JavaExecutable {
 
     /** The root of the local space and a temporary dir */
     private File localSpaceRootDir, tempSubDir;
-    private String tempSubDirRel;
 
     /** The connection to MATLAB from matlabcontrol API */
     private MatlabConnection matlabConnection;
@@ -196,11 +193,13 @@ public class MatlabExecutable extends JavaExecutable {
 
         // Acquire a connection to MATLAB
         if (paconfig.isUseMatlabControl()) {
-            this.matlabConnection = new MatlabConnectionMCImpl(this.tmpDir, this.outDebug, NODENAME);
+            this.matlabConnection = new MatlabConnectionMCImpl(this.tmpDir, this.outDebug);
         } else {
-            this.matlabConnection = new MatlabConnectionRImpl(this.tmpDir, this.outDebug, NODENAME);
+            this.matlabConnection = new MatlabConnectionRImpl(this.tmpDir, this.outDebug);
         }
-        matlabConnection.acquire(matlabCmd, this.localSpaceRootDir, this.paconfig, this.taskconfig);
+
+        final String taskId = (String) this.getVariables().get("PA_TASK_ID");
+        matlabConnection.acquire(matlabCmd, this.localSpaceRootDir, this.paconfig, this.taskconfig, taskId);
 
         Serializable result = null;
 
@@ -317,8 +316,6 @@ public class MatlabExecutable extends JavaExecutable {
         if (!tempSubDir.exists()) {
             tempSubDir.mkdirs();
         }
-
-        this.tempSubDirRel = paconfig.getJobSubDirPortablePath();
 
         // Set the local space of the global configuration
         this.paconfig.setLocalSpace(localSpaceURI);
@@ -532,8 +529,15 @@ public class MatlabExecutable extends JavaExecutable {
         final Date d = new Date();
         final String log = "[" + ISO8601FORMAT.format(d) + " " + HOSTNAME + "][" +
             this.getClass().getSimpleName() + "] " + message;
-        getOut().println(log);
-        getOut().flush();
+
+        // In case of non forked mode, the message is skipped after the first line break.
+        // To avoid this, lets print line per line
+        String[] lines = log.split(System.lineSeparator());
+        for (String line  : lines)
+        {
+            getOut().println(line);
+        }
+
         if (this.outDebug != null) {
             this.outDebug.println(log);
             this.outDebug.flush();
@@ -547,7 +551,8 @@ public class MatlabExecutable extends JavaExecutable {
             return;
         }
 
-        final File logFile = new File(this.tmpDir, "MatlabExecutable_" + NODENAME + ".log");
+        final String taskId = (String) this.getVariables().get("PA_TASK_ID");
+        final File logFile = new File(this.tmpDir, "MatlabExecutable_" + taskId + ".log");
         if (!logFile.exists()) {
             logFile.createNewFile();
         }

@@ -527,13 +527,15 @@ function [outVarFiles, inputscript, mainScript,taskFilesToClean] = initParameter
     for i=1:NN       
         for j=1:MM
             t_conf = task_configs(i,j);
-            // Params
             argi = Tasks(j,i).Params;
+
+            // Creating input/output mat files paths
             inVarFN = variableInFileBaseName + indToFile([i j]) + '.dat';
             outVarFN = variableOutFileBaseName + indToFile([i j])+ '.dat';
             inVarFP = pa_dir + fs + inVarFN;
             outVarFP = pa_dir + fs + outVarFN;
-            // Creating input parameters mat files
+
+            // Retrieve user function inputs and write them into the input parameters mat file
             fd=mopen(inVarFP,'wb');
             inl = argi;
             if length(inl) == 0
@@ -547,13 +549,17 @@ function [outVarFiles, inputscript, mainScript,taskFilesToClean] = initParameter
             warning('on')
             mclose(fd);
 
+            // Set mat files to task_configs
             jinvoke(t_conf,'setInputVariablesFile',subdir, inVarFN);
             jinvoke(t_conf,'setOutputVariablesFile',curr_dir, subdir, outVarFN);
+
+            // In case of Task compose
             if j > 1 & Tasks(j,i).Compose
                 cinVarFN = variableOutFileBaseName + indToFile([i j-1]) +'.dat';
                 cinVarFP = pa_dir+fs+cinVarFN;
                 jinvoke(t_conf,'setComposedInputVariablesFile',subdir, cinVarFN);
             end
+
             outVarFiles(i) = outVarFP;
             taskFilesToClean(i)=lstcat(taskFilesToClean(i), list(inVarFP));
             //if j < MM
@@ -569,12 +575,16 @@ function [outVarFiles, inputscript, mainScript,taskFilesToClean] = initParameter
 
             //mainScript = createMainScript(Func, opt);
             mainScript = 'out = '+Tasks(j,i).Func+'(';
+
+            // In case of Task compose set the full object as first param
             if j > 1 & Tasks(j,i).Compose
                 mainScript = mainScript + 'in';
                 if length(argi) > 0 then
                     mainScript = mainScript + ',';
                 end
             end
+
+            // Add the user function params
             if length(argi) > 0
                 for k=1:length(argi)-1
                     mainScript = mainScript + 'in'+string(k)+',';
@@ -582,6 +592,7 @@ function [outVarFiles, inputscript, mainScript,taskFilesToClean] = initParameter
                 mainScript = mainScript + ('in'+string(length(argi)));
             end
             mainScript = mainScript + ');';
+
             jinvoke(t_conf,'setMainScript',mainScript);
 
             jinvoke(t_conf,'setOutputs','out');

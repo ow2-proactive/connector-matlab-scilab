@@ -120,11 +120,6 @@ public class MatlabConnectionRImpl implements MatlabConnection {
     private final String tmpDir;
 
     /**
-     * The ProActive node name
-     */
-    private final String nodeName;
-
-    /**
      * Timeout for the matlab process startup x 10 ms
      */
     protected int TIMEOUT_START;
@@ -166,14 +161,13 @@ public class MatlabConnectionRImpl implements MatlabConnection {
      */
     IOTools.LoggingThread lt1;
 
-    public MatlabConnectionRImpl(final String tmpDir, final PrintStream outDebug, final String nodeName) {
+    public MatlabConnectionRImpl(final String tmpDir, final PrintStream outDebug) {
         this.tmpDir = tmpDir;
         this.outDebug = outDebug;
-        this.nodeName = nodeName;
     }
 
     public void acquire(String matlabExecutablePath, File workingDir, PASolveMatlabGlobalConfig paconfig,
-            PASolveMatlabTaskConfig tconfig) throws MatlabInitException {
+            PASolveMatlabTaskConfig tconfig, final String taskId) throws MatlabInitException {
         this.matlabLocation = matlabExecutablePath;
         this.workingDirectory = workingDir;
         this.debug = paconfig.isDebug();
@@ -182,7 +176,7 @@ public class MatlabConnectionRImpl implements MatlabConnection {
         this.startUpOptions = paconfig.getStartupOptions();
         this.TIMEOUT_START = paconfig.getWorkerTimeoutStart();
 
-        this.logFile = new File(tmpDir, "MatlabStart_" + nodeName + ".log");
+        this.logFile = new File(tmpDir, "MatlabStart_" + taskId + ".log");
         this.mainFuncFile = new File(workingDir, "PAMain.m");
         if (!mainFuncFile.exists()) {
             try {
