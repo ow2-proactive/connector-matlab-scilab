@@ -167,7 +167,7 @@ public class MatlabConnectionRImpl implements MatlabConnection {
     }
 
     public void acquire(String matlabExecutablePath, File workingDir, PASolveMatlabGlobalConfig paconfig,
-            PASolveMatlabTaskConfig tconfig, final String taskId) throws MatlabInitException {
+            PASolveMatlabTaskConfig tconfig, final String taskLogId) throws MatlabInitException {
         this.matlabLocation = matlabExecutablePath;
         this.workingDirectory = workingDir;
         this.debug = paconfig.isDebug();
@@ -176,7 +176,7 @@ public class MatlabConnectionRImpl implements MatlabConnection {
         this.startUpOptions = paconfig.getStartupOptions();
         this.TIMEOUT_START = paconfig.getWorkerTimeoutStart();
 
-        this.logFile = new File(tmpDir, "MatlabStart_" + taskId + ".log");
+        this.logFile = new File(tmpDir, "MatlabStart_" + taskLogId + ".log");
         this.mainFuncFile = new File(workingDir, "PAMain.m");
         if (!mainFuncFile.exists()) {
             try {

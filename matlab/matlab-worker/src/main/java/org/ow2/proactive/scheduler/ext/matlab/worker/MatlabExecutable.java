@@ -198,8 +198,10 @@ public class MatlabExecutable extends JavaExecutable {
             this.matlabConnection = new MatlabConnectionRImpl(this.tmpDir, this.outDebug);
         }
 
+        final String jobId = (String) this.getVariables().get("PA_JOB_ID");
         final String taskId = (String) this.getVariables().get("PA_TASK_ID");
-        matlabConnection.acquire(matlabCmd, this.localSpaceRootDir, this.paconfig, this.taskconfig, taskId);
+        final String taskLogId = jobId + "_" + taskId;
+        matlabConnection.acquire(matlabCmd, this.localSpaceRootDir, this.paconfig, this.taskconfig, taskLogId);
 
         Serializable result = null;
 
@@ -551,8 +553,10 @@ public class MatlabExecutable extends JavaExecutable {
             return;
         }
 
+        final String jobId = (String) this.getVariables().get("PA_JOB_ID");
         final String taskId = (String) this.getVariables().get("PA_TASK_ID");
-        final File logFile = new File(this.tmpDir, "MatlabExecutable_" + taskId + ".log");
+        final String taskLogId = jobId + "_" + taskId;
+        final File logFile = new File(this.tmpDir, "MatlabExecutable_" + taskLogId + ".log");
         if (!logFile.exists()) {
             logFile.createNewFile();
         }

@@ -38,7 +38,6 @@ package org.ow2.proactive.scheduler.ext.scilab.worker;
 
 import org.apache.log4j.Level;
 import org.objectweb.proactive.core.util.log.ProActiveLogger;
-import org.objectweb.proactive.utils.OperatingSystem;
 import org.ow2.proactive.scheduler.common.task.TaskResult;
 import org.ow2.proactive.scheduler.common.task.executable.JavaExecutable;
 import org.ow2.proactive.scheduler.ext.common.util.FileUtils;
@@ -176,8 +175,10 @@ public class ScilabExecutable extends JavaExecutable {
 
         this.scilabConnection = new ScilabConnectionRImpl(this.tmpDir, this.outDebug);
 
+        final String jobId = (String) this.getVariables().get("PA_JOB_ID");
         final String taskId = (String) this.getVariables().get("PA_TASK_ID");
-        scilabConnection.acquire(scilabCmd, this.localSpaceRootDir, this.paconfig, this.taskconfig, taskId);
+        final String taskLogId = jobId + "_" + taskId;
+        scilabConnection.acquire(scilabCmd, this.localSpaceRootDir, this.paconfig, this.taskconfig, taskLogId);
 
         Serializable result = null;
 
@@ -463,8 +464,10 @@ public class ScilabExecutable extends JavaExecutable {
             return;
         }
 
+        final String jobId = (String) this.getVariables().get("PA_JOB_ID");
         final String taskId = (String) this.getVariables().get("PA_TASK_ID");
-        final File logFile = new File(this.tmpDir, "ScilabExecutable_" + taskId + ".log");
+        final String taskLogId = jobId + "_" + taskId;
+        final File logFile = new File(this.tmpDir, "ScilabExecutable_" + taskLogId + ".log");
         if (!logFile.exists()) {
             logFile.createNewFile();
         }

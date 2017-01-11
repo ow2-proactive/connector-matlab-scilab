@@ -91,7 +91,7 @@ public class ScilabConnectionRImpl implements ScilabConnection {
     }
 
     public void acquire(String scilabExecutablePath, File workingDir, PASolveScilabGlobalConfig paconfig,
-            PASolveScilabTaskConfig tconfig, final String taskId) throws ScilabInitException {
+            PASolveScilabTaskConfig tconfig, final String taskLogId) throws ScilabInitException {
         this.scilabLocation = scilabExecutablePath;
         this.workingDirectory = workingDir;
         this.debug = paconfig.isDebug();
@@ -104,7 +104,7 @@ public class ScilabConnectionRImpl implements ScilabConnection {
             this.startUpOptions = paconfig.getLinuxStartupOptions();
         }
 
-        this.logFile = new File(this.tmpDir, "ScilabStart_" + taskId + ".log");
+        this.logFile = new File(this.tmpDir, "ScilabStart_" + taskLogId + ".log");
         this.mainFuncFile = new File(workingDir, "PAMain.sce");
         if (!this.mainFuncFile.exists()) {
             try {

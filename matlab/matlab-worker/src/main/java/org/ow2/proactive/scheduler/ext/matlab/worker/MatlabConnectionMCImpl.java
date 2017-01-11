@@ -117,7 +117,7 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
      * @throws org.ow2.proactive.scheduler.ext.matlab.common.exception.MatlabInitException if MATLAB could not be initialized
      */
     public void acquire(String matlabExecutablePath, File workingDir, PASolveMatlabGlobalConfig paconfig,
-            PASolveMatlabTaskConfig tconfig, final String taskId) throws MatlabInitException {
+            PASolveMatlabTaskConfig tconfig, final String taskLogId) throws MatlabInitException {
         RemoteMatlabProxyFactory proxyFactory;
         this.paconfig = paconfig;
         this.tconfig = tconfig;
@@ -141,7 +141,7 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
         try {
 
             processCreator = new CustomMatlabProcessCreator(matlabExecutablePath, workingDir,
-                this.startUpOptions, paconfig.isDebug(), taskId);
+                this.startUpOptions, paconfig.isDebug(), taskLogId);
 
             proxyFactory = new RemoteMatlabProxyFactory(processCreator);
         } catch (MatlabConnectionException e) {
