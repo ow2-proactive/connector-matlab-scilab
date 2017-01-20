@@ -59,11 +59,10 @@ public interface MatlabConnection {
      * @param workingDir the directory where to start MATLAB
      * @param paconfig configuration of a Matlab PAsolve Job
      * @param tconfig configuration of a Matlab Task
-     * @param taskLogId current task log id
      * @throws org.ow2.proactive.scheduler.ext.matlab.common.exception.MatlabInitException if MATLAB could not be initialized
      */
     public void acquire(String matlabExecutablePath, File workingDir, PASolveMatlabGlobalConfig paconfig,
-            PASolveMatlabTaskConfig tconfig, final String taskLogId) throws MatlabInitException;
+            PASolveMatlabTaskConfig tconfig) throws MatlabInitException;
 
     /**
      * Used to send initialization matlab commands to the connection (in case of command grouping)
@@ -103,6 +102,11 @@ public interface MatlabConnection {
     public void put(final String variableName, final Object value) throws MatlabTaskException;
 
     /**
+     * This method is executed before the launch method
+     */
+    public void beforeLaunch();
+
+    /**
      * Used to send finalization matlab commands to the connection and launch the command buffer (in case of command grouping)
      */
     public void launch() throws Exception;
@@ -112,12 +116,6 @@ public interface MatlabConnection {
      * @param command command which checks the toolboxes
      */
     public void execCheckToolboxes(String command) throws Exception;
-
-    /**
-     * Returns the textual output of matlab (as stored in the log file)
-     * @return textual output
-     */
-    public String getOutput(boolean debug);
 
     /**
      * Is Matlab run via a starter process (the real Matlab process is hidden) ?

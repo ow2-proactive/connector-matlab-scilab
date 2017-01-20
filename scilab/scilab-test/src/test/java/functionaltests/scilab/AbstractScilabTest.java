@@ -246,13 +246,10 @@ public class AbstractScilabTest extends SchedulerFunctionalTest {
 
         Process p = pb.start();
 
-        IOTools.LoggingThread lt1 = new IOTools.LoggingThread(p, "[AbstractScilabTest]", System.out,
-            System.err);
+        IOTools.LoggingThread lt1 = new IOTools.LoggingThread(p.getInputStream(), "[AbstractScilabTest]", System.out);
         Thread t1 = new Thread(lt1, "AbstractScilabTest");
         t1.setDaemon(true);
         t1.start();
-
-        //ProcessResult pr = IOTools.blockingGetProcessResult(p, 580000);
 
         p.waitFor();
 
@@ -310,7 +307,7 @@ public class AbstractScilabTest extends SchedulerFunctionalTest {
 
         Process p = pb.start();
 
-        IOTools.LoggingThread lt1 = new IOTools.LoggingThread(p, "[" + testName + "]", System.out, System.err);
+        IOTools.LoggingThread lt1 = new IOTools.LoggingThread(p.getInputStream(), "[" + testName + "]", System.out);
         Thread t1 = new Thread(lt1, testName);
         t1.setDaemon(true);
         t1.start();

@@ -246,7 +246,7 @@ public class AbstractMatlabTest extends SchedulerFunctionalTest {
 
         Process p = pb.start();
 
-        IOTools.LoggingThread lt1 = new IOTools.LoggingThread(p, "[" + testName + "]", System.out, System.err);
+        IOTools.LoggingThread lt1 = new IOTools.LoggingThread(p.getInputStream(), "[" + testName + "]", System.out);
         Thread t1 = new Thread(lt1, testName);
         t1.setDaemon(true);
         t1.start();
