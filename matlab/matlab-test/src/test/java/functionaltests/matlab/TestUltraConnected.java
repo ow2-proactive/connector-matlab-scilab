@@ -34,13 +34,13 @@
  */
 package functionaltests.matlab;
 
-import java.io.File;
-
-import org.ow2.proactive.scheduler.ext.common.util.IOTools;
-import org.junit.Ignore;
-
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
+
+import java.io.File;
+
+import org.junit.Ignore;
+import org.ow2.proactive.scheduler.ext.common.util.IOTools;
 
 
 /**

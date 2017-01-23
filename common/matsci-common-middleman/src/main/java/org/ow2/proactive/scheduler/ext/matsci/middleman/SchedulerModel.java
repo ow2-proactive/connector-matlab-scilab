@@ -36,6 +36,15 @@
  */
 package org.ow2.proactive.scheduler.ext.matsci.middleman;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map.Entry;
+
 import org.apache.log4j.Logger;
 import org.objectweb.proactive.core.ProActiveRuntimeException;
 import org.ow2.proactive.db.SortOrder;
@@ -46,20 +55,14 @@ import org.ow2.proactive.scheduler.common.Scheduler;
 import org.ow2.proactive.scheduler.common.exception.NotConnectedException;
 import org.ow2.proactive.scheduler.common.exception.PermissionException;
 import org.ow2.proactive.scheduler.common.exception.UnknownTaskException;
-import org.ow2.proactive.scheduler.common.job.*;
+import org.ow2.proactive.scheduler.common.job.JobInfo;
+import org.ow2.proactive.scheduler.common.job.JobResult;
+import org.ow2.proactive.scheduler.common.job.JobState;
+import org.ow2.proactive.scheduler.common.job.JobStatus;
 import org.ow2.proactive.scheduler.common.task.TaskResult;
 import org.ow2.proactive.scheduler.common.task.TaskState;
 import org.ow2.proactive.utils.ObjectArrayFormatter;
 import org.ow2.proactive.utils.Tools;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map.Entry;
 
 
 public class SchedulerModel {

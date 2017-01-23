@@ -37,9 +37,14 @@
 package functionaltests.matlab;
 
 
-import functionaltests.utils.SchedulerFunctionalTest;
-import functionaltests.utils.SchedulerTHelper;
-import functionaltests2.SchedulerCommandLine;
+import static junit.framework.Assert.assertTrue;
+
+import java.io.File;
+import java.io.FilenameFilter;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.security.PublicKey;
+
 import org.apache.commons.io.IOUtils;
 import org.ow2.proactive.authentication.crypto.CredData;
 import org.ow2.proactive.authentication.crypto.Credentials;
@@ -51,13 +56,9 @@ import org.ow2.proactive.scheduler.ext.common.util.IOTools;
 import org.ow2.proactive.scheduler.ext.matlab.client.embedded.MatlabTaskRepository;
 import org.ow2.proactive.scheduler.ext.matlab.middleman.AOMatlabEnvironment;
 
-import java.io.File;
-import java.io.FilenameFilter;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.security.PublicKey;
-
-import static junit.framework.Assert.assertTrue;
+import functionaltests.utils.SchedulerFunctionalTest;
+import functionaltests.utils.SchedulerTHelper;
+import functionaltests2.SchedulerCommandLine;
 
 
 /**

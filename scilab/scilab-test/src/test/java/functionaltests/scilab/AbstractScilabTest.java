@@ -36,9 +36,15 @@
  */
 package functionaltests.scilab;
 
-import functionaltests.utils.SchedulerFunctionalTest;
-import functionaltests.utils.SchedulerTHelper;
-import functionaltests2.SchedulerCommandLine;
+import static junit.framework.Assert.assertTrue;
+
+import java.io.File;
+import java.io.FilenameFilter;
+import java.net.InetAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.security.PublicKey;
+
 import org.apache.commons.io.FileUtils;
 import org.ow2.proactive.authentication.crypto.CredData;
 import org.ow2.proactive.authentication.crypto.Credentials;
@@ -50,14 +56,9 @@ import org.ow2.proactive.scheduler.ext.common.util.IOTools;
 import org.ow2.proactive.scheduler.ext.scilab.client.embedded.ScilabTaskRepository;
 import org.ow2.proactive.scheduler.ext.scilab.middleman.AOScilabEnvironment;
 
-import java.io.File;
-import java.io.FilenameFilter;
-import java.net.InetAddress;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.security.PublicKey;
-
-import static junit.framework.Assert.assertTrue;
+import functionaltests.utils.SchedulerFunctionalTest;
+import functionaltests.utils.SchedulerTHelper;
+import functionaltests2.SchedulerCommandLine;
 
 
 /**

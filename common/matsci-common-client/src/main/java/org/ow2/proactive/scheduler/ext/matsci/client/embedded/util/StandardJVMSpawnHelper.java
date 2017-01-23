@@ -36,11 +36,11 @@
  */
 package org.ow2.proactive.scheduler.ext.matsci.client.embedded.util;
 
-import org.ow2.proactive.scheduler.ext.common.util.IOTools;
-import org.ow2.proactive.scheduler.ext.common.util.StackTraceUtil;
-import org.ow2.proactive.scheduler.ext.matsci.client.common.data.Pair;
-
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
 import java.rmi.NotBoundException;
@@ -52,6 +52,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.ow2.proactive.scheduler.ext.common.util.IOTools;
+import org.ow2.proactive.scheduler.ext.common.util.StackTraceUtil;
+import org.ow2.proactive.scheduler.ext.matsci.client.common.data.Pair;
 
 
 /**

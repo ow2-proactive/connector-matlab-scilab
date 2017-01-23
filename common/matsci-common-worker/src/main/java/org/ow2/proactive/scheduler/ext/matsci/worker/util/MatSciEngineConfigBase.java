@@ -36,9 +36,9 @@
  */
 package org.ow2.proactive.scheduler.ext.matsci.worker.util;
 
-import org.objectweb.proactive.core.UniqueID;
-
 import java.util.Scanner;
+
+import org.objectweb.proactive.core.UniqueID;
 
 
 /**
