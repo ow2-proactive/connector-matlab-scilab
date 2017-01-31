@@ -194,8 +194,6 @@ public class ScilabExecutable extends JavaExecutable {
         // outputFiles
         transferOutputFiles();
 
-        scilabConnection.init();
-
         scilabConnection.beforeLaunch();
 
         logger.debug("Launching the SCILAB command");
