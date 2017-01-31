@@ -172,7 +172,7 @@ public class MatlabConnectionRImpl implements MatlabConnection {
     }
 
     public void acquire(String matlabExecutablePath, File workingDir, PASolveMatlabGlobalConfig paconfig,
-                        PASolveMatlabTaskConfig tconfig) throws MatlabInitException {
+                        PASolveMatlabTaskConfig tconfig,  final String jobId, final String taskId) throws MatlabInitException {
         this.matlabLocation = matlabExecutablePath;
         this.workingDirectory = workingDir;
         this.debug = paconfig.isDebug();
@@ -181,7 +181,8 @@ public class MatlabConnectionRImpl implements MatlabConnection {
         this.startUpOptions = paconfig.getStartupOptions();
         this.TIMEOUT_START = paconfig.getWorkerTimeoutStart();
 
-        this.taskOutputFile = new File(this.workingDirectory, "MatlabStart.log");
+
+        this.taskOutputFile = new File(this.workingDirectory, "MatlabStart_" + jobId + "_" + taskId + ".log");
         if (!this.taskOutputFile.exists()) {
             try {
                 this.taskOutputFile.createNewFile();

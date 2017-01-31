@@ -59,10 +59,12 @@ public interface MatlabConnection {
      * @param workingDir the directory where to start MATLAB
      * @param paconfig configuration of a Matlab PAsolve Job
      * @param tconfig configuration of a Matlab Task
+     * @param jobId current job id
+     * @param taskId current task id
      * @throws org.ow2.proactive.scheduler.ext.matlab.common.exception.MatlabInitException if MATLAB could not be initialized
      */
     public void acquire(String matlabExecutablePath, File workingDir, PASolveMatlabGlobalConfig paconfig,
-            PASolveMatlabTaskConfig tconfig) throws MatlabInitException;
+            PASolveMatlabTaskConfig tconfig, final String jobId, final String taskId) throws MatlabInitException;
 
     /**
      * Used to send initialization matlab commands to the connection (in case of command grouping)

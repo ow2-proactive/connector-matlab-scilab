@@ -162,7 +162,10 @@ public class MatlabExecutable extends JavaExecutable {
             this.matlabConnection = new MatlabConnectionRImpl(getOut());
         }
 
-        matlabConnection.acquire(matlabCmd, this.localSpaceRootDir, this.paconfig, this.taskconfig);
+        final String jobId = (String) this.getVariables().get("PA_JOB_ID");
+        final String taskId = (String) this.getVariables().get("PA_TASK_ID");
+
+        matlabConnection.acquire(matlabCmd, this.localSpaceRootDir, this.paconfig, this.taskconfig, jobId, taskId);
 
         Serializable result = null;
 

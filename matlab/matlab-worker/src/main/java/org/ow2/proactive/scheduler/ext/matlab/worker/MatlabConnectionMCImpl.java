@@ -110,10 +110,12 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
      * @param workingDir the directory where to start MATLAB
      * @param paconfig configuration of a Matlab PAsolve Job
      * @param tconfig configuration of a Matlab Task
+     * @param jobId current job id
+     * @param taskId current task id
      * @throws org.ow2.proactive.scheduler.ext.matlab.common.exception.MatlabInitException if MATLAB could not be initialized
      */
     public void acquire(String matlabExecutablePath, File workingDir, PASolveMatlabGlobalConfig paconfig,
-                        PASolveMatlabTaskConfig tconfig) throws MatlabInitException {
+                        PASolveMatlabTaskConfig tconfig, final String jobId, final String taskId) throws MatlabInitException {
         RemoteMatlabProxyFactory proxyFactory;
         this.paconfig = paconfig;
         this.tconfig = tconfig;
@@ -137,7 +139,7 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
         try {
 
             processCreator = new CustomMatlabProcessCreator(matlabExecutablePath, workingDir,
-                    this.startUpOptions, paconfig.isDebug(), this.taskOut);
+                    this.startUpOptions, paconfig.isDebug(), this.taskOut, jobId, taskId);
 
             proxyFactory = new RemoteMatlabProxyFactory(processCreator);
         } catch (MatlabConnectionException e) {
@@ -385,10 +387,10 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
         static IOTools.LoggingThread outputThreadDefinition;
 
         public CustomMatlabProcessCreator(final String matlabLocation, final File workingDirectory,
-                                          String[] startUpOptions, boolean debug, final PrintStream taskOut) {
+                                          String[] startUpOptions, boolean debug, final PrintStream taskOut, final String jobId, final String taskId) {
             this.matlabLocation = matlabLocation;
             this.workingDirectory = workingDirectory;
-            this.taskOutputFile = new File(this.workingDirectory, "MatlabStart.log");
+            this.taskOutputFile = new File(this.workingDirectory, "MatlabStart_" + jobId + "_" + taskId + ".log");
             if (!this.taskOutputFile.exists()) {
                 try {
                     this.taskOutputFile.createNewFile();
