@@ -172,9 +172,6 @@ public enum MatSciProperties {
             propertiesPath = schedhome + File.separator + propertiesPath;
         }
         properties_file = propertiesPath;
-        if (jPropSet) {
-            System.out.println("Using properties file at :" + properties_file);
-        }
         fileLoaded = new File(properties_file).exists();
         if (jPropSet && !fileLoaded) {
             throw new RuntimeException("Matlab/Scilab properties file not found : '" + properties_file + "'");

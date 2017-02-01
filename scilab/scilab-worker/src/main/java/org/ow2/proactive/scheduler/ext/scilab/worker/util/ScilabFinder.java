@@ -38,23 +38,18 @@ package org.ow2.proactive.scheduler.ext.scilab.worker.util;
 
 import java.util.HashSet;
 
+import org.apache.log4j.Level;
 import org.ow2.proactive.scheduler.ext.matsci.worker.util.MatSciEngineConfig;
 import org.ow2.proactive.scheduler.ext.matsci.worker.util.MatSciFinder;
 
 
 public class ScilabFinder extends MatSciFinder {
 
-    private static ScilabFinder instance = null;
+    public ScilabFinder (boolean isDebug) {
 
-    protected ScilabFinder() {
-
-    }
-
-    public static ScilabFinder getInstance() {
-        if (instance == null) {
-            instance = new ScilabFinder();
-        }
-        return instance;
+        // Set the log4j level according to the config
+        if (isDebug)
+            logger.setLevel(Level.DEBUG);
     }
 
     /**
@@ -68,12 +63,13 @@ public class ScilabFinder extends MatSciFinder {
 
     public MatSciEngineConfig findMatSci(String version_pref, HashSet<String> versionsRej, String versionMin,
             String versionMax, String versionArch, boolean debug) throws Exception {
-        HashSet<MatSciEngineConfig> confs = ScilabConfigurationParser.getInstance().getConfigs(debug);
 
+        HashSet<MatSciEngineConfig> confs = new ScilabConfigurationParser(debug).getConfigs();
         if (confs == null)
             return null;
+
         MatSciEngineConfig answer = chooseMatSciConfig(confs, version_pref, versionsRej, versionMin,
-                versionMax, versionArch, debug);
+                versionMax, versionArch);
 
         return answer;
     }

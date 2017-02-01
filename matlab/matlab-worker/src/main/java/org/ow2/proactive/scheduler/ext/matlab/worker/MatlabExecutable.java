@@ -42,6 +42,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.ow2.proactive.scheduler.common.task.TaskResult;
 import org.ow2.proactive.scheduler.common.task.executable.JavaExecutable;
@@ -74,7 +75,7 @@ import org.ow2.proactive.scheduler.ext.matsci.worker.util.MatSciEngineConfig;
  */
 public class MatlabExecutable extends JavaExecutable {
 
-    public static final Logger logger = Logger.getLogger(MatlabExecutable.class);
+    private final Logger logger = Logger.getLogger(MatlabExecutable.class);
 
     protected static String HOSTNAME;
 
@@ -111,14 +112,15 @@ public class MatlabExecutable extends JavaExecutable {
     @Override
     public void init(final Map<String, Serializable> args) throws Exception {
 
-        logger.debug("Reading the global configuration");
-
         Object obj = args.get("global_config");
         if (obj != null) {
             this.paconfig = (PASolveMatlabGlobalConfig) obj;
         }
 
-        logger.debug("Reading the task configuration");
+        // Set the log4j level according to the config
+        if (paconfig.isDebug())
+            logger.setLevel(Level.DEBUG);
+
         obj = args.get("task_config");
         if (obj != null) {
             this.taskconfig = (PASolveMatlabTaskConfig) obj;
@@ -240,7 +242,7 @@ public class MatlabExecutable extends JavaExecutable {
         logger.debug("Initializing the MATLAB config");
         MatlabEngineConfig conf = (MatlabEngineConfig) MatlabEngineConfig.getCurrentConfiguration();
         if (conf == null) {
-            conf = (MatlabEngineConfig) MatlabFinder.getInstance().findMatSci(paconfig.getVersionPref(),
+            conf = (MatlabEngineConfig) new MatlabFinder(paconfig.isDebug()).findMatSci(paconfig.getVersionPref(),
                     paconfig.getVersionRej(), paconfig.getVersionMin(), paconfig.getVersionMax(),
                     paconfig.getVersionArch(), paconfig.isDebug());
             if (conf == null) {

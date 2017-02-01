@@ -42,6 +42,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.ow2.proactive.scheduler.common.task.TaskResult;
 import org.ow2.proactive.scheduler.common.task.executable.JavaExecutable;
@@ -64,7 +65,7 @@ import org.ow2.proactive.scheduler.ext.scilab.worker.util.ScilabFinder;
  */
 public class ScilabExecutable extends JavaExecutable {
 
-    public static final Logger logger = Logger.getLogger(ScilabExecutable.class);
+    private final Logger logger = Logger.getLogger(ScilabExecutable.class);
 
     private static String HOSTNAME;
 
@@ -101,13 +102,15 @@ public class ScilabExecutable extends JavaExecutable {
     @Override
     public void init(final Map<String, Serializable> args) throws Exception {
 
-        logger.debug("Reading the global configuration");
         Object obj = args.get("global_config");
         if (obj != null) {
             this.paconfig = (PASolveScilabGlobalConfig) obj;
         }
 
-        logger.debug("Reading the task configuration");
+        // Set the log4j level according to the config
+        if (paconfig.isDebug())
+            logger.setLevel(Level.DEBUG);
+
         obj = args.get("task_config");
         if (obj != null) {
             this.taskconfig = (PASolveScilabTaskConfig) obj;
@@ -210,7 +213,7 @@ public class ScilabExecutable extends JavaExecutable {
         logger.debug("Initializing the SCILAB config");
         ScilabEngineConfig conf = (ScilabEngineConfig) ScilabEngineConfig.getCurrentConfiguration();
         if (conf == null) {
-            conf = (ScilabEngineConfig) ScilabFinder.getInstance().findMatSci(paconfig.getVersionPref(),
+            conf = (ScilabEngineConfig) new ScilabFinder(paconfig.isDebug()).findMatSci(paconfig.getVersionPref(),
                     paconfig.getVersionRej(), paconfig.getVersionMin(), paconfig.getVersionMax(),
                     paconfig.getVersionArch(), paconfig.isDebug());
             if (conf == null) {

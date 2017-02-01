@@ -41,6 +41,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.objectweb.proactive.utils.OperatingSystem;
 
 
@@ -51,6 +52,8 @@ import org.objectweb.proactive.utils.OperatingSystem;
 */
 public abstract class MatSciFinder {
 
+    protected final Logger logger = Logger.getLogger(MatSciFinder.class);
+
     // the OS where this JVM is running
     private static OperatingSystem os = OperatingSystem.getOperatingSystem();
 
@@ -60,52 +63,38 @@ public abstract class MatSciFinder {
             String versionMin, String versionMax, String versionArch, boolean debug) throws Exception;
 
     protected MatSciEngineConfig chooseMatSciConfig(HashSet<MatSciEngineConfig> configs, String version_pref,
-            Set<String> versionsRej, String versionMin, String versionMax, String versionArch, boolean debug) {
+            Set<String> versionsRej, String versionMin, String versionMax, String versionArch) {
         List<MatSciEngineConfig> selected = new ArrayList<MatSciEngineConfig>();
-        if (debug) {
-            System.out.println("Choosing config with version_pref=" + version_pref + ", versionRej=" +
+        logger.debug("Choosing config with version_pref=" + version_pref + ", versionRej=" +
                 versionsRej + ", versionMin=" + versionMin + ", versionMax=" + versionMax + ", versionArch=" +
                 versionArch);
-        }
         for (MatSciEngineConfig conf : configs) {
+
             String version = conf.getVersion();
-            if (debug) {
-                System.out.println("Version : " + version + "(" + conf.getArch() + ")");
-            }
+            logger.debug("Version : " + version + "(" + conf.getArch() + ")");
+
             if (versionsRej != null && !versionsRej.isEmpty() && versionsRej.contains(version)) {
-                if (debug) {
-                    System.out.println("... rejected");
-                }
+                logger.debug("... rejected");
                 continue;
             }
             if (versionArch != null && !versionArch.equalsIgnoreCase("any") &&
                 !versionArch.equals(conf.getArch())) {
-                if (debug) {
-                    System.out.println("... architecture rejected");
-                }
+                logger.debug("... architecture rejected");
                 continue;
             }
             if (versionMin != null && MatSciEngineConfigBase.compareVersions(version, versionMin) < 0) {
-                if (debug) {
-                    System.out.println("... too low");
-                }
+                logger.debug("... too low");
                 continue;
             }
             if (versionMax != null && MatSciEngineConfigBase.compareVersions(versionMax, version) < 0) {
-                if (debug) {
-                    System.out.println("... too high");
-                }
+                logger.debug("... too high");
                 continue;
             }
             if (version_pref != null && version_pref.equals(version)) {
-                if (debug) {
-                    System.out.println("... preferred");
-                }
+                logger.debug("... preferred");
                 return conf;
             }
-            if (debug) {
-                System.out.println("... accepted");
-            }
+            logger.debug("... accepted");
             selected.add(conf);
         }
         if (selected.size() > 0) {

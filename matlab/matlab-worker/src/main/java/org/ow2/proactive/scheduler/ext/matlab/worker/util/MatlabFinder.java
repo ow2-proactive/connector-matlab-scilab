@@ -38,6 +38,7 @@ package org.ow2.proactive.scheduler.ext.matlab.worker.util;
 
 import java.util.HashSet;
 
+import org.apache.log4j.Level;
 import org.objectweb.proactive.utils.OperatingSystem;
 import org.ow2.proactive.scheduler.ext.matsci.worker.util.MatSciEngineConfig;
 import org.ow2.proactive.scheduler.ext.matsci.worker.util.MatSciFinder;
@@ -50,17 +51,11 @@ public class MatlabFinder extends MatSciFinder {
      */
     private static OperatingSystem os = OperatingSystem.getOperatingSystem();
 
-    private static MatlabFinder instance = null;
+    public MatlabFinder (boolean isDebug) {
 
-    private MatlabFinder() {
-
-    }
-
-    public static MatlabFinder getInstance() {
-        if (instance == null) {
-            instance = new MatlabFinder();
-        }
-        return instance;
+        // Set the log4j level according to the config
+        if (isDebug)
+            logger.setLevel(Level.DEBUG);
     }
 
     /**
@@ -77,14 +72,13 @@ public class MatlabFinder extends MatSciFinder {
      */
     public MatSciEngineConfig findMatSci(String version_pref, HashSet<String> versionsRej, String versionMin,
             String versionMax, String versionArch, boolean debug) throws Exception {
-        HashSet<MatSciEngineConfig> confs = null;
 
-        confs = MatlabConfigurationParser.getInstance().getConfigs(debug);
-
+        HashSet<MatSciEngineConfig> confs = new MatlabConfigurationParser(debug).getConfigs();
         if (confs == null)
             return null;
+
         MatSciEngineConfig answer = chooseMatSciConfig(confs, version_pref, versionsRej, versionMin,
-                versionMax, versionArch, debug);
+                versionMax, versionArch);
 
         return answer;
 
