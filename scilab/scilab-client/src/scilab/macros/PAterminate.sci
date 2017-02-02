@@ -13,7 +13,7 @@ function PAterminate()
                 repository = jinvoke(ScilabTaskRepository,'getInstance');
                 notReceived = jinvoke(repository, 'notYetReceived');
                 jobs = [];
-                if ~jinvoke(notReceived, 'isEmpty')
+                if ~isempty(notReceived)
                     msg = 'The following jobs are not completed yet : ';
                     for j = 0:jinvoke(notReceived, 'size')-1
                         jid = jinvoke(notReceived, 'get', j);
