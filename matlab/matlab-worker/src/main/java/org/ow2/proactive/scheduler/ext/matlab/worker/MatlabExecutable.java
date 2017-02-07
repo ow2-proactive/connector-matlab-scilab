@@ -36,8 +36,14 @@
  */
 package org.ow2.proactive.scheduler.ext.matlab.worker;
 
+import java.io.File;
+import java.io.Serializable;
+import java.net.URI;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.log4j.Level;
-import org.objectweb.proactive.core.util.log.ProActiveLogger;
+import org.apache.log4j.Logger;
 import org.ow2.proactive.scheduler.common.task.TaskResult;
 import org.ow2.proactive.scheduler.common.task.executable.JavaExecutable;
 import org.ow2.proactive.scheduler.ext.common.util.FileUtils;
@@ -50,17 +56,6 @@ import org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveEnvFile;
 import org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveFile;
 import org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveZippedFile;
 import org.ow2.proactive.scheduler.ext.matsci.worker.util.MatSciEngineConfig;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.Serializable;
-import java.net.URI;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -80,11 +75,7 @@ import java.util.Map;
  */
 public class MatlabExecutable extends JavaExecutable {
 
-    /** The name of the property that defines tmp directory */
-    public static final String MATLAB_TASK_TMPDIR = "matlab.task.tmpdir";
-
-    /** The name of the property that defines MATLAB preferences directory */
-    public static final String MATLAB_PREFDIR = "matlab.prefdir";
+    private final Logger logger = Logger.getLogger(MatlabExecutable.class);
 
     protected static String HOSTNAME;
 
@@ -95,13 +86,6 @@ public class MatlabExecutable extends JavaExecutable {
         }
     }
 
-    /** The ISO8601 for debug format of the date that precedes the log message */
-    protected static final SimpleDateFormat ISO8601FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:sss");
-
-    /** For debug purpose see {@link MatlabExecutable#createLogFileOnDebug()} */
-    private FileOutputStream debugfos;
-    private PrintStream outDebug;
-
     /** The global configuration */
     private PASolveMatlabGlobalConfig paconfig;
 
@@ -110,9 +94,6 @@ public class MatlabExecutable extends JavaExecutable {
 
     /** The MATLAB configuration */
     private MatlabEngineConfig matlabEngineConfig;
-
-    /** The temp dir where all temp files are stores it doesn't include files received from dataspaces */
-    protected String tmpDir;
 
     /** The root of the local space and a temporary dir */
     private File localSpaceRootDir, tempSubDir;
@@ -131,43 +112,33 @@ public class MatlabExecutable extends JavaExecutable {
     @Override
     public void init(final Map<String, Serializable> args) throws Exception {
 
-        // The tmp dir is matlab.task.tmpdir if defined otherwise it is java.io.tmpdir
-        this.tmpDir = System.getProperty(MATLAB_TASK_TMPDIR) == null ? System.getProperty("java.io.tmpdir")
-                : System.getProperty(MATLAB_TASK_TMPDIR);
-
-        // Fix for SCHEDULING-1308: With RunAsMe on windows the forked jvm can have a non-writable java.io.tmpdir
-        if (!new File(this.tmpDir).canWrite()) {
-            throw new RuntimeException("Unable to execute task, TMPDIR: " + this.tmpDir + " is not writable.");
-        }
-
-        // Read global configuration
         Object obj = args.get("global_config");
         if (obj != null) {
             this.paconfig = (PASolveMatlabGlobalConfig) obj;
         }
 
-        // Create a log file if debug is enabled
-        this.createLogFileOnDebug();
+        // Set the log4j level according to the config
+        if (paconfig.isDebug())
+            logger.setLevel(Level.DEBUG);
 
-        // Read task configuration
         obj = args.get("task_config");
         if (obj != null) {
             this.taskconfig = (PASolveMatlabTaskConfig) obj;
         }
 
-        // Read the main script to execute
+        logger.debug("Reading the main script to execute");
         this.script = (String) args.get("script");
         if (this.script == null || "".equals(this.script)) {
             throw new IllegalArgumentException("Unable to execute task, no script specified");
         }
 
-        // Initialize MATLAB location
+        logger.debug("Initializing the MATLAB location");
         this.initMatlabConfig();
 
-        // Initialize LOCAL SPACE
+        logger.debug("Initializing the local space");
         this.initLocalSpace();
 
-        // Initialize transfers
+        logger.debug("Initializing transfers");
         this.initTransferSource();
         this.initTransferEnv();
         this.initTransferInputFiles();
@@ -184,36 +155,29 @@ public class MatlabExecutable extends JavaExecutable {
             }
         }
 
-        if (paconfig.isDebug()) {
-            ProActiveLogger.getLogger(MatlabExecutable.class).setLevel(Level.DEBUG);
-        }
-
         final String matlabCmd = this.matlabEngineConfig.getFullCommand();
-        this.printLog("Acquiring MATLAB connection using " + matlabCmd);
 
-        // Acquire a connection to MATLAB
+        logger.debug("Acquiring MATLAB connection using " + matlabCmd);
         if (paconfig.isUseMatlabControl()) {
-            this.matlabConnection = new MatlabConnectionMCImpl(this.tmpDir, this.outDebug);
+            this.matlabConnection = new MatlabConnectionMCImpl(getOut());
         } else {
-            this.matlabConnection = new MatlabConnectionRImpl(this.tmpDir, this.outDebug);
+            this.matlabConnection = new MatlabConnectionRImpl(getOut());
         }
 
+        final String jobId = (String) this.getVariables().get("PA_JOB_ID");
         final String taskId = (String) this.getVariables().get("PA_TASK_ID");
-        matlabConnection.acquire(matlabCmd, this.localSpaceRootDir, this.paconfig, this.taskconfig, taskId);
+
+        matlabConnection.acquire(matlabCmd, this.localSpaceRootDir, this.paconfig, this.taskconfig, jobId, taskId);
 
         Serializable result = null;
 
         try {
-            // Execute the MATLAB script and receive the result
+            logger.debug("Executing the MATLAB script and receiving the result");
             result = this.executeScript();
         } finally {
-            this.printLog("Closing MATLAB...");
+            logger.debug("Closing MATLAB...");
             this.matlabConnection.release();
-            if (paconfig.isDebug() || matlabConnection.isMatlabRunViaAStarter()) {
-                printLog(this.matlabConnection.getOutput(paconfig.isDebug()), true);
-            }
-            printLog("End of Task");
-            this.closeLogFileOnDebug();
+            logger.debug("End of Task");
         }
 
         return result;
@@ -234,7 +198,7 @@ public class MatlabExecutable extends JavaExecutable {
      */
     protected final Serializable executeScript() throws Throwable {
 
-        // Add sources, load workspace and input variables
+        logger.debug("Adding sources, loading workspace and input variables");
         matlabConnection.init();
 
         this.addSources();
@@ -248,17 +212,18 @@ public class MatlabExecutable extends JavaExecutable {
             matlabConnection.evalString("who");
         }
 
-        printLog("Running MATLAB command: " + this.script);
-
+        logger.debug("Evaluating the MATLAB command: " + this.script);
         matlabConnection.evalString(this.script);
 
-        printLog("MATLAB command completed successfully, receiving output... ");
-
+        logger.debug("Receiving output");
         storeOutputVariable();
 
         // outputFiles
         transferOutputFiles();
 
+        matlabConnection.beforeLaunch();
+
+        logger.debug("Launching the MATLAB command");
         matlabConnection.launch();
 
         testOutput();
@@ -274,9 +239,10 @@ public class MatlabExecutable extends JavaExecutable {
      * @throws Exception if no valid configuration could be found.
      */
     protected MatSciEngineConfig initMatlabConfig() throws Exception {
+        logger.debug("Initializing the MATLAB config");
         MatlabEngineConfig conf = (MatlabEngineConfig) MatlabEngineConfig.getCurrentConfiguration();
         if (conf == null) {
-            conf = (MatlabEngineConfig) MatlabFinder.getInstance().findMatSci(paconfig.getVersionPref(),
+            conf = (MatlabEngineConfig) new MatlabFinder(paconfig.isDebug()).findMatSci(paconfig.getVersionPref(),
                     paconfig.getVersionRej(), paconfig.getVersionMin(), paconfig.getVersionMax(),
                     paconfig.getVersionArch(), paconfig.isDebug());
             if (conf == null) {
@@ -292,6 +258,7 @@ public class MatlabExecutable extends JavaExecutable {
      * @throws Exception
      */
     private void initLocalSpace() throws Exception {
+        logger.debug("Initializing the local space");
         final File localSpaceFile = new File(getLocalSpace());
         final URI localSpaceURI = localSpaceFile.toURI();
         final String localSpaceURIstr = localSpaceURI .toString();
@@ -333,27 +300,24 @@ public class MatlabExecutable extends JavaExecutable {
                 zippedFile.setRootDirectory(localSpaceRootDir);
                 File sourceZip = new File(zippedFile.getFullPathName());
 
-                printLog("Unzipping source files from " + sourceZip);
-
+                logger.debug("Unzipping source files from " + sourceZip);
                 if (!sourceZip.exists() || !sourceZip.canRead()) {
-                    System.err.println("Error, source zip file cannot be accessed at " + sourceZip);
+                    logger.error("Error, source zip file cannot be accessed at " + sourceZip);
                     throw new IllegalStateException("Error, source zip file cannot be accessed at " +
                         sourceZip);
                 }
 
                 // Uncompress the source files into the temp dir
                 if (!FileUtils.unzip(sourceZip, sourceZip.getParentFile())) {
-                    System.err.println("Unable to unzip source file " + sourceZip);
+                    logger.error("Unable to unzip source file " + sourceZip);
                     throw new IllegalStateException("Unable to unzip source file " + sourceZip);
                 }
             }
         }
 
-        if (paconfig.isDebug()) {
-            printLog("Contents of " + tempSubDir);
-            for (File f : tempSubDir.listFiles()) {
-                printLog(f.getName());
-            }
+        logger.debug("Contents of " + tempSubDir);
+        for (File f : tempSubDir.listFiles()) {
+            logger.debug(f.getName());
         }
     }
 
@@ -396,8 +360,7 @@ public class MatlabExecutable extends JavaExecutable {
 
     private void addSources() throws Exception {
         if (tempSubDir != null) {
-            printLog("Adding to matlabpath sources from " + tempSubDir);
-            // Add unzipped source files to the MATALAB path
+            logger.debug("Adding sources from " + tempSubDir + " to the MATALAB path");
             matlabConnection.evalString("addpath('" + tempSubDir + "');");
         }
     }
@@ -414,12 +377,14 @@ public class MatlabExecutable extends JavaExecutable {
             }
         }
         checktoolboxesCommand.append("},'" + localSpaceRootDir.toString() + "');");
-        printLog(checktoolboxesCommand.toString());
+
+        logger.debug(checktoolboxesCommand.toString());
+
         matlabConnection.execCheckToolboxes(checktoolboxesCommand.toString());
     }
 
     private void execKeepAlive() throws Exception {
-        printLog("Executing Keep-Alive timer");
+        logger.debug("Executing Keep-Alive timer");
 
         StringBuilder keepAliveCommand = new StringBuilder(
             "t = timer('Period', 300,'ExecutionMode','fixedRate');t.TimerFcn = { @" +
@@ -434,7 +399,8 @@ public class MatlabExecutable extends JavaExecutable {
         }
         keepAliveCommand.append("}};start(t);");
 
-        printLog(keepAliveCommand.toString());
+        logger.debug(keepAliveCommand.toString());
+
         matlabConnection.evalString(keepAliveCommand.toString());
     }
 
@@ -443,12 +409,14 @@ public class MatlabExecutable extends JavaExecutable {
             PASolveEnvFile paenv = paconfig.getEnvMatFile();
             paenv.setRootDirectory(this.localSpaceRootDir.getCanonicalPath());
             File envMat = new File(paenv.getFullPathName());
-            printLog("Loading workspace from " + envMat);
+
+            logger.debug("Loading workspace from " + envMat);
             if (paconfig.isDebug()) {
                 matlabConnection.evalString("disp('Contents of " + envMat + "');");
                 matlabConnection.evalString("whos('-file','" + envMat + "')");
             }
-            // Load workspace using MATLAB command
+
+            logger.debug("Load workspace using MATLAB command");
             List<String> globals = paenv.getEnvGlobalNames();
             if (globals != null && globals.size() > 0) {
                 String globalstr = "";
@@ -465,7 +433,7 @@ public class MatlabExecutable extends JavaExecutable {
 
         File inMat = new File(taskconfig.getInputVariablesFile().getFullPathName());
 
-        printLog("Loading input variables from " + inMat);
+        logger.debug("Loading input variables from " + inMat);
 
         matlabConnection.evalString("load('" + inMat + "');");
         if (taskconfig.getComposedInputVariablesFile() != null) {
@@ -489,8 +457,7 @@ public class MatlabExecutable extends JavaExecutable {
         pafile.setRootDirectory(localSpaceRootDir);
         File outputFile = new File(pafile.getFullPathName());
 
-        printLog("Storing 'out' variable into " + outputFile);
-
+        logger.debug("Storing 'out' variable into " + outputFile);
         if (paconfig.getMatFileOptions() != null) {
             matlabConnection.evalString("save('" + outputFile + "','out','" + paconfig.getMatFileOptions() +
                 "');");
@@ -508,76 +475,14 @@ public class MatlabExecutable extends JavaExecutable {
     }
 
     private void testOutput() throws Exception {
+        logger.debug("Receiving and testing output...");
 
         PASolveFile pafile = taskconfig.getOutputVariablesFile();
         pafile.setRootDirectory(localSpaceRootDir);
         File outputFile = new File(pafile.getFullPathName());
-        printLog("Testing output file : " + outputFile);
+
         if (!outputFile.exists()) {
             throw new MatlabTaskException("Cannot find output variable file.");
         }
-    }
-
-    private void printLog(final String message) {
-        printLog(message, false);
-    }
-
-    private void printLog(final String message, boolean force) {
-        if (!this.paconfig.isDebug() && !force) {
-            return;
-        }
-        final Date d = new Date();
-        final String log = "[" + ISO8601FORMAT.format(d) + " " + HOSTNAME + "][" +
-            this.getClass().getSimpleName() + "] " + message;
-
-        // In case of non forked mode, the message is skipped after the first line break.
-        // To avoid this, lets print line per line
-        String[] lines = log.split(System.lineSeparator());
-        for (String line  : lines)
-        {
-            getOut().println(line);
-        }
-
-        if (this.outDebug != null) {
-            this.outDebug.println(log);
-            this.outDebug.flush();
-        }
-
-    }
-
-    /** Creates a log file in the java.io.tmpdir if debug is enabled */
-    private void createLogFileOnDebug() throws Exception {
-        if (!this.paconfig.isDebug()) {
-            return;
-        }
-
-        final String taskId = (String) this.getVariables().get("PA_TASK_ID");
-        final File logFile = new File(this.tmpDir, "MatlabExecutable_" + taskId + ".log");
-        if (!logFile.exists()) {
-            logFile.createNewFile();
-        }
-
-        try {
-            this.debugfos = new FileOutputStream(logFile);
-            this.outDebug = new PrintStream(this.debugfos);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void closeLogFileOnDebug() {
-        try {
-            if (this.outDebug != null) {
-                this.outDebug.close();
-            }
-        } catch (Exception e) {
-        }
-        try {
-            if (this.debugfos != null) {
-                this.debugfos.close();
-            }
-        } catch (Exception e) {
-        }
-
     }
 }

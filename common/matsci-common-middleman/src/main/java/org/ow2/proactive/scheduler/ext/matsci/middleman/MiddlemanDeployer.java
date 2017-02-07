@@ -36,27 +36,6 @@
  */
 package org.ow2.proactive.scheduler.ext.matsci.middleman;
 
-import org.objectweb.proactive.api.PAActiveObject;
-import org.objectweb.proactive.core.body.BodyMap;
-import org.objectweb.proactive.core.body.LocalBodyStore;
-import org.objectweb.proactive.core.node.Node;
-import org.objectweb.proactive.core.node.NodeFactory;
-import org.objectweb.proactive.core.remoteobject.AbstractRemoteObjectFactory;
-import org.objectweb.proactive.core.runtime.ProActiveRuntimeImpl;
-import org.objectweb.proactive.extensions.pamr.client.AgentImpl;
-import org.objectweb.proactive.extensions.pamr.client.Tunnel;
-import org.objectweb.proactive.extensions.pamr.exceptions.PAMRException;
-import org.objectweb.proactive.extensions.pamr.protocol.AgentID;
-import org.objectweb.proactive.extensions.pamr.protocol.MagicCookie;
-import org.objectweb.proactive.extensions.pamr.remoteobject.PAMRRemoteObjectFactory;
-import org.objectweb.proactive.extensions.pamr.remoteobject.util.socketfactory.PAMRSocketFactorySPI;
-import org.objectweb.proactive.extensions.pamr.PAMRConfig;
-import org.objectweb.proactive.extensions.pamr.remoteobject.util.socketfactory.PAMRSocketFactorySelector;
-import org.objectweb.proactive.utils.NamedThreadFactory;
-import org.ow2.proactive.scheduler.ext.matsci.client.common.DataspaceRegistry;
-import org.ow2.proactive.scheduler.ext.matsci.client.common.MatSciEnvironment;
-import org.ow2.proactive.scheduler.ext.matsci.client.common.MatSciJVMProcessInterface;
-
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -70,6 +49,27 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicLong;
+
+import org.objectweb.proactive.api.PAActiveObject;
+import org.objectweb.proactive.core.body.BodyMap;
+import org.objectweb.proactive.core.body.LocalBodyStore;
+import org.objectweb.proactive.core.node.Node;
+import org.objectweb.proactive.core.node.NodeFactory;
+import org.objectweb.proactive.core.remoteobject.AbstractRemoteObjectFactory;
+import org.objectweb.proactive.core.runtime.ProActiveRuntimeImpl;
+import org.objectweb.proactive.extensions.pamr.PAMRConfig;
+import org.objectweb.proactive.extensions.pamr.client.AgentImpl;
+import org.objectweb.proactive.extensions.pamr.client.Tunnel;
+import org.objectweb.proactive.extensions.pamr.exceptions.PAMRException;
+import org.objectweb.proactive.extensions.pamr.protocol.AgentID;
+import org.objectweb.proactive.extensions.pamr.protocol.MagicCookie;
+import org.objectweb.proactive.extensions.pamr.remoteobject.PAMRRemoteObjectFactory;
+import org.objectweb.proactive.extensions.pamr.remoteobject.util.socketfactory.PAMRSocketFactorySPI;
+import org.objectweb.proactive.extensions.pamr.remoteobject.util.socketfactory.PAMRSocketFactorySelector;
+import org.objectweb.proactive.utils.NamedThreadFactory;
+import org.ow2.proactive.scheduler.ext.matsci.client.common.DataspaceRegistry;
+import org.ow2.proactive.scheduler.ext.matsci.client.common.MatSciEnvironment;
+import org.ow2.proactive.scheduler.ext.matsci.client.common.MatSciJVMProcessInterface;
 
 
 /**

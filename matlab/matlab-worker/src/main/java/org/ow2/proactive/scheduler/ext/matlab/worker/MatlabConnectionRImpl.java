@@ -38,6 +38,7 @@ package org.ow2.proactive.scheduler.ext.matlab.worker;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -45,9 +46,8 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.concurrent.TimeoutException;
 
-import com.activeeon.proactive.license_saver.client.LicenseSaverClient;
+import org.apache.commons.io.FileUtils;
 import org.objectweb.proactive.core.ProActiveException;
 import org.ow2.proactive.scheduler.ext.common.util.IOTools;
 import org.ow2.proactive.scheduler.ext.matlab.common.data.PASolveMatlabGlobalConfig;
@@ -57,6 +57,8 @@ import org.ow2.proactive.scheduler.ext.matlab.common.exception.MatlabTaskExcepti
 import org.ow2.proactive.scheduler.ext.matlab.common.exception.UnreachableLicenseProxyException;
 import org.ow2.proactive.scheduler.ext.matlab.common.exception.UnsufficientLicencesException;
 
+import com.activeeon.proactive.license_saver.client.LicenseSaverClient;
+
 
 /**
  * MatlabConnectionRImpl this class
@@ -64,6 +66,16 @@ import org.ow2.proactive.scheduler.ext.matlab.common.exception.UnsufficientLicen
  * @author The ProActive Team
  */
 public class MatlabConnectionRImpl implements MatlabConnection {
+
+    /**
+     * The name of the property that defines tmp directory
+     */
+    public static final String MATLAB_TASK_TMPDIR = "matlab.task.tmpdir";
+
+    /**
+     * The name of the property that defines MATLAB preferences directory
+     */
+    public static final String MATLAB_PREFDIR = "matlab.prefdir";
 
     /**
      * System-dependent line separator
@@ -107,17 +119,10 @@ public class MatlabConnectionRImpl implements MatlabConnection {
     /**
      * File used to capture MATLAB process output (in addition to Threads)
      */
-    protected File logFile;
+    private File taskOutputFile;
 
-    /**
-     * Stream used for debug output
-     */
-    private final PrintStream outDebug;
-
-    /**
-     * The temp directory
-     */
-    private final String tmpDir;
+    /** Targeted stream for the task output redirection (in particular to display the task output from the scheduler portal) */
+    private final PrintStream taskOut;
 
     /**
      * Timeout for the matlab process startup x 10 ms
@@ -159,15 +164,15 @@ public class MatlabConnectionRImpl implements MatlabConnection {
     /**
      * Logging thread used *
      */
-    IOTools.LoggingThread lt1;
+    IOTools.LoggingThread outputThreadDefinition;
+    private Thread outputThread;
 
-    public MatlabConnectionRImpl(final String tmpDir, final PrintStream outDebug) {
-        this.tmpDir = tmpDir;
-        this.outDebug = outDebug;
+    public MatlabConnectionRImpl(final PrintStream taskOut) {
+        this.taskOut = taskOut;
     }
 
     public void acquire(String matlabExecutablePath, File workingDir, PASolveMatlabGlobalConfig paconfig,
-            PASolveMatlabTaskConfig tconfig, final String taskId) throws MatlabInitException {
+                        PASolveMatlabTaskConfig tconfig,  final String jobId, final String taskId) throws MatlabInitException {
         this.matlabLocation = matlabExecutablePath;
         this.workingDirectory = workingDir;
         this.debug = paconfig.isDebug();
@@ -176,11 +181,20 @@ public class MatlabConnectionRImpl implements MatlabConnection {
         this.startUpOptions = paconfig.getStartupOptions();
         this.TIMEOUT_START = paconfig.getWorkerTimeoutStart();
 
-        this.logFile = new File(tmpDir, "MatlabStart_" + taskId + ".log");
-        this.mainFuncFile = new File(workingDir, "PAMain.m");
-        if (!mainFuncFile.exists()) {
+
+        this.taskOutputFile = new File(this.workingDirectory, "MatlabStart_" + jobId + "_" + taskId + ".log");
+        if (!this.taskOutputFile.exists()) {
             try {
-                mainFuncFile.createNewFile();
+                this.taskOutputFile.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        this.mainFuncFile = new File(this.workingDirectory, "PAMain.m");
+        if (!this.mainFuncFile.exists()) {
+            try {
+                this.mainFuncFile.createNewFile();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -191,8 +205,8 @@ public class MatlabConnectionRImpl implements MatlabConnection {
                 this.lclient = new LicenseSaverClient(paconfig.getLicenseSaverURL());
             } catch (ProActiveException e) {
                 throw new MatlabInitException(new UnreachableLicenseProxyException(
-                    "License Proxy Server at url " + paconfig.getLicenseSaverURL() +
-                        " could not be contacted.", e));
+                        "License Proxy Server at url " + paconfig.getLicenseSaverURL() +
+                                " could not be contacted.", e));
             }
         }
 
@@ -214,6 +228,14 @@ public class MatlabConnectionRImpl implements MatlabConnection {
 
                 }
             }
+            if( outputThread != null) {
+                outputThread.interrupt();
+                try {
+                    outputThread.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
             running = false;
         }
     }
@@ -221,23 +243,6 @@ public class MatlabConnectionRImpl implements MatlabConnection {
     public void execCheckToolboxes(String command) {
 
         fullcommand.append(command);
-    }
-
-    @Override
-    public String getOutput(boolean debug) {
-        String output = "";
-        try {
-            if (debug) {
-                output = IOTools.readFileAsString(this.logFile, 20000, null, null);
-            } else {
-                output = IOTools.readFileAsString(this.logFile, 20000, startPattern, null);
-            }
-        } catch (InterruptedException e) {
-
-        } catch (TimeoutException e) {
-
-        }
-        return output;
     }
 
     @Override
@@ -257,17 +262,21 @@ public class MatlabConnectionRImpl implements MatlabConnection {
         throw new UnsupportedOperationException();
     }
 
-    public void launch() throws Exception {
+    public void beforeLaunch() {
         fullcommand.append("catch ME" + nl + "disp('Error occurred in .');" + nl + "disp(getReport(ME));" +
-            nl + "end" + nl);
+                nl + "end" + nl);
         // we remove all file handles possibily kept by matlab
         fullcommand.append("fclose('all');restoredefaultpath();");
         // we create a marker file to signify the end, but keep a handle on it. By doing that we can synchronize the java
         // process with the real matlab termination (it will liberate the handle when it will really exit)
         fullcommand.append("    fend = fullfile('" + workingDirectory + "','matlab.end');" + nl +
 
-        "fid = fopen(fend,'w');" + nl);
+                "fid = fopen(fend,'w');" + nl);
         fullcommand.append("exit();");
+    }
+
+    public void launch() throws Exception {
+
         PrintStream out = null;
 
         try {
@@ -286,17 +295,11 @@ public class MatlabConnectionRImpl implements MatlabConnection {
             running = true;
         }
 
-        if (debug) {
-            lt1 = new IOTools.LoggingThread(process, "[MATLAB]", System.out, System.err, outDebug, null,
-                null, new String[] { lcFailedPattern, outofmemoryPattern });
-        } else {
-            lt1 = new IOTools.LoggingThread(process, "[MATLAB]", System.out, System.err, startPattern, null,
-                new String[] { lcFailedPattern, outofmemoryPattern });
-
-        }
-        Thread t1 = new Thread(lt1, "OUT MATLAB");
-        t1.setDaemon(true);
-        t1.start();
+        // Logging thread creation & start
+        outputThreadDefinition = new IOTools.LoggingThread(new FileInputStream(taskOutputFile), "[MATLAB]", taskOut, debug ? null : startPattern, null, new String[] { lcFailedPattern, outofmemoryPattern });
+        outputThread = new Thread(outputThreadDefinition, "OUT MATLAB");
+        outputThread.setDaemon(true);
+        outputThread.start();
 
         File ackFile = new File(workingDirectory, "matlab.ack");
         File nackFile = new File(workingDirectory, "matlab.nack");
@@ -306,13 +309,13 @@ public class MatlabConnectionRImpl implements MatlabConnection {
 
             int cpt = 0;
             while (!ackFile.exists() && !nackFile.exists() && (cpt < TIMEOUT_START) &&
-                !lt1.patternFound(lcFailedPattern) && !lt1.patternFound(outofmemoryPattern) && running) {
+                    !outputThreadDefinition.patternFound(lcFailedPattern) && !outputThreadDefinition.patternFound(outofmemoryPattern) && running) {
                 try {
                     // WARNING : on windows platform, matlab is initialized by a startup program which exits immediately, we cannot take decisions based on exit status.
                     int exitValue = process.exitValue();
                     if (exitValue != 0) {
                         sendAck(false);
-                        // lt1.goon = false; unnecessary as matlab process exited
+                        // outputThreadDefinition.goon = false; unnecessary as matlab process exited
                         throw new MatlabInitException("Matlab process exited with code : " + exitValue);
                     } else {
                         // matlab uses a startup program, unfortunately, we won't be able to receive logs from the standard process
@@ -329,17 +332,15 @@ public class MatlabConnectionRImpl implements MatlabConnection {
 
             if (nackFile.exists()) {
                 sendAck(false);
-
-                lt1.goon = false;
                 throw new UnsufficientLicencesException();
             }
-            if (lt1.patternFound(lcFailedPattern)) {
+            if (outputThreadDefinition.patternFound(lcFailedPattern)) {
                 process.destroy();
                 process = null;
                 sendAck(false);
                 throw new UnsufficientLicencesException();
             }
-            if (lt1.patternFound(outofmemoryPattern)) {
+            if (outputThreadDefinition.patternFound(outofmemoryPattern)) {
                 process.destroy();
                 process = null;
                 sendAck(false);
@@ -349,10 +350,10 @@ public class MatlabConnectionRImpl implements MatlabConnection {
                 process.destroy();
                 process = null;
                 sendAck(false);
-                String output = IOTools.readFileAsString(this.logFile, 20000, null, null);
+                String output = FileUtils.readFileToString(this.taskOutputFile, "UTF-8");
                 throw new MatlabInitException(
-                    "Timeout occured while starting Matlab, with following output (" + this.logFile + "):" +
-                        nl + output);
+                        "Timeout occured while starting Matlab, with following output (" + this.taskOutputFile + "):" +
+                                nl + output);
             }
             if (!running) {
                 sendAck(false);
@@ -362,15 +363,16 @@ public class MatlabConnectionRImpl implements MatlabConnection {
 
             int exitValue = process.waitFor();
             if (exitValue != 0) {
-                String output = IOTools.readFileAsString(this.logFile, 20000, null, null);
+                String output = FileUtils.readFileToString(this.taskOutputFile, "UTF-8");
                 throw new MatlabInitException("Matlab process exited with code : " + exitValue +
-                    " after task started. With following output (" + this.logFile + "):" + nl + output);
+                        " after task started. With following output (" + this.taskOutputFile + "):" + nl + output);
             }
             // on windows the matlab initialization process can terminate while Matlab still exists in the background
             // we use then the end file to synchronize
             while (!endFile.exists()) {
                 Thread.sleep(10);
             }
+
             // now we wait that matlab exists completely and remove its grasp on the file
             boolean isDeleted = false;
             while (!isDeleted) {
@@ -384,7 +386,6 @@ public class MatlabConnectionRImpl implements MatlabConnection {
                 }
             }
         } finally {
-            lt1.goon = false;
             if (ackFile.exists()) {
                 ackFile.delete();
             }
@@ -404,8 +405,8 @@ public class MatlabConnectionRImpl implements MatlabConnection {
                 lclient.notifyLicenseStatus(tconfig.getRid(), ack);
             } catch (Exception e) {
                 throw new UnreachableLicenseProxyException(
-                    "Error while sending ack to License Proxy Server at url " + paconfig.getLicenseSaverURL(),
-                    e);
+                        "Error while sending ack to License Proxy Server at url " + paconfig.getLicenseSaverURL(),
+                        e);
             }
         }
     }
@@ -416,7 +417,7 @@ public class MatlabConnectionRImpl implements MatlabConnection {
         commandList.add(this.matlabLocation);
         commandList.addAll(Arrays.asList(this.startUpOptions));
         commandList.add("-logfile");
-        commandList.add(logFile.toString());
+        commandList.add(this.taskOutputFile.toString());
         commandList.add("-r");
         commandList.add(runArg);
 
@@ -432,18 +433,18 @@ public class MatlabConnectionRImpl implements MatlabConnection {
         // session on the worker host
 
         // Since the user profile can be missing on Windows with RunAsMe, by setting
-        // the MATLAB_PREFDIR variable to a writable dir (can be non-writable on Windows with RunAsMe) 
+        // the MATLAB_PREFDIR variable to a writable dir (can be non-writable on Windows with RunAsMe)
         // the MATLAB doesn't crash no more
 
         Map<String, String> env = b.environment();
 
         // Transmit the prefdir as env variable
-        String matlabPrefdir = System.getProperty(MatlabExecutable.MATLAB_PREFDIR);
+        String matlabPrefdir = System.getProperty(MATLAB_PREFDIR);
         if (matlabPrefdir != null) {
             env.put("MATLAB_PREFDIR", matlabPrefdir);
         }
         // Transmit the tmpdir as env variable
-        String matlabTmpvar = System.getProperty(MatlabExecutable.MATLAB_TASK_TMPDIR);
+        String matlabTmpvar = System.getProperty(MATLAB_TASK_TMPDIR);
         if (matlabTmpvar != null) {
             env.put("TEMP", matlabTmpvar);
             env.put("TMP", matlabTmpvar);

@@ -36,11 +36,11 @@
  */
 package org.ow2.proactive.scheduler.ext.scilab.middleman;
 
+import java.rmi.server.UnicastRemoteObject;
+
 import org.objectweb.proactive.api.PAActiveObject;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.MatSciEnvironment;
 import org.ow2.proactive.scheduler.ext.matsci.middleman.MiddlemanDeployer;
-
-import java.rmi.server.UnicastRemoteObject;
 
 
 /**

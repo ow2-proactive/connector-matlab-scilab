@@ -95,8 +95,7 @@ public class SchedulerCommandLine implements Serializable {
 
         }
 
-        IOTools.LoggingThread lt1 = new IOTools.LoggingThread(p, "[SchedulerTStarter]", System.out,
-            System.err);
+        IOTools.LoggingThread lt1 = new IOTools.LoggingThread(p.getInputStream(), "[SchedulerTStarter]", System.out);
         Thread t1 = new Thread(lt1, "SchedulerTStarter");
         t1.setDaemon(true);
         t1.start();

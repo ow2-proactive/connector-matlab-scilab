@@ -34,14 +34,15 @@
  */
 package org.ow2.proactive.scheduler.ext.scilab.client.embedded.util;
 
-import org.ow2.proactive.scheduler.ext.matsci.client.common.MatSciEnvironment;
-import org.ow2.proactive.scheduler.ext.matsci.client.embedded.LoginFrame;
-import org.ow2.proactive.scheduler.ext.matsci.client.embedded.util.MatSciJVMSpawnHelper;
-
-import javax.swing.*;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
+
+import javax.swing.*;
+
+import org.ow2.proactive.scheduler.ext.matsci.client.common.MatSciEnvironment;
+import org.ow2.proactive.scheduler.ext.matsci.client.embedded.LoginFrame;
+import org.ow2.proactive.scheduler.ext.matsci.client.embedded.util.MatSciJVMSpawnHelper;
 
 
 /**

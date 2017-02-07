@@ -34,13 +34,13 @@
  */
 package functionaltests.matlab;
 
-import java.io.File;
-
-import org.ow2.proactive.scheduler.ext.common.util.IOTools;
-import org.junit.Ignore;
-
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
+
+import java.io.File;
+
+import org.junit.Ignore;
+import org.ow2.proactive.scheduler.ext.common.util.IOTools;
 
 
 /**
@@ -112,13 +112,10 @@ public class TestUltraConnected extends AbstractMatlabTest {
 
         Process p = pb.start();
 
-        IOTools.LoggingThread lt1 = new IOTools.LoggingThread(p, "[TestUltraConnected]", System.out,
-            System.err);
+        IOTools.LoggingThread lt1 = new IOTools.LoggingThread(p.getInputStream(), "[TestUltraConnected]", System.out);
         Thread t1 = new Thread(lt1, "TestUltraConnected");
         t1.setDaemon(true);
         t1.start();
-
-        //ProcessResult pr = IOTools.blockingGetProcessResult(p, 580000);
 
         int code = -1;
         try {

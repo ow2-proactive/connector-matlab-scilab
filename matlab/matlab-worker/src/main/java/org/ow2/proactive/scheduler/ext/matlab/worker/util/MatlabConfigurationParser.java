@@ -38,6 +38,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 
+import org.apache.log4j.Level;
 import org.ow2.proactive.scheduler.ext.matsci.worker.properties.MatSciProperties;
 import org.ow2.proactive.scheduler.ext.matsci.worker.util.MatSciConfigurationParser;
 import org.ow2.proactive.scheduler.ext.matsci.worker.util.MatSciEngineConfig;
@@ -52,12 +53,14 @@ import org.w3c.dom.NodeList;
  **/
 public class MatlabConfigurationParser extends MatSciConfigurationParser {
 
-    ArrayList<String> matlabConfigPaths;
+     ArrayList<String> matlabConfigPaths;
 
-    private static MatlabConfigurationParser instance;
-
-    private MatlabConfigurationParser() {
+    public MatlabConfigurationParser(boolean isDebug) {
         try {
+            // Set the log4j level according to the config
+            if (isDebug)
+                logger.setLevel(Level.DEBUG);
+
             matlabConfigPaths = new ArrayList<String>();
             matlabConfigPaths.add(TMPDIR + FS + "MatlabWorkerConfiguration.xml");
             matlabConfigPaths.add("addons/MatlabWorkerConfiguration.xml");
@@ -66,14 +69,7 @@ public class MatlabConfigurationParser extends MatSciConfigurationParser {
         }
     }
 
-    public static MatlabConfigurationParser getInstance() {
-        if (instance == null) {
-            instance = new MatlabConfigurationParser();
-        }
-        return instance;
-    }
-
-    public HashSet<MatSciEngineConfig> getConfigs(boolean debug) throws Exception {
+    public HashSet<MatSciEngineConfig> getConfigs() throws Exception {
 
         HashSet<MatSciEngineConfig> configs = new HashSet<MatSciEngineConfig>();
 
@@ -89,7 +85,7 @@ public class MatlabConfigurationParser extends MatSciConfigurationParser {
         configFilePaths.addAll(matlabConfigPaths);
 
         for (String path : configFilePaths) {
-            HashSet<MatSciEngineConfig> confset = parseConfigFile(path, debug);
+            HashSet<MatSciEngineConfig> confset = parseConfigFile(path);
             configs.addAll(confset);
         }
         return configs;
@@ -103,7 +99,7 @@ public class MatlabConfigurationParser extends MatSciConfigurationParser {
     @Override
     protected boolean checkVersion(String version, File configFile) {
         if (!version.matches("^[1-9][\\d]*\\.[\\d]+$")) {
-            System.out.println("In " + configFile +
+            logger.error("In " + configFile +
                     ", version element must match XX.xx, received : " + version);
             return false;
         }
