@@ -36,12 +36,12 @@
  */
 package org.ow2.proactive.scheduler.ext.scilab.common;
 
-import org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveFile;
-import org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveMatSciTaskConfig;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveFile;
+import org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveMatSciTaskConfig;
 
 
 /**

@@ -36,6 +36,11 @@
  */
 package org.ow2.proactive.scheduler.ext.matsci.client.common;
 
+import java.net.MalformedURLException;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+import java.util.ArrayList;
+
 import org.ow2.proactive.scheduler.ext.matsci.client.common.data.MatSciClientJobInfo;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.data.Pair;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.data.ResultsAndLogs;
@@ -43,11 +48,6 @@ import org.ow2.proactive.scheduler.ext.matsci.client.common.data.UnReifiable;
 import org.ow2.proactive.scheduler.ext.matsci.client.common.exception.PASchedulerException;
 import org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveMatSciGlobalConfig;
 import org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveMatSciTaskConfig;
-
-import java.net.MalformedURLException;
-import java.rmi.Remote;
-import java.rmi.RemoteException;
-import java.util.ArrayList;
 
 
 /**

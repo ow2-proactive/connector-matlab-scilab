@@ -3,12 +3,12 @@
     <!-- This is an example Worker Configuration (Windows) -->
     <MachineGroup hostname=".*"> <!-- This is a regular expression representing the machines targeted by this configuration, attributes can either be "hostname" or "ip" -->
         <scilab>
-               <version>5.3.3</version>  <!-- The version of scilab (at least 5.3.0) -->
-               <home>/home/ybonnaffe/tools/scilab</home>  <!-- Scilab installation directory example on Windows,
+               <version>5.5.2</version>  <!-- The version of scilab -->
+               <home>C:\Program Files\scilab-5.5.2</home>  <!-- Scilab installation directory example on Windows,
                on linux, it's better to install it manually in a shared location than to use the packaging mechanism -->
                <bindir>bin</bindir> <!-- Scilab bin directory (should not be changed) -->
-               <command>scilab</command>  <!-- Scilab executable name -->
-               <arch>32</arch> <!-- Architecture 32 or 64 -->
+               <command>Scilex.exe</command>  <!-- Scilab executable name -->
+               <arch>64</arch> <!-- Architecture 32 or 64 -->
                <!-- Scilab executable name on linux : scilab , on windows: Scilex.exe -->
         </scilab>
     </MachineGroup>

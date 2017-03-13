@@ -36,17 +36,21 @@
  */
 package org.ow2.proactive.scheduler.ext.scilab.worker;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.objectweb.proactive.utils.OperatingSystem;
 import org.ow2.proactive.scheduler.ext.common.util.IOTools;
-import org.ow2.proactive.scheduler.ext.matsci.worker.util.MatSciEngineConfigBase;
 import org.ow2.proactive.scheduler.ext.scilab.common.PASolveScilabGlobalConfig;
 import org.ow2.proactive.scheduler.ext.scilab.common.PASolveScilabTaskConfig;
 import org.ow2.proactive.scheduler.ext.scilab.common.exception.ScilabInitException;
 import org.ow2.proactive.scheduler.ext.scilab.common.exception.ScilabTaskException;
-
-import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
 
 
 /**
@@ -58,17 +62,12 @@ public class ScilabConnectionRImpl implements ScilabConnection {
     protected StringBuilder fullcommand = new StringBuilder();
     protected String nl = System.lineSeparator();
 
-    protected final String tmpDir = System.getProperty("java.io.tmpdir");
-
-    protected String nodeName;
-
     protected String[] startUpOptions;
     protected String scilabLocation;
     protected File workingDirectory;
 
     protected int TIMEOUT_START = 6000;
 
-    protected File logFile;
     protected boolean debug;
 
     protected File mainFuncFile;
@@ -77,60 +76,49 @@ public class ScilabConnectionRImpl implements ScilabConnection {
 
     protected OperatingSystem os = OperatingSystem.getOperatingSystem();
 
-    private static final String startPattern = "---- SCILAB START ----";
+    private final String startPattern = "---- SCILAB START ----";
 
-    private PrintStream outDebug;
+    private final PrintStream taskOut;
+    private final PrintStream taskErr;
 
     PASolveScilabGlobalConfig paconfig;
 
     PASolveScilabTaskConfig tconfig;
 
     IOTools.LoggingThread lt1;
+    IOTools.LoggingThread lt2;
 
-    public ScilabConnectionRImpl() {
+    private File ackFile;
+    private Thread outputThread;
+    private Thread errorThread;
 
+    public ScilabConnectionRImpl(final PrintStream taskOut, final PrintStream taskErr) {
+        this.taskOut = taskOut;
+        this.taskErr = taskErr;
     }
 
     public void acquire(String scilabExecutablePath, File workingDir, PASolveScilabGlobalConfig paconfig,
-            PASolveScilabTaskConfig tconfig) throws ScilabInitException {
+                        PASolveScilabTaskConfig tconfig) throws ScilabInitException {
         this.scilabLocation = scilabExecutablePath;
         this.workingDirectory = workingDir;
+        this.ackFile = new File(workingDirectory, "scilab.ack");
         this.debug = paconfig.isDebug();
         this.paconfig = paconfig;
         this.tconfig = tconfig;
         this.TIMEOUT_START = paconfig.getWorkerTimeoutStart();
-        if (os == OperatingSystem.windows) {
+        if (this.os == OperatingSystem.windows) {
             this.startUpOptions = paconfig.getWindowsStartupOptions();
         } else {
             this.startUpOptions = paconfig.getLinuxStartupOptions();
         }
 
-        try {
-            this.nodeName = MatSciEngineConfigBase.getNodeName();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        logFile = new File(tmpDir, "ScilabStart_" + nodeName + ".log");
-        mainFuncFile = new File(workingDir, "PAMain.sce");
-        if (!mainFuncFile.exists()) {
-            try {
-                mainFuncFile.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        try {
-            createLogFileOnDebug();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+        this.mainFuncFile = new File(workingDir, "PAMain.sce");
     }
 
     public void init() {
         fullcommand.append("disp('" + startPattern + "');" + nl);
         fullcommand.append("try" + nl);
+        fullcommand.append("ok=%T;save('" + ackFile.getAbsolutePath() + "','ok');" + nl);
         fullcommand.append("lines(0);" + nl);
         fullcommand.append("funcprot(0);" + nl);
     }
@@ -141,6 +129,11 @@ public class ScilabConnectionRImpl implements ScilabConnection {
                 process.destroy();
             } catch (Exception e) {
 
+            }
+            try {
+                interruptThreads();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
     }
@@ -157,12 +150,26 @@ public class ScilabConnectionRImpl implements ScilabConnection {
         throw new UnsupportedOperationException();
     }
 
-    public void launch() throws Exception {
+    public void beforeLaunch() {
         fullcommand
                 .append("catch" +
-                    nl +
-                    "[str2,n2,line2,func2]=lasterror(%t);printf('!-- error %i\\n%s\\n at line %i of function %s\\n',n2,str2,line2,func2)" +
-                    nl + "errclear();" + nl + "end" + nl + "exit();");
+                        nl +
+                        "[str2,n2,line2,func2]=lasterror(%t);printf('!-- error %i\\n%s\\n at line %i of function %s\\n',n2,str2,line2,func2)" +
+                        nl + "errclear();" + nl + "end" + nl + "exit();");
+    }
+
+    public void launch() throws Exception {
+
+        if (this.mainFuncFile.exists()) {
+            this.mainFuncFile.delete();
+        }
+
+        try {
+            this.mainFuncFile.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         PrintStream out = null;
         try {
             out = new PrintStream(new BufferedOutputStream(new FileOutputStream(mainFuncFile)));
@@ -175,40 +182,53 @@ public class ScilabConnectionRImpl implements ScilabConnection {
 
         process = createScilabProcess("PAMain.sce");
 
-        if (debug) {
-            lt1 = new IOTools.LoggingThread(process, "[SCILAB Engine]", System.out, System.err, outDebug,
-                null, null, null);
-
-        } else {
-            lt1 = new IOTools.LoggingThread(process, "[SCILAB]", System.out, System.err, startPattern, null,
-                null);
-        }
-        Thread t1 = new Thread(lt1, "OUT SCILAB");
-        t1.setDaemon(true);
-        t1.start();
+        // Logging threads creation & start
+        lt1 = new IOTools.LoggingThread(process.getInputStream(), "[SCILAB OUT]", this.taskOut, this.debug ? null : startPattern, null, null);
+        lt2 = new IOTools.LoggingThread(process.getErrorStream(), "[SCILAB ERR]", this.taskErr, null, null, null);
+        outputThread = new Thread(lt1, "SCILAB OUT");
+        errorThread = new Thread(lt2, "SCILAB ERR");
+        outputThread.setDaemon(true);
+        errorThread.setDaemon(true);
+        outputThread.start();
+        errorThread.start();
 
         int exitValue = process.waitFor();
-        lt1.goon = false;
+
         if (exitValue != 0) {
             throw new ScilabInitException("Scilab process exited with code : " + exitValue);
         }
 
+        if (!ackFile.exists()) {
+            interruptThreads();
+            // scilab exited silently without executing any code, relaunch the process
+            launch();
+        }
     }
+
+    private void interruptThreads() throws InterruptedException {
+        if( outputThread != null) {
+            outputThread.interrupt();
+            outputThread.join();
+        }
+        if (errorThread != null) {
+            errorThread.interrupt();
+            errorThread.join();
+        }
+    }
+
 
     protected Process createScilabProcess(String runArg) throws Exception {
         // Attempt to run SCILAB
         final ArrayList<String> commandList = new ArrayList<String>();
         commandList.add(this.scilabLocation);
         commandList.addAll(Arrays.asList(this.startUpOptions));
-        // TODO find a way to use a log file
-        //commandList.add("-logfile");
-        //commandList.add(logFile.toString());
         commandList.add("-f");
         commandList.add(runArg);
 
         String[] command = (String[]) commandList.toArray(new String[commandList.size()]);
 
         ProcessBuilder b = new ProcessBuilder();
+
         // invalid on windows ?
         b.directory(this.workingDirectory);
         b.command(command);
@@ -219,32 +239,4 @@ public class ScilabConnectionRImpl implements ScilabConnection {
 
     }
 
-    private void createLogFileOnDebug() throws Exception {
-        if (!this.debug) {
-            return;
-        }
-        String nodeName = MatSciEngineConfigBase.getNodeName();
-
-        String tmpPath = System.getProperty("java.io.tmpdir");
-
-        // log file writer used for debugging
-        File tmpDirFile = new File(tmpPath);
-        File nodeTmpDir = new File(tmpDirFile, nodeName);
-        if (!nodeTmpDir.exists()) {
-            nodeTmpDir.mkdirs();
-        }
-        File logFile = new File(tmpPath, "ScilabExecutable_" + nodeName + ".log");
-        if (!logFile.exists()) {
-            logFile.createNewFile();
-        }
-
-        try {
-            FileOutputStream outFile = new FileOutputStream(logFile);
-            PrintStream out = new PrintStream(outFile);
-
-            outDebug = out;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 }

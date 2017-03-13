@@ -199,6 +199,9 @@ pair = deployer.deployOrLookup();
 itfs = pair.getX();
 PAoptions('RmiPort',pair.getY());
 solver = deployer.getMatlabEnvironment();
+if strcmp(class(solver), 'double')
+    error('Matlab Environment could not be found in forked JVM process, please kill this forked JVM process manually before reconnecting.');
+end
 sched.PAgetsolver(solver);
 registry = deployer.getDSRegistry();
 sched.PAgetDataspaceRegistry(registry);

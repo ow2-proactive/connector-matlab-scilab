@@ -36,16 +36,17 @@
  */
 package org.ow2.proactive.scheduler.ext.matsci.client.embedded;
 
-import org.ow2.proactive.scheduler.ext.matsci.client.common.MatSciEnvironment;
-import org.ow2.proactive.scheduler.ext.matsci.client.common.exception.PASchedulerException;
-
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.rmi.RemoteException;
+
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+
+import org.ow2.proactive.scheduler.ext.matsci.client.common.MatSciEnvironment;
+import org.ow2.proactive.scheduler.ext.matsci.client.common.exception.PASchedulerException;
 
 
 /**

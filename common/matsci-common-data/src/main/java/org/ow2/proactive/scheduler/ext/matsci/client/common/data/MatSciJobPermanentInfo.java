@@ -36,10 +36,10 @@
  */
 package org.ow2.proactive.scheduler.ext.matsci.client.common.data;
 
-import org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveMatSciGlobalConfig;
-
 import java.util.ArrayList;
 import java.util.TreeSet;
+
+import org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveMatSciGlobalConfig;
 
 
 /**

@@ -37,18 +37,13 @@
 package org.ow2.proactive.scheduler.ext.matlab.worker;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import com.activeeon.proactive.license_saver.client.LicenseSaverClient;
-import matlabcontrol.MatlabConnectionException;
-import matlabcontrol.MatlabInvocationException;
-import matlabcontrol.MatlabProcessCreator;
-import matlabcontrol.RemoteMatlabProxy;
-import matlabcontrol.RemoteMatlabProxyFactory;
 import org.objectweb.proactive.core.ProActiveException;
-import org.objectweb.proactive.utils.OperatingSystem;
 import org.ow2.proactive.scheduler.ext.common.util.IOTools;
 import org.ow2.proactive.scheduler.ext.matlab.common.data.PASolveMatlabGlobalConfig;
 import org.ow2.proactive.scheduler.ext.matlab.common.data.PASolveMatlabTaskConfig;
@@ -56,7 +51,14 @@ import org.ow2.proactive.scheduler.ext.matlab.common.exception.MatlabInitExcepti
 import org.ow2.proactive.scheduler.ext.matlab.common.exception.MatlabTaskException;
 import org.ow2.proactive.scheduler.ext.matlab.common.exception.UnreachableLicenseProxyException;
 import org.ow2.proactive.scheduler.ext.matlab.common.exception.UnsufficientLicencesException;
-import org.ow2.proactive.scheduler.ext.matsci.worker.util.MatSciEngineConfigBase;
+
+import com.activeeon.proactive.license_saver.client.LicenseSaverClient;
+
+import matlabcontrol.MatlabConnectionException;
+import matlabcontrol.MatlabInvocationException;
+import matlabcontrol.MatlabProcessCreator;
+import matlabcontrol.RemoteMatlabProxy;
+import matlabcontrol.RemoteMatlabProxyFactory;
 
 
 /**
@@ -76,8 +78,6 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
 
     protected int TIMEOUT_START = 6000;
 
-    protected OperatingSystem os = OperatingSystem.getOperatingSystem();
-
     protected File workingDirectory;
 
     private PASolveMatlabGlobalConfig paconfig;
@@ -87,8 +87,8 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
 
     protected String[] startUpOptions;
 
-    /** Stream used for debug output */
-    private static PrintStream outDebug;
+    /** Targeted stream for the task output redirection (in particular to display the task output from the scheduler portal) */
+    private final PrintStream taskOut;
 
     /** Pattern used to remove Matlab startup message from logs */
     private static final String startPattern = "---- MATLAB START ----";
@@ -96,17 +96,10 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
     private static final String lcFailedPattern = "License checkout failed";
 
     private static final String outofmemoryPattern = "java.lang.OutOfMemoryError";
+    private static Thread outputThread;
 
-    /** The temp directory */
-    private static String tmpDir;
-
-    /** The ProActive node name */
-    private static String nodeName;
-
-    public MatlabConnectionMCImpl(final String tmpDir, final PrintStream outDebug, final String nodeName) {
-        this.tmpDir = tmpDir;
-        this.outDebug = outDebug;
-        this.nodeName = nodeName;
+    public MatlabConnectionMCImpl(final PrintStream taskOut) {
+        this.taskOut = taskOut;
     }
 
     /**
@@ -115,10 +108,14 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
      *
      * @param matlabExecutablePath The full path to the MATLAB executable
      * @param workingDir the directory where to start MATLAB
+     * @param paconfig configuration of a Matlab PAsolve Job
+     * @param tconfig configuration of a Matlab Task
+     * @param jobId current job id
+     * @param taskId current task id
      * @throws org.ow2.proactive.scheduler.ext.matlab.common.exception.MatlabInitException if MATLAB could not be initialized
      */
     public void acquire(String matlabExecutablePath, File workingDir, PASolveMatlabGlobalConfig paconfig,
-            PASolveMatlabTaskConfig tconfig) throws MatlabInitException {
+                        PASolveMatlabTaskConfig tconfig, final String jobId, final String taskId) throws MatlabInitException {
         RemoteMatlabProxyFactory proxyFactory;
         this.paconfig = paconfig;
         this.tconfig = tconfig;
@@ -130,8 +127,8 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
                 this.lclient = new LicenseSaverClient(paconfig.getLicenseSaverURL());
             } catch (ProActiveException e) {
                 throw new MatlabInitException(new UnreachableLicenseProxyException(
-                    "License Proxy Server at url " + paconfig.getLicenseSaverURL() +
-                        " could not be contacted.", e));
+                        "License Proxy Server at url " + paconfig.getLicenseSaverURL() +
+                                " could not be contacted.", e));
             }
         }
 
@@ -142,7 +139,7 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
         try {
 
             processCreator = new CustomMatlabProcessCreator(matlabExecutablePath, workingDir,
-                this.startUpOptions, paconfig.isDebug());
+                    this.startUpOptions, paconfig.isDebug(), this.taskOut, jobId, taskId);
 
             proxyFactory = new RemoteMatlabProxyFactory(processCreator);
         } catch (MatlabConnectionException e) {
@@ -151,7 +148,7 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
 
             // Nothing can be done maybe a retry ... check this later
             MatlabInitException me = new MatlabInitException(
-                "Unable to create the MATLAB proxy factory. Possible causes: dsregistry cannot be created or the receiver cannot be bind");
+                    "Unable to create the MATLAB proxy factory. Possible causes: dsregistry cannot be created or the receiver cannot be bind");
             me.initCause(e);
 
             try {
@@ -173,7 +170,7 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
 
             // Nothing can be done maybe a retry ... check this later
             MatlabInitException me = new MatlabInitException(
-                "Unable to create the MATLAB proxy factory. Possible causes: dsregistry cannot be created or the receiver cannot be bind");
+                    "Unable to create the MATLAB proxy factory. Possible causes: dsregistry cannot be created or the receiver cannot be bind");
             me.initCause(e);
 
             // clean factory
@@ -228,6 +225,15 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
         // Kill the MATLAB process
         this.processCreator.killProcess();
 
+        if( outputThread != null) {
+            outputThread.interrupt();
+            try {
+                outputThread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
         this.proxy = null;
         // Remove the shutdown hook
         try {
@@ -235,13 +241,6 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
         } catch (Exception e) {
         }
         System.gc();
-    }
-
-    @Override
-    public String getOutput(boolean debug) {
-        String output = "";
-        // TODO implement it using a logfile
-        return output;
     }
 
     @Override
@@ -258,7 +257,7 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
     public void evalString(final String command) throws MatlabTaskException {
         try {
             String out = this.proxy.eval(command);
-            System.out.println(out);
+            taskOut.println(out);
         } catch (MatlabInvocationException e) {
             throw new MatlabTaskException("Unable to eval command " + command, e);
         }
@@ -294,6 +293,10 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
         }
     }
 
+    public void beforeLaunch() {
+
+    }
+
     public void launch() {
 
     }
@@ -308,8 +311,8 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
         try {
 
             while (!ackFile.exists() && !nackFile.exists() && (cpt < TIMEOUT_START) &&
-                !CustomMatlabProcessCreator.lt1.patternFound(lcFailedPattern) &&
-                !CustomMatlabProcessCreator.lt1.patternFound(outofmemoryPattern)) {
+                    !CustomMatlabProcessCreator.outputThreadDefinition.patternFound(lcFailedPattern) &&
+                    !CustomMatlabProcessCreator.outputThreadDefinition.patternFound(outofmemoryPattern)) {
                 Thread.sleep(10);
                 cpt++;
             }
@@ -328,12 +331,12 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
             release();
             throw new UnsufficientLicencesException();
         }
-        if (CustomMatlabProcessCreator.lt1.patternFound(lcFailedPattern)) {
+        if (CustomMatlabProcessCreator.outputThreadDefinition.patternFound(lcFailedPattern)) {
             sendAck(false);
             release();
             throw new UnsufficientLicencesException();
         }
-        if (CustomMatlabProcessCreator.lt1.patternFound(outofmemoryPattern)) {
+        if (CustomMatlabProcessCreator.outputThreadDefinition.patternFound(outofmemoryPattern)) {
             sendAck(false);
             release();
             throw new RuntimeException("Out of memory error in Matlab process");
@@ -359,8 +362,8 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
                 lclient.notifyLicenseStatus(tconfig.getRid(), ack);
             } catch (Exception e) {
                 throw new UnreachableLicenseProxyException(
-                    "Error while sending ack to License Proxy Server at url " + paconfig.getLicenseSaverURL(),
-                    e);
+                        "Error while sending ack to License Proxy Server at url " + paconfig.getLicenseSaverURL(),
+                        e);
             }
         }
     }
@@ -370,33 +373,34 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
      */
     private static class CustomMatlabProcessCreator implements MatlabProcessCreator {
 
-        protected final String tmpDir = System.getProperty("java.io.tmpdir");
-
-        protected String nodeName;
-
         protected String[] startUpOptions;
         protected final String matlabLocation;
         protected final File workingDirectory;
 
-        protected File logFile;
+        protected File taskOutputFile;
+        private final PrintStream taskOut;
+
         protected boolean debug;
 
         private Process process;
 
-        static IOTools.LoggingThread lt1;
+        static IOTools.LoggingThread outputThreadDefinition;
 
         public CustomMatlabProcessCreator(final String matlabLocation, final File workingDirectory,
-                String[] startUpOptions, boolean debug) {
+                                          String[] startUpOptions, boolean debug, final PrintStream taskOut, final String jobId, final String taskId) {
             this.matlabLocation = matlabLocation;
             this.workingDirectory = workingDirectory;
-            this.debug = debug;
-            this.startUpOptions = startUpOptions;
-            try {
-                this.nodeName = MatSciEngineConfigBase.getNodeName();
-            } catch (Exception e) {
-                e.printStackTrace();
+            this.taskOutputFile = new File(this.workingDirectory, "MatlabStart_" + jobId + "_" + taskId + ".log");
+            if (!this.taskOutputFile.exists()) {
+                try {
+                    this.taskOutputFile.createNewFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
-            logFile = new File(tmpDir, "MatlabStart" + nodeName + ".log");
+            this.startUpOptions = startUpOptions;
+            this.debug = debug;
+            this.taskOut = taskOut;
         }
 
         public Process createMatlabProcess(String runArg) throws Exception {
@@ -405,7 +409,7 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
             commandList.add(this.matlabLocation);
             commandList.addAll(Arrays.asList(this.startUpOptions));
             commandList.add("-logfile");
-            commandList.add(logFile.toString());
+            commandList.add(this.taskOutputFile.toString());
             commandList.add("-r");
             commandList.add(runArg);
 
@@ -417,25 +421,17 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
 
             process = b.start();
 
-            if (debug) {
-                lt1 = new IOTools.LoggingThread(process, "[MATLAB]", System.out, System.err, outDebug, null,
-                    null, new String[] { lcFailedPattern, outofmemoryPattern });
-            } else {
-                lt1 = new IOTools.LoggingThread(process, "[MATLAB]", System.out, System.err, startPattern,
-                    null, new String[] { lcFailedPattern, outofmemoryPattern });
-
-            }
-
-            Thread t1 = new Thread(lt1, "OUT MATLAB");
-            t1.setDaemon(true);
-            t1.start();
+            // Logging thread creation & start
+            outputThreadDefinition = new IOTools.LoggingThread(new FileInputStream(taskOutputFile), "[MATLAB]", taskOut, debug ? null : startPattern, null, new String[] { lcFailedPattern, outofmemoryPattern });
+            outputThread = new Thread(outputThreadDefinition, "OUT MATLAB");
+            outputThread.setDaemon(true);
+            outputThread.start();
 
             return process;
-
         }
 
         public File getLogFile() {
-            return logFile;
+            return this.taskOutputFile;
         }
 
         public boolean isDebug() {

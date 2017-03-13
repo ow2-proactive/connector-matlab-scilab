@@ -36,9 +36,14 @@
  */
 package org.ow2.proactive.scheduler.ext.scilab.worker;
 
+import java.io.File;
+import java.io.Serializable;
+import java.net.URI;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.log4j.Level;
-import org.objectweb.proactive.core.util.log.ProActiveLogger;
-import org.objectweb.proactive.utils.OperatingSystem;
+import org.apache.log4j.Logger;
 import org.ow2.proactive.scheduler.common.task.TaskResult;
 import org.ow2.proactive.scheduler.common.task.executable.JavaExecutable;
 import org.ow2.proactive.scheduler.ext.common.util.FileUtils;
@@ -52,16 +57,6 @@ import org.ow2.proactive.scheduler.ext.scilab.common.exception.ScilabTaskExcepti
 import org.ow2.proactive.scheduler.ext.scilab.worker.util.ScilabEngineConfig;
 import org.ow2.proactive.scheduler.ext.scilab.worker.util.ScilabFinder;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.PrintWriter;
-import java.io.Serializable;
-import java.net.URI;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-
 
 /**
  * ScilabExecutable
@@ -69,31 +64,17 @@ import java.util.Map;
  * @author The ProActive Team
  */
 public class ScilabExecutable extends JavaExecutable {
-    /** The ISO8601 for debug format of the date that precedes the log message */
-    private static final SimpleDateFormat ISO8601FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:sss");
 
-    private static final String TMPDIR = System.getProperty("java.io.tmpdir");
+    private final Logger logger = Logger.getLogger(ScilabExecutable.class);
 
     private static String HOSTNAME;
-    private static String NODENAME;
-
-    private static OperatingSystem os;
-
-    private static char fs;
 
     static {
         try {
             HOSTNAME = java.net.InetAddress.getLocalHost().getHostName();
-            NODENAME = System.getProperty("node.name");
-            os = OperatingSystem.getOperatingSystem();
-            fs = os.fileSeparator();
         } catch (Exception e) {
         }
     }
-
-    /** For debug purpose see {@link ScilabExecutable#createLogFileOnDebug()} */
-    private PrintWriter outDebugWriter;
-    private FileWriter outFile;
 
     /** The global configuration */
     private PASolveScilabGlobalConfig paconfig;
@@ -106,7 +87,6 @@ public class ScilabExecutable extends JavaExecutable {
 
     /** The root of the local space and a temporary dir inside */
     private File localSpaceRootDir, tempSubDir;
-    private String tempSubDirRel;
 
     /** The connection to SCILAB from scilabcontrol API */
     private ScilabConnection scilabConnection;
@@ -122,40 +102,33 @@ public class ScilabExecutable extends JavaExecutable {
     @Override
     public void init(final Map<String, Serializable> args) throws Exception {
 
-        if (!new File(TMPDIR).canWrite()) {
-            throw new RuntimeException("Unable to execute task, TMPDIR : " + TMPDIR + " is not writable.");
-        }
-
-        Object obj;
-
-        // Read global configuration
-        obj = args.get("global_config");
+        Object obj = args.get("global_config");
         if (obj != null) {
             this.paconfig = (PASolveScilabGlobalConfig) obj;
         }
 
-        // Create a log file if debug is enabled
-        this.createLogFileOnDebug();
+        // Set the log4j level according to the config
+        if (paconfig.isDebug())
+            logger.setLevel(Level.DEBUG);
 
-        // Read task configuration
         obj = args.get("task_config");
         if (obj != null) {
             this.taskconfig = (PASolveScilabTaskConfig) obj;
         }
 
-        // Read the main script to execute
+        logger.debug("Reading the main script to execute");
         this.script = (String) args.get("script");
         if (this.script == null || "".equals(this.script)) {
             throw new IllegalArgumentException("Unable to execute task, no script specified");
         }
 
-        // Initialize SCILAB location
+        logger.debug("Initializing the SCILAB location");
         this.initScilabConfig();
 
-        // Initialize LOCAL SPACE
+        logger.debug("Initializing the local space");
         this.initLocalSpace();
 
-        // Initialize transfers
+        logger.debug("Initializing transfers");
         this.initTransferSource();
         this.initTransferEnv();
         this.initTransferInputFiles();
@@ -172,29 +145,21 @@ public class ScilabExecutable extends JavaExecutable {
             }
         }
 
-        if (paconfig.isDebug()) {
-            ProActiveLogger.getLogger(ScilabExecutable.class).setLevel(Level.DEBUG);
-        }
-
         final String scilabCmd = this.scilabEngineConfig.getFullCommand();
-        this.printLog("Acquiring SCILAB connection using " + scilabCmd);
 
-        // Acquire a connection to SCILAB
-
-        this.scilabConnection = new ScilabConnectionRImpl();
-
+        logger.debug("Acquiring SCILAB connection using " + scilabCmd);
+        this.scilabConnection = new ScilabConnectionRImpl(getOut(), getErr());
         scilabConnection.acquire(scilabCmd, this.localSpaceRootDir, this.paconfig, this.taskconfig);
 
         Serializable result = null;
 
         try {
-            // Execute the SCILAB script and receive the result
+            logger.debug("Executing the SCILAB script and receiving the result");
             result = this.executeScript();
         } finally {
-            this.printLog("Closing SCILAB...");
+            logger.debug("Closing SCILAB...");
             this.scilabConnection.release();
-            printLog("End of Task");
-            this.closeLogFileOnDebug();
+            logger.debug("... End of Task");
         }
 
         return result;
@@ -215,7 +180,7 @@ public class ScilabExecutable extends JavaExecutable {
      */
     protected final Serializable executeScript() throws Throwable {
 
-        // Add sources, load workspace and input variables
+        logger.debug("Adding sources, loading workspace and input variables");
         scilabConnection.init();
 
         this.addSources();
@@ -223,17 +188,18 @@ public class ScilabExecutable extends JavaExecutable {
         this.loadInputVariables();
         this.loadTopologyNodeNames();
 
-        printLog("Running SCILAB command: " + this.script);
-
+        logger.debug("Evaluating the SCILAB command: " + this.script);
         scilabConnection.evalString(this.script);
 
-        printLog("SCILAB command completed successfully, receiving output... ");
-
+        logger.debug("Receiving output");
         storeOutputVariable();
 
         // outputFiles
         transferOutputFiles();
 
+        scilabConnection.beforeLaunch();
+
+        logger.debug("Launching the SCILAB command");
         scilabConnection.launch();
 
         testOutput();
@@ -244,9 +210,10 @@ public class ScilabExecutable extends JavaExecutable {
     /*********** PRIVATE METHODS ***********/
 
     protected MatSciEngineConfig initScilabConfig() throws Exception {
+        logger.debug("Initializing the SCILAB config");
         ScilabEngineConfig conf = (ScilabEngineConfig) ScilabEngineConfig.getCurrentConfiguration();
         if (conf == null) {
-            conf = (ScilabEngineConfig) ScilabFinder.getInstance().findMatSci(paconfig.getVersionPref(),
+            conf = (ScilabEngineConfig) new ScilabFinder(paconfig.isDebug()).findMatSci(paconfig.getVersionPref(),
                     paconfig.getVersionRej(), paconfig.getVersionMin(), paconfig.getVersionMax(),
                     paconfig.getVersionArch(), paconfig.isDebug());
             if (conf == null) {
@@ -259,6 +226,7 @@ public class ScilabExecutable extends JavaExecutable {
     }
 
     private void initLocalSpace() throws Exception {
+        logger.debug("Initializing the local space");
         final File localSpaceFile = new File(getLocalSpace());
         final URI localSpaceURI = localSpaceFile.toURI();
         final String localSpaceURIstr = localSpaceURI .toString();
@@ -284,8 +252,6 @@ public class ScilabExecutable extends JavaExecutable {
             tempSubDir.mkdirs();
         }
 
-        this.tempSubDirRel = paconfig.getJobSubDirPortablePath();
-
         // Set the local space of the global configuration
         this.paconfig.setLocalSpace(localSpaceURI);
     }
@@ -297,25 +263,24 @@ public class ScilabExecutable extends JavaExecutable {
                 PASolveZippedFile zippedFile = (PASolveZippedFile) file;
                 zippedFile.setRootDirectory(localSpaceRootDir);
                 File sourceZip = new File(zippedFile.getFullPathName());
-                printLog("Unzipping source files from " + sourceZip);
+
+                logger.debug("Unzipping source files from " + sourceZip);
                 if (!sourceZip.exists() || !sourceZip.canRead()) {
-                    System.err.println("Error, source zip file cannot be accessed at " + sourceZip);
+                    logger.error("Error, source zip file cannot be accessed at " + sourceZip);
                     throw new IllegalStateException("Error, source zip file cannot be accessed at " +
                         sourceZip);
                 }
                 // Uncompress the source files into the temp dir
                 if (!FileUtils.unzip(sourceZip, sourceZip.getParentFile())) {
-                    System.err.println("Unable to unzip source file " + sourceZip);
+                    logger.error("Unable to unzip source file " + sourceZip);
                     throw new IllegalStateException("Unable to unzip source file " + sourceZip);
                 }
             }
         }
 
-        if (paconfig.isDebug()) {
-            printLog("Contents of " + tempSubDir);
-            for (File f : tempSubDir.listFiles()) {
-                printLog(f.getName());
-            }
+        logger.debug("Contents of " + tempSubDir);
+        for (File f : tempSubDir.listFiles()) {
+            logger.debug(f.getName());
         }
     }
 
@@ -344,9 +309,9 @@ public class ScilabExecutable extends JavaExecutable {
 
     private void addSources() throws Exception {
         if (tempSubDir != null) {
-            printLog("Adding to scilabpath sources from " + tempSubDir);
-            // Add unzipped source files to the MATALAB path
+            logger.debug("Adding sources from " + tempSubDir + " to the SCILAB path");
             scilabConnection.evalString("try;getd('" + tempSubDir + "');catch; end;");
+
             if (taskconfig.getFunctionVarFiles() != null) {
                 for (PASolveFile funcFile : taskconfig.getFunctionVarFiles()) {
                     funcFile.setRootDirectory(this.localSpaceRootDir.getCanonicalPath());
@@ -361,12 +326,14 @@ public class ScilabExecutable extends JavaExecutable {
             PASolveEnvFile paenv = paconfig.getEnvMatFile();
             paenv.setRootDirectory(this.localSpaceRootDir.getCanonicalPath());
             File envMat = new File(paenv.getFullPathName());
-            printLog("Loading workspace from " + envMat);
+            logger.debug("Loading workspace from " + envMat);
+
             if (paconfig.isDebug()) {
                 scilabConnection.evalString("disp('Contents of " + envMat + "');");
                 scilabConnection.evalString("listvarinfile('" + envMat + "')");
             }
-            // Load workspace using SCILAB command
+
+            logger.debug("Loading workspace using SCILAB command");
             List<String> globals = paenv.getEnvGlobalNames();
             if (globals != null && globals.size() > 0) {
                 String globalstr = "";
@@ -384,7 +351,7 @@ public class ScilabExecutable extends JavaExecutable {
 
         File inMat = new File(taskconfig.getInputVariablesFile().getFullPathName());
 
-        printLog("Loading input variables from " + inMat);
+        logger.debug("Loading input variables from " + inMat);
 
         scilabConnection.evalString("load('" + inMat + "');");
         if (taskconfig.getComposedInputVariablesFile() != null) {
@@ -409,7 +376,7 @@ public class ScilabExecutable extends JavaExecutable {
         pafile.setRootDirectory(localSpaceRootDir.getCanonicalPath());
         File outputFile = new File(pafile.getFullPathName());
 
-        printLog("Storing 'out' variable into " + outputFile);
+        logger.debug("Storing 'out' variable into " + outputFile);
         scilabConnection.evalString("warning('off');");
         scilabConnection.evalString("save('" + outputFile + "',out);");
         scilabConnection.evalString("warning('on');");
@@ -424,7 +391,7 @@ public class ScilabExecutable extends JavaExecutable {
     }
 
     private void testOutput() throws Exception {
-        printLog("Receiving and testing output...");
+        logger.debug("Receiving and testing output...");
 
         PASolveFile pafile = taskconfig.getOutputVariablesFile();
         pafile.setRootDirectory(localSpaceRootDir.getCanonicalPath());
@@ -432,55 +399,6 @@ public class ScilabExecutable extends JavaExecutable {
 
         if (!outputFile.exists()) {
             throw new ScilabTaskException("Cannot find output variable file.");
-        }
-
-    }
-
-    private void printLog(final String message) {
-        if (!this.paconfig.isDebug()) {
-            return;
-        }
-        final Date d = new Date();
-        final String log = "[" + ISO8601FORMAT.format(d) + " " + HOSTNAME + "][" +
-            this.getClass().getSimpleName() + "] " + message;
-        System.out.println(log);
-        System.out.flush();
-        if (this.outDebugWriter != null) {
-            this.outDebugWriter.println(log);
-            this.outDebugWriter.flush();
-        }
-
-    }
-
-    /** Creates a log file in the java.io.tmpdir if debug is enabled */
-    private void createLogFileOnDebug() throws Exception {
-        if (!this.paconfig.isDebug()) {
-            return;
-        }
-
-        final File logFile = new File(ScilabExecutable.TMPDIR, "ScilabExecutable_" + NODENAME + ".log");
-        if (!logFile.exists()) {
-            logFile.createNewFile();
-        }
-
-        outFile = new FileWriter(logFile, false);
-        outDebugWriter = new PrintWriter(outFile);
-    }
-
-    private void closeLogFileOnDebug() {
-        try {
-            if (outDebugWriter != null) {
-                outDebugWriter.close();
-            }
-        } catch (Exception e) {
-
-        }
-        try {
-            if (outFile != null) {
-                outFile.close();
-            }
-        } catch (Exception e) {
-
         }
 
     }

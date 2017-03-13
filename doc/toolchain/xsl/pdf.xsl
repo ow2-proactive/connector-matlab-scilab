@@ -6,7 +6,8 @@
 		please refer to the INSTALL file in the root of the Documentation project
 		to know how to do it properly.
 -->
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:date="http://exslt.org/dates-and-times" xmlns:destination="http://xml.apache.org/fop/extensions" xmlns:fo="http://www.w3.org/1999/XSL/Format" exclude-result-prefixes="date" version="1.0">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:date="http://exslt.org/dates-and-times"
+				xmlns:fo="http://www.w3.org/1999/XSL/Format" exclude-result-prefixes="date" version="1.0">
 	<xsl:import href="../docbook-xsl/fo/docbook.xsl">
 	</xsl:import>
 	<xsl:import href="../docbook-xsl/common/personal-templates.xsl">

@@ -99,13 +99,11 @@ public class TestDisconnected extends AbstractMatlabTest {
 
         Process p = pb.start();
 
-        IOTools.LoggingThread lt1 = new IOTools.LoggingThread(p, "[" + testName + "_" + index + "]",
-            System.out, System.err);
+        IOTools.LoggingThread lt1 = new IOTools.LoggingThread(p.getInputStream(), "[" + testName + "_" + index + "]",
+            System.out);
         Thread t1 = new Thread(lt1, testName + "_" + index);
         t1.setDaemon(true);
         t1.start();
-
-        //ProcessResult pr = IOTools.blockingGetProcessResult(p, 580000);
 
         int code = p.waitFor();
         while (!startFile.exists()) {

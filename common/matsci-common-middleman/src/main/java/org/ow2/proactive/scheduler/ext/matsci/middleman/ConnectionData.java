@@ -34,9 +34,9 @@
  */
 package org.ow2.proactive.scheduler.ext.matsci.middleman;
 
-import org.ow2.proactive.authentication.crypto.Credentials;
-
 import java.io.Serializable;
+
+import org.ow2.proactive.authentication.crypto.Credentials;
 
 
 /**

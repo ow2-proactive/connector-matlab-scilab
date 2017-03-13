@@ -43,6 +43,7 @@ import java.util.regex.Matcher;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.log4j.Logger;
 import org.objectweb.proactive.utils.OperatingSystem;
 import org.ow2.proactive.scheduler.ext.matsci.worker.properties.MatSciProperties;
 import org.w3c.dom.Document;
@@ -65,6 +66,8 @@ public abstract class MatSciConfigurationParser {
 
     protected static File schedHome;
 
+    protected final Logger logger = Logger.getLogger(MatSciConfigurationParser.class);
+
     static {
         try {
             HOSTNAME = java.net.InetAddress.getLocalHost().getHostName();
@@ -84,15 +87,15 @@ public abstract class MatSciConfigurationParser {
 
     protected abstract MatSciEngineConfig buildConfig(String home, String version, String binDir, String command, String arch);
 
-    protected  MatSciEngineConfig parseInstallation(File configFile, Element installation, boolean debug) throws Exception {
+    protected  MatSciEngineConfig parseInstallation(File configFile, Element installation) throws Exception {
         NodeList nl = installation.getElementsByTagName("version");
         if (nl.getLength() != 1) {
-            System.out.println("In " + configFile + ", version element must not be empty or duplicate");
+            logger.error("In " + configFile + ", version element must not be empty or duplicate");
             return null;
         }
         String version = ((Element)(nl.item(0))).getTextContent();
         if ((version == null) || (version.trim().length() == 0)) {
-            System.out.println("In " + configFile + ", version element must not be empty");
+            logger.error("In " + configFile + ", version element must not be empty");
             return null;
         }
         version = version.trim();
@@ -101,12 +104,12 @@ public abstract class MatSciConfigurationParser {
         }
         nl = installation.getElementsByTagName("home");
         if (nl.getLength() != 1) {
-            System.out.println("In " + configFile + ", home element must not be empty");
+            logger.error("In " + configFile + ", home element must not be empty");
             return null;
         }
         String home = ((Element)(nl.item(0))).getTextContent();
         if ((home == null) || (home.trim().length() == 0)) {
-            System.out.println("In " + configFile + ", home element must not be empty");
+            logger.error("In " + configFile + ", home element must not be empty");
             return null;
         }
 
@@ -117,12 +120,12 @@ public abstract class MatSciConfigurationParser {
         }
         nl = installation.getElementsByTagName("bindir");
         if (nl.getLength() != 1) {
-            System.out.println("In " + configFile + ", bindir element must not be empty");
+            logger.error("In " + configFile + ", bindir element must not be empty");
             return null;
         }
         String bindir = ((Element)(nl.item(0))).getTextContent();
         if ((bindir == null) || (bindir.trim().length() == 0)) {
-            System.out.println("In " + configFile + ", bindir element must not be empty");
+            logger.error("In " + configFile + ", bindir element must not be empty");
             return null;
         }
         bindir = bindir.trim().replaceAll("/",
@@ -132,12 +135,12 @@ public abstract class MatSciConfigurationParser {
 
         nl = installation.getElementsByTagName("command");
         if (nl.getLength() != 1) {
-            System.out.println("In " + configFile + ", command element must not be empty");
+            logger.error("In " + configFile + ", command element must not be empty");
             return null;
         }
         String command = ((Element)(nl.item(0))).getTextContent();
         if ((command == null) || (command.trim().length() == 0)) {
-            System.out.println("In " + configFile + ", command element must not be empty");
+            logger.error("In " + configFile + ", command element must not be empty");
             return null;
         }
         command = command.trim();
@@ -148,33 +151,31 @@ public abstract class MatSciConfigurationParser {
 
         nl = installation.getElementsByTagName("arch");
         if (nl.getLength() != 1) {
-            System.out.println("In " + configFile + ", arch element must not be empty");
+            logger.error("In " + configFile + ", arch element must not be empty");
             return null;
         }
         String arch = ((Element)(nl.item(0))).getTextContent();
         if ((arch == null) || (arch.trim().length() == 0)) {
-            System.out.println("In " + configFile + ", arch element must not be empty");
+            logger.error("In " + configFile + ", arch element must not be empty");
             return null;
         }
         arch = arch.trim();
 
         if (!(arch.equals("32") || arch.equals("64"))) {
-            System.out.println("In " + configFile +
+            logger.error("In " + configFile +
                     ", arch element must be 32 or 64 received : " + arch);
             return null;
         }
 
         MatSciEngineConfig conf = buildConfig(home, version, bindir, command,
                 arch);
-        if (debug) {
-            System.out.println("Found : " + conf);
-        }
+        logger.debug("Found : " + conf);
 
         return conf;
     }
 
 
-    protected HashSet<MatSciEngineConfig> parseConfigFile(String path, boolean debug) throws Exception {
+    protected HashSet<MatSciEngineConfig> parseConfigFile(String path) throws Exception {
 
         HashSet<MatSciEngineConfig> configs = new HashSet<MatSciEngineConfig>();
 
@@ -190,19 +191,13 @@ public abstract class MatSciConfigurationParser {
         }
 
         if (!configFile.exists() || !configFile.canRead()) {
-            if (debug) {
-                System.out.println(configFile + " not found, skipping...");
-            }
+            logger.debug(configFile + " not found, skipping...");
             return configs;
         } else if (!configFile.getName().endsWith(".xml")) {
-            if (debug) {
-                System.out.println(configFile + " : unrecognized extension, skipping...");
-            }
+            logger.debug(configFile + " : unrecognized extension, skipping...");
             return configs;
         } else {
-            if (debug) {
-                System.out.println("Parsing configuration file :" + configFile);
-            }
+            logger.debug("Parsing configuration file :" + configFile);
         }
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
@@ -222,7 +217,7 @@ public abstract class MatSciConfigurationParser {
                     for (int j = 0; j < listInstallations.getLength(); j++) {
                         Node n = listInstallations.item(j);
                         if (n instanceof Element) {
-                            MatSciEngineConfig conf = parseInstallation(configFile, (Element) n, debug);
+                            MatSciEngineConfig conf = parseInstallation(configFile, (Element) n);
                             if (conf != null) {
                                 configs.add(conf);
                             }
@@ -256,40 +251,40 @@ public abstract class MatSciConfigurationParser {
 
     }
 
-    protected static boolean checkDir(File dir, File conf) {
+    protected boolean checkDir(File dir, File conf) {
         if (!dir.exists()) {
-            System.out.println("In " + conf + ", " + dir + " doesn't exist");
+            logger.error("In " + conf + ", " + dir + " doesn't exist");
             return false;
         }
         if (!dir.isDirectory()) {
-            System.out.println("In " + conf + ", " + dir + " is not a directory");
+            logger.error("In " + conf + ", " + dir + " is not a directory");
             return false;
         }
         if (!dir.canRead()) {
             // When using RunAsMe, we cannot be sure the current user has the right permissions
-            System.out.println("In " + conf + ", " + dir + " is not readable");
+            logger.error("In " + conf + ", " + dir + " is not readable");
             return false;
         }
         return true;
     }
 
-    protected static boolean checkFile(File file, File conf, boolean executable) throws Exception {
+    protected boolean checkFile(File file, File conf, boolean executable) throws Exception {
         if (!file.exists()) {
-            System.out.println("In " + conf + ", " + file + " doesn't exist");
+            logger.error("In " + conf + ", " + file + " doesn't exist");
             return false;
         }
         if (!file.isFile()) {
-            System.out.println("In " + conf + ", " + file + " is not a file");
+            logger.error("In " + conf + ", " + file + " is not a file");
             return false;
         }
         if (!file.canRead()) {
             // When using RunAsMe, we cannot be sure the current user has the right permissions
-            System.out.println("In " + conf + ", " + file + " is not readable");
+            logger.error("In " + conf + ", " + file + " is not readable");
             return false;
         }
         if (executable && !file.canExecute()) {
             // When using RunAsMe, we cannot be sure the current user has the right permissions
-            System.out.println("In " + conf + ", " + file + " is not executable");
+            logger.error("In " + conf + ", " + file + " is not executable");
             return false;
         }
         return true;

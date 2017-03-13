@@ -20,7 +20,7 @@
         <td valign="baseline"><b>Matlab Connector Toolbox</b></td>
         <td valign="baseline" align="right"><a href="proactive_installation.html"><img src="b_prev.gif" border="0" align="bottom"
                                                                         alt="Installation"></a>&nbsp;&nbsp;&nbsp;<a
-                href="proactive_monitoring.html"><img src="b_next.gif" border="0" align="bottom" alt="Monitoring"></a></td>
+                href="proactive_solve.html"><img src="b_next.gif" border="0" align="bottom" alt="Running Matlab functions and Monitoring"></a></td>
     </tr>
 </table>
 <table class="feedbacklinktop" border="0" width="100%" cellpadding="0" cellspacing="0">
@@ -56,8 +56,8 @@
 <p>ProActive Scheduler is in fact composed of two programs working together:</p>
 
 <ul type="disc">
-    <li><p><b>ProActive Resource Manager</b>: the resource manager is the program in charge of a pool of resources called Nodes. Each node is a Java Virtual Machine running on a worker host. There can be several of these Nodes deployed on a single host, generally when a host has multiple processes or cores. It allows to maximize the processing power available on the network. The Resource Manager needs to be configured according to the network topology in order to deploy Nodes on available machines. Configuration of the Resource Manager for acquiring resources is beyond the scope of this document and is explained on the Resource Manager manual available at <a href="http://proactive.inria.fr/release-doc/Resourcing/multiple_html/index.html">http://proactive.inria.fr/release-doc/Resourcing/multiple_html/index.html</a>.</p></li>
     <li><p><b>ProActive Scheduler</b>: the scheduler receives jobs to be executed. It will schedule their execution according to its policy and its workload. When a job is ready to be scheduled, the scheduler will contact the resource manager to find the maximum number of resources available to execute the job. Resources will be selected sometimes according to specific policies. In case of Matlab Connector Toolbox, only resources which have a valid Matlab configuration will be selected. A lot of extra selection will be done dynamically, for example specific Matlab versions needed by the job, or toolbox tokens availability .</p></li>
+    <li><p><b>ProActive Resource Manager</b>: the resource manager is the program in charge of a pool of resources called Nodes. Each node is a Java Virtual Machine running on a worker host. There can be several of these Nodes deployed on a single host, generally when a host has multiple processes or cores. It allows to maximize the processing power available on the network. The Resource Manager needs to be configured according to the network topology in order to deploy Nodes on available machines. Configuration of the Resource Manager for acquiring resources is beyond the scope of this document and is explained on the Resource Manager manual available at <a href="http://doc.activeeon.com/latest/admin/ProActiveAdminGuide.html#_resources_manager_properties">http://doc.activeeon.com/latest/admin/ProActiveAdminGuide.html#_resources_manager_properties</a>.</p></li>
 </ul>
 
 
@@ -71,23 +71,24 @@
 
 <p>The commands to start ProActive Scheduler are located in Scheduler_Server/bin/unix or Scheduler_Server/bin/windows, depending on your Operating System. The following commands are present:</p>
 <ul type="disc">
-    <li><p><b>rm-start(.bat)</b>: To start an empty ProActive Resource Manager.</p></li>
-    <li><p><b>rm-start(.bat) -ln</b>: To start a ProActive Resource Manager with 4 local workers.</p></li>
-    <li><p><b>scheduler-start(.bat)</b>: To start ProActive Scheduler.</p></li>
-    <li><p><b>scheduler-start-gui(.bat)</b>: This starts the scheduler, the resource manager and all the web portals.</p></li>
+    <li><p><b>proactive-server(.bat)</b>: To start the scheduler, the resource manager with local nodes and all the web portals.</p></li>
+    <li><p><b>proactive-server(.bat) -ln 4</b>: To start the resource manager with 4 local workers.</p></li>
+    <li><p><b>proactive-server(.bat) --rm-only</b>: To start the resource manager.</p></li>
+    <li><p><b>proactive-server(.bat) --rmURL <i>schedulerURL</i></b>: To start and connect the scheduler to a running resource manager.</p></li>
 </ul>
-<p>The following sequence of commands (executed from Scheduler_Server/bin/unix) will start a Resource Manager will 4 local Nodes(JVM) and a Scheduler. Although this trivial deployment is not meant to be a practical case, it is still a good way to test the framework and become familiar with ProActive.</p>
-<p>First the Resource Manager:</p>
-<pre> $ rm-start-clean -ln
-Starting Resource Manager, Please wait...
-Resource Manager successfully created on rmi://pendule.inria.fr:1099/</pre>
+<p>The first command automatically starts all the services required to test the framework and become familiar with ProActive.</p>
 
-<p>Then the Scheduler:</p>
-<pre> $ scheduler-start-clean
-Starting Scheduler, Please wait...
-Resource Manager URL was not specified, connection made to the local Resource Manager at rmi://pendule.inria.fr:1099/
-Starting scheduler...
-Scheduler successfully created on rmi://pendule.inria.fr:1099/</pre>
+<pre>$ proactive-server.bat
+Starting the scheduler...
+Starting the resource manager...
+The resource manager with 7 local nodes created on pnp://XPS-P31F:64738/
+The scheduler created on pnp://XPS-P31F:64738/
+Starting the web applications...
+The web application /rest created on http://XPS-P31F:8080/rest
+The web application /rm-portal-7.9.0-SNAPSHOT created on http://XPS-P31F:8080/rm-portal-7.9.0-SNAPSHOT
+The web application /scheduler-portal-7.9.0-SNAPSHOT created on http://XPS-P31F:8080/scheduler-portal-7.9.0-SNAPSHOT
+The web application /studio created on http://XPS-P31F:8080/studio
+*** Get started at http://XPS-P31F:8080 ***</pre>
 
 <a name="startup-3"></a>
 
@@ -99,77 +100,30 @@ Scheduler successfully created on rmi://pendule.inria.fr:1099/</pre>
 <p><a href="matlab:doc PAconnect">PAconnect</a> is the function used to connect to the scheduler from the toolbox.</p>
 <p>From a matlab session, assuming that Matlab Connector Toolbox is already in Matlab path, run the following command (where PAconnect's argument is the url you received from the Scheduler starting command):</p>
 
-<pre>>> PAconnect('rmi://pendule.inria.fr:1099/');</pre>
+<pre>>> PAconnect('pnp://XPS-P31F:64738');</pre>
 
 <p> you can also use the simplify syntax PAconnect(), it will automatically look for a scheduler deployed locally.</p>
 
-<p>A popup window will appear asking for a username and password. This username/password refers to the username and password of your account on ProActive Scheduler. ProActive Scheduler features a full account management facility along with the possibility to synchronize to existing Windows or Linux accounts via LDAP. More information can be found at <a href="http://proactive.inria.fr/release-doc/Scheduling/multiple_html/admin_manual.html#Scheduler_authentication">Scheduler Manual:Configure users authentication</a>.</p>
+<p>A popup window will appear asking for a username and password. This username/password refers to the username and password of your account on ProActive Scheduler. ProActive Scheduler features a full account management facility along with the possibility to synchronize to existing Windows or Linux accounts via LDAP. More information can be found at <a href="http://doc.activeeon.com/latest/admin/ProActiveAdminGuide.html#_user_authentication">ProActiveAdminGuide:User Authentication</a>.</p>
 <p>Here for this example we will use the default account with login <b>demo</b> and password <b>demo</b>.</p>
 
 <p>Here is what is displayed when the connection worked successfully:</p>
-<pre><![CDATA[ >> PAconnect('rmi://192.168.1.187:1099/')
+<pre><![CDATA[ >> PAconnect('pnp://XPS-P31F:64738')
 log file in use : C:\Users\fviale\AppData\Local\Temp\MatlabJVMSpawnHelper.log
-[2012-12-03 14:20:007 precision][MIDDLEMAN]Logging to org.slf4j.impl.Log4jLoggerAdapter(org.mortbay.log) via org.mortbay.log.Slf4jLog
-[2012-12-03 14:20:007 precision][MIDDLEMAN]jetty-6.1.x
-[2012-12-03 14:20:007 precision][MIDDLEMAN]Started SelectChannelConnector@0.0.0.0:32092
-[2012-12-03 14:20:007 precision][MIDDLEMAN]Remote Object Factory provider <pamr, class org.objectweb.proactive.extensions.pamr.remoteobject.PAMRRemoteObjectFactory> found
-[2012-12-03 14:20:007 precision][MIDDLEMAN]Remote Object Factory provider <pnp, class org.objectweb.proactive.extensions.pnp.PNPRemoteObjectFactory> found
-[2012-12-03 14:20:007 precision][MIDDLEMAN]Remote Object Factory provider <pnps, class org.objectweb.proactive.extensions.pnpssl.PNPSslRemoteObjectFactory> found
-[2012-12-03 14:20:007 precision][MIDDLEMAN]Remote Object Factory provider <pamrd, class org.objectweb.proactive.extensions.pamrd.PAMRDRemoteObjectFactorySPI$PAMRDRemoteObjectFactory> found
-[2012-12-03 14:20:007 precision][MIDDLEMAN]Remote Object Factory provider <amqp, class org.objectweb.proactive.extensions.amqp.remoteobject.AMQPRemoteObjectFactory> found
-[2012-12-03 14:20:007 precision][MIDDLEMAN]Remote Object Factory provider <amqp-federation, class org.objectweb.proactive.extensions.amqp.federation.AMQPFederationRemoteObjectFactory> found
-[2012-12-03 14:20:007 precision][MIDDLEMAN]Remote Object Factory provider <rmissl, class org.objectweb.proactive.extra.rmissl.RmiSslRemoteObjectFactory> found
-[2012-12-03 14:20:007 precision][MIDDLEMAN][MiddlemanDeployer] Starting Middleman JVM
-[2012-12-03 14:20:008 precision][MIDDLEMAN]Created a new registry on port 1110
-[2012-12-03 14:20:009 precision][MIDDLEMAN][MiddlemanDeployer] Middleman JVM started
+Connection successful, please enter login/password
+[2016-12-28 11:27:052 XPS-P31F][MIDDLEMAN][MiddlemanDeployer] Starting Middleman JVM
+[2016-12-28 11:27:057 XPS-P31F][MIDDLEMAN]Logging initialized @9264ms
+[2016-12-28 11:27:057 XPS-P31F][MIDDLEMAN]jetty-9.2.14.v20151106
+[2016-12-28 11:27:057 XPS-P31F][MIDDLEMAN]Started o.e.j.s.ServletContextHandler@4b088489{/proactive,null,AVAILABLE}
+[2016-12-28 11:27:057 XPS-P31F][MIDDLEMAN]Started ServerConnector@197cdb3c{HTTP/1.1}{0.0.0.0:62891}
+[2016-12-28 11:27:057 XPS-P31F][MIDDLEMAN]Started @9376ms
+[2016-12-28 11:27:057 XPS-P31F][MIDDLEMAN][MiddlemanDeployer] Middleman JVM started
+Login successful
 
- Connection to JVM successful
-
- Connection successful to rmi://192.168.1.187:1099/
-
- Please enter login/password
-
- Login successful
- ans  =
+ans =
 
      []
 ]]></pre>
-
-<p>If the scheduler is unreachable, here is what is displayed :</p>
-<pre>>> PAconnect('rmi://pendule:1099/')
-??? Java exception occurred:
-org.ow2.proactive.scheduler.common.exception.ConnectionException: java.io.IOException: The url
-rmi://pendule:1099/SCHEDULER is not bound to any known object
-	at org.ow2.proactive.scheduler.common.SchedulerConnection.join(SchedulerConnection.java:102)
-	at
-        org.ow2.proactive.scheduler.ext.matsci.client.AOMatSciEnvironment.join(AOMatSciEnvironment.java:209)
-        	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-	at sun.reflect.NativeMethodAccessorImpl.invoke(Unknown Source)
-	at sun.reflect.DelegatingMethodAccessorImpl.invoke(Unknown Source)
-	at java.lang.reflect.Method.invoke(Unknown Source)
-	at org.objectweb.proactive.core.mop.MethodCall.execute(MethodCall.java:395)
-	at org.objectweb.proactive.core.body.request.RequestImpl.serveInternal(RequestImpl.java:253)
-	at org.objectweb.proactive.core.body.request.RequestImpl.serve(RequestImpl.java:197)
-	at
-        org.objectweb.proactive.core.body.BodyImpl$ActiveLocalBodyStrategy.serveInternal(BodyImpl.java:616)
-        	at
-        org.objectweb.proactive.core.body.BodyImpl$ActiveLocalBodyStrategy.serve(BodyImpl.java:577)
-	at org.objectweb.proactive.core.body.AbstractBody.serve(AbstractBody.java:944)
-	at org.objectweb.proactive.Service.serveOldest(Service.java:214)
-	at
-        org.ow2.proactive.scheduler.ext.matsci.client.AOMatSciEnvironment.runActivity(AOMatSciEnvironment.java:584)
-        	at org.objectweb.proactive.core.body.ActiveBody.run(ActiveBody.java:198)
-	at java.lang.Thread.run(Unknown Source)
-Caused by: java.io.IOException: The url rmi://pendule:1099/SCHEDULER is not bound to any known object
-	at org.objectweb.proactive.api.PAActiveObject.lookupActive(PAActiveObject.java:1524)
-	at org.ow2.proactive.authentication.Connection.lookupAuthentication(Connection.java:94)
-	at org.ow2.proactive.authentication.Connection.connect(Connection.java:105)
-	at org.ow2.proactive.scheduler.common.SchedulerConnection.join(SchedulerConnection.java:100)
-	... 15 more
-
-Error in ==> PAconnect at 83
-    ok = solver.join(url);
-</pre>
 
 
 
@@ -197,9 +151,9 @@ Error in ==> PAconnect at 83
                                                                 alt="Installation"></a>&nbsp;</td>
         <td align="left">Installation</td>
         <td>&nbsp;</td>
-        <td align="right">Monitoring</td>
-        <td align="right" width="20"><a href="proactive_monitoring.html"><img src="b_next.gif" border="0" align="bottom"
-                                                                   alt="Monitoring"></a></td>
+        <td align="right">Running Matlab functions and Monitoring</td>
+        <td align="right" width="20"><a href="proactive_solve.html"><img src="b_next.gif" border="0" align="bottom"
+                                                                   alt="Running Matlab functions and Monitoring"></a></td>
     </tr>
 </table>
 <br>

@@ -104,13 +104,11 @@ public class TestGetResults extends AbstractScilabTest {
 
         Process p = pb.start();
 
-        IOTools.LoggingThread lt1 = new IOTools.LoggingThread(p, "[" + functionName + "_" + index + "]",
-            System.out, System.err);
+        IOTools.LoggingThread lt1 = new IOTools.LoggingThread(p.getInputStream(), "[" + functionName + "_" + index + "]",
+            System.out);
         Thread t1 = new Thread(lt1, functionName + "_" + index);
         t1.setDaemon(true);
         t1.start();
-
-        //ProcessResult pr = IOTools.blockingGetProcessResult(p, 580000);
 
         int code = p.waitFor();
         if (reFile.exists()) {

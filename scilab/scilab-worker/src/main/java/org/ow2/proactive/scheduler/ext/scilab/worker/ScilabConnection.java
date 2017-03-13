@@ -36,12 +36,12 @@
  */
 package org.ow2.proactive.scheduler.ext.scilab.worker;
 
+import java.io.File;
+
 import org.ow2.proactive.scheduler.ext.scilab.common.PASolveScilabGlobalConfig;
 import org.ow2.proactive.scheduler.ext.scilab.common.PASolveScilabTaskConfig;
 import org.ow2.proactive.scheduler.ext.scilab.common.exception.ScilabInitException;
 import org.ow2.proactive.scheduler.ext.scilab.common.exception.ScilabTaskException;
-
-import java.io.File;
 
 
 /**
@@ -57,6 +57,8 @@ public interface ScilabConnection {
      *
      * @param scilabExecutablePath The full path to the SCILAB executable
      * @param workingDir the directory where to start SCILAB
+     * @param paconfig configuration of a Scilab PAsolve Job
+     * @param tconfig configuration of a Scilab Task
      * @throws org.ow2.proactive.scheduler.ext.scilab.common.exception.ScilabInitException if SCILAB could not be initialized
      */
     public void acquire(String scilabExecutablePath, File workingDir, PASolveScilabGlobalConfig paconfig,
@@ -100,7 +102,13 @@ public interface ScilabConnection {
     public void put(final String variableName, final Object value) throws ScilabTaskException;
 
     /**
+     * This method is executed before the launch method
+     */
+    public void beforeLaunch();
+
+    /**
      * Used to send finalization scilab commands to the connection and launch the command buffer (in case of command grouping)
      */
     public void launch() throws Exception;
+
 }

@@ -36,7 +36,16 @@
  */
 package org.ow2.proactive.scheduler.ext.common.util;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.io.Serializable;
+import java.io.StringReader;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -47,10 +56,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -60,57 +65,9 @@ import java.util.concurrent.TimeoutException;
  */
 public class IOTools {
 
-    private static final String nl = System.lineSeparator();
-
     protected static final SimpleDateFormat ISO8601FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:sss");
 
-    public static ProcessResult blockingGetProcessResult(final Process process, long timeout)
-            throws InterruptedException, IOException {
-
-        ExecutorService service = Executors.newSingleThreadExecutor();
-
-        final ByteArrayOutputStream buf = new ByteArrayOutputStream();
-
-        service.submit(new Runnable() {
-            public void run() {
-                InputStream is = process.getInputStream();
-                try {
-                    int result = 0;
-
-                    result = is.read();
-
-                    while (result != -1) {
-                        byte b = (byte) result;
-                        buf.write(b);
-                        result = is.read();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-            }
-        });
-
-        service.shutdown();
-        boolean ok = service.awaitTermination(timeout, TimeUnit.MILLISECONDS);
-        if (!ok) {
-            process.destroy();
-            Thread.sleep(1000);
-        }
-        int retValue = -1;
-        if (ok) {
-
-            try {
-                retValue = process.waitFor();
-            } catch (InterruptedException e) {
-                e.printStackTrace(); //To change body of catch statement use File | Settings | File Templates.
-            }
-        }
-        return new ProcessResult(retValue, buf.toString(), ok);
-    }
-
-    public static String generateHash(File file) throws NoSuchAlgorithmException, FileNotFoundException,
-            IOException {
+    public static String generateHash(File file) throws NoSuchAlgorithmException, FileNotFoundException, IOException {
         if (!file.exists() || !file.canRead()) {
             throw new IOException("File doesn't exist : " + file);
         }
@@ -137,8 +94,8 @@ public class IOTools {
         return hash;
     }
 
-    public static String generateHash(String bigString) throws NoSuchAlgorithmException,
-            FileNotFoundException, IOException {
+    public static String generateHash(String bigString)
+            throws NoSuchAlgorithmException, FileNotFoundException, IOException {
 
         MessageDigest md = MessageDigest.getInstance("SHA"); // SHA or MD5
         String hash = "";
@@ -175,150 +132,6 @@ public class IOTools {
     }
 
     /**
-     * Return the content read through the given text input stream as a list of file
-     *
-     * @param is input stream to read
-     * @return content as list of strings
-     */
-    public static ArrayList<String> getContentAsList(final InputStream is) {
-        final ArrayList<String> lines = new ArrayList<String>();
-        final BufferedReader d = new BufferedReader(new InputStreamReader(new BufferedInputStream(is)));
-
-        String line = null;
-
-        try {
-            line = d.readLine();
-        } catch (IOException e1) {
-            e1.printStackTrace();
-        }
-
-        while (line != null) {
-            lines.add(line);
-
-            try {
-                line = d.readLine();
-            } catch (IOException e) {
-                e.printStackTrace();
-                line = null;
-            }
-        }
-
-        try {
-            is.close();
-        } catch (IOException e) {
-        }
-
-        return lines;
-    }
-
-    /**
-     * Return the content of the given File as a String
-     *
-     * @param in input stream to read
-     * @return content as a string
-     */
-    public static String readFileAsString(final File in, long timeout, final String startPattern,
-            final String stopPattern) throws InterruptedException, TimeoutException {
-
-        ExecutorService service = Executors.newSingleThreadExecutor();
-
-        final StringBuffer answer = new StringBuffer();
-
-        service.submit(new Runnable() {
-            public void run() {
-                final ArrayList<String> lines = new ArrayList<String>();
-                InputStream is = null;
-                try {
-                    is = new FileInputStream(in);
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
-                final BufferedReader d = new BufferedReader(new InputStreamReader(is));
-                String line = null;
-
-                try {
-                    line = d.readLine();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    line = null;
-                }
-                String startP = startPattern;
-                String stopP = stopPattern;
-                while (line != null) {
-                    if (startP != null) {
-                        if (line.contains(startP)) {
-                            startP = null;
-                        }
-                    } else if (stopP != null) {
-                        if (line.contains(stopP)) {
-                            startP = "[{THEIMMPOSSIBLEPATTERN}]";
-                            stopP = null;
-                        } else {
-                            answer.append(line + nl);
-                        }
-                    } else {
-                        answer.append(line + nl);
-                    }
-
-                    try {
-                        line = d.readLine();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        line = null;
-                    }
-                }
-
-                try {
-                    is.close();
-                } catch (IOException e) {
-                }
-            }
-        });
-
-        service.shutdown();
-        boolean ok = service.awaitTermination(timeout, TimeUnit.MILLISECONDS);
-
-        return answer.toString();
-    }
-
-    public static class RedirectionThread implements Runnable, Serializable {
-
-        private InputStream is;
-        private OutputStream os;
-
-        private PrintStream out;
-        private BufferedReader br;
-
-        public RedirectionThread(InputStream is, OutputStream os) {
-            this.is = is;
-            this.os = os;
-            this.out = new PrintStream(new BufferedOutputStream(os));
-            this.br = new BufferedReader(new InputStreamReader(new BufferedInputStream(is)));
-        }
-
-        public void run() {
-
-            String s;
-            try {
-                while ((s = br.readLine()) != null) {
-                    synchronized (out) {
-                        out.println(s);
-                    }
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        public void setOutputStream(OutputStream os) {
-            synchronized (out) {
-                out = new PrintStream(new BufferedOutputStream(os));
-            }
-
-        }
-    }
-
-    /**
      * An utility class (Thread) which collects the output from a process and prints it on the JVM's standard output
      *
      * @author The ProActive Team
@@ -326,22 +139,17 @@ public class IOTools {
     public static class LoggingThread implements Runnable, Serializable {
 
         private String appendMessage;
-        /**  */
-        public Boolean goon = true;
 
-        private PrintStream out;
-        private PrintStream err;
+        private PrintStream outputStream;
 
-        private Process p;
-
-        private BufferedReader brout;
-        private BufferedReader brerr;
-
-        private boolean lastline_err = false;
+        private BufferedReader inputReader;
 
         private String startpattern;
+
         private String stoppattern;
+
         private String[] patternsToFind;
+
         private HashMap<String, Boolean> patternFound = new HashMap<String, Boolean>();
 
         private static String HOSTNAME;
@@ -353,252 +161,85 @@ public class IOTools {
             }
         }
 
-        /**  */
         public ArrayList<String> output = new ArrayList<String>();
-        private PrintStream debugStream;
 
-        /**
-         * Create a new instance of LoggingThread.
-         */
-        public LoggingThread() {
-
+        public LoggingThread(InputStream is, String appendMessage, PrintStream outputStream) {
+            this(is, appendMessage, outputStream, null, null, null);
         }
 
-        /**
-         * Create a new instance of LoggingThread.
-         *
-         * @param p
-         * @param appendMessage
-         * @param out
-         */
-        public LoggingThread(Process p, String appendMessage, PrintStream out, PrintStream err,
-                String startpattern, String stoppattern, String[] patternToFind) {
-            this(p, appendMessage, out, err, null, startpattern, stoppattern, patternToFind);
-        }
-
-        public LoggingThread(Process p, String appendMessage, PrintStream out, PrintStream err) {
-            this(p, appendMessage, out, err, null, null, null, null);
-        }
-
-        public LoggingThread(Process p, String appendMessage, PrintStream out, PrintStream err,
-                PrintStream ds, String startpattern, String stoppattern, String[] patternsToFind) {
-            this.brout = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            this.brerr = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+        public LoggingThread(InputStream is, String appendMessage, PrintStream outputStream, String startpattern,
+                             String stoppattern, String[] patternsToFind) {
+            this.inputReader = new BufferedReader(new InputStreamReader(is));
             this.appendMessage = appendMessage;
-            this.out = out;
-            this.err = err;
-            this.debugStream = ds;
+            this.outputStream = outputStream;
             this.startpattern = startpattern;
             this.stoppattern = stoppattern;
             this.patternsToFind = patternsToFind;
-            if (patternsToFind != null) {
-                for (String patternToFind : patternsToFind) {
-                    this.patternFound.put(patternToFind, false);
+            if (this.patternsToFind != null) {
+                for (String p : this.patternsToFind) {
+                    this.patternFound.put(p, false);
                 }
             }
-
-            this.p = p;
-        }
-
-        /**
-         * Create a new instance of LoggingThread.
-         *
-         * @param p
-         * @param appendMessage
-         * @param out
-         */
-        public LoggingThread(Process p, String appendMessage, PrintStream out, PrintStream err, PrintStream ds) {
-            this(p, appendMessage, out, err, ds, null, null, null);
-        }
-
-        public LoggingThread(Process p) {
-            this.brout = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            this.brerr = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-            this.out = null;
-            this.err = null;
-            this.appendMessage = null;
-            this.p = p;
-        }
-
-        private String getLineOrDie() {
-            String answer = null;
-            try {
-
-                while (goon) {
-                    if (readyout()) {
-                        answer = brout.readLine();
-                        lastline_err = false;
-                        return answer;
-                    } else if (readyerr()) {
-                        answer = brerr.readLine();
-                        lastline_err = true;
-                        return answer;
-                    } else {
-                        try {
-                            p.exitValue();
-                            return null;
-                        } catch (IllegalThreadStateException ex) {
-                            //Expected behaviour
-                        }
-                    }
-
-                    try {
-                        Thread.sleep(1);
-                    } catch (InterruptedException e) {
-                        goon = false;
-                    }
-                }
-            } catch (IOException e) {
-                return null;
-            } finally {
-                if (patternsToFind != null) {
-                    for (String pattern : patternsToFind) {
-                        if (answer != null && answer.contains(pattern)) {
-                            patternFound.put(pattern, true);
-                        }
-                    }
-                }
-            }
-            return null;
         }
 
         public boolean patternFound(String pattern) {
             return patternFound.get(pattern);
         }
 
-        private boolean readyout() throws IOException {
-            synchronized (brout) {
-                return brout.ready();
-            }
-        }
-
-        private boolean readyerr() throws IOException {
-            // We use only brout in locks
-            synchronized (brout) {
-                return brerr.ready();
-            }
-        }
-
         /**
          * @see Runnable#run()
          */
         public void run() {
-            String line = null;
-            boolean first_line = true;
-            boolean last_line = false;
-            if (out != null) {
-                while ((line = getLineOrDie()) != null && goon) {
-                    synchronized (out) {
 
-                        if (first_line && line.trim().length() > 0) {
+            String line;
+            try {
 
-                            if ((startpattern != null) && (line.contains(startpattern))) {
-                                // we eat everything until the startpattern, if provided
-                                startpattern = null;
-                                continue;
-                            } else if (startpattern != null) {
-                                continue;
-                            }
-                            first_line = false;
-                            printLine(line);
+                // we eat everything until startpattern if provided
+                if (this.startpattern != null) {
+                    while ((line = waitForLine()) != null && !line.contains(this.startpattern));
+                }
+                // now we print all lines until stoppattern if provided
+                while ((line = waitForLine()) != null &&
+                        (this.stoppattern == null || (this.stoppattern != null && !line.contains(this.stoppattern)))) {
+                    printLine(line);
 
-                        } else if (!first_line) {
-                            if ((stoppattern != null) && (line.contains(stoppattern))) {
-                                // at the stoppattern, we exit
-                                goon = false;
-                            } else {
-                                printLine(line);
-
+                    // patterns detection
+                    if (this.patternsToFind != null) {
+                        for (String p : this.patternsToFind) {
+                            if (line.contains(p)) {
+                                this.patternFound.put(p, true);
                             }
                         }
                     }
-
                 }
 
-            } else
-                while ((line = getLineOrDie()) != null && goon) {
+                try {
+                    this.inputReader.close();
+                } catch (IOException e) {
+                    // SCHEDULING-1296 not necessary to print the Exception but we need to try catch blocks
                 }
-
-            try {
-                brout.close();
-
             } catch (IOException e) {
-                // SCHEDULING-1296 not necessary to print the Exception but we need two try catch blocks
+                e.printStackTrace();
             }
+        }
+
+        private String waitForLine() throws IOException {
             try {
-                brerr.close();
-            } catch (IOException e) {
+                while (!inputReader.ready()) {
+                    Thread.sleep(10);
+                }
+                return inputReader.readLine();
+
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return null;
             }
         }
 
         private void printLine(String line) {
-            if (debugStream == null) {
-                if (lastline_err) {
-                    err.println("[" + ISO8601FORMAT.format(new Date()) + " " + HOSTNAME + "]" +
-                        appendMessage + line);
-                    err.flush();
-                } else {
-                    out.println("[" + ISO8601FORMAT.format(new Date()) + " " + HOSTNAME + "]" +
-                        appendMessage + line);
-                    out.flush();
-                }
-            } else {
-                if (lastline_err) {
-                    err.println("[" + ISO8601FORMAT.format(new Date()) + " " + HOSTNAME + "]" +
-                        appendMessage + line);
-                    err.flush();
-                } else {
-                    out.println("[" + ISO8601FORMAT.format(new Date()) + " " + HOSTNAME + "]" +
-                        appendMessage + line);
-                    out.flush();
-                }
-                debugStream.println("[" + ISO8601FORMAT.format(new Date()) + " " + HOSTNAME + "]" +
-                    appendMessage + line);
-                debugStream.flush();
-            }
+            this.outputStream.println("[" + ISO8601FORMAT.format(new Date()) + " " + HOSTNAME + "]" + appendMessage +
+                    line);
         }
 
-        public void closeStream() {
-            synchronized (out) {
-                try {
-                    out.close();
-                    err.close();
-                } catch (Exception e) {
-
-                }
-            }
-        }
-
-        public void setOutStream(PrintStream out, PrintStream err, PrintStream ds) {
-            synchronized (this.out) {
-                try {
-                    this.out.close();
-                    this.err.close();
-                } catch (Exception e) {
-
-                }
-                if (this.debugStream != null) {
-                    try {
-                        this.debugStream.close();
-                    } catch (Exception e) {
-
-                    }
-                }
-                this.out = out;
-                this.err = err;
-                this.debugStream = ds;
-            }
-        }
-
-        public void setOutStream(PrintStream out, PrintStream err) {
-            setOutStream(out, err, null);
-        }
-
-        public void setProcess(Process p) {
-            synchronized (brout) {
-                this.brout = new BufferedReader(new InputStreamReader(p.getInputStream()));
-                this.brerr = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-            }
-        }
     }
 }

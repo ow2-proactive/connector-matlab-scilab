@@ -761,9 +761,9 @@ begin
     puts "no scilab installation found"
   end
 
-#rescue Exception => e
-#  puts e.message + "\n" + e.backtrace.join("\n")
-#  raise java.lang.RuntimeException.new(e.message + "\n" + e.backtrace.join("\n"))
+rescue Exception => e
+  puts e.message + "\n" + e.backtrace.join("\n")
+  raise java.lang.RuntimeException.new(e.message + "\n" + e.backtrace.join("\n"))
 ensure
   begin
     mf.close()

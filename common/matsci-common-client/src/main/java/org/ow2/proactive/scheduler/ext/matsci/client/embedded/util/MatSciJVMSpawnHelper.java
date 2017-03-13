@@ -34,12 +34,12 @@
  */
 package org.ow2.proactive.scheduler.ext.matsci.client.embedded.util;
 
-import org.ow2.proactive.scheduler.ext.matsci.client.common.DataspaceRegistry;
-import org.ow2.proactive.scheduler.ext.matsci.client.common.MatSciJVMProcessInterface;
-
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
+
+import org.ow2.proactive.scheduler.ext.matsci.client.common.DataspaceRegistry;
+import org.ow2.proactive.scheduler.ext.matsci.client.common.MatSciJVMProcessInterface;
 
 
 /**

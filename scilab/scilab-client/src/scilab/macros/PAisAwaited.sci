@@ -18,7 +18,7 @@ function tf=PAisAwaited(l)
         end
         answers = jinvoke(unrei,'get');
         for i=1:m
-            tf(i)=jinvoke(answers,'get', i-1);
+            tf(i)=answers(i);
         end        
         jremove(answers);
         jremove(unrei);

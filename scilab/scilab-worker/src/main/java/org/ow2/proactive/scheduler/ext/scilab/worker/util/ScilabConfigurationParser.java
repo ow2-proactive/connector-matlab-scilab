@@ -38,6 +38,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 
+import org.apache.log4j.Level;
 import org.ow2.proactive.scheduler.ext.matsci.worker.properties.MatSciProperties;
 import org.ow2.proactive.scheduler.ext.matsci.worker.util.MatSciConfigurationParser;
 import org.ow2.proactive.scheduler.ext.matsci.worker.util.MatSciEngineConfig;
@@ -54,11 +55,12 @@ public class ScilabConfigurationParser extends MatSciConfigurationParser {
 
     ArrayList<String> scilabConfigPaths;
 
-    private static ScilabConfigurationParser instance;
-
-
-    private ScilabConfigurationParser() {
+    public ScilabConfigurationParser(boolean isDebug) {
         try {
+            // Set the log4j level according to the config
+            if (isDebug)
+                logger.setLevel(Level.DEBUG);
+
             scilabConfigPaths = new ArrayList<String>();
             scilabConfigPaths.add(TMPDIR + FS + "ScilabWorkerConfiguration.xml");
             scilabConfigPaths.add("addons/ScilabWorkerConfiguration.xml");
@@ -67,15 +69,7 @@ public class ScilabConfigurationParser extends MatSciConfigurationParser {
         }
     }
 
-    public static ScilabConfigurationParser getInstance() {
-        if (instance == null) {
-            instance = new ScilabConfigurationParser();
-        }
-        return instance;
-    }
-
-
-    public HashSet<MatSciEngineConfig> getConfigs(boolean debug) throws Exception {
+    public HashSet<MatSciEngineConfig> getConfigs() throws Exception {
 
         HashSet<MatSciEngineConfig> configs = new HashSet<MatSciEngineConfig>();
 
@@ -91,7 +85,7 @@ public class ScilabConfigurationParser extends MatSciConfigurationParser {
         configFilePaths.addAll(scilabConfigPaths);
 
         for (String path : configFilePaths) {
-            HashSet<MatSciEngineConfig> confset = parseConfigFile(path, debug);
+            HashSet<MatSciEngineConfig> confset = parseConfigFile(path);
             configs.addAll(confset);
         }
         return configs;
@@ -105,7 +99,7 @@ public class ScilabConfigurationParser extends MatSciConfigurationParser {
     @Override
     protected boolean checkVersion(String version, File configFile) {
         if (!version.matches("^([1-9][\\d]*\\.)*[\\d]+$")) {
-            System.out.println("In " + configFile +
+            logger.error("In " + configFile +
                     ", version element must match XX.xx.xx, received : " + version);
             return false;
         }

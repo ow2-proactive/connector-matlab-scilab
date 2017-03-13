@@ -103,7 +103,7 @@ function deployJVM(opt,uri)
     addJavaObj(jarsjava);
     for i=1:size(jarfiles,1)
         jartmp = jnewInstance(String, jarfiles(i));
-        jarsjava(i-1) = jartmp;
+        jarsjava(i) = jartmp;
         addJavaObj(jartmp);
     end
     options = opt.JvmArguments;
@@ -185,7 +185,7 @@ function jobs = dataspaces(opt)
     repository = jinvoke(ScilabTaskRepository,'getInstance');
     notReceived = jinvoke(repository, 'notYetReceived');
     jobs = [];
-    if ~jinvoke(notReceived, 'isEmpty')
+   if ~isempty(notReceived)
           jobs = list();
           msg = 'The following jobs were uncomplete before last scilab shutdown : ';
           for j = 0:jinvoke(notReceived, 'size')-1

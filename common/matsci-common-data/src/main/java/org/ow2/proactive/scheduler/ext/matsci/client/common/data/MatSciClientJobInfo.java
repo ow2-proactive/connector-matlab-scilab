@@ -34,14 +34,14 @@
  */
 package org.ow2.proactive.scheduler.ext.matsci.client.common.data;
 
-import org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveMatSciGlobalConfig;
-import org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveMatSciTaskConfig;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.TreeSet;
+
+import org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveMatSciGlobalConfig;
+import org.ow2.proactive.scheduler.ext.matsci.common.data.PASolveMatSciTaskConfig;
 
 
 /**
