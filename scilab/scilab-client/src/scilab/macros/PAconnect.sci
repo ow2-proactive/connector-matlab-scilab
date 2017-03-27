@@ -185,17 +185,28 @@ function jobs = dataspaces(opt)
     repository = jinvoke(ScilabTaskRepository,'getInstance');
     notReceived = jinvoke(repository, 'notYetReceived');
     jobs = [];
-   if ~isempty(notReceived)
+
+    // Retrieve the number of uncomplete jobs before last scilab shutdown
+    if type(notReceived) == 17
+        notReceivedSize = jinvoke(notReceived, 'size');
+    else // type == 10
+        notReceivedSize = size(notReceived,'c');
+    end
+
+    if notReceivedSize ~= 0
           jobs = list();
           msg = 'The following jobs were uncomplete before last scilab shutdown : ';
-          for j = 0:jinvoke(notReceived, 'size')-1
-                  jid = jinvoke(notReceived, 'get', j);
+          for j = 1:notReceivedSize
+                  jid = notReceived(j);
                   msg = msg + ' ' + jid;
-                  jobs(j+1) = jid;
+                  jobs(j) = jid;
           end
           disp(msg);
     end
-    jremove(notReceived);
+
+    if type(notReceived) == 17
+        jremove(notReceived);
+    end
     jremove(repository);
     jremove(ScilabTaskRepository);
 endfunction
