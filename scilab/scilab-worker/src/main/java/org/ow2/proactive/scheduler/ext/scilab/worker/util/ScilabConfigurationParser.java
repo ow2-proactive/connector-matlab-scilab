@@ -98,9 +98,9 @@ public class ScilabConfigurationParser extends MatSciConfigurationParser {
 
     @Override
     protected boolean checkVersion(String version, File configFile) {
-        if (!version.matches("^([1-9][\\d]*\\.)*[\\d]+$")) {
+        if (!version.matches("\\d+\\.\\d+\\.\\d+")) {
             logger.error("In " + configFile +
-                    ", version element must match XX.xx.xx, received : " + version);
+                    ", version element must match Major.Minor.Maintenance, received : " + version);
             return false;
         }
         return true;

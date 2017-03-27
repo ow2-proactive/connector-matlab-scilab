@@ -32,7 +32,7 @@ function [ok, msg]=TestTopology(nbiter,timeout)
                 disp('Node n°' + string(i) + ': ' + nul(i));
             end
             disp('Hello '+in);
-            printf('\n');
+            mprintf('\n');
             out=%t;
         endfunction
 

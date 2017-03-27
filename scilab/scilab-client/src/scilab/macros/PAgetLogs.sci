@@ -4,12 +4,12 @@ function val_k=PAgetLogs(l)
         if and(~tf) then
             m = size(l.matrix,2);
         if m == 1
-            pares=l.matrix.entries;
+            pares=l.matrix{:};
             val_k=jinvoke(pares.logs,'toString');
         else
             val_k=list();
             for i=1:m
-                pares=l.matrix(i).entries;
+                pares=l.matrix{i};
                 val_k($+1)=jinvoke(pares.logs,'toString');
             end
         end

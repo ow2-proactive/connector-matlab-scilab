@@ -4,5 +4,5 @@ function a=%PAResult_i_PAResL(i1,b,a)
     if length(i1) > 1 then
         error('scalar index expected, received :'+string(i1));
     end
-    a.matrix(1,i1).entries = b;
+    a.matrix{1,i1} = b;
 endfunction

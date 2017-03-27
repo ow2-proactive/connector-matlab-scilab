@@ -11,5 +11,5 @@ function PAtaskResult(jobid,taskname)
         PAensureConnected();
         txt = jinvoke(PA_solver,'taskResult',jobid,taskname);
     end
-    pa_printf('%s\n',txt);
+    pa_printf(txt + '\n');
 endfunction
