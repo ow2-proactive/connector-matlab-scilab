@@ -1,11 +1,10 @@
 function PAclearResults(l)
     if typeof(l) == 'PAResL' then
         m = size(l.matrix,2);
-        //disp(m)
-        R=l.matrix(1).entries;
+        R=l.matrix{1};
         //PAjobRemove(R.jobid);
         for i=1:m
-            R=l.matrix(i).entries;
+            R=l.matrix{i};
             PAResult_clean(R);
             jremove(R.cleaned, R.logsPrinted, R.logs,R.waited, R.iserror, R.resultSet);
             try

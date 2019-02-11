@@ -10,5 +10,5 @@ function PAkillJob(jobid)
         PAensureConnected();
         txt = jinvoke(PA_solver,'killJob',jobid);
     end
-    pa_printf('%s\n',txt);
+    pa_printf(txt + '\n');
 endfunction

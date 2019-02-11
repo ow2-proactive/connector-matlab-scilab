@@ -233,8 +233,8 @@ class MatSciFinder
       if conf.version.length() == 0
         raise "In " + confFile.toString() + ", version element must not be empty"
       end
-      if !java::lang::String.new(conf.version).matches("^([1-9][\\d]*\\.)*[\\d]+$")
-        raise "In " + confFile.toString() + ", version element must match XX.xx.xx, received : " + conf.version
+      if !java::lang::String.new(conf.version).matches("\\d+\\.\\d+\\.\\d+")
+        raise "In " + confFile.toString() + ", version element must match Major.Minor.Maintenance, received : " + conf.version
       end
       nl = install.getElementsByTagName("home")
       if nl.getLength() != 1

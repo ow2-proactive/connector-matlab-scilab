@@ -18,7 +18,7 @@ function a=%c_i_PATsk(i1,b,a)
     elseif i1 == 'Sources' then
         a.Sources = list(b);
     elseif i1 == 'Topology' then
-        deff ("y=ismember(a,l)","y=(or(a==l))","n");
+        deff ("y=ismember(a,l)","y=(or(a==l))");
         values = {'arbitrary', 'bestProximity', 'thresholdProximity', 'singleHost', 'singleHostExclusive', 'multipleHostsExclusive', 'differentHostsExclusive'};
         if type(b)==10 then
             if ~ismember(b,values) then

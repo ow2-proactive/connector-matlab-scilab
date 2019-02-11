@@ -310,7 +310,7 @@ public class ScilabExecutable extends JavaExecutable {
     private void addSources() throws Exception {
         if (tempSubDir != null) {
             logger.debug("Adding sources from " + tempSubDir + " to the SCILAB path");
-            scilabConnection.evalString("try;getd('" + tempSubDir + "');catch; end;");
+            scilabConnection.evalString("try;getd('" + tempSubDir + "');catch; 1; end;");
 
             if (taskconfig.getFunctionVarFiles() != null) {
                 for (PASolveFile funcFile : taskconfig.getFunctionVarFiles()) {
@@ -378,7 +378,7 @@ public class ScilabExecutable extends JavaExecutable {
 
         logger.debug("Storing 'out' variable into " + outputFile);
         scilabConnection.evalString("warning('off');");
-        scilabConnection.evalString("save('" + outputFile + "',out);");
+        scilabConnection.evalString("save('" + outputFile + "','out');");
         scilabConnection.evalString("warning('on');");
 
         //if (!outputFile.exists()) {

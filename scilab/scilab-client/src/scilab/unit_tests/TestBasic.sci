@@ -12,7 +12,7 @@ function [ok, msg]=TestBasic(nbiter,timeout)
     end
 
     function [out]=funcSquare(in)
-        printf('in='+string(in)+'\n');
+        mprintf('in='+string(in)+'\n');
         if typeof(in) == 'string'
             error('char argument not expected');
         end
@@ -116,9 +116,7 @@ for kk=1:nbiter
     resl = PAsolve('funcSquare',1,2,3,'a',5);
     val=[];
     for i=1:5
-        //printf('k=%d\n',k)        
-        vl=PAwaitAny(resl,timeout);        
-        //disp(vl)
+        vl=PAwaitAny(resl,timeout);
         if isempty(vl) then
             val(i) = 0; 
         else

@@ -10,5 +10,5 @@ function PAresumeJob(jobid)
         PAensureConnected();
         txt = jinvoke(PA_solver,'resumeJob',jobid);
     end
-    pa_printf('%s\n',txt);
+    pa_printf(txt + '\n');
 endfunction

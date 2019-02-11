@@ -11,7 +11,7 @@ function outputs = PAsolve(varargin)
 
     opt=PAoptions();
 
-    deff ("y=ischar(x)","y=type(x)==10","n");
+    deff ("y=ischar(x)","y=type(x)==10");
 
     [Tasks, NN, MM]=parseParams(varargin(:));
 
@@ -406,7 +406,7 @@ function taskFilesToClean = initTransferSource(task_configs,solve_config,opt,Tas
                 disp('Saving function '+Func+' into file ' +pa_dir+fs+sFN);
             end
             warning('off')
-            execstr('save(pa_dir+fs+sFN,'+Func+');');
+            execstr('save(pa_dir+fs+sFN,'''+Func+''');');
             warning('on')
             strName = jnewInstance(String,sFN);
             addJavaObj(strName);
@@ -431,10 +431,10 @@ function initTransferEnv(locals,globals,solve_config,opt,solveid,taskFilesToClea
         envFilePath = pa_dir + fs  + envMatName;
         bigstr='';
         for i=1:size(locals,1)
-            bigstr=bigstr+','+locals(i);
+            bigstr=bigstr+','''+stripblanks(locals(i))+'''';
         end 
         for i=1:size(globals,1)
-            bigstr=bigstr+','+globals(i);
+            bigstr=bigstr+','''+stripblanks(globals(i))+'''';
         end
         warning('off')
         execstr('save('''+envFilePath+''''+bigstr+')');
@@ -536,18 +536,19 @@ function [outVarFiles, inputscript, mainScript,taskFilesToClean] = initParameter
             outVarFP = pa_dir + fs + outVarFN;
 
             // Retrieve user function inputs and write them into the input parameters mat file
-            fd=mopen(inVarFP,'wb');
             inl = argi;
             if length(inl) == 0
                 inl=list(%t);
             end
             warning('off')
+            saveStr = 'save('''+inVarFP+'''';
             for k=1:length(inl)
                 execstr('in'+string(k)+'=inl(k);');
-                execstr('save(fd,in'+string(k)+')');
+                saveStr = saveStr + ', ''in'+string(k)+'''';
             end
+            saveStr = saveStr + ');'
+            execstr(saveStr);
             warning('on')
-            mclose(fd);
 
             // Set mat files to task_configs
             jinvoke(t_conf,'setInputVariablesFile',subdir, inVarFN);

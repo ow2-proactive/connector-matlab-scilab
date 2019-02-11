@@ -9,29 +9,22 @@ function [b]=%PATask_e(i1,i2,l)
     elseif argn(2) == 2
         l=i2;
         if size(l.matrix,1) == 1 & size(l.matrix,2) == 1 then
-            out = %PATsk_e(i1,l.matrix(1,1).entries);
+            out = %PATsk_e(i1,l.matrix{1,1});
             b=out;
         elseif size(l.matrix,1) == 1
-
             b=list();
             for j=1:size(l.matrix,2)
-                out = %PATsk_e(i1,l.matrix(1,j).entries);
-                //disp(out)
+                out = %PATsk_e(i1,l.matrix{1,j});
                 b($+1) = out;
             end
-
         elseif size(l.matrix,2) == 1
-
             b=list();
             for j=1:size(l.matrix,1)
-                out = %PATsk_e(i1,l.matrix(j,1).entries);
-                //disp(out)
+                out = %PATsk_e(i1,l.matrix{j,1});
                 b($+1) = out;
             end
-
         else
             error('Two many dimensions');
-
         end
     end
 endfunction
