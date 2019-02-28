@@ -26,7 +26,7 @@
         <para>The PAoptions function can be used to change different parameters in the way PAsolve behaves. There are
             two ways of changing parameters: directly via the PAoptions function or by editing the PAoptions.ini file.
         </para>
-        <para>The PAoptions.ini file is located in Matlab_Scilab_Connector/scilab/config/toolbox/PAoptions.ini . The
+        <para>The PAoptions.ini file is located in ScilabConnector/config/PAoptions.ini . The
             file is loaded when the ProActive toolbox is also loaded. Any subsequent change to the file won't be taken
             into account.
         </para>

@@ -29,11 +29,6 @@
                 <para>The Resource Manager needs to be configured according to the network topology in order to deploy
                     Nodes on available machines.
                 </para>
-                <para>Configuration of the Resource Manager for acquiring resources is beyond the scope of this document
-                    and is explained on the Resource Manager manual available at <ulink
-                            url="http://proactive.inria.fr/release-doc/Resourcing/multiple_html/index.html">
-                        http://proactive.inria.fr/release-doc/Resourcing/multiple_html/index.html</ulink>.
-                </para>
             </listitem>
             <listitem>
                 <para><emphasis>ProActive Scheduler</emphasis>: the scheduler receives jobs to be executed.
@@ -50,48 +45,38 @@
             </listitem>
         </itemizedlist>
 
+        <para>Please refer to the online documentation for a complete description
+            <ulink
+                    url="https://doc.activeeon.com/latest/admin/ProActiveAdminGuide.html">
+                https://doc.activeeon.com/latest/admin/ProActiveAdminGuide.html</ulink>.
+        </para>
+
     </refsection>
     <refsection>
         <title>Starting ProActive Scheduler</title>
-        <para>The commands to start ProActive Scheduler are located in Scheduler_Server/bin/unix or
-            Scheduler_Server/bin/windows, depending on your Operating System. The following commands are present:
+        <para>The commands to start ProActive Scheduler are located in Scheduler_Server/bin/. You will find windows (.bat) and linux scripts.
+            The fastest way to proceed, is to start locally the scheduler, the resource manager, and few local nodes (included your micro services) following this:
         </para>
-        <itemizedlist>
-            <listitem>
-                <para><literal>rm-start(.bat)</literal>: To start an empty ProActive Resource Manager.
-                </para>
-            </listitem>
-            <listitem>
-                <para><literal>rm-start(.bat) -ln</literal>: To start a ProActive Resource Manager with 4 local workers.
-                </para>
-            </listitem>
-            <listitem>
-                <para><literal>scheduler-start(.bat)</literal>: To start ProActive Scheduler.
-                </para>
-            </listitem>
-            <listitem>
-                <para><literal>scheduler-start-gui(.bat)</literal>: This starts the scheduler, the resource manager and
-                    all the web portals.
-                </para>
-            </listitem>
-        </itemizedlist>
-        <para>The following sequence of commands (executed from Scheduler_Server/bin/unix) will start a Resource Manager
-            will 4 local Nodes(JVM) and a Scheduler. Although this trivial deployment is not meant to be a practical
-            case, it is still a good way to test the framework and become familiar with ProActive.
-        </para>
-        <para>First the Resource Manager:</para>
-        <screen>$ rm-start-clean -ln
-            Starting Resource Manager, Please wait...
-            Resource Manager successfully created on rmi://pendule.inria.fr:1099/
-        </screen>
-
-        <para>Then the Scheduler:</para>
-        <screen>$ scheduler-start-clean
-            Starting Scheduler, Please wait...
-            Resource Manager URL was not specified, connection made to the local Resource Manager at
-            rmi://pendule.inria.fr:1099/
-            Starting scheduler...
-            Scheduler successfully created on rmi://pendule.inria.fr:1099/
+        <screen>$ proactive-server.bat
+            Scheduler version is 8.5.0-SNAPSHOT
+            Starting the resource manager...
+            Starting the scheduler...
+            The resource manager with 7 local nodes created on pnp://XPS-P31F:64738/
+            The scheduler created on pnp://XPS-P31F:64738/
+            Starting the web applications...
+            The web application /automation-dashboard created on http://XPS-P31F:8080/automation-dashboard
+            The web application /catalog created on http://XPS-P31F:8080/catalog
+            The web application /cloud-automation-service created on http://XPS-P31F:8080/cloud-automation-service
+            The web application /connector-iaas created on http://XPS-P31F:8080/connector-iaas
+            The web application /job-planner created on http://XPS-P31F:8080/job-planner
+            The web application /notification-service created on http://XPS-P31F:8080/notification-service
+            The web application /proactive-cloud-watch created on http://XPS-P31F:8080/proactive-cloud-watch
+            The web application /rest created on http://XPS-P31F:8080/rest
+            The web application /rm created on http://XPS-P31F:8080/rm
+            The web application /scheduler created on http://XPS-P31F:8080/scheduler
+            The web application /scheduling-api created on http://XPS-P31F:8080/scheduling-api
+            The web application /studio created on http://XPS-P31F:8080/studio
+            *** Get started at http://XPS-P31F:8080 ***
         </screen>
     </refsection>
 
@@ -101,7 +86,7 @@
             <link linkend="PAconnect">PAconnect</link>
             is the function used to connect to the scheduler from the toolbox.
         </para>
-        <para>From a matlab session, assuming that Matlab Connector Toolbox is already in Matlab path, run the following
+        <para>From a Scilab session, assuming that Scilab Connector Toolbox is already in Scilab path, run the following
             command (where PAconnect's argument is the url you received from the Scheduler starting command):
         </para>
 

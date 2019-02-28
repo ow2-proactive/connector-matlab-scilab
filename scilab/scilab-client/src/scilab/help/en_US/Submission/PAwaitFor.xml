@@ -50,37 +50,54 @@
 
     <refsection>
         <title>Examples</title>
-        <programlisting role="example"><![CDATA[-->val=PAwaitFor(r)
+        <programlisting role="example"><![CDATA[
+
+-->r=PAsolve('cosh',1,2,3,4)
+
+ Job submitted : 63
+ r  =
+
+(1):
+Awaited (J:63)
+(2):
+Awaited (J:63)
+(3):
+Awaited (J:63)
+(4):
+Awaited (J:63)
+
+-->val=PAwaitFor(r)
+Job 63: Task 0_0
+
+
+Job 63: Task 1_0
+
+
+Job 63: Task 2_0
+
+
+Job 63: Task 3_0
+
+
  val  =
 
 
        val(1)
 
-    1.54308063481524371
+    1.5430806
 
        val(2)
 
-    3.76219569108363139
+    3.7621957
 
        val(3)
 
-    10.0676619957777653
+    10.067662
 
        val(4)
 
-    27.3082328360164865
+    27.308233
 
--->val=PAwaitFor(r(1:2))
- val  =
-
-
-       val(1)
-
-    1.54308063481524371
-
-       val(2)
-
-    3.76219569108363139
  ]]></programlisting>
     </refsection>
 

@@ -53,24 +53,19 @@
 
 -->r=PAsolve('hello','World')
 
- Job submitted : 16
+ Job submitted : 58
  r  =
 
 (1):
-Awaited (J:16)
+Awaited (J:58)
 
--->r
- r  =
-
-(1):
-[ pendule ]  hello World
-
-  T
-
--->PAgetLogs(r(1))
+-->PAgetLogs(r)
  ans  =
 
- [ pendule ]  hello World
+ Job 58: Task 0_0
+[2019-02-27 08:38:014 XPS-P31F][SCILAB OUT]
+[2019-02-27 08:38:014 XPS-P31F][SCILAB OUT]
+      hello World
 
 
 ]]></programlisting>
