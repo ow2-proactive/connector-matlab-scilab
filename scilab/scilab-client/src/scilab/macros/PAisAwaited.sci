@@ -2,12 +2,12 @@ function tf=PAisAwaited(l)
     global('PA_solver')
     if typeof(l) == 'PAResL' then
         m = size(l.matrix,2);
-        R=l.matrix(1).entries;
+        R=l.matrix{1};
         jobid = R.jobid;
         jimport java.util.ArrayList;
         taskids = jnewInstance(ArrayList);
         for i=1:m
-            R = l.matrix(i).entries;            
+            R = l.matrix{i};
             jinvoke(taskids,'add',R.taskid); 
         end
         try

@@ -10,5 +10,5 @@ function PAjobState(jobid)
         PAensureConnected();
         txt = jinvoke(PA_solver,'jobState',jobid);
     end
-    pa_printf('%s\n',txt);
+    pa_printf(txt + '\n');
 endfunction

@@ -14,7 +14,7 @@ function [b]=%PAResL_e(i1,i2,l)
         if typeof(i1) == 'string' then
             if size(l.matrix,1) == 1 & size(l.matrix,2) == 1 then
                 if typeof(i1) == 'string' then
-                    out = %PAResult_e(i1,l.matrix(1,1).entries);
+                    out = %PAResult_e(i1,l.matrix{1,1});
                     b=out;                
                 else
                     b = mlist(['PAResL','matrix']);
@@ -24,19 +24,15 @@ function [b]=%PAResL_e(i1,i2,l)
                 b=list();
 
                 for j=1:size(l.matrix,2)
-                    out = %PAResult_e(i1,l.matrix(1,j).entries);
-                    //disp(out)
+                    out = %PAResult_e(i1,l.matrix{1,j});
                     b($+1) = out;
                 end                       
             end                
         elseif typeof(i1) == 'constant' then
             b = mlist(['PAResL','matrix']);
-           // disp(i1);
             b.matrix = l.matrix(1,i1);
         else
             error("unexpected index type : " + typeof(i1));
-        end     
-
-
+        end
     end
 endfunction

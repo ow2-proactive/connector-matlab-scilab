@@ -9,6 +9,6 @@ function [tf] = PAendSession()
     pair = jinvoke(PA_solver, 'endSession');
     tf = jinvoke(pair,'getX');
     message = jinvoke(pair,'getY');
-    printf('%s\n',message);
+    mprintf('%s\n',message);
     jremove(pair);
 endfunction

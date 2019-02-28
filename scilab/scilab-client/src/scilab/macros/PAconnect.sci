@@ -108,7 +108,7 @@ function deployJVM(opt,uri)
     end
     options = opt.JvmArguments;
     for i=1:size(options,1)
-         jinvoke(deployer,'addJvmOption',options(i).entries);
+         jinvoke(deployer,'addJvmOption',options{i});
     end
     jinvoke(deployer,'setSchedulerURI', uri);
     jinvoke(deployer,'setMatSciDir', matsci_dir);
@@ -124,6 +124,7 @@ function deployJVM(opt,uri)
 
     jinvoke(deployer,'setRmiPort',rmiport);
 
+    // Scilab ISSUE: after having started the middleman jvm, scilab 6.0 crashs when compiling (deff, evstr,..)
     pair = jinvoke(deployer,'deployOrLookup');
     itfs = jinvoke(pair,'getX');
     port = jinvoke(pair,'getY');
@@ -166,7 +167,7 @@ function login(uri,credpath)
             addJavaObj(deployer);
             jinvoke(deployer,'startLoginGUI');
             while ~jinvoke(PA_solver,'isLoggedIn') & jinvoke(deployer,'getNbAttempts') <= 3
-                xpause(1000*100);
+                sleep(100);
             end
             if jinvoke(deployer,'getNbAttempts')  > 3 then
                 clearJavaStack();

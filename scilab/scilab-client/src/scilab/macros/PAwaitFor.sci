@@ -3,14 +3,14 @@ function val_k=PAwaitFor(l,timeout)
     val_k = [];
     if typeof(l) == 'PAResL' then
         m = size(l.matrix,2);
-        R=l.matrix(1).entries;
+        R=l.matrix{1};
         jobid = R.jobid;
         jimport java.util.ArrayList;
 
         taskids = jnewInstance(ArrayList);
         allRes = %t;
         for i=1:m
-            R = l.matrix(i).entries;
+            R = l.matrix{i};
             // results already set
             rs = jinvoke(R.resultSet,'get');
             // results waited in PAwaitAny
@@ -41,7 +41,7 @@ function val_k=PAwaitFor(l,timeout)
         val_k=list();
         anyerror = %f;
         for i=1:m
-            R=l.matrix(i).entries;
+            R=l.matrix{i};
             if ~allRes
                 RaL = jinvoke(answers,'get',i-1);
                 [tmpval,err] = PAResult_PAwaitFor(R,RaL);

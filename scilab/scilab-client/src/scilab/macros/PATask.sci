@@ -3,7 +3,7 @@ function res=PATask(l,c)
     res.matrix = cell(l,c);
     for m=1:l
         for n=1:c
-            res.matrix(m,n).entries = PATsk();
+            res.matrix{m,n} = PATsk();
         end   
     end    
 endfunction

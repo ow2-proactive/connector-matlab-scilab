@@ -6,7 +6,7 @@ function res=PAFiles(c)
     res.matrix = cell(1,c);
 
     for n=1:c
-       res.matrix(1,n).entries = PAFile();
+       res.matrix{1,n} = PAFile();
     end
 
 endfunction

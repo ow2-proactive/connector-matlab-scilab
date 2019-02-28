@@ -1,6 +1,4 @@
 function %PAResL_p(l)
-    //disp('PAResL_p : '+typeof(l))
-     
     if typeof(l) == 'PAResL' then
         tf=PAisAwaited(l);
         m = size(l.matrix,2);
@@ -8,12 +6,11 @@ function %PAResL_p(l)
         if length(fd) > 0 then
             PAwaitFor(l(fd)); 
         end               
-        //disp(m)
-        for i=1:m            
-            R=l.matrix(i).entries;
-            printf('('+string(i)+'):\n');
+        for i=1:m
+            R=l.matrix{i};
+            mprintf('('+string(i)+'):\n');
             if tf(i) then
-                printf('Awaited (J:'+ string(R.jobid)+ ')\n');
+                mprintf('Awaited (J:'+ string(R.jobid)+ ')\n');
             else
                 disp(PAResult_PAwaitFor(R));
             end

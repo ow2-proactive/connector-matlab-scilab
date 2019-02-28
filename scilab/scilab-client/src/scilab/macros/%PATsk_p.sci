@@ -1,52 +1,52 @@
 function %PATsk_p(l)
-    printf('Func: '+l.Func+'\n');
-    printf('Params:\n');
+    mprintf('Func: '+ pa_matrix2str(l.Func) +'\n');
+    mprintf('Params:\n');
     for i=1:length(l.Params)
         disp(l.Params(i));
     end
     if ~isempty(l.Description) then
-        printf('Description: '+l.Description+'\n');
+        mprintf('Description: '+ pa_matrix2str(l.Description) +'\n');
     end
     if ~isempty(l.InputFiles) then        
-        printf('InputFiles: ');
+        mprintf('InputFiles: ');
         %PAFiles_p(l.InputFiles);
     end
     if ~isempty(l.OutputFiles) then
-        printf('OutputFiles: ');
+        mprintf('OutputFiles: ');
         %PAFiles_p(l.OutputFiles);
     end
     if ~isempty(l.SelectionScript) then
-        printf('SelectionScript: '+l.SelectionScript+'\n');
+        mprintf('SelectionScript: '+l.SelectionScript+'\n');
     end
     if l.Static then
-        printf('Static: true\n');
+        mprintf('Static: true\n');
     else
-        printf('Static: false\n');
+        mprintf('Static: false\n');
     end
     if ~isempty(l.ScriptParams) then
-        printf('ScriptParams: '+l.ScriptParams+'\n');        
+        mprintf('ScriptParams: '+l.ScriptParams+'\n');
     end
     if (l.NbNodes > 1) then
-        printf('NbNodes: '+string(l.NbNodes)+'\n');        
+        mprintf('NbNodes: '+string(l.NbNodes)+'\n');
     end
     if ~isempty(l.Topology) then
-        printf('Topology: '+l.Topology+'\n');        
+        mprintf('Topology: '+l.Topology+'\n');
     end
     if ~isempty(l.ThresholdProximity) then
-        printf('ThresholdProximity: '+string(l.ThresholdProximity)+'\n');        
+        mprintf('ThresholdProximity: '+string(l.ThresholdProximity)+'\n');
     end
     if ~isempty(l.Sources) then
-        printf('Sources: ');
+        mprintf('Sources: ');
         for i=1:length(l.Sources)
-            printf('%s ', l.Sources(i));
+            mprintf('%s ', l.Sources(i));
         end 
-        printf('\n');        
+        mprintf('\n');
     end
     if l.Compose then
-        printf('Compose: true\n');
+        mprintf('Compose: true\n');
     else
-        printf('Compose: false\n');
+        mprintf('Compose: false\n');
     end
-    printf('\n');
+    mprintf('\n');
 
 endfunction

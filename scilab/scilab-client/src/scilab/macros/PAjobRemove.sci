@@ -12,5 +12,5 @@ function PAjobRemove(jobid)
         PAensureConnected();
         txt = jinvoke(PA_solver,'jobRemove',jobid);
     end
-    pa_printf('%s\n',txt);
+    pa_printf(txt + '\n');
 endfunction

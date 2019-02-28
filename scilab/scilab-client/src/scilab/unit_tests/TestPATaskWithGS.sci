@@ -108,7 +108,7 @@ function [ok, msg]=TestPATaskWithGS(nbiter,timeout)
         end
         PAclearResults(resl);
 
-        printf("\n Time: %f\n", toc());
+        mprintf("\n Time: %f\n", toc());
 
 
         [ok,msg]=checkValuesEst(b_bias,b_variance);    

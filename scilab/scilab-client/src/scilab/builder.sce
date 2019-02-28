@@ -2,13 +2,10 @@ mode(-1);
 lines(0);
 global PA_matsci_dir
 
-TOOLBOX_NAME = 'ProActiveConnector';
-TOOLBOX_TITLE = 'ProActive Connector';
-
 // Version Check
 version = getversion('scilab');
-if version(1) < 5 | (version(1) == 5 & version(2) < 5 | version(1) >= 6)
-	error(gettext('Scilab version higher than 5.5.0 and lower than 6 is required.'));
+if version(1) < 6
+	error(gettext('Scilab version higher than 6.0.0 is required.'));
 end
 
 disp('Build ProActive');
@@ -32,11 +29,8 @@ macros=root_tlbx+'macros';
 
 tbx_builder_macros(root_tlbx);
 tbx_builder_help(root_tlbx);
-tbx_build_loader(TOOLBOX_NAME, root_tlbx);
-tbx_build_cleaner(TOOLBOX_NAME, root_tlbx);
+tbx_build_loader(root_tlbx);
+tbx_build_cleaner(root_tlbx);
 
 
 //genlib('toolbox_pascheduler',macros);
-
-clear root_tlbx TOOLBOX_NAME TOOLBOX_TITLE;
-

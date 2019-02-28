@@ -4,13 +4,13 @@ function [val_k,index]=PAwaitAny(l,timeout)
     if typeof(l) == 'PAResL' then         
         jimport java.util.ArrayList;    
         jimport java.lang.Integer;   
-        R=l.matrix(1).entries;
+        R=l.matrix{1};
         jobid = R.jobid;   
         taskids = jnewInstance(ArrayList);
         indList=list();    
         m = size(l.matrix,2);
         for i=1:m
-            pares=l.matrix(i).entries;
+            pares=l.matrix{i};
             if ~jexists(pares.waited) then
                 error('PAResult::object cleared');
             end
@@ -39,7 +39,7 @@ function [val_k,index]=PAwaitAny(l,timeout)
 
         j=indList(ind+1);
         index = j;
-        pares=l.matrix(j).entries;
+        pares=l.matrix{j};
         RaL = jinvoke(pair,'getX');
         jinvoke(pares.RaL,'set', RaL);
         jinvoke(pares.waited,'set',%t);
