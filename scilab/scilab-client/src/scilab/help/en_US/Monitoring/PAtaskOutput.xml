@@ -58,24 +58,25 @@ endfunction
 
 -->r=PAsolve('hello','world')
 
- Job submitted : 12
+ Job submitted : 20
  r  =
 
 (1):
-Awaited (J:12)
+Awaited (J:20)
 
--->PAjobState(12)
+-->PAjobState(20)
 
-   Job '12'    name:Scilab Environment Job 9    owner:demo    status:Finished    #tasks:1
+   Job '20'    name:Scilab 5'    project:    owner:admin    status:Finished    #tasks:1
 
-	 ID       NAME   ITER   DUP   STATUS     HOSTNAME                         EXEC DURATION   TOT DURATION   #NODES USED   #EXECUTIONS   #NODES KILLED
+	 ID     NAME   ITER   DUP   STATUS     HOSTNAME                         EXEC DURATION   TOT DURATION   #NODES USED   #EXECUTIONS   #NODES KILLED
 
-	 120001   0_0                 Finished   pendule.inria.fr (local-Lo...    106ms           177ms          1             1/1           0/2
+	 20t0   0_0                 Finished   XPS-P31F (local-LocalNodes...     1s 775ms        4s 595ms      1             1/2           0/2
 
--->PAtaskOutput(12,'0_0')
+
+-->PAtaskOutput(20,'0_0')
 0_0 output :
-[ pendule ]  hello world
-
+[2019-02-25 17:06:011 XPS-P31F][SCILAB OUT]
+[2019-02-25 17:06:011 XPS-P31F][SCILAB OUT] hello world
 
 ]]></programlisting>
     </refsection>

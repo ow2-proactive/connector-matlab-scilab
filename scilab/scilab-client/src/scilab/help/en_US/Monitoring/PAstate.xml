@@ -31,10 +31,14 @@
         <title>Examples</title>
         <programlisting role="example"><![CDATA[
 -->PAstate()
-	 ID     NAME                         OWNER     PRIORITY     PROJECT          STATUS       START AT               DURATION
-
-	 1      Scilab Environment Job 0     demo      Normal       Not Assigned     Finished     13:38:17  09/16/11      1s 949ms
-	 2      Scilab Environment Job 1     demo      Normal       Not Assigned     Finished     13:58:17  09/21/11     538ms
+	 ID       NAME            OWNER      PRIORITY     STATUS       START AT                         DURATION
+	 2858     Scilab 19       demo       Normal       Finished     14/04/14 17:11 (23h43mn ago)      6s 200ms
+	 2857     Scilab 18       demo       Normal       Finished     14/04/14 17:11 (23h43mn ago)      5s 721ms
+	 2856     Scilab 17       demo       Normal       Finished     14/04/14 17:10 (23h43mn ago)      3s 737ms
+	 2855     Scilab 16       demo       Normal       Finished     14/04/14 17:10 (23h44mn ago)      3s 852ms
+	 2854     Scilab 15       demo       Normal       Finished     14/04/14 17:10 (23h44mn ago)     12s 522ms
+	 2851     Scilab 12       demo       Normal       Finished     14/04/14 17:10 (23h44mn ago)     14s 323ms
+	 2850     Scilab 11       demo       Normal       Finished     14/04/14 17:09 (23h44mn ago)     19s  30ms
 
 ]]></programlisting>
     </refsection>

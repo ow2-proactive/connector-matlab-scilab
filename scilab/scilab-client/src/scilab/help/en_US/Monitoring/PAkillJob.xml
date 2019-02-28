@@ -41,47 +41,42 @@
 
     <refsection>
         <title>Examples</title>
-        <programlisting role="example"><![CDATA[<![CDATA[<![CDATA[<![CDATA[<![CDATA[<![CDATA[<![CDATA[<![CDATA[
+        <programlisting role="example"><![CDATA[
 function out=mysleep(in)
     sleep(in)
     out=%t
 endfunction
 
-->r=PAsolve('mysleep',100000)
+-->r=PAsolve('mysleep',100000)
 
- Job submitted : 7
- r  =
+Job submitted : 18
+r  =
 
 (1):
-Awaited (J:7)
+Awaited (J:18)
 
--->PAkillJob(7)
-Job 7 killed.
+-->PAkillJob(18)
+Job 18 killed.
+
+
 
 -->r
- r  =
+r  =
 
-(1):
-org.ow2.proactive.scheduler.ext.matsci.client.PASolveException: [AOScilabEnvironment] The job has been kiorg.ow2.proactive.scheduler.ext.scilab.client.middleman.AOScilabEnvironmentvironment.waitResultOfTask(AOScilabEnvironment.java:106)
-	at org.ow2.proactive.scheduler.ext.scilab.middleman.AOScilabEnvironment.waitResult(AOScilabEnvironment.java:395)
-	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-	at sun.reflect.NativeMethodAccessorImpl.invoke(Unknown Source)
-	at sun.reflect.DelegatingMethodAccessorImpl.invoke(Unknown Source)
-	at java.lang.reflect.Method.invoke(Unknown Source)
-	at org.objectweb.proactive.core.mop.MethodCall.execute(MethodCall.java:399)
-	at org.objectweb.proactive.core.body.request.RequestImpl.serveInternal(RequestImpl.java:257)
-	at org.objectweb.proactive.core.body.request.RequestImpl.serve(RequestImpl.java:201)
-	at org.objectweb.proactive.core.body.BodyImpl$ActiveLocalBodyStrategy.serveInternal(BodyImpl.java:626)
-	at org.objectweb.proactive.core.body.BodyImpl$ActiveLocalBodyStrategy.serve(BodyImpl.java:587)
-	at org.objectweb.proactive.core.body.AbstractBody.serve(AbstractBody.java:949)
-	at org.objectweb.proactive.Service.serve(Service.java:121)
-	at org.ow2.proactive.scheduler.ext.matsci.middleman.AOMatSciEnvironment.servePending(AOMatSciEnvironorg.ow2.proactive.scheduler.ext.matsci.client.middleman.AOMatSciEnvironmentAOMatSciEnvironment.maybeServePendorg.ow2.proactive.scheduler.ext.matsci.client.middleman.AOMatSciEnvironment.ext.matsci.client.AOMatSciEnvironment.runActivity(AOMatSciEnvironment.java:760)
-	at org.objectweb.proactive.core.body.ActiveBody.run(ActiveBody.java:203)
-	at java.lang.Thread.run(Unknown Source)
- !--error 10000
-PAResult:PAwaitFor Internal Error
-at line      73 of function PAResult_PAwaitFor called by :
-at line       8 of function %PAResult_p called by :
+!--error 999
+jinvoke: An error occured: Exception when calling Java method : Illegal argument in the method append:
+null
+at org.scilab.modules.external_objects_java.ScilabJavaMethod.call(Unknown Source)
+at org.scilab.modules.external_objects_java.ScilabJavaMethod.invoke(Unknown Source)
+at org.scilab.modules.external_objects_java.ScilabJavaObject.invoke(Unknown Source)
+Illegal argument in the method append:
+null
+at org.scilab.modules.external_objects_java.ScilabJavaMethod.call(Unknown Source)
+at org.scilab.modules.external_objects_java.ScilabJavaMethod.invoke(Unknown Source)
+at org.scilab.modules.external_objects_java.ScilabJavaObject.invoke(Unknown Source)
+at line       7 of function printLogs called by :
+at line      41 of function PAResult_PAwaitFor called by :
+at line      47 of function PAwaitFor called by :
 at line       9 of function %PAResL_p called by :
 r
 ]]></programlisting>

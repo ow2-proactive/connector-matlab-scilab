@@ -50,17 +50,18 @@ endfunction
 
 -->r=PAsolve('hello','world')
 
- Job submitted : 5
+ Job submitted : 16
  r  =
 
 (1):
-Awaited (J:5)
+Awaited (J:16)
 
--->PAjobOutput(5)
-Job 5 output =>
+-->PAjobOutput(16)
+Job 16 output => '1'
 
 0_0 :
-[ pendule ]  hello world
+[2019-02-25 16:45:037 XPS-P31F][SCILAB OUT]
+[2019-02-25 16:45:037 XPS-P31F][SCILAB OUT] hello world
 
 
 ]]></programlisting>

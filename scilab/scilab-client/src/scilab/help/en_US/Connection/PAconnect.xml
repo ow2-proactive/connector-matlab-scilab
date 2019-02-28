@@ -44,10 +44,10 @@
         <title>Parameters</title>
         <variablelist>
             <varlistentry>
-                <term>uri</term>
+                <term>url</term>
                 <listitem>
                     <para>
-                        uri of the ProActive scheduler, something like 'rmi://hostname:1099'
+                        url of the ProActive scheduler, something like 'pnp://localhost:64738'
                     </para>
                 </listitem>
             </varlistentry>
@@ -65,9 +65,19 @@
     <refsection>
         <title>Examples</title>
         <programlisting role="example"><![CDATA[
-PAconnect('rmi://localhost:1099');
-PAconnect('rmi://localhost:1099','/user/home/.proactive/security/creds.enc');
-PAconnect(); // will connect to rmi://localhost:1099 or reconnect to the last provided url via a PAconnect(url) call
+PAconnect("pnp://localhost:64738")
+
+ Connection to the middleman JVM has succeeded, now trying to connect to the scheduler
+
+ Connection successful to pnp://localhost:64738
+
+ Please enter login/password
+
+ Login successful
+ ans  =
+
+     []
+
 ]]></programlisting>
     </refsection>
 
