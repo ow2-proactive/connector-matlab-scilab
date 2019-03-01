@@ -56,12 +56,10 @@
         <para>Scilab Connector Toolbox can be downloaded from :
             <ulink url="http://www.activeeon.com/community-downloads">http://www.activeeon.com/community-downloads
             </ulink>
-            and will be soon available on ATOMS.
-            The packages which must be downloaded are called Scilab_Connector(if not downloaded from ATOMS) and
-            ProActive Scheduling Server Full (e.g. <literal>ProActiveScheduling-3.3.1_bin_full.zip</literal>)
+            and will be soon available on ATOMS with Scilab 6+ compatibility.
         </para>
         <para>
-            After the packages are downloaded, unzip them in a directory e.g. D:\Scilab_Connector and
+            After ProActive Scheduler and ProActive Scilab Connector are downloaded, unzip them in a directory e.g. D:\Scilab_Connector and
             D:\ProActive_Scheduling_server
         </para>
         <para>
@@ -79,21 +77,17 @@
                 </para>
             </listitem>
         </itemizedlist>
-        <para>The prerequisite for using the ProActive Scheduler is a<emphasis>Java Virtual Machine</emphasis>. On the
-            above list, machines must
-            have a Java Virtual Machine installed and available on the Path of either cmd.exe for Windows or sh for
-            linux. For many
-            ProActive features it is also necessary to define the environment variable
-            <literal>JAVA_HOME</literal>
-            to the installation directory of
-            the Java Virtual Machine.
+        <para>The prerequisite for using the ProActive Scheduler is a <emphasis>Java Virtual Machine</emphasis>. On the
+            above list, machines must have a Java Virtual Machine installed and available on the Path of either cmd.exe for Windows or sh for
+            linux. For many ProActive features it is also necessary to define the environment variable <literal>JAVA_HOME</literal>
+            to the installation directory of the Java Virtual Machine.
         </para>
         <para>Complete configuration and installation of the ProActive Scheduler is beyond the scope of this help, for
             more information, refer to:
         </para>
 
         <para>
-            <ulink url="http://proactive.inria.fr/release-doc/Scheduling/multiple_html/index.html">ProActive Scheduler
+            <ulink url="https://doc.activeeon.com/latest/admin/ProActiveAdminGuide.html">ProActive Scheduler
                 Manual
             </ulink>
         </para>
@@ -141,12 +135,12 @@
                 automatic script doesn't manage to find it. In that case it will be necessary to write a Scilab configuration file manually.
             </para>
             <para>A sample configuration file is located inside the
-                <emphasis>Scilab_Connector/scheduler-plugin</emphasis>
+                <emphasis>Scilab_Connector/lib/worker</emphasis>
                 folder under the name ScilabWorkerConfiguration.xml
             </para>
             <para>This file must be edited and put inside the
                 <emphasis>addons</emphasis>
-                directory of ProActive Scheduler. This must be done on ProActive Scheduler Server and on
+                directory of ProActive Scheduler on the server side and on
                 every hosts that will be used as Scilab workers for which the automatic configuration didn't work.
             </para>
             <para>If the scheduler is installed in a single directory shared by all workers (via NFS for example), then
@@ -156,22 +150,7 @@
                 that will match a machine's hostname or ipaddress, and as well several scilab installations for the same
                 machine.
             </para>
-            <para>Here is an example of ScilabWorkerConfiguration.xml :</para>
-            <para>On each worker host that will be used to compute remotely scilab functions, a specific configuration
-                file must be written to tell the scheduler where to find a scilab installation. The configuration file
-                is called<emphasis>ScilabWorkerConfiguration.xml</emphasis>, and a template is located in the folder
-                <emphasis>Scilab_Connector/toolbox/config</emphasis>.
-            </para>
-            <para>This file must be edited and put in the
-                <emphasis>addons</emphasis>
-                directory of ProActive Scheduler
-            </para>
-            <para>If the scheduler is installed in a directory shared by all workers, then only one
-                ScilabWorkerConfiguration.xml file needs to be created. The syntax of the file allows to create a
-                configuration for several machines, machine groups, and as well several scilab installations for the
-                same machine.
-            </para>
-            <para>For example, here is an example of ScilabWorkerConfiguration.xml :
+            <para>Here is an example of ScilabWorkerConfiguration.xml :
             </para>
             <programlisting><![CDATA[<MatSciWorkerConfiguration>
     <MachineGroup hostname=".*">
@@ -230,7 +209,7 @@
         </refsection>
         <refsection>
             <title>Manual Installation of ProActive Scilab Connector Libraries to the ProActive Scheduler</title>
-            <para>The content of the directory <literal>Scilab_Connector/scheduler-plugin</literal> (not the directory itself, only the content) must be copied
+            <para>The content of the directory <literal>Scilab_Connector/lib/worker</literal> (not the directory itself, only the content) must be copied
                 inside the <literal>addons</literal> directory of ProActive Scheduler and of every Scilab Worker which will be used as matlab workers.</para>
             <para>Manually installing the librairies used by Scilab Connector inside the scheduler reduces the overhead of transferring them each time through the network.</para>
 
@@ -239,13 +218,15 @@
 
     <refsection>
         <title>Terminating ProActive Scilab Connector</title>
-        <para>If the scilab connector has not been downloaded via ATOMS, it will be useful to configure scilab in order to close properly the toolbox at the scilab exit.
-        In order to do that, simply add the following lines to the <literal>scilab.quit</literal> file located in the <literal>etc</literal> folder and used by scilab to execute command at exit :
+        <para>To configure scilab in order to properly close the toolbox at the scilab exit,
+            simply add the following lines to the <literal>scilab.quit</literal> file located in the <literal>etc</literal> folder of your scialb installation :
         </para>
-        <screen>// PROACTIVE
+        <screen>
+            // PROACTIVE
             if isdef("ProActiveConnectorlib") then
             PAterminate();
-            end</screen>
+            end
+        </screen>
 
     </refsection>
 

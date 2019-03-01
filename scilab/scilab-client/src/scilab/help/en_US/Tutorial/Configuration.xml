@@ -18,7 +18,7 @@
         <para><literal>PAsolve</literal> can be configured using various options. It can be done either:</para>
 
         <itemizedlist>
-            <listitem><para><emphasis>Statically</emphasis> by editing the file <literal>ScilabConnector/toolbox/config/PAoptions.ini</literal> which will be loaded when the toolbox is loaded.</para></listitem>
+            <listitem><para><emphasis>Statically</emphasis> by editing the file <literal>ScilabConnector/config/PAoptions.ini</literal> which will be loaded when the toolbox is loaded.</para></listitem>
             <listitem><para><emphasis>Dynamically</emphasis> by calling the <literal>PAoptions</literal> function which will affect every subsequent PAsolve calls.</para></listitem>
         </itemizedlist>
        
@@ -30,7 +30,7 @@
         <para>The
             <literal>PAoptions.ini</literal>
             file is located inside the ProActive Scheduler release at the following location :
-            <literal>Scilab_Connector/toolbox/config/PAoptions.ini</literal>
+            <literal>Scilab_Connector/config/PAoptions.ini</literal>
         </para>
 
         <para>It contains many options which controls how PAsolve behave, we will detail a few important ones (see the
@@ -157,14 +157,17 @@
         <para>While options can be edited via the PAoptions.ini file, it is still possible to change options on the run via calls to the <link linkend="PAoptions">PAoptions</link>  function. The example in this chapter will detail the usage of the option <literal>TransferEnv</literal> which allows the local workspace to be transferred to remote engines.</para>
         <para>We will define a function called <literal>testenv</literal> which will read a variable from the parent workspace and will compute the factorial of it. Here is how the <literal>testenv</literal> function is defined:</para>
 
-        <screen><![CDATA[function out=testenv()
-// the variable "a" is transferred with the environment
-disp(a);
-out = factorial(a);
-endfunction]]></screen>
+        <screen><![CDATA[
+function out=testenv()
+    // the variable "a" is transferred with the environment
+    disp(a);
+    out = factorial(a);
+endfunction
+]]></screen>
 
         <para>Here is how we set the TransferEnv option dynamically, and execute the call:</para>
-        <screen><![CDATA[-->PAoptions('TransferEnv',%t);
+        <screen><![CDATA[
+-->PAoptions('TransferEnv',%t);
 
 -->a=5
  a  =
@@ -173,141 +176,57 @@ endfunction]]></screen>
 
 -->r=PAsolve('testenv',list())
 
- Job submitted : 22
+ Job submitted : 64
  r  =
 
 (1):
-Awaited (J:22)
+Awaited (J:64)
 
---> r.val
-Job 22: Task 0_0
-[2012-12-04 11:04:057 precision][SCILAB]    5.
-
-
-Job 22 removed.
+-->r.val
+Job 64: Task 0_0
+[2019-02-27 08:58:025 XPS-P31F][SCILAB OUT]
+[2019-02-27 08:58:025 XPS-P31F][SCILAB OUT]    5.
 
 
  ans  =
 
-    74.209949  ]]></screen>
+    120.
+    ]]></screen>
 
         <para>If now, we reset the TransferEnv option to false and try to execute testenv, we will receive the following error:</para>
-        <screen><![CDATA[->PAoptions('TransferEnv',%f);
+        <screen><![CDATA[
+-->PAoptions('TransferEnv',%f);
 
 -->r=PAsolve('testenv',list())
 
- Job submitted : 23
+ Job submitted : 65
  r  =
 
 (1):
-Awaited (J:23)
+Awaited (J:65)
 
---> r.val
-Job 23: Task 0_0
-[2012-12-04 11:08:010 precision][SCILAB]!-- error 4
-[2012-12-04 11:08:010 precision][SCILAB]
-[2012-12-04 11:08:010 precision][SCILAB]Undefined Variable : a
-[2012-12-04 11:08:010 precision][SCILAB]
-[2012-12-04 11:08:010 precision][SCILAB] at line 3 of function testenv
-[2012-12-04 11:08:010 precision][SCILAB]
-
-
-Job 23 removed.
-
-
-AVERTISSEMENT : PAResult:PAwaitFor Error during execution of task 0_0
-AVERTISSEMENT : PAWaitFor:Error occurred
- ans  =
-
-     []
+-->r.val
+Job 65: Task 0_0
+[2019-02-27 09:01:042 XPS-P31F][SCILAB OUT]!-- error 4
+[2019-02-27 09:01:042 XPS-P31F][SCILAB OUT]
+[2019-02-27 09:01:042 XPS-P31F][SCILAB OUT]Variable non définie : a
  ]]></screen>
         <para>Indeed the remote execution of the testenv function couldn't find in its workspace the variable "a" !</para>
     </refsection>
     <refsection>
         <title>Debugging the Scilab Connector Toolbox</title>
-        <para>This section is mainly for advanced users.</para>
-        <para>Debugging of the different Scilab Connector Toolbox components is done via all of the following:</para>
-        <itemizedlist>
-            <listitem><para>The <literal>Debug</literal> option.</para></listitem>
-            <listitem><para>The <literal>AutomaticFindScilabXXX.log</literal> file.</para></listitem>
-            <listitem><para>The <literal>ScilabExecutableXXX.log</literal> file.</para></listitem>
-            <listitem><para>The <literal>MatSci_Middleman_JVM.log</literal> and <literal>ScilabJVMSpawnHelper.log
-            </literal> files.</para></listitem>
-        </itemizedlist>
-        <para>Files with XXX in the above list are created with the proactive node name of the resource on which it is executed.</para>
-        <para>The <literal>AutomaticFindScilab</literal>, , <literal>ScilabExecutable</literal> and <literal>ScilabStart</literal> log files are produced on the <emphasis>worker hosts</emphasis> <literal>TEMP</literal> directory. The TEMP directory is usually <literal>/tmp</literal> on linux systems. On Windows it can be known by opening a command line (cmd.exe) and typing echo %TEMP%:</para>
-        <screen><![CDATA[C:\Users\Administrator>echo %TEMP%
-            C:\Users\Administrator\AppData\Local\Temp\2
-        ]]></screen>
-        <para>The <literal>AutomaticFindScilab</literal> log files logs the output of FindScilab selection scripts which determines where to find scilab according to ScilabWorkerConfiguration.xml file or via automatic search(see <link linkend="Installation">Automatic search of Scilab installations for workers</link> for more info). Read these files if you want to determine why the task couldn't execute on this worker host. Here is an example of those files:</para>
-        <screen><![CDATA[AutomaticFindScilablocal-LocalNodes-0:
-Mon Dec 03 15:58:59 +0100 2012 : Finding Scilab on precision
-Reading config in C:\Users\fviale\AppData\Local\Temp\ScilabWorkerConfiguration.xml
-Found  Scilab (5.3.3) : C:\Program Files (x86)\scilab-5.3.3 bin Scilex.exe 32 bits
-Found  Scilab (5.4.0) : C:\Program Files (x86)\scilab-5.4.0 bin Scilex.exe 32 bits
-Found  Scilab (5.4.0) : C:\Program Files\scilab-5.4.0 bin Scilex.exe 64 bits
-Deciding Scilab (5.3.3) : C:\Program Files (x86)\scilab-5.3.3 bin Scilex.exe 32 bits
-5.3.3(32) accepted
-        ]]></screen>
-        <para>The <literal>ScilabExecutable</literal> log files are not created by default. They are the verbose output of the tasks submitted via PAsolve and are activated only if the PAoption Debug is set to on. Here is an example of those files:</para>
-        <screen><![CDATA[ScilabExecutable_local-LocalNodes-0.log:
-[2012-11-29 18:05:024 precision][SCILAB Engine]Initialisation :
-[2012-11-29 18:05:024 precision][SCILAB Engine]  Chargement de l'environnement de travail
-[2012-11-29 18:05:024 precision][SCILAB Engine]
-[2012-11-29 18:05:024 precision][SCILAB Engine]
-[2012-11-29 18:05:024 precision][SCILAB Engine]Start JIMS
-[2012-11-29 18:05:024 precision][SCILAB Engine]
-[2012-11-29 18:05:024 precision][SCILAB Engine]AVERTISSEMENT : JIMS requires java.
-[2012-11-29 18:05:024 precision][SCILAB Engine]
-[2012-11-29 18:05:024 precision][SCILAB Engine]
-[2012-11-29 18:05:024 precision][SCILAB Engine]
-[2012-11-29 18:05:024 precision][SCILAB Engine] ---- SCILAB START ----
-[2012-11-29 18:05:024 precision][SCILAB Engine]
-[2012-11-29 18:05:024 precision][SCILAB Engine] Number of nodes used : 2
-[2012-11-29 18:05:024 precision][SCILAB Engine]
-[2012-11-29 18:05:024 precision][SCILAB Engine] Node n°1: 192.168.1.187 rmi://192.168.1.187:1099/local-LocalNodes-1
-[2012-11-29 18:05:024 precision][SCILAB Engine]
-[2012-11-29 18:05:024 precision][SCILAB Engine] Node n°2: 192.168.1.187 rmi://192.168.1.187:1099/local-LocalNodes-0
-[2012-11-29 18:05:024 precision][SCILAB Engine]
-[2012-11-29 18:05:024 precision][SCILAB Engine] Hello Dude3
-[2012-11-29 18:05:024[2012-11-29 18:05:024 precision][ScilabExecutable] Receiving and testing output...
-[2012-11-29 18:05:024 precision][ScilabExecutable] Closing SCILAB...
-[2012-11-29 18:05:024 precision][ScilabExecutable] End of Task        ]]></screen>
-
-        <para>Finally the <literal>MatSci_Middleman_JVM.log</literal> file is created inside the temp directory of the <literal>client host</literal> and is logging everything concerning ProActive MiddleMan JVM. The <literal>ScilabJVMSpawnHelper.log
-        </literal> is similar to <literal>MatSci_Middleman_JVM.log</literal>. Here is an example:</para>
-        <screen><![CDATA[/tmp/MatSci_Middleman_JVM.log:
-            [2012-04-25 19:29:016 pendule][AOScilabEnvironment] Submitting job of 1 tasks...
-            [2012-04-25 19:29:016 pendule][AOScilabEnvironment] Job 1 submitted.
-            [2012-04-25 19:29:016 pendule][AOScilabEnvironment] waiting for request with no timeout
-            [2012-04-25 19:29:016 pendule][AOScilabEnvironment] Request received : areAwaited
-            [2012-04-25 19:29:016 pendule][AOScilabEnvironment] waiting for request with no timeout
-            [2012-04-25 19:29:022 pendule][AOScilabEnvironment] Request received : taskStateUpdatedEvent
-            [2012-04-25 19:29:022 pendule][AOScilabEnvironment] Received task 0_0 of Job 1 finished event...
-            [2012-04-25 19:29:022 pendule][AOScilabEnvironment] Looking for result of task 0_0 for job 1
-            [2012-04-25 19:29:022 pendule][AOScilabEnvironment] waiting for request with no timeout
-            [2012-04-25 19:29:022 pendule][AOScilabEnvironment] Request received : jobStateUpdatedEvent
-            [2012-04-25 19:29:022 pendule][AOScilabEnvironment] Received job 1 finished event...
-            [2012-04-25 19:29:023 pendule][AOScilabEnvironment] Updating results of job: 1(1) : Finished
-            [2012-04-25 19:29:023 pendule][AOScilabEnvironment] waiting for request with no timeout
-            [2012-04-25 19:29:024 pendule][AOScilabEnvironment] Request received : areAwaited
-            [2012-04-25 19:29:024 pendule][AOScilabEnvironment] waiting for request with no timeout
-            [2012-04-25 19:29:024 pendule][AOScilabEnvironment] Request received : waitAll
-            [2012-04-25 19:29:024 pendule][AOScilabEnvironment] Removed waitAll for job=1 request from the queue
-            [2012-04-25 19:29:024 pendule][AOScilabEnvironment] serving waitAll for job 1
-            [2012-04-25 19:29:024 pendule][AOScilabEnvironment] Sending the results of task 0_0 of job 1 back...
-            [2012-04-25 19:29:024 pendule][AOScilabEnvironment] waiting for request with no timeout
-            [2012-04-25 19:29:024 pendule][AOScilabEnvironment] Request received : isConnected
-            [2012-04-25 19:29:024 pendule][AOScilabEnvironment] waiting for request with no timeout
-            [2012-04-25 19:29:024 pendule][AOScilabEnvironment] Request received : isLoggedIn
-            [2012-04-25 19:29:024 pendule][AOScilabEnvironment] waiting for request with no timeout
-            [2012-04-25 19:29:024 pendule][AOScilabEnvironment] Request received : jobRemove
-            [2012-04-25 19:29:024 pendule][AOScilabEnvironment] waiting for request with no timeout
-            [2012-04-25 19:29:046 pendule][AOScilabEnvironment] Request received : isConnected
-            [2012-04-25 19:29:046 pendule][AOScilabEnvironment] waiting for request with no timeout
-            [2012-04-25 19:29:047 pendule][AOScilabEnvironment] Request received : solve
-
-        ]]></screen>
+        <para>The debcug mode can be enabled/disabled via the <literal>Debug</literal> option. The log files are produced on the <emphasis>worker hosts</emphasis> <literal>TEMP</literal> directory.
+            The TEMP directory is usually <literal>/tmp</literal> on linux systems. On Windows it can be known by opening a command line (cmd.exe) and typing echo %TEMP%.
+        <literal>MatSci_Middleman_JVM.log</literal> includes ProActive MiddleMan JVM logs whereas <literal>ScilabJVMSpawnHelper.log</literal> is more global.
+        Remember that user script executions (tasks scripts, tasks selection scripts,..) are accessible from the Scheduler portal
+        </para>
+        <para>
+            <inlinemediaobject>
+                <imageobject>
+                    <imagedata fileref="SchedulerPortalLogs.png"/>
+                </imageobject>
+            </inlinemediaobject>
+        </para>
     </refsection>
 
     <refsection>

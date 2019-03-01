@@ -30,166 +30,74 @@
     <refsection>
         <title>Scheduler and Resource Manager command line controllers</title>
 
-        <para>The command line controllers of
-            <emphasis>ProActive Scheduler</emphasis>
-            and
-            <emphasis>Resource Manager</emphasis>
-            are called respectively
-            <emphasis>scheduler-client</emphasis>
-            and<emphasis>rm-client</emphasis>. They are located in
-            <literal>Scheduler_Server/bin/unix</literal>
-            or
-            <literal>Scheduler_Server/bin/windows</literal>
-            depending on your operating system.
+        <para>Using the ProActive client script <emphasis>proactive-client</emphasis> located in <literal>Scheduler_Server/bin</literal>,
+            user can communicate with the scheduler and the resource manager to gather jobs informations
+            (job executions informations, preview results, view job logs, ...) and resources informations
+            (statistics on nodes,..). Moreover, actions can also be performed (submit jobs, deploy nodes,..).
         </para>
-        <itemizedlist>
-            <listitem>
-                <para>
-                    <emphasis>scheduler-client</emphasis>
-                    allows to submit jobs to
-                    <emphasis>ProActive Scheduler</emphasis>
-                    in XML format, monitor job executions, preview results, view job logs, etc.
-                </para>
-            </listitem>
-            <listitem>
-                <para>
-                    <emphasis>rm-client</emphasis>
-                    allows to deploy or monitor resources in<emphasis>Resource Manager</emphasis>.
-                </para>
-            </listitem>
-        </itemizedlist>
-        <para>Here is an example use of scheduler-client, default login and password is<emphasis>demo</emphasis>/
-            <emphasis>demo</emphasis>:
-        </para>
-        <screen><![CDATA[fviale@pendule unix $ scheduler-client
-            Trying to connect Scheduler on rmi://localhost/
-            -> Connection established on rmi://localhost/
+        <screen><![CDATA[
 
-            Connecting client to the Scheduler
-            login: demo
-            password: ****
-            Retrieved public key from Scheduler at rmi://localhost/
-            -> Client 'demo' successfully connected
+  PS C:\Users\Michael Benguigui\Downloads\activeeon_enterprise-pca_server-windows-x64-8.5.0-SNAPSHOT\bin> .\proactive-client.bat
+Using the default credentials file: C:\Users\Michael Benguigui\Downloads\activeeon_enterprise-pca_server-windows-x64-8.5.0-SNAPSHOT\config\authentication\admin_user.credWarning! Possible security risk: unable to limit access rights of session-id file 'C:\Users\Michael Benguigui\.proactive\8d4ccbecc9944f2e7c8c068a0876f0bd-rm-session-id'Type help() for interactive help
 
-            Type command here (type '?' or help() to see the list of commands)
+> list
+listcredentials()       listinfrastructures()   listjobs(               listjobs()              listnodes(              listns()                listpolicies()
+listtasks(
+> listjobs()
+         ID      NAME          OWNER     PRIORITY     STATUS       START AT                        DURATION
 
+         130     Scilab 4      admin     NORMAL       FINISHED     28/02/19 14:45 (36mn ago)        6s 960ms
+         129     Scilab 3      admin     NORMAL       FINISHED     28/02/19 14:43 (38mn ago)        5s 142ms
+         128     Scilab 2      admin     NORMAL       FINISHED     28/02/19 14:33 (48mn ago)        4s 405ms
+         127     Scilab 1      admin     NORMAL       FINISHED     28/02/19 14:24 (57mn ago)        4s 542ms
+         126     Scilab 0      admin     NORMAL       FINISHED     28/02/19 14:22 (59mn ago)        4s 931ms
+         125     Scilab 1      admin     NORMAL       FINISHED     28/02/19 14:14 (1h7mn ago)       4s 711ms
+         124     Scilab 0      admin     NORMAL       FINISHED     28/02/19 14:04 (1h17mn ago)     47s 151ms
+         123     Scilab 1      admin     NORMAL       FINISHED     28/02/19 12:48 (2h33mn ago)      5s  21ms
+         58      Scilab 6      admin     NORMAL       FINISHED     27/02/19 08:37 (1d 6h ago)      51s 184ms
+         57      Scilab 5      admin     NORMAL       FINISHED     26/02/19 16:41 (1d 22h ago)      4s 651ms
+         56      Scilab 4      admin     NORMAL       FINISHED     26/02/19 16:38 (1d 22h ago)      4s 946ms
+         55      Scilab 3      admin     NORMAL       FINISHED     26/02/19 16:30 (1d 22h ago)      4s 850ms
+         54      Scilab 2      admin     NORMAL       FINISHED     26/02/19 16:16 (1d 23h ago)      5s 373ms
+         53      Scilab 1      admin     NORMAL       FINISHED     26/02/19 16:13 (1d 23h ago)      5s  54ms
+         52      Scilab 0      admin     NORMAL       FINISHED     26/02/19 16:07 (1d 23h ago)      8s 426ms
+         1       Scilab 0      admin     NORMAL       KILLED       26/02/19 15:53 (1d 23h ago)     27s 272ms
 
-            > listjobs();
-            ID     NAME                          OWNER     PRIORITY     PROJECT          STATUS       START AT               DURATION
+> jobstate(58)
+job('58')       NAME: Scilab 6  OWNER: admin    STATUS: FINISHED        #TASKS: 1
+         ID     NAME     TAG     ITER     DUP     STATUS       HOSTNAME                            EXEC DURATION     TOT DURATION     #NODES USED     #EXECUTIONS     #NODES KILLED
 
-            1      Scilab Environment Job 0      demo      Normal       Not Assigned     Finished     18:33:53  01/12/11      7s 789ms
-            2      Scilab Environment Job 1      demo      Normal       Not Assigned     Finished     20:50:33  01/12/11     827ms
-            3      Scilab Environment Job 2      demo      Normal       Not Assigned     Finished     20:51:39  01/12/11     751ms
-            4      Scilab Environment Job 3      demo      Normal       Not Assigned     Finished     20:52:25  01/12/11     781ms
-            5      Scilab Environment Job 4      demo      Normal       Not Assigned     Finished     20:53:10  01/12/11     766ms
-            6      Scilab Environment Job 5      demo      Normal       Not Assigned     Finished     20:54:38  01/12/11     747ms
-            7      Scilab Environment Job 6      demo      Normal       Not Assigned     Finished     20:57:46  01/12/11     770ms
-            8      Scilab Environment Job 7      demo      Normal       Not Assigned     Finished     23:07:09  01/12/11      4s 774ms
-            9      Scilab Environment Job 8      demo      Normal       Not Assigned     Finished     01:05:02  01/13/11     792ms
-            10     Scilab Environment Job 9      demo      Normal       Not Assigned     Finished     01:08:09  01/13/11     879ms
-            11     Scilab Environment Job 10     demo      Normal       Not Assigned     Finished     01:11:35  01/13/11     867ms
-            12     Scilab Environment Job 11     demo      Normal       Not Assigned     Finished     01:20:11  01/13/11     710ms
-            13     Scilab Environment Job 12     demo      Normal       Not Assigned     Finished     01:56:33  01/13/11      1s 121ms
-            14     Scilab Environment Job 13     demo      Normal       Not Assigned     Finished     02:20:19  01/13/11     23s  19ms
-            15     Scilab Environment Job 14     demo      Normal       Not Assigned     Finished     02:21:03  01/13/11     20s 986ms
-            16     Scilab Environment Job 0      demo      Normal       Not Assigned     Finished     02:40:00  01/13/11      2s 587ms
+         0      0_0                               FINISHED     XPS-P31F (local-LocalNodes-0_4)     13s 167ms         51s 169ms        1               0/2             0/2
 
-            > jobstate(15)
+> task
+taskoutput(   taskresult(   taskstates(
+> taskoutput(129,'0_0')
+[129t0@XPS-P31F;14:44:01] [2019-02-28 14:44:001 XPS-P31F][SCILAB OUT]
+[129t0@XPS-P31F;14:44:01] [2019-02-28 14:44:001 XPS-P31F][SCILAB OUT] Hello World
 
-            Job '15'    name:Scilab Environment Job 14    owner:demo    status:Finished    #tasks:20
+> listnodes()
+         SOURCE_NAME     HOST_NAME     STATE     SINCE                           LOCKED     LOCKED_BY     LOCK_TIME     URL                                           PROVIDER     USED_BY
 
-            ID       NAME   ITER   DUP   STATUS     HOSTNAME                         EXEC DURATION   TOT DURATION   #NODES USED   #EXECUTIONS   #NODES KILLED
+         LocalNodes      XPS-P31F      FREE      28/02/19 09:31 (5h54mn ago)     false                                  pnp://XPS-P31F:58778/local-LocalNodes-0_0     rm
+         LocalNodes      XPS-P31F      FREE      28/02/19 12:20 (3h4mn ago)      false                                  pnp://XPS-P31F:58778/local-LocalNodes-0_4     rm
+         LocalNodes      XPS-P31F      FREE      28/02/19 14:22 (1h3mn ago)      false                                  pnp://XPS-P31F:58778/local-LocalNodes-0_2     rm
+         LocalNodes      XPS-P31F      FREE      28/02/19 14:44 (41mn ago)       false                                  pnp://XPS-P31F:58778/local-LocalNodes-0_6     rm
+         LocalNodes      XPS-P31F      FREE      28/02/19 14:45 (39mn ago)       false                                  pnp://XPS-P31F:58778/local-LocalNodes-0_3     rm
+         LocalNodes      XPS-P31F      FREE      28/02/19 14:45 (39mn ago)       false                                  pnp://XPS-P31F:58778/local-LocalNodes-0_5     rm
+         LocalNodes      XPS-P31F      FREE      28/02/19 14:45 (39mn ago)       false                                  pnp://XPS-P31F:58778/local-LocalNodes-0_1     rm
 
-            150001   9_0                 Finished   pendule.inria.fr (PA_JVM41...    733ms            2s 943ms      1             1/1           0/2
-            150002   5_0                 Finished   pendule.inria.fr (PA_JVM15...    753ms            3s 601ms      1             1/1           0/2
-            150003   8_0                 Finished   pendule.inria.fr (PA_JVM19...    637ms            2s 531ms      1             1/1           0/2
-            150004   10_0                Finished   pendule.inria.fr (PA_JVM15...    723ms            1s 734ms      1             1/1           0/2
-            150005   1_0                 Finished   pendule.inria.fr (PA_JVM41...    635ms            2s 493ms      1             1/1           0/2
-            150006   4_0                 Finished   pendule.inria.fr (PA_JVM14...    823ms            3s 708ms      1             1/1           0/2
-            150007   16_0                Finished   pendule.inria.fr (PA_JVM15...    803ms            2s 405ms      1             1/1           0/2
-            150008   7_0                 Finished   pendule.inria.fr (PA_JVM19...    733ms            2s 953ms      1             1/1           0/2
-            150009   6_0                 Finished   pendule.inria.fr (PA_JVM14...    626ms            3s 741ms      1             1/1           0/2
-            150010   2_0                 Finished   pendule.inria.fr (PA_JVM41...    724ms           798ms          1             1/1           0/2
-            150011   0_0                 Finished   pendule.inria.fr (PA_JVM14...    612ms            3s 553ms      1             1/1           0/2
-            150012   3_0                 Finished   pendule.inria.fr (PA_JVM14...    832ms            3s 575ms      1             1/1           0/2
-            150013   17_0                Finished   pendule.inria.fr (PA_JVM15...    614ms            3s 631ms      1             1/1           0/2
-            150014   15_0                Finished   pendule.inria.fr (PA_JVM19...    637ms            2s 490ms      1             1/1           0/2
-            150015   19_0                Finished   pendule.inria.fr (PA_JVM41...    716ms            2s 532ms      1             1/1           0/2
-            150016   11_0                Finished   pendule.inria.fr (PA_JVM15...    621ms            3s 675ms      1             1/1           0/2
-            - more - (q : abort | a : display all | any : next page)
-            150017   12_0                Finished   pendule.inria.fr (PA_JVM19...    615ms           687ms          1             1/1           0/2
-            150018   13_0                Finished   pendule.inria.fr (PA_JVM14...    617ms           596ms          1             1/1           0/2
-            150019   18_0                Finished   pendule.inria.fr (PA_JVM19...    625ms            2s 487ms      1             1/1           0/2
-            150020   14_0                Finished   pendule.inria.fr (PA_JVM41...    720ms            2s 502ms      1             1/1           0/2
-
-            > task
-
-            taskoutput(   taskresult(
-            > taskresult(15,'12_0')
-            Task 12_0 result =>
-            true
-
-            > taskoutput(15,'12_0')
-            12_0 output :
-            [ Thu Jan 13 02:21:24 CET 2011 ][pendule OUT]
-            [ Thu Jan 13 02:21:24 CET 2011 ][pendule OUT]
-            [ Thu Jan 13 02:21:24 CET 2011 ][pendule OUT]
-            [ Thu Jan 13 02:21:24 CET 2011 ][pendule OUT]
-            [ Thu Jan 13 02:21:24 CET 2011 ][pendule OUT]
-            [ Thu Jan 13 02:21:24 CET 2011 ][pendule OUT]
-            [ Thu Jan 13 02:21:24 CET 2011 ][pendule OUT]
-            [ Thu Jan 13 02:21:24 CET 2011 ][pendule OUT]
-            [ Thu Jan 13 02:21:24 CET 2011 ][pendule OUT]
-            [ Thu Jan 13 02:21:24 CET 2011 ][pendule OUT]
-            [ Thu Jan 13 02:21:24 CET 2011 ][pendule OUT]
-            [ Thu Jan 13 02:21:24 CET 2011 ][pendule OUT]
-            [ Thu Jan 13 02:21:24 CET 2011 ][pendule OUT]
-            [ Thu Jan 13 02:21:24 CET 2011 ][pendule OUT]
-
-            > exit();
-            Exiting controller.
-        ]]></screen>
-        <para>The
-            <literal>help()</literal>
-            function gives a description of all available commands. More information about the scheduler controller can
-            be found at <ulink
-                    url="http://proactive.inria.fr/release-doc/Scheduling/multiple_html/user_manual.html#scheduler_controller">
-                Using the Scheduler controller</ulink>.
-        </para>
-        <para>Here is an example use of rm-client:</para>
-        <screen><![CDATA[fviale@pendule unix $ rm-client
-            Trying to connect RM on rmi://localhost:1099/
-            -> Connection established on rmi://localhost:1099/
-
-            Connecting to the RM
-            login: demo
-            password: ****
-            Retrieved public key from Resource Manager at rmi://localhost:1099/
-            -> Client 'demo'  successfully connected
-
-            Type command here (type '?' or help() to see the list of commands)
-
-
-            > listnodes();
-            SOURCE NAME     HOSTNAME           STATE   SINCE            URL                                                      PROVIDER   OWNER
-
-            GCMLocalNodes   pendule.inria.fr   Free    13/01/11 02:40   rmi://pendule.inria.fr:6608/PA_JVM1485855611_GCMNode-0   demo
-            GCMLocalNodes   pendule.inria.fr   Free    13/01/11 02:40   rmi://pendule.inria.fr:6608/PA_JVM1574715742_GCMNode-0   demo
-            GCMLocalNodes   pendule.inria.fr   Free    13/01/11 02:40   rmi://pendule.inria.fr:6608/PA_JVM1916148777_GCMNode-0   demo
-            GCMLocalNodes   pendule.inria.fr   Free    13/01/11 02:40   rmi://pendule.inria.fr:6608/PA_JVM416643970_GCMNode-0    demo
-
+> exit()
+PS C:\Users\Michael Benguigui\Downloads\activeeon_enterprise-pca_server-windows-x64-8.5.0-SNAPSHOT\bin>
             >]]></screen>
         <para>Here we see that the Resource Manager has been deployed with 4 local nodes. The STATE column displays if
-            the node is currently executing a job, free or there was a node failure. More information about the Resource
-            Manager controller can be found at <ulink
-                    url="http://proactive.inria.fr/release-doc/Resourcing/multiple_html/Resource_Manager_admin.html#rm_admin_console">
-                Interacting with the resource manager</ulink>.
+            the node is currently executing a job, free or there was a node failure. The <literal>help()</literal>
+            function gives a description of all available commands.
         </para>
     </refsection>
     <refsection>
         <title>Scheduler and Resource Manager Web Portals</title>
         <para>The ProActive Web Portals are web graphical user interfaces for both Scheduler and Resource Manager. They provide a more convenient way of monitoring job execution than the command line interface.
-            The ProActive Web Portals are embedded into the package <emphasis>ProActive Scheduling Server Full</emphasis> from the <ulink url="http://www.activeeon.com/community-downloads">ProActive downloads page</ulink>. Thet are started automatically when the <emphasis>scheduler-start-gui</emphasis> command is used to start the scheduler  see <ulink url="proactive_startup.html">Starting and Connecting</ulink> </para>
+            The ProActive Web Portals are embedded into the package <emphasis>ProActive Scheduling Server</emphasis> from the <ulink url="http://www.activeeon.com/community-downloads">ProActive downloads page</ulink>.</para>
         <para>Here is a view of the <emphasis>Scheduler Web Portal</emphasis>:</para>
         <para><inlinemediaobject>
             <imageobject>
@@ -203,8 +111,8 @@
                 <imagedata fileref="RMPortal.png"/>
             </imageobject>
         </inlinemediaobject></para>
-        <para>They can be accessed after the <emphasis>scheduler-start-gui</emphasis> command has been launched from a web browser at the addresses : <literal>http://localhost:8080/sched</literal> and <literal>http://localhost:8080/rm</literal>. <literal>localhost</literal> has to be replaced by the server hostname if it is not deployed locally.</para>
-        <para>Information on their usage can be found in the <ulink url="http://proactive.inria.fr//release-doc/Scheduling/multiple_html/index.html">Scheduler Manual</ulink>.</para>
+        <para>They can be accessed after the <emphasis>proactive-server</emphasis> command has been launched from a web page entry point at the addresses : <literal>http://localhost:8080/</literal>. <literal>localhost</literal> has to be replaced by the server hostname if it is not deployed locally.</para>
+        <para>Tutorials can be found at <ulink url="https://try.activeeon.com/">Online tutorial</ulink>.</para>
     </refsection>
     <refsection>
         <title>Scilab Connector Toolbox monitoring functions</title>
