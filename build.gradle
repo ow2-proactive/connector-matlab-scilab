@@ -1,12 +1,16 @@
+import com.github.jk1.license.render.*
+
 apply plugin: 'base'
 
 buildscript {
     repositories {
-        if (project.hasProperty('local'))
+        if (project.hasProperty('local')){
             mavenLocal()
+	}
         mavenCentral()
         maven { url 'http://repository.activeeon.com/content/groups/proactive/' }
         maven { url 'http://dl.bintray.com/content/abashev/vfs-s3'}
+        maven { url "https://plugins.gradle.org/m2/" }
     }
 
     dependencies {
@@ -17,8 +21,18 @@ buildscript {
         }
         classpath 'org.ow2.proactive:documentation:1.0.0-SNAPSHOT'
         classpath 'org.ow2.proactive:gradle-serialver:2.2'
+	classpath 'com.github.jk1:gradle-license-report:1.9'
     }
 }
+
+apply plugin: 'com.github.jk1.dependency-license-report'
+
+licenseReport {
+        configurations = ['runtime']
+        excludeGroups = ['org.objectweb.proactive', 'org.ow2.proactive', 'org.ow2.proactive_grid_cloud_portal', 'jsr223']
+        renderers = [new InventoryHtmlReportRenderer()]
+}
+
 
 allprojects {
     apply plugin: 'maven'
