@@ -74,6 +74,7 @@ subprojects {
         serialver = rootProject.serialver
         overwrite = false
         forceUIDOnException = true
+        classpath += project.configurations.compileOnly
     }
 
     sourceCompatibility = "1.7"
