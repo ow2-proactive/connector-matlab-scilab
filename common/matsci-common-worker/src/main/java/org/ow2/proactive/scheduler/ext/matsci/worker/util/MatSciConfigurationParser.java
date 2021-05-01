@@ -1,38 +1,27 @@
 /*
- * ################################################################
+ * ProActive Parallel Suite(TM):
+ * The Open Source library for parallel and distributed
+ * Workflows & Scheduling, Orchestration, Cloud Automation
+ * and Big Data Analysis on Enterprise Grids & Clouds.
  *
- * ProActive Parallel Suite(TM): The Java(TM) library for
- *    Parallel, Distributed, Multi-Core Computing for
- *    Enterprise Grids & Clouds
+ * Copyright (c) 2007 - 2017 ActiveEon
+ * Contact: contact@activeeon.com
  *
- * Copyright (C) 1997-2011 INRIA/University of
- *                 Nice-Sophia Antipolis/ActiveEon
- * Contact: proactive@ow2.org or contact@activeeon.com
- *
- * This library is free software; you can redistribute it and/or
+ * This library is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License
- * as published by the Free Software Foundation; version 3 of
+ * as published by the Free Software Foundation: version 3 of
  * the License.
  *
- * This library is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Affero General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
- * USA
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  * If needed, contact us to obtain a release under GPL Version 2 or 3
  * or a different license than the AGPL.
- *
- *  Initial developer(s):               The ProActive Team
- *                        http://proactive.inria.fr/team_members.htm
- *  Contributor(s):
- *
- * ################################################################
- * $$PROACTIVE_INITIAL_DEV$$
  */
 package org.ow2.proactive.scheduler.ext.matsci.worker.util;
 
@@ -60,8 +49,11 @@ import org.w3c.dom.NodeList;
 public abstract class MatSciConfigurationParser {
 
     protected static String HOSTNAME;
+
     protected static String IP;
+
     protected static String TMPDIR;
+
     protected static String FS;
 
     protected static File schedHome;
@@ -85,15 +77,16 @@ public abstract class MatSciConfigurationParser {
 
     protected abstract boolean checkVersion(String version, File configFile);
 
-    protected abstract MatSciEngineConfig buildConfig(String home, String version, String binDir, String command, String arch);
+    protected abstract MatSciEngineConfig buildConfig(String home, String version, String binDir, String command,
+            String arch);
 
-    protected  MatSciEngineConfig parseInstallation(File configFile, Element installation) throws Exception {
+    protected MatSciEngineConfig parseInstallation(File configFile, Element installation) throws Exception {
         NodeList nl = installation.getElementsByTagName("version");
         if (nl.getLength() != 1) {
             logger.error("In " + configFile + ", version element must not be empty or duplicate");
             return null;
         }
-        String version = ((Element)(nl.item(0))).getTextContent();
+        String version = ((Element) (nl.item(0))).getTextContent();
         if ((version == null) || (version.trim().length() == 0)) {
             logger.error("In " + configFile + ", version element must not be empty");
             return null;
@@ -107,7 +100,7 @@ public abstract class MatSciConfigurationParser {
             logger.error("In " + configFile + ", home element must not be empty");
             return null;
         }
-        String home = ((Element)(nl.item(0))).getTextContent();
+        String home = ((Element) (nl.item(0))).getTextContent();
         if ((home == null) || (home.trim().length() == 0)) {
             logger.error("In " + configFile + ", home element must not be empty");
             return null;
@@ -123,13 +116,12 @@ public abstract class MatSciConfigurationParser {
             logger.error("In " + configFile + ", bindir element must not be empty");
             return null;
         }
-        String bindir = ((Element)(nl.item(0))).getTextContent();
+        String bindir = ((Element) (nl.item(0))).getTextContent();
         if ((bindir == null) || (bindir.trim().length() == 0)) {
             logger.error("In " + configFile + ", bindir element must not be empty");
             return null;
         }
-        bindir = bindir.trim().replaceAll("/",
-                Matcher.quoteReplacement("" + os.fileSeparator()));
+        bindir = bindir.trim().replaceAll("/", Matcher.quoteReplacement("" + os.fileSeparator()));
         File filebin = new File(filehome, bindir);
         checkDir(filebin, configFile);
 
@@ -138,7 +130,7 @@ public abstract class MatSciConfigurationParser {
             logger.error("In " + configFile + ", command element must not be empty");
             return null;
         }
-        String command = ((Element)(nl.item(0))).getTextContent();
+        String command = ((Element) (nl.item(0))).getTextContent();
         if ((command == null) || (command.trim().length() == 0)) {
             logger.error("In " + configFile + ", command element must not be empty");
             return null;
@@ -154,7 +146,7 @@ public abstract class MatSciConfigurationParser {
             logger.error("In " + configFile + ", arch element must not be empty");
             return null;
         }
-        String arch = ((Element)(nl.item(0))).getTextContent();
+        String arch = ((Element) (nl.item(0))).getTextContent();
         if ((arch == null) || (arch.trim().length() == 0)) {
             logger.error("In " + configFile + ", arch element must not be empty");
             return null;
@@ -162,18 +154,15 @@ public abstract class MatSciConfigurationParser {
         arch = arch.trim();
 
         if (!(arch.equals("32") || arch.equals("64"))) {
-            logger.error("In " + configFile +
-                    ", arch element must be 32 or 64 received : " + arch);
+            logger.error("In " + configFile + ", arch element must be 32 or 64 received : " + arch);
             return null;
         }
 
-        MatSciEngineConfig conf = buildConfig(home, version, bindir, command,
-                arch);
+        MatSciEngineConfig conf = buildConfig(home, version, bindir, command, arch);
         logger.debug("Found : " + conf);
 
         return conf;
     }
-
 
     protected HashSet<MatSciEngineConfig> parseConfigFile(String path) throws Exception {
 
@@ -228,9 +217,6 @@ public abstract class MatSciConfigurationParser {
         }
         return configs;
     }
-
-
-
 
     private static boolean matchesHost(Element machineGroup) {
         String hostmatch = machineGroup.getAttribute("hostname");

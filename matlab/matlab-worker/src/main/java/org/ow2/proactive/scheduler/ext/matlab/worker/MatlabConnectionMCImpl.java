@@ -1,38 +1,27 @@
 /*
- * ################################################################
+ * ProActive Parallel Suite(TM):
+ * The Open Source library for parallel and distributed
+ * Workflows & Scheduling, Orchestration, Cloud Automation
+ * and Big Data Analysis on Enterprise Grids & Clouds.
  *
- * ProActive Parallel Suite(TM): The Java(TM) library for
- *    Parallel, Distributed, Multi-Core Computing for
- *    Enterprise Grids & Clouds
+ * Copyright (c) 2007 - 2017 ActiveEon
+ * Contact: contact@activeeon.com
  *
- * Copyright (C) 1997-2011 INRIA/University of
- *                 Nice-Sophia Antipolis/ActiveEon
- * Contact: proactive@ow2.org or contact@activeeon.com
- *
- * This library is free software; you can redistribute it and/or
+ * This library is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License
- * as published by the Free Software Foundation; version 3 of
+ * as published by the Free Software Foundation: version 3 of
  * the License.
  *
- * This library is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Affero General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
- * USA
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  * If needed, contact us to obtain a release under GPL Version 2 or 3
  * or a different license than the AGPL.
- *
- *  Initial developer(s):               The ActiveEon Team
- *                        http://www.activeeon.com/
- *  Contributor(s):
- *
- * ################################################################
- * $$ACTIVEEON_INITIAL_DEV$$
  */
 package org.ow2.proactive.scheduler.ext.matlab.worker;
 
@@ -81,6 +70,7 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
     protected File workingDirectory;
 
     private PASolveMatlabGlobalConfig paconfig;
+
     private PASolveMatlabTaskConfig tconfig;
 
     private LicenseSaverClient lclient;
@@ -96,6 +86,7 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
     private static final String lcFailedPattern = "License checkout failed";
 
     private static final String outofmemoryPattern = "java.lang.OutOfMemoryError";
+
     private static Thread outputThread;
 
     public MatlabConnectionMCImpl(final PrintStream taskOut) {
@@ -115,7 +106,7 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
      * @throws org.ow2.proactive.scheduler.ext.matlab.common.exception.MatlabInitException if MATLAB could not be initialized
      */
     public void acquire(String matlabExecutablePath, File workingDir, PASolveMatlabGlobalConfig paconfig,
-                        PASolveMatlabTaskConfig tconfig, final String jobId, final String taskId) throws MatlabInitException {
+            PASolveMatlabTaskConfig tconfig, final String jobId, final String taskId) throws MatlabInitException {
         RemoteMatlabProxyFactory proxyFactory;
         this.paconfig = paconfig;
         this.tconfig = tconfig;
@@ -126,9 +117,9 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
             try {
                 this.lclient = new LicenseSaverClient(paconfig.getLicenseSaverURL());
             } catch (ProActiveException e) {
-                throw new MatlabInitException(new UnreachableLicenseProxyException(
-                        "License Proxy Server at url " + paconfig.getLicenseSaverURL() +
-                                " could not be contacted.", e));
+                throw new MatlabInitException(new UnreachableLicenseProxyException("License Proxy Server at url " +
+                                                                                   paconfig.getLicenseSaverURL() +
+                                                                                   " could not be contacted.", e));
             }
         }
 
@@ -138,8 +129,13 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
         // MATLAB process as user creator
         try {
 
-            processCreator = new CustomMatlabProcessCreator(matlabExecutablePath, workingDir,
-                    this.startUpOptions, paconfig.isDebug(), this.taskOut, jobId, taskId);
+            processCreator = new CustomMatlabProcessCreator(matlabExecutablePath,
+                                                            workingDir,
+                                                            this.startUpOptions,
+                                                            paconfig.isDebug(),
+                                                            this.taskOut,
+                                                            jobId,
+                                                            taskId);
 
             proxyFactory = new RemoteMatlabProxyFactory(processCreator);
         } catch (MatlabConnectionException e) {
@@ -147,8 +143,7 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
             e.printStackTrace();
 
             // Nothing can be done maybe a retry ... check this later
-            MatlabInitException me = new MatlabInitException(
-                    "Unable to create the MATLAB proxy factory. Possible causes: dsregistry cannot be created or the receiver cannot be bind");
+            MatlabInitException me = new MatlabInitException("Unable to create the MATLAB proxy factory. Possible causes: dsregistry cannot be created or the receiver cannot be bind");
             me.initCause(e);
 
             try {
@@ -169,8 +164,7 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
             e.printStackTrace();
 
             // Nothing can be done maybe a retry ... check this later
-            MatlabInitException me = new MatlabInitException(
-                    "Unable to create the MATLAB proxy factory. Possible causes: dsregistry cannot be created or the receiver cannot be bind");
+            MatlabInitException me = new MatlabInitException("Unable to create the MATLAB proxy factory. Possible causes: dsregistry cannot be created or the receiver cannot be bind");
             me.initCause(e);
 
             // clean factory
@@ -225,7 +219,7 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
         // Kill the MATLAB process
         this.processCreator.killProcess();
 
-        if( outputThread != null) {
+        if (outputThread != null) {
             outputThread.interrupt();
             try {
                 outputThread.join();
@@ -311,8 +305,8 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
         try {
 
             while (!ackFile.exists() && !nackFile.exists() && (cpt < TIMEOUT_START) &&
-                    !CustomMatlabProcessCreator.outputThreadDefinition.patternFound(lcFailedPattern) &&
-                    !CustomMatlabProcessCreator.outputThreadDefinition.patternFound(outofmemoryPattern)) {
+                   !CustomMatlabProcessCreator.outputThreadDefinition.patternFound(lcFailedPattern) &&
+                   !CustomMatlabProcessCreator.outputThreadDefinition.patternFound(outofmemoryPattern)) {
                 Thread.sleep(10);
                 cpt++;
             }
@@ -361,9 +355,8 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
             try {
                 lclient.notifyLicenseStatus(tconfig.getRid(), ack);
             } catch (Exception e) {
-                throw new UnreachableLicenseProxyException(
-                        "Error while sending ack to License Proxy Server at url " + paconfig.getLicenseSaverURL(),
-                        e);
+                throw new UnreachableLicenseProxyException("Error while sending ack to License Proxy Server at url " +
+                                                           paconfig.getLicenseSaverURL(), e);
             }
         }
     }
@@ -374,10 +367,13 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
     private static class CustomMatlabProcessCreator implements MatlabProcessCreator {
 
         protected String[] startUpOptions;
+
         protected final String matlabLocation;
+
         protected final File workingDirectory;
 
         protected File taskOutputFile;
+
         private final PrintStream taskOut;
 
         protected boolean debug;
@@ -387,7 +383,8 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
         static IOTools.LoggingThread outputThreadDefinition;
 
         public CustomMatlabProcessCreator(final String matlabLocation, final File workingDirectory,
-                                          String[] startUpOptions, boolean debug, final PrintStream taskOut, final String jobId, final String taskId) {
+                String[] startUpOptions, boolean debug, final PrintStream taskOut, final String jobId,
+                final String taskId) {
             this.matlabLocation = matlabLocation;
             this.workingDirectory = workingDirectory;
             this.taskOutputFile = new File(this.workingDirectory, "MatlabStart_" + jobId + "_" + taskId + ".log");
@@ -422,7 +419,12 @@ public class MatlabConnectionMCImpl implements MatlabConnection {
             process = b.start();
 
             // Logging thread creation & start
-            outputThreadDefinition = new IOTools.LoggingThread(new FileInputStream(taskOutputFile), "[MATLAB]", taskOut, debug ? null : startPattern, null, new String[] { lcFailedPattern, outofmemoryPattern });
+            outputThreadDefinition = new IOTools.LoggingThread(new FileInputStream(taskOutputFile),
+                                                               "[MATLAB]",
+                                                               taskOut,
+                                                               debug ? null : startPattern,
+                                                               null,
+                                                               new String[] { lcFailedPattern, outofmemoryPattern });
             outputThread = new Thread(outputThreadDefinition, "OUT MATLAB");
             outputThread.setDaemon(true);
             outputThread.start();

@@ -6,7 +6,7 @@ buildscript {
     repositories {
         if (project.hasProperty('local')){
             mavenLocal()
-	}
+    }
         mavenCentral()
         maven { url 'http://repository.activeeon.com/content/groups/proactive/' }
         maven { url 'http://dl.bintray.com/content/abashev/vfs-s3'}
@@ -14,6 +14,8 @@ buildscript {
     }
 
     dependencies {
+        classpath "com.diffplug.gradle.spotless:spotless:2.4.0"
+        classpath "org.ow2.proactive:coding-rules:1.0.0"
         classpath "org.objectweb.proactive:programming-build-utils:${programmingVersion}"
         // needed at runtime by AntStubGenerator...
         classpath("org.objectweb.proactive:programming-core:${programmingVersion}") {
@@ -21,11 +23,14 @@ buildscript {
         }
         classpath 'org.ow2.proactive:documentation:1.0.0-SNAPSHOT'
         classpath 'org.ow2.proactive:gradle-serialver:2.2'
-	classpath 'com.github.jk1:gradle-license-report:1.9'
+        classpath 'com.github.jk1:gradle-license-report:1.9'
+        delete "gradle/ext"
+        ant.unjar src: configurations.classpath.find { it.name.startsWith("coding-rules") }, dest: 'gradle/ext'
     }
 }
 
 apply plugin: 'com.github.jk1.dependency-license-report'
+apply from: "$rootDir/gradle/ext/coding-format.gradle"
 
 licenseReport {
         configurations = ['runtime']
@@ -467,7 +472,7 @@ project(':matlab:matlab-test') {
         testCompile project(':common:matsci-common-data')
         testCompile project(':matlab:matlab-client')
         testCompile project(':matlab:matlab-middleman')
-        
+
         testRuntime fileTree(dir: "$rootProject.buildDir/scheduler/dist/lib", include: ['*.jar'])
     }
 

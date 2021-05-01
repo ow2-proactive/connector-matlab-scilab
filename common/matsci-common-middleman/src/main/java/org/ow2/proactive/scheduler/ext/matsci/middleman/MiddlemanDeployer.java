@@ -1,38 +1,27 @@
 /*
- * ################################################################
+ * ProActive Parallel Suite(TM):
+ * The Open Source library for parallel and distributed
+ * Workflows & Scheduling, Orchestration, Cloud Automation
+ * and Big Data Analysis on Enterprise Grids & Clouds.
  *
- * ProActive Parallel Suite(TM): The Java(TM) library for
- *    Parallel, Distributed, Multi-Core Computing for
- *    Enterprise Grids & Clouds
+ * Copyright (c) 2007 - 2017 ActiveEon
+ * Contact: contact@activeeon.com
  *
- * Copyright (C) 1997-2012 INRIA/University of
- *                 Nice-Sophia Antipolis/ActiveEon
- * Contact: proactive@ow2.org or contact@activeeon.com
- *
- * This library is free software; you can redistribute it and/or
+ * This library is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License
- * as published by the Free Software Foundation; version 3 of
+ * as published by the Free Software Foundation: version 3 of
  * the License.
  *
- * This library is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Affero General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
- * USA
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  * If needed, contact us to obtain a release under GPL Version 2 or 3
  * or a different license than the AGPL.
- *
- *  Initial developer(s):               The ProActive Team
- *                        http://proactive.inria.fr/team_members.htm
- *  Contributor(s):
- *
- * ################################################################
- * $$PROACTIVE_INITIAL_DEV$$
  */
 package org.ow2.proactive.scheduler.ext.matsci.middleman;
 
@@ -85,18 +74,21 @@ public abstract class MiddlemanDeployer {
      * Standalone objects
      */
     private AODataspaceRegistry reg;
+
     private MatSciJVMProcessInterfaceImpl itf;
 
     /**
      * ProActive Stubs
      */
     private AODataspaceRegistry pastub_reg;
+
     private MatSciJVMProcessInterfaceImpl pastub_itf;
 
     /**
      * RMI stubs
      */
     private DataspaceRegistry rmistub_reg;
+
     private MatSciJVMProcessInterface rmistub_itf;
 
     protected Registry registry;
@@ -139,8 +131,7 @@ public abstract class MiddlemanDeployer {
         }
 
         try {
-            PAMRRemoteObjectFactory f = (PAMRRemoteObjectFactory) AbstractRemoteObjectFactory
-                    .getRemoteObjectFactory("pamr");
+            PAMRRemoteObjectFactory f = (PAMRRemoteObjectFactory) AbstractRemoteObjectFactory.getRemoteObjectFactory("pamr");
             final AgentImpl agent = (AgentImpl) f.getAgent();
 
             if (agent == null) {
@@ -171,8 +162,8 @@ public abstract class MiddlemanDeployer {
             final Class waitingRoomClass = wrClz;
             final Field byRemoteAgentField = waitingRoomClass.getDeclaredField("byRemoteAgent");
             byRemoteAgentField.setAccessible(true);
-            final Method unlockDueToTunnelFailureMethod = waitingRoomClass.getDeclaredMethod(
-                    "unlockDueToTunnelFailure", PAMRException.class);
+            final Method unlockDueToTunnelFailureMethod = waitingRoomClass.getDeclaredMethod("unlockDueToTunnelFailure",
+                                                                                             PAMRException.class);
             unlockDueToTunnelFailureMethod.setAccessible(true);
 
             requestIDGeneratorField.setAccessible(true);
@@ -190,10 +181,15 @@ public abstract class MiddlemanDeployer {
             privateField.set(agent, new PAMRSocketFactorySPI() {
 
                 private boolean initialValueSet = false;
+
                 private Long oldRouterId;
+
                 private AgentID oldAgentId;
+
                 private MagicCookie oldMagicCookie;
+
                 private AtomicLong oldRequestIdGenerator;
+
                 private boolean refusedHandshake = false;
 
                 @Override
@@ -232,10 +228,8 @@ public abstract class MiddlemanDeployer {
                     Tunnel tunnel = new Tunnel(targetSocket);
                     try {
                         // Initiate a manual handhsake
-                        Method routerHandshake = agent.getClass().getDeclaredMethod("routerHandshake",
-                                Tunnel.class);
-                        System.out
-                                .println("[MiddlemanDeployer] Trying to reconnect, reestablishing a tunnel...");
+                        Method routerHandshake = agent.getClass().getDeclaredMethod("routerHandshake", Tunnel.class);
+                        System.out.println("[MiddlemanDeployer] Trying to reconnect, reestablishing a tunnel...");
                         routerHandshake.setAccessible(true);
                         routerHandshake.invoke(agent, tunnel);
                         // This sets a new valid tunnel
@@ -247,9 +241,8 @@ public abstract class MiddlemanDeployer {
                         // we reinitialize the initialValues as well (a new tunnel will mean new values)
                         initialValueSet = false;
                         System.out.println("[MiddlemanDeployer] Reconnected with PAMR router with new ID : " +
-                            agent.getAgentID());
-                        System.out
-                                .println("A lot of error messages will be displayed, this is due to the reconnection process.");
+                                           agent.getAgentID());
+                        System.out.println("A lot of error messages will be displayed, this is due to the reconnection process.");
                         new_agent_id = agent.getAgentID().getId();
                         // We rebind all our active objects
                         tpe.submit(new RestartRunnable());
@@ -295,13 +288,14 @@ public abstract class MiddlemanDeployer {
             int routerPort = PAMRConfig.PA_NET_ROUTER_PORT.getValue();
             s = PAMRSocketFactorySelector.get().createSocket(routerAddress.getHostAddress(), routerPort);
             return s.isConnected();
-        }catch (Exception e){
+        } catch (Exception e) {
             return false;
         } finally {
             if (s != null) {
                 try {
                     s.close();
-                } catch (Exception e) {}
+                } catch (Exception e) {
+                }
             }
         }
     }
@@ -382,8 +376,8 @@ public abstract class MiddlemanDeployer {
         }
 
         @Override
-        public void run() {            
-            PAMRHook();            
+        public void run() {
+            PAMRHook();
             try {
                 init();
             } catch (Throwable e) {

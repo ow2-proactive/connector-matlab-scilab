@@ -1,38 +1,27 @@
 /*
- * ################################################################
+ * ProActive Parallel Suite(TM):
+ * The Open Source library for parallel and distributed
+ * Workflows & Scheduling, Orchestration, Cloud Automation
+ * and Big Data Analysis on Enterprise Grids & Clouds.
  *
- * ProActive Parallel Suite(TM): The Java(TM) library for
- *    Parallel, Distributed, Multi-Core Computing for
- *    Enterprise Grids & Clouds
+ * Copyright (c) 2007 - 2017 ActiveEon
+ * Contact: contact@activeeon.com
  *
- * Copyright (C) 1997-2012 INRIA/University of
- *                 Nice-Sophia Antipolis/ActiveEon
- * Contact: proactive@ow2.org or contact@activeeon.com
- *
- * This library is free software; you can redistribute it and/or
+ * This library is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License
- * as published by the Free Software Foundation; version 3 of
+ * as published by the Free Software Foundation: version 3 of
  * the License.
  *
- * This library is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Affero General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
- * USA
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  * If needed, contact us to obtain a release under GPL Version 2 or 3
  * or a different license than the AGPL.
- *
- *  Initial developer(s):               The ProActive Team
- *                        http://proactive.inria.fr/team_members.htm
- *  Contributor(s):
- *
- * ################################################################
- * $$PROACTIVE_INITIAL_DEV$$
  */
 package org.ow2.proactive.scheduler.ext.matsci.middleman;
 
@@ -70,10 +59,15 @@ public class MatSciJVMProcessInterfaceImpl implements InitActive, RunActive, Mat
     MatSciJVMProcessInterfaceImpl stubOnThis;
 
     private static File logFile;
+
     private static PrintWriter outDebugWriter;
+
     private static FileWriter outFile;
+
     private static long lastMillis = System.currentTimeMillis();
+
     private static long DELAY = 2;
+
     private static Throwable lastException = new Exception();
 
     private static final SimpleDateFormat ISO8601FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:sss");
@@ -81,7 +75,9 @@ public class MatSciJVMProcessInterfaceImpl implements InitActive, RunActive, Mat
     private static final String TMPDIR = System.getProperty("java.io.tmpdir");
 
     private boolean terminated;
+
     private Thread serviceThread;
+
     protected Body bodyOnThis;
 
     /**
@@ -169,11 +165,9 @@ public class MatSciJVMProcessInterfaceImpl implements InitActive, RunActive, Mat
             lastMillis = millis;
         }
 
-        if ((mode == LogMode.OUTAWAYS) || (mode == LogMode.FILEANDOUTALWAYS) ||
-            (mode == LogMode.OUTAWAYSNEVERFILE) ||
+        if ((mode == LogMode.OUTAWAYS) || (mode == LogMode.FILEANDOUTALWAYS) || (mode == LogMode.OUTAWAYSNEVERFILE) ||
             (isDebug && ((mode == LogMode.STD) || (mode == LogMode.OUTONLY)))) {
-            final String log1 = "[" + origin.getClass().getSimpleName() + "] " +
-                StackTraceUtil.getStackTrace(ex);
+            final String log1 = "[" + origin.getClass().getSimpleName() + "] " + StackTraceUtil.getStackTrace(ex);
 
             System.out.println(log1);
             System.out.flush();
@@ -182,8 +176,8 @@ public class MatSciJVMProcessInterfaceImpl implements InitActive, RunActive, Mat
         if ((mode == LogMode.FILEALWAYS) || (mode == LogMode.FILEANDOUTALWAYS) ||
             (mode == LogMode.FILEALWAYSNEVEROUT) ||
             (isDebug && ((mode == LogMode.STD) || (mode == LogMode.FILEONLY)))) {
-            final String log2 = "[" + ISO8601FORMAT.format(d) + " " + host + "][" +
-                origin.getClass().getSimpleName() + "] " + StackTraceUtil.getStackTrace(ex);
+            final String log2 = "[" + ISO8601FORMAT.format(d) + " " + host + "][" + origin.getClass().getSimpleName() +
+                                "] " + StackTraceUtil.getStackTrace(ex);
             if (outDebugWriter != null) {
                 outDebugWriter.println(log2);
                 outDebugWriter.flush();
@@ -200,8 +194,7 @@ public class MatSciJVMProcessInterfaceImpl implements InitActive, RunActive, Mat
      */
     public static void printLog(Object origin, final String message, LogMode mode, boolean isDebug) {
         final Date d = new Date();
-        if ((mode == LogMode.OUTAWAYS) || (mode == LogMode.FILEANDOUTALWAYS) ||
-            (mode == LogMode.OUTAWAYSNEVERFILE) ||
+        if ((mode == LogMode.OUTAWAYS) || (mode == LogMode.FILEANDOUTALWAYS) || (mode == LogMode.OUTAWAYSNEVERFILE) ||
             (isDebug && ((mode == LogMode.STD) || (mode == LogMode.OUTONLY)))) {
             final String log1 = "[" + origin.getClass().getSimpleName() + "] " + message;
 
@@ -212,8 +205,8 @@ public class MatSciJVMProcessInterfaceImpl implements InitActive, RunActive, Mat
         if ((mode == LogMode.FILEALWAYS) || (mode == LogMode.FILEANDOUTALWAYS) ||
             (mode == LogMode.FILEALWAYSNEVEROUT) ||
             (isDebug && ((mode == LogMode.STD) || (mode == LogMode.FILEONLY)))) {
-            final String log2 = "[" + ISO8601FORMAT.format(d) + " " + host + "][" +
-                origin.getClass().getSimpleName() + "] " + message;
+            final String log2 = "[" + ISO8601FORMAT.format(d) + " " + host + "][" + origin.getClass().getSimpleName() +
+                                "] " + message;
             if (outDebugWriter != null) {
                 outDebugWriter.println(log2);
                 outDebugWriter.flush();

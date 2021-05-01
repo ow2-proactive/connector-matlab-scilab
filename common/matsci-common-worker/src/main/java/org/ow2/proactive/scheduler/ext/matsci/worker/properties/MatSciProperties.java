@@ -1,38 +1,27 @@
 /*
- * ################################################################
+ * ProActive Parallel Suite(TM):
+ * The Open Source library for parallel and distributed
+ * Workflows & Scheduling, Orchestration, Cloud Automation
+ * and Big Data Analysis on Enterprise Grids & Clouds.
  *
- * ProActive Parallel Suite(TM): The Java(TM) library for
- *    Parallel, Distributed, Multi-Core Computing for
- *    Enterprise Grids & Clouds
+ * Copyright (c) 2007 - 2017 ActiveEon
+ * Contact: contact@activeeon.com
  *
- * Copyright (C) 1997-2012 INRIA/University of
- *                 Nice-Sophia Antipolis/ActiveEon
- * Contact: proactive@ow2.org or contact@activeeon.com
- *
- * This library is free software; you can redistribute it and/or
+ * This library is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License
- * as published by the Free Software Foundation; version 3 of
+ * as published by the Free Software Foundation: version 3 of
  * the License.
  *
- * This library is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Affero General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
- * USA
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  * If needed, contact us to obtain a release under GPL Version 2 or 3
  * or a different license than the AGPL.
- *
- *  Initial developer(s):               The ProActive Team
- *                        http://proactive.inria.fr/team_members.htm
- *  Contributor(s):
- *
- * ################################################################
- * $$PROACTIVE_INITIAL_DEV$$
  */
 package org.ow2.proactive.scheduler.ext.matsci.worker.properties;
 
@@ -73,16 +62,19 @@ public enum MatSciProperties {
     /* ***************************************************************************** */
     /* ***************************************************************************** */
     public static final String MATSCI_PROPERTIES_FILEPATH = "pa.matsci.properties.filepath";
+
     /**
      * Default properties file for the scheduler configuration
      */
     private static final String DEFAULT_PROPERTIES_FILE = "addons/matlab_scilab_connector.ini";
 
     private static String properties_file = null;
+
     /**
      * to know if the file has been loaded or not
      */
     private static boolean fileLoaded;
+
     /**
      * memory entity of the properties file.
      */
@@ -92,6 +84,7 @@ public enum MatSciProperties {
      * Key of the specific instance.
      */
     private String key;
+
     /**
      * value of the specific instance.
      */
@@ -197,9 +190,8 @@ public enum MatSciProperties {
                 setUserJavaProperties();
 
             } catch (IOException e) {
-                throw new RuntimeException(
-                    "Error when loading properties from Matlab/Scilab properties file at : '" +
-                        properties_file + "'", e);
+                throw new RuntimeException("Error when loading properties from Matlab/Scilab properties file at : '" +
+                                           properties_file + "'", e);
             }
         }
         return prop;
@@ -245,7 +237,7 @@ public enum MatSciProperties {
                 return value;
             } catch (NumberFormatException e) {
                 RuntimeException re = new IllegalArgumentException(key +
-                    " is not an integer property. getValueAsInt cannot be called on this property");
+                                                                   " is not an integer property. getValueAsInt cannot be called on this property");
                 throw re;
             }
         } else {
@@ -320,7 +312,9 @@ public enum MatSciProperties {
      * Supported types for PASchedulerProperties
      */
     public enum PropertyType {
-        STRING, BOOLEAN, INTEGER;
+        STRING,
+        BOOLEAN,
+        INTEGER;
     }
 
     public static File findSchedulerHome() throws Exception {
@@ -334,8 +328,10 @@ public enum MatSciProperties {
                     homestr = ProActiveRuntimeImpl.getProActiveRuntime().getProActiveHome();
                 } catch (Exception e) {
                     // Try to locate dynamically for the location of the current class file
-                    final String path = MatSciProperties.class.getProtectionDomain().getCodeSource()
-                            .getLocation().getPath();
+                    final String path = MatSciProperties.class.getProtectionDomain()
+                                                              .getCodeSource()
+                                                              .getLocation()
+                                                              .getPath();
                     final File f = new File(path);
                     File schedulerHome = null;
 

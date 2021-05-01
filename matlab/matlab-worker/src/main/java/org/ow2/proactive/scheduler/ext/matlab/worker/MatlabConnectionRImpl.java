@@ -1,38 +1,27 @@
 /*
- * ################################################################
+ * ProActive Parallel Suite(TM):
+ * The Open Source library for parallel and distributed
+ * Workflows & Scheduling, Orchestration, Cloud Automation
+ * and Big Data Analysis on Enterprise Grids & Clouds.
  *
- * ProActive Parallel Suite(TM): The Java(TM) library for
- *    Parallel, Distributed, Multi-Core Computing for
- *    Enterprise Grids & Clouds
+ * Copyright (c) 2007 - 2017 ActiveEon
+ * Contact: contact@activeeon.com
  *
- * Copyright (C) 1997-2011 INRIA/University of
- *                 Nice-Sophia Antipolis/ActiveEon
- * Contact: proactive@ow2.org or contact@activeeon.com
- *
- * This library is free software; you can redistribute it and/or
+ * This library is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License
- * as published by the Free Software Foundation; version 3 of
+ * as published by the Free Software Foundation: version 3 of
  * the License.
  *
- * This library is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Affero General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
- * USA
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  * If needed, contact us to obtain a release under GPL Version 2 or 3
  * or a different license than the AGPL.
- *
- *  Initial developer(s):               The ActiveEon Team
- *                        http://www.activeeon.com/
- *  Contributor(s):
- *
- * ################################################################
- * $$ACTIVEEON_INITIAL_DEV$$
  */
 package org.ow2.proactive.scheduler.ext.matlab.worker;
 
@@ -165,6 +154,7 @@ public class MatlabConnectionRImpl implements MatlabConnection {
      * Logging thread used *
      */
     IOTools.LoggingThread outputThreadDefinition;
+
     private Thread outputThread;
 
     public MatlabConnectionRImpl(final PrintStream taskOut) {
@@ -172,7 +162,7 @@ public class MatlabConnectionRImpl implements MatlabConnection {
     }
 
     public void acquire(String matlabExecutablePath, File workingDir, PASolveMatlabGlobalConfig paconfig,
-                        PASolveMatlabTaskConfig tconfig,  final String jobId, final String taskId) throws MatlabInitException {
+            PASolveMatlabTaskConfig tconfig, final String jobId, final String taskId) throws MatlabInitException {
         this.matlabLocation = matlabExecutablePath;
         this.workingDirectory = workingDir;
         this.debug = paconfig.isDebug();
@@ -180,7 +170,6 @@ public class MatlabConnectionRImpl implements MatlabConnection {
         this.tconfig = tconfig;
         this.startUpOptions = paconfig.getStartupOptions();
         this.TIMEOUT_START = paconfig.getWorkerTimeoutStart();
-
 
         this.taskOutputFile = new File(this.workingDirectory, "MatlabStart_" + jobId + "_" + taskId + ".log");
         if (!this.taskOutputFile.exists()) {
@@ -204,9 +193,9 @@ public class MatlabConnectionRImpl implements MatlabConnection {
             try {
                 this.lclient = new LicenseSaverClient(paconfig.getLicenseSaverURL());
             } catch (ProActiveException e) {
-                throw new MatlabInitException(new UnreachableLicenseProxyException(
-                        "License Proxy Server at url " + paconfig.getLicenseSaverURL() +
-                                " could not be contacted.", e));
+                throw new MatlabInitException(new UnreachableLicenseProxyException("License Proxy Server at url " +
+                                                                                   paconfig.getLicenseSaverURL() +
+                                                                                   " could not be contacted.", e));
             }
         }
 
@@ -228,7 +217,7 @@ public class MatlabConnectionRImpl implements MatlabConnection {
 
                 }
             }
-            if( outputThread != null) {
+            if (outputThread != null) {
                 outputThread.interrupt();
                 try {
                     outputThread.join();
@@ -263,15 +252,15 @@ public class MatlabConnectionRImpl implements MatlabConnection {
     }
 
     public void beforeLaunch() {
-        fullcommand.append("catch ME" + nl + "disp('Error occurred in .');" + nl + "disp(getReport(ME));" +
-                nl + "end" + nl);
+        fullcommand.append("catch ME" + nl + "disp('Error occurred in .');" + nl + "disp(getReport(ME));" + nl + "end" +
+                           nl);
         // we remove all file handles possibily kept by matlab
         fullcommand.append("fclose('all');restoredefaultpath();");
         // we create a marker file to signify the end, but keep a handle on it. By doing that we can synchronize the java
         // process with the real matlab termination (it will liberate the handle when it will really exit)
         fullcommand.append("    fend = fullfile('" + workingDirectory + "','matlab.end');" + nl +
 
-                "fid = fopen(fend,'w');" + nl);
+                           "fid = fopen(fend,'w');" + nl);
         fullcommand.append("exit();");
     }
 
@@ -296,7 +285,12 @@ public class MatlabConnectionRImpl implements MatlabConnection {
         }
 
         // Logging thread creation & start
-        outputThreadDefinition = new IOTools.LoggingThread(new FileInputStream(taskOutputFile), "[MATLAB]", taskOut, debug ? null : startPattern, null, new String[] { lcFailedPattern, outofmemoryPattern });
+        outputThreadDefinition = new IOTools.LoggingThread(new FileInputStream(taskOutputFile),
+                                                           "[MATLAB]",
+                                                           taskOut,
+                                                           debug ? null : startPattern,
+                                                           null,
+                                                           new String[] { lcFailedPattern, outofmemoryPattern });
         outputThread = new Thread(outputThreadDefinition, "OUT MATLAB");
         outputThread.setDaemon(true);
         outputThread.start();
@@ -309,7 +303,8 @@ public class MatlabConnectionRImpl implements MatlabConnection {
 
             int cpt = 0;
             while (!ackFile.exists() && !nackFile.exists() && (cpt < TIMEOUT_START) &&
-                    !outputThreadDefinition.patternFound(lcFailedPattern) && !outputThreadDefinition.patternFound(outofmemoryPattern) && running) {
+                   !outputThreadDefinition.patternFound(lcFailedPattern) &&
+                   !outputThreadDefinition.patternFound(outofmemoryPattern) && running) {
                 try {
                     // WARNING : on windows platform, matlab is initialized by a startup program which exits immediately, we cannot take decisions based on exit status.
                     int exitValue = process.exitValue();
@@ -351,9 +346,8 @@ public class MatlabConnectionRImpl implements MatlabConnection {
                 process = null;
                 sendAck(false);
                 String output = FileUtils.readFileToString(this.taskOutputFile, "UTF-8");
-                throw new MatlabInitException(
-                        "Timeout occured while starting Matlab, with following output (" + this.taskOutputFile + "):" +
-                                nl + output);
+                throw new MatlabInitException("Timeout occured while starting Matlab, with following output (" +
+                                              this.taskOutputFile + "):" + nl + output);
             }
             if (!running) {
                 sendAck(false);
@@ -365,7 +359,8 @@ public class MatlabConnectionRImpl implements MatlabConnection {
             if (exitValue != 0) {
                 String output = FileUtils.readFileToString(this.taskOutputFile, "UTF-8");
                 throw new MatlabInitException("Matlab process exited with code : " + exitValue +
-                        " after task started. With following output (" + this.taskOutputFile + "):" + nl + output);
+                                              " after task started. With following output (" + this.taskOutputFile +
+                                              "):" + nl + output);
             }
             // on windows the matlab initialization process can terminate while Matlab still exists in the background
             // we use then the end file to synchronize
@@ -404,9 +399,8 @@ public class MatlabConnectionRImpl implements MatlabConnection {
             try {
                 lclient.notifyLicenseStatus(tconfig.getRid(), ack);
             } catch (Exception e) {
-                throw new UnreachableLicenseProxyException(
-                        "Error while sending ack to License Proxy Server at url " + paconfig.getLicenseSaverURL(),
-                        e);
+                throw new UnreachableLicenseProxyException("Error while sending ack to License Proxy Server at url " +
+                                                           paconfig.getLicenseSaverURL(), e);
             }
         }
     }

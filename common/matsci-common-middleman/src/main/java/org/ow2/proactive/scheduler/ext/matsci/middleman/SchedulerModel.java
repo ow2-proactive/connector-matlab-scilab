@@ -1,38 +1,27 @@
 /*
- * ################################################################
+ * ProActive Parallel Suite(TM):
+ * The Open Source library for parallel and distributed
+ * Workflows & Scheduling, Orchestration, Cloud Automation
+ * and Big Data Analysis on Enterprise Grids & Clouds.
  *
- * ProActive Parallel Suite(TM): The Java(TM) library for
- *    Parallel, Distributed, Multi-Core Computing for
- *    Enterprise Grids & Clouds
+ * Copyright (c) 2007 - 2017 ActiveEon
+ * Contact: contact@activeeon.com
  *
- * Copyright (C) 1997-2011 INRIA/University of
- *                 Nice-Sophia Antipolis/ActiveEon
- * Contact: proactive@ow2.org or contact@activeeon.com
- *
- * This library is free software; you can redistribute it and/or
+ * This library is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License
- * as published by the Free Software Foundation; version 3 of
+ * as published by the Free Software Foundation: version 3 of
  * the License.
  *
- * This library is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Affero General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
- * USA
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  * If needed, contact us to obtain a release under GPL Version 2 or 3
  * or a different license than the AGPL.
- *
- *  Initial developer(s):               The ActiveEon Team
- *                        http://www.activeeon.com/
- *  Contributor(s):
- *
- * ################################################################
- * $$ACTIVEEON_INITIAL_DEV$$
  */
 package org.ow2.proactive.scheduler.ext.matsci.middleman;
 
@@ -86,9 +75,10 @@ public class SchedulerModel {
     }
 
     @SuppressWarnings("unchecked")
-    private static final List<SortParameter<JobSortParameter>> JOB_SORT_PARAMS = Arrays.asList(
-            new SortParameter<JobSortParameter>(JobSortParameter.STATE, SortOrder.ASC),
-            new SortParameter<JobSortParameter>(JobSortParameter.ID, SortOrder.DESC));
+    private static final List<SortParameter<JobSortParameter>> JOB_SORT_PARAMS = Arrays.asList(new SortParameter<JobSortParameter>(JobSortParameter.STATE,
+                                                                                                                                   SortOrder.ASC),
+                                                                                               new SortParameter<JobSortParameter>(JobSortParameter.ID,
+                                                                                                                                   SortOrder.DESC));
 
     public void handleExceptionDisplay(String msg, Throwable t) {
         if (t instanceof NotConnectedException) {
@@ -336,10 +326,9 @@ public class SchedulerModel {
 
             JobInfo ji = js.getJobInfo();
 
-            String state = newline + "   Job '" + ji.getJobId() + "'    name:" +
-                    ji.getJobId().getReadableName() + "'    project:" + js.getProjectName() + "    owner:" +
-                    js.getOwner() + "    status:" + ji.getStatus() + "    #tasks:" + ji.getTotalNumberOfTasks() +
-                    newline + newline;
+            String state = newline + "   Job '" + ji.getJobId() + "'    name:" + ji.getJobId().getReadableName() +
+                           "'    project:" + js.getProjectName() + "    owner:" + js.getOwner() + "    status:" +
+                           ji.getStatus() + "    #tasks:" + ji.getTotalNumberOfTasks() + newline + newline;
 
             //create formatter
             ObjectArrayFormatter oaf = new ObjectArrayFormatter();
@@ -377,16 +366,15 @@ public class SchedulerModel {
                 list.add(Tools.getFormattedDuration(0, ts.getExecutionDuration()));
                 list.add(Tools.getFormattedDuration(ts.getFinishedTime(), ts.getStartTime()));
                 list.add("" + ts.getNumberOfNodesNeeded());
-                if (ts.getMaxNumberOfExecution() - ts.getNumberOfExecutionLeft() < ts
-                        .getMaxNumberOfExecution()) {
+                if (ts.getMaxNumberOfExecution() - ts.getNumberOfExecutionLeft() < ts.getMaxNumberOfExecution()) {
                     list.add((ts.getMaxNumberOfExecution() - ts.getNumberOfExecutionLeft() + 1) + "/" +
-                            ts.getMaxNumberOfExecution());
+                             ts.getMaxNumberOfExecution());
                 } else {
                     list.add((ts.getMaxNumberOfExecution() - ts.getNumberOfExecutionLeft()) + "/" +
-                            ts.getMaxNumberOfExecution());
+                             ts.getMaxNumberOfExecution());
                 }
-                list.add((ts.getMaxNumberOfExecutionOnFailure() - ts.getNumberOfExecutionOnFailureLeft()) +
-                        "/" + ts.getMaxNumberOfExecutionOnFailure());
+                list.add((ts.getMaxNumberOfExecutionOnFailure() - ts.getNumberOfExecutionOnFailureLeft()) + "/" +
+                         ts.getMaxNumberOfExecutionOnFailure());
                 oaf.addLine(list);
             }
             //print formatter
@@ -402,8 +390,11 @@ public class SchedulerModel {
     public void listjobs_() {
         List<String> list;
         try {
-            List<JobInfo> jobs = scheduler.getJobs(0, -1, new JobFilterCriteria(false, true, true, true),
-                    JOB_SORT_PARAMS).getList();
+            List<JobInfo> jobs = scheduler.getJobs(0,
+                                                   -1,
+                                                   new JobFilterCriteria(false, true, true, true, true),
+                                                   JOB_SORT_PARAMS)
+                                          .getList();
 
             if (jobs.size() == 0) {
                 print("\n\tThere are no jobs handled by the Scheduler");
@@ -458,8 +449,7 @@ public class SchedulerModel {
     }
 
     private boolean isSecondGroup(JobStatus status) {
-        return JobStatus.RUNNING.equals(status) || JobStatus.STALLED.equals(status) ||
-                JobStatus.PAUSED.equals(status);
+        return JobStatus.RUNNING.equals(status) || JobStatus.STALLED.equals(status) || JobStatus.PAUSED.equals(status);
     }
 
     private boolean isThirdGroup(JobStatus status) {

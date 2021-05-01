@@ -1,38 +1,27 @@
 /*
- * ################################################################
+ * ProActive Parallel Suite(TM):
+ * The Open Source library for parallel and distributed
+ * Workflows & Scheduling, Orchestration, Cloud Automation
+ * and Big Data Analysis on Enterprise Grids & Clouds.
  *
- * ProActive Parallel Suite(TM): The Java(TM) library for
- *    Parallel, Distributed, Multi-Core Computing for
- *    Enterprise Grids & Clouds
+ * Copyright (c) 2007 - 2017 ActiveEon
+ * Contact: contact@activeeon.com
  *
- * Copyright (C) 1997-2011 INRIA/University of
- *                 Nice-Sophia Antipolis/ActiveEon
- * Contact: proactive@ow2.org or contact@activeeon.com
- *
- * This library is free software; you can redistribute it and/or
+ * This library is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License
- * as published by the Free Software Foundation; version 3 of
+ * as published by the Free Software Foundation: version 3 of
  * the License.
  *
- * This library is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Affero General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
- * USA
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  * If needed, contact us to obtain a release under GPL Version 2 or 3
  * or a different license than the AGPL.
- *
- *  Initial developer(s):               The ProActive Team
- *                        http://proactive.inria.fr/team_members.htm
- *  Contributor(s):
- *
- * ################################################################
- * $$PROACTIVE_INITIAL_DEV$$
  */
 package org.ow2.proactive.scheduler.ext.matsci.middleman;
 
@@ -129,8 +118,8 @@ import jdbm.RecordManagerFactory;
  *
  * @author The ProActive Team
  */
-public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, Serializable,
-        SchedulerEventListenerExtended, InitActive, RunActive {
+public abstract class AOMatSciEnvironment<R, RL>
+        implements MatSciEnvironment, Serializable, SchedulerEventListenerExtended, InitActive, RunActive {
 
     /**
      * Connection to the scheduler
@@ -166,6 +155,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
      * Loggers of Remote Object
      */
     static final Logger LOGGER_RO = ProActiveLogger.getLogger(Loggers.REMOTEOBJECT);
+
     static final Level RO_LEVEL = LOGGER_RO.getLevel();
 
     /**
@@ -494,12 +484,16 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
             try {
                 if (keyfile != null && keyfile.length() > 0) {
                     byte[] keyfileContent = FileToBytesConverter.convertFileToByteArray(new File(keyfile));
-                    CredData cd = new CredData(CredData.parseLogin(user), CredData.parseDomain(user), passwd,
-                        keyfileContent);
+                    CredData cd = new CredData(CredData.parseLogin(user),
+                                               CredData.parseDomain(user),
+                                               passwd,
+                                               keyfileContent);
                     creds = Credentials.createCredentials(cd, auth.getPublicKey());
                 } else {
-                    creds = Credentials.createCredentials(new CredData(CredData.parseLogin(user), CredData
-                            .parseDomain(user), passwd), auth.getPublicKey());
+                    creds = Credentials.createCredentials(new CredData(CredData.parseLogin(user),
+                                                                       CredData.parseDomain(user),
+                                                                       passwd),
+                                                          auth.getPublicKey());
                 }
                 lastKeyFile = keyfile;
                 lastLogin = user;
@@ -512,9 +506,9 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                 throw new PASchedulerException(e, PASchedulerExceptionType.KeyException);
             } catch (LoginException e) {
                 printLog(e, LogMode.FILEANDOUTALWAYS);
-                throw new PASchedulerException(new LoginException(
-                    "Could not retrieve public key, contact the Scheduler admininistrator\n" + e),
-                    PASchedulerExceptionType.LoginException);
+                throw new PASchedulerException(new LoginException("Could not retrieve public key, contact the Scheduler admininistrator\n" +
+                                                                  e),
+                                               PASchedulerExceptionType.LoginException);
             } catch (Exception e) {
                 printLog(e, LogMode.FILEANDOUTALWAYS);
                 throw new PASchedulerException(e, PASchedulerExceptionType.OtherException);
@@ -666,8 +660,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
      */
     protected void reconnect() {
         boolean joined = false;
-        printLog("Connection to " + lastSchedulerURL + " lost, trying to reconnect.",
-                LogMode.FILEANDOUTALWAYS);
+        printLog("Connection to " + lastSchedulerURL + " lost, trying to reconnect.", LogMode.FILEANDOUTALWAYS);
 
         // we set a timeout for all ProActive synchronous calls. The reason behind this is that we can be in a situation
         // where the PAMR router failed and when this happens all ProActive calls block forever. By putting a timeout we
@@ -734,8 +727,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
             try {
                 initLogin(lastCred);
 
-                printLog("Reconnected to " + lastSchedulerURL + " synchronizing jobs...",
-                        LogMode.FILEANDOUTALWAYS);
+                printLog("Reconnected to " + lastSchedulerURL + " synchronizing jobs...", LogMode.FILEANDOUTALWAYS);
                 syncAll();
                 printLog("jobs synchronized...", LogMode.FILEANDOUTALWAYS);
 
@@ -966,10 +958,10 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
 
     private void printAllStackTraces() {
         Map liveThreads = Thread.getAllStackTraces();
-        for (Iterator i = liveThreads.keySet().iterator(); i.hasNext(); ) {
-            Thread key = (Thread)i.next();
+        for (Iterator i = liveThreads.keySet().iterator(); i.hasNext();) {
+            Thread key = (Thread) i.next();
             printLog("Thread " + key.getName());
-            StackTraceElement[] trace = (StackTraceElement[])liveThreads.get(key);
+            StackTraceElement[] trace = (StackTraceElement[]) liveThreads.get(key);
             for (int j = 0; j < trace.length; j++) {
                 printLog("\tat " + trace[j]);
             }
@@ -1186,9 +1178,8 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
     public String jobRemove(String jid) throws PASchedulerException {
         Long id = Long.parseLong(jid);
         if (recordedJobs.containsKey(id)) {
-            return "[WARNING] job " +
-                jid +
-                " is being recorded and cannot be removed, set PAoption RemoveJobAfterRetrieve to false in order to disable automatic removal.";
+            return "[WARNING] job " + jid +
+                   " is being recorded and cannot be removed, set PAoption RemoveJobAfterRetrieve to false in order to disable automatic removal.";
         }
         ensureConnection();
         ByteArrayOutputStream baos = redirectStreams();
@@ -1333,13 +1324,12 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                     return;
                 } catch (UnknownJobException uje) {
                     if (recordedJobs.containsKey(jid)) {
-                        printLog(
-                                "[SEVERE] job " + jid +
-                                    " which is recorded by the MatSciConnector is unknown by the scheduler, maybe it has been removed?",
-                                LogMode.FILEANDOUTALWAYS);
+                        printLog("[SEVERE] job " + jid +
+                                 " which is recorded by the MatSciConnector is unknown by the scheduler, maybe it has been removed?",
+                                 LogMode.FILEANDOUTALWAYS);
                     } else {
                         printLog("[WARNING] : job " + jid + " is unknown, maybe it has been removed?",
-                                LogMode.FILEANDOUTALWAYS);
+                                 LogMode.FILEANDOUTALWAYS);
                     }
                     // we update the job result only if the job is among our currentJobs list (i.e. waited by the user), otherwise it can be that the user simply removed a finished job
                     if (currentJobs.contains(jid)) {
@@ -1353,8 +1343,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         }
         if (jResult != null) {
             // full update if the job is finished
-            updateJobResult(jid, jResult, MatSciJobStatus.getJobStatus(jResult.getJobInfo().getStatus()
-                    .toString()));
+            updateJobResult(jid, jResult, MatSciJobStatus.getJobStatus(jResult.getJobInfo().getStatus().toString()));
             return;
         }
         // partial update otherwise
@@ -1498,10 +1487,10 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
             if (debug) {
                 if (intermediate) {
                     printLog("Intermediate task " + tname + " for job " + jid + " threw an exception : " +
-                        ex.getClass() + " " + ex.getMessage());
+                             ex.getClass() + " " + ex.getMessage());
                 } else {
-                    printLog("Task " + tname + " for job " + jid + " threw an exception : " + ex.getClass() +
-                        " " + ex.getMessage());
+                    printLog("Task " + tname + " for job " + jid + " threw an exception : " + ex.getClass() + " " +
+                             ex.getMessage());
                 }
             }
             if (ex instanceof MatSciTaskException) {
@@ -1554,8 +1543,8 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
     /**
      * {@inheritDoc}
      */
-    public UnReifiable<Pair<ResultsAndLogs, Integer>> waitAny(String sjid, ArrayList<String> tnames,
-            Integer timeout) throws Exception {
+    public UnReifiable<Pair<ResultsAndLogs, Integer>> waitAny(String sjid, ArrayList<String> tnames, Integer timeout)
+            throws Exception {
         try {
             Long jid = Long.parseLong(sjid);
             Boolean tout = timeoutOccured.get(jid);
@@ -1563,8 +1552,9 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                 timeoutOccured.put(jid, false);
                 throw new TimeoutException("Timeout occured while executing PAwaitAny for job " + jid);
             }
-            return new UnReifiable<Pair<ResultsAndLogs, Integer>>(new Pair<ResultsAndLogs, Integer>(
-                getResultOfTask(jid, tnames.get(lastPAWaitAnyIndex)), lastPAWaitAnyIndex));
+            return new UnReifiable<Pair<ResultsAndLogs, Integer>>(new Pair<ResultsAndLogs, Integer>(getResultOfTask(jid,
+                                                                                                                    tnames.get(lastPAWaitAnyIndex)),
+                                                                                                    lastPAWaitAnyIndex));
         } catch (Exception e) {
             printLog(e);
             throw e;
@@ -1574,8 +1564,8 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
     /**
      * {@inheritDoc}
      */
-    public UnReifiable<ArrayList<ResultsAndLogs>> waitAll(String sjid, ArrayList<String> tnames,
-            Integer timeout) throws Exception {
+    public UnReifiable<ArrayList<ResultsAndLogs>> waitAll(String sjid, ArrayList<String> tnames, Integer timeout)
+            throws Exception {
         try {
             Long jid = Long.parseLong(sjid);
             Boolean tout = timeoutOccured.get(jid);
@@ -1601,8 +1591,8 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
         try {
             Long jid = Long.parseLong(sjid);
             if (currentJobs.contains(jid)) {
-                return new UnReifiable<ArrayList<Boolean>>(tasksReceived.get(jid).not(
-                        MatSciJobInfo.computeLinesFromTNames(tnames)));
+                return new UnReifiable<ArrayList<Boolean>>(tasksReceived.get(jid)
+                                                                        .not(MatSciJobInfo.computeLinesFromTNames(tnames)));
             } else if (finishedJobs.contains(jid)) {
                 ArrayList<Boolean> answer = new ArrayList<Boolean>(tnames.size());
                 for (int i = 0; i < tnames.size(); i++) {
@@ -1739,9 +1729,9 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
 
     }
 
-      /**
-     * @see org.ow2.proactive.scheduler.common.SchedulerEventListener#jobSubmittedEvent(org.ow2.proactive.scheduler.common.job.JobState)
-     */
+    /**
+    * @see org.ow2.proactive.scheduler.common.SchedulerEventListener#jobSubmittedEvent(org.ow2.proactive.scheduler.common.job.JobState)
+    */
     public void jobSubmittedEvent(JobState job) {
     }
 
@@ -1885,8 +1875,8 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
 
                         pendingRequests.put(jid, randomRequest);
                         if (debug) {
-                            printLog("Removed " + randomRequest.getMethodName() + "(" + tnames +
-                                ") for job=" + jid + " request from the queue");
+                            printLog("Removed " + randomRequest.getMethodName() + "(" + tnames + ") for job=" + jid +
+                                     " request from the queue");
                         }
                         service.blockingRemoveOldest("waitAll");
                     } else if (randomRequest.getMethodName().equals("waitAny")) {
@@ -1902,7 +1892,7 @@ public abstract class AOMatSciEnvironment<R, RL> implements MatSciEnvironment, S
                         pendingRequests.put(jid, randomRequest);
                         if (debug) {
                             printLog("Removed " + randomRequest.getMethodName() + " for job=" + jid +
-                                " request from the queue");
+                                     " request from the queue");
                         }
                         service.blockingRemoveOldest("waitAny");
                     }
