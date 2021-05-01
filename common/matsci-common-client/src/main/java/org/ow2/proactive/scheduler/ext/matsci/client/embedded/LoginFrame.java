@@ -1,38 +1,27 @@
 /*
- * ################################################################
+ * ProActive Parallel Suite(TM):
+ * The Open Source library for parallel and distributed
+ * Workflows & Scheduling, Orchestration, Cloud Automation
+ * and Big Data Analysis on Enterprise Grids & Clouds.
  *
- * ProActive Parallel Suite(TM): The Java(TM) library for
- *    Parallel, Distributed, Multi-Core Computing for
- *    Enterprise Grids & Clouds
+ * Copyright (c) 2007 - 2017 ActiveEon
+ * Contact: contact@activeeon.com
  *
- * Copyright (C) 1997-2011 INRIA/University of
- *                 Nice-Sophia Antipolis/ActiveEon
- * Contact: proactive@ow2.org or contact@activeeon.com
- *
- * This library is free software; you can redistribute it and/or
+ * This library is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License
- * as published by the Free Software Foundation; version 3 of
+ * as published by the Free Software Foundation: version 3 of
  * the License.
  *
- * This library is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Affero General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
- * USA
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  * If needed, contact us to obtain a release under GPL Version 2 or 3
  * or a different license than the AGPL.
- *
- *  Initial developer(s):               The ProActive Team
- *                        http://proactive.inria.fr/team_members.htm
- *  Contributor(s):
- *
- * ################################################################
- * $$PROACTIVE_INITIAL_DEV$$
  */
 package org.ow2.proactive.scheduler.ext.matsci.client.embedded;
 
@@ -57,17 +46,25 @@ import org.ow2.proactive.scheduler.ext.matsci.client.common.exception.PASchedule
 public class LoginFrame<E extends MatSciEnvironment> extends JDialog {
 
     private JTextField username;
+
     private JPasswordField password;
+
     private JTextField key;
+
     private JFileChooser fc;
 
     private JButton fcb;
 
     private E aose;
+
     private JButton login;
+
     private boolean loginSuccessful = false;
+
     private boolean recordListener = false;
+
     private int nb_attempts = 0;
+
     public static final int MAX_NB_ATTEMPTS = 3;
 
     /**
@@ -173,28 +170,37 @@ public class LoginFrame<E extends MatSciEnvironment> extends JDialog {
             switch (ex.getType()) {
                 case KeyException:
                     ex.printStackTrace();
-                    JOptionPane.showMessageDialog(LoginFrame.this, "Incorrect Credential Key.",
-                            "Login Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(LoginFrame.this,
+                                                  "Incorrect Credential Key.",
+                                                  "Login Error",
+                                                  JOptionPane.ERROR_MESSAGE);
                     break;
                 case LoginException:
                     JOptionPane.showMessageDialog(LoginFrame.this,
-                            "Incorrect username/password combination.", "Login Error",
-                            JOptionPane.ERROR_MESSAGE);
+                                                  "Incorrect username/password combination.",
+                                                  "Login Error",
+                                                  JOptionPane.ERROR_MESSAGE);
                     break;
                 case SchedulerException:
                     ex.printStackTrace();
-                    JOptionPane.showMessageDialog(LoginFrame.this, ex.getMessage(), "Login Error",
-                            JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(LoginFrame.this,
+                                                  ex.getMessage(),
+                                                  "Login Error",
+                                                  JOptionPane.ERROR_MESSAGE);
                     break;
                 case OtherException:
                     ex.printStackTrace();
-                    JOptionPane.showMessageDialog(LoginFrame.this, ex.getMessage(), "Server Error",
-                            JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(LoginFrame.this,
+                                                  ex.getMessage(),
+                                                  "Server Error",
+                                                  JOptionPane.ERROR_MESSAGE);
             }
         } catch (RemoteException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(LoginFrame.this, e.getMessage(), "Connection Error",
-                    JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(LoginFrame.this,
+                                          e.getMessage(),
+                                          "Connection Error",
+                                          JOptionPane.ERROR_MESSAGE);
         }
         if (nb_attempts > MAX_NB_ATTEMPTS) {
             dispose();

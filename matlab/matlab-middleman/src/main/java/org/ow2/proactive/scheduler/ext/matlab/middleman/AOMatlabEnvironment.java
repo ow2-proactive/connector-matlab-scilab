@@ -1,38 +1,27 @@
 /*
- * ################################################################
+ * ProActive Parallel Suite(TM):
+ * The Open Source library for parallel and distributed
+ * Workflows & Scheduling, Orchestration, Cloud Automation
+ * and Big Data Analysis on Enterprise Grids & Clouds.
  *
- * ProActive Parallel Suite(TM): The Java(TM) library for
- *    Parallel, Distributed, Multi-Core Computing for
- *    Enterprise Grids & Clouds
+ * Copyright (c) 2007 - 2017 ActiveEon
+ * Contact: contact@activeeon.com
  *
- * Copyright (C) 1997-2011 INRIA/University of
- *                 Nice-Sophia Antipolis/ActiveEon
- * Contact: proactive@ow2.org or contact@activeeon.com
- *
- * This library is free software; you can redistribute it and/or
+ * This library is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License
- * as published by the Free Software Foundation; version 3 of
+ * as published by the Free Software Foundation: version 3 of
  * the License.
  *
- * This library is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Affero General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
- * USA
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  * If needed, contact us to obtain a release under GPL Version 2 or 3
  * or a different license than the AGPL.
- *
- *  Initial developer(s):               The ProActive Team
- *                        http://proactive.inria.fr/team_members.htm
- *  Contributor(s): ActiveEon Team - http://www.activeeon.com
- *
- * ################################################################
- * $$ACTIVEEON_CONTRIBUTOR$$
  */
 package org.ow2.proactive.scheduler.ext.matlab.middleman;
 
@@ -227,9 +216,8 @@ public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResu
             String pullUrl = config.getSharedPullPublicUrl();
             String pushUrl = config.getSharedPushPublicUrl();
             if ((pushUrl != null && pullUrl == null) || (pushUrl == null && pushUrl != null)) {
-                IllegalStateException e = new IllegalStateException(
-                    "Invalid shared urls, they must be both set or both null. PushUrl = " + pushUrl +
-                        " , PullUrl=" + pullUrl);
+                IllegalStateException e = new IllegalStateException("Invalid shared urls, they must be both set or both null. PushUrl = " +
+                                                                    pushUrl + " , PullUrl=" + pullUrl);
                 printLog(e);
                 throw new PASchedulerException(e);
             }
@@ -306,37 +294,36 @@ public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResu
                     }
                     oldTask = schedulerTask;
                     for (PASolveFile pafile : taskConfigs[i][j].getSourceFiles()) {
-                        schedulerTask.addInputFiles(pafile.getPortablePathName(), getSourceAsMode(pafile
-                                .getSource()));
+                        schedulerTask.addInputFiles(pafile.getPortablePathName(), getSourceAsMode(pafile.getSource()));
                     }
 
                     if (config.isTransferEnv()) {
 
                         schedulerTask.addInputFiles(config.getEnvMatFile().getPortablePathName(),
-                                getSourceAsMode(config.getEnvMatFile().getSource()));
+                                                    getSourceAsMode(config.getEnvMatFile().getSource()));
                     }
 
-                    schedulerTask.addInputFiles(taskConfigs[i][j].getInputVariablesFile()
-                            .getPortablePathName(), getSourceAsMode(taskConfigs[i][j].getInputVariablesFile()
-                            .getSource()));
+                    schedulerTask.addInputFiles(taskConfigs[i][j].getInputVariablesFile().getPortablePathName(),
+                                                getSourceAsMode(taskConfigs[i][j].getInputVariablesFile().getSource()));
                     if (taskConfigs[i][j].getComposedInputVariablesFile() != null) {
                         schedulerTask.addInputFiles(taskConfigs[i][j].getComposedInputVariablesFile()
-                                .getPortablePathName(), InputAccessMode.TransferFromOutputSpace); // This should be automatically on the output space, as output of a previous task
+                                                                     .getPortablePathName(),
+                                                    InputAccessMode.TransferFromOutputSpace); // This should be automatically on the output space, as output of a previous task
                     }
-                    schedulerTask.addOutputFiles(taskConfigs[i][j].getOutputVariablesFile()
-                            .getPortablePathName(), getDestinationAsMode(taskConfigs[i][j]
-                            .getOutputVariablesFile().getDestination()));
+                    schedulerTask.addOutputFiles(taskConfigs[i][j].getOutputVariablesFile().getPortablePathName(),
+                                                 getDestinationAsMode(taskConfigs[i][j].getOutputVariablesFile()
+                                                                                       .getDestination()));
 
                     InputAccessMode iam = null;
 
                     for (PASolveFile inputFile : taskConfigs[i][j].getInputFiles()) {
                         schedulerTask.addInputFiles(inputFile.getPortablePathName(),
-                                getSourceAsMode(inputFile.getSource()));
+                                                    getSourceAsMode(inputFile.getSource()));
                     }
 
                     for (PASolveFile outputFile : taskConfigs[i][j].getOutputFiles()) {
                         schedulerTask.addOutputFiles(outputFile.getPortablePathName(),
-                                getDestinationAsMode(outputFile.getDestination()));
+                                                     getDestinationAsMode(outputFile.getDestination()));
                     }
 
                     if (taskConfigs[i][j].getDescription() != null) {
@@ -349,36 +336,32 @@ public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResu
                     if (taskConfigs[i][j].getNbNodes() > 1) {
                         switch (taskConfigs[i][j].getTopology()) {
                             case ARBITRARY:
-                                schedulerTask.setParallelEnvironment(new ParallelEnvironment(
-                                    taskConfigs[i][j].getNbNodes(), TopologyDescriptor.ARBITRARY));
+                                schedulerTask.setParallelEnvironment(new ParallelEnvironment(taskConfigs[i][j].getNbNodes(),
+                                                                                             TopologyDescriptor.ARBITRARY));
                                 break;
                             case BEST_PROXIMITY:
-                                schedulerTask.setParallelEnvironment(new ParallelEnvironment(
-                                    taskConfigs[i][j].getNbNodes(), TopologyDescriptor.BEST_PROXIMITY));
+                                schedulerTask.setParallelEnvironment(new ParallelEnvironment(taskConfigs[i][j].getNbNodes(),
+                                                                                             TopologyDescriptor.BEST_PROXIMITY));
                                 break;
                             case SINGLE_HOST:
-                                schedulerTask.setParallelEnvironment(new ParallelEnvironment(
-                                    taskConfigs[i][j].getNbNodes(), TopologyDescriptor.SINGLE_HOST));
+                                schedulerTask.setParallelEnvironment(new ParallelEnvironment(taskConfigs[i][j].getNbNodes(),
+                                                                                             TopologyDescriptor.SINGLE_HOST));
                                 break;
                             case SINGLE_HOST_EXCLUSIVE:
-                                schedulerTask
-                                        .setParallelEnvironment(new ParallelEnvironment(taskConfigs[i][j]
-                                                .getNbNodes(), TopologyDescriptor.SINGLE_HOST_EXCLUSIVE));
+                                schedulerTask.setParallelEnvironment(new ParallelEnvironment(taskConfigs[i][j].getNbNodes(),
+                                                                                             TopologyDescriptor.SINGLE_HOST_EXCLUSIVE));
                                 break;
                             case MULTIPLE_HOSTS_EXCLUSIVE:
-                                schedulerTask.setParallelEnvironment(new ParallelEnvironment(
-                                    taskConfigs[i][j].getNbNodes(),
-                                    TopologyDescriptor.MULTIPLE_HOSTS_EXCLUSIVE));
+                                schedulerTask.setParallelEnvironment(new ParallelEnvironment(taskConfigs[i][j].getNbNodes(),
+                                                                                             TopologyDescriptor.MULTIPLE_HOSTS_EXCLUSIVE));
                                 break;
                             case DIFFERENT_HOSTS_EXCLUSIVE:
-                                schedulerTask.setParallelEnvironment(new ParallelEnvironment(
-                                    taskConfigs[i][j].getNbNodes(),
-                                    TopologyDescriptor.DIFFERENT_HOSTS_EXCLUSIVE));
+                                schedulerTask.setParallelEnvironment(new ParallelEnvironment(taskConfigs[i][j].getNbNodes(),
+                                                                                             TopologyDescriptor.DIFFERENT_HOSTS_EXCLUSIVE));
                                 break;
                             case THRESHHOLD_PROXIMITY:
-                                schedulerTask.setParallelEnvironment(new ParallelEnvironment(
-                                    taskConfigs[i][j].getNbNodes(), new ThresholdProximityDescriptor(
-                                        taskConfigs[i][j].getThresholdProximity())));
+                                schedulerTask.setParallelEnvironment(new ParallelEnvironment(taskConfigs[i][j].getNbNodes(),
+                                                                                             new ThresholdProximityDescriptor(taskConfigs[i][j].getThresholdProximity())));
                                 break;
                         }
 
@@ -403,8 +386,7 @@ public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResu
 
                         try {
 
-                            sscript = new SelectionScript(url, params, !taskConfigs[i][j]
-                                    .isCustomScriptStatic());
+                            sscript = new SelectionScript(url, params, !taskConfigs[i][j].isCustomScriptStatic());
 
                         } catch (InvalidScriptException e1) {
                             printLog(e1);
@@ -413,8 +395,8 @@ public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResu
                         schedulerTask.addSelectionScript(sscript);
 
                         printLog("Task " + tname + ":" + " using task custom script (" +
-                            (taskConfigs[i][j].isCustomScriptStatic() ? "static" : "dynamic") + ") " + url +
-                            " with params : " + params);
+                                 (taskConfigs[i][j].isCustomScriptStatic() ? "static" : "dynamic") + ") " + url +
+                                 " with params : " + params);
                     }
 
                     if (config.getCustomScriptUrl() != null) {
@@ -442,8 +424,8 @@ public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResu
                         schedulerTask.addSelectionScript(sscript);
 
                         printLog("Task " + tname + ":" + " using global custom script (" +
-                            (taskConfigs[i][j].isCustomScriptStatic() ? "static" : "dynamic") + ") " + url +
-                            " with params : " + params);
+                                 (taskConfigs[i][j].isCustomScriptStatic() ? "static" : "dynamic") + ") " + url +
+                                 " with params : " + params);
 
                     }
 
@@ -452,11 +434,14 @@ public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResu
                     SelectionScript sscript = null;
                     try {
                         //System.out.println(config.getVersionPref());
-                        sscript = new SelectionScript(url1, new String[] { "forceSearch",
-                                "" + config.isForceMatSciSearch(), "versionPref", config.getVersionPref(),
-                                "versionRej", config.getVersionRejAsString(), "versionMin",
-                                config.getVersionMin(), "versionMax", config.getVersionMax(), "versionArch",
-                                config.getVersionArch() }, !config.isFindMatSciScriptStatic());
+                        sscript = new SelectionScript(url1,
+                                                      new String[] { "forceSearch", "" + config.isForceMatSciSearch(),
+                                                                     "versionPref", config.getVersionPref(),
+                                                                     "versionRej", config.getVersionRejAsString(),
+                                                                     "versionMin", config.getVersionMin(), "versionMax",
+                                                                     config.getVersionMax(), "versionArch",
+                                                                     config.getVersionArch() },
+                                                      !config.isFindMatSciScriptStatic());
                     } catch (InvalidScriptException e1) {
                         printLog(e1);
                         throw new PASchedulerException(e1);
@@ -517,8 +502,13 @@ public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResu
 
             try {
                 if (pushUrl != null) {
-                    sjid = sched_proxy.submit(job, config.getJobDirectoryFullPath(), pushUrl, config
-                            .getJobDirectoryFullPath(), pullUrl, false, config.isSharedAutomaticTransfer());
+                    sjid = sched_proxy.submit(job,
+                                              config.getJobDirectoryFullPath(),
+                                              pushUrl,
+                                              config.getJobDirectoryFullPath(),
+                                              pullUrl,
+                                              false,
+                                              config.isSharedAutomaticTransfer());
                 } else {
                     sjid = sched_proxy.submit(job);
                 }
@@ -554,11 +544,16 @@ public class AOMatlabEnvironment extends AOMatSciEnvironment<Boolean, MatlabResu
             }
             HashMap<String, String> outVariablesFiles = new HashMap<String, String>();
             for (String ftname : finaltnames) {
-                outVariablesFiles.put(ftname, tconf_maps.get(ftname).getOutputVariablesFile()
-                        .getFullPathName());
+                outVariablesFiles.put(ftname, tconf_maps.get(ftname).getOutputVariablesFile().getFullPathName());
             }
-            jinfo = new MatSciJobInfo(sjid.value(), nbResults, depth, config, taskConfigs, tnames,
-                finaltnames, outVariablesFiles);
+            jinfo = new MatSciJobInfo(sjid.value(),
+                                      nbResults,
+                                      depth,
+                                      config,
+                                      taskConfigs,
+                                      tnames,
+                                      finaltnames,
+                                      outVariablesFiles);
             currentJobs.add(jid);
             tasksReceived.put(jid, new BitMatrix(nbResults, depth));
             putJobInfo(jid, jinfo);

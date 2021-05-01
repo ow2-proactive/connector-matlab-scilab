@@ -1,38 +1,27 @@
 /*
- * ################################################################
+ * ProActive Parallel Suite(TM):
+ * The Open Source library for parallel and distributed
+ * Workflows & Scheduling, Orchestration, Cloud Automation
+ * and Big Data Analysis on Enterprise Grids & Clouds.
  *
- * ProActive Parallel Suite(TM): The Java(TM) library for
- *    Parallel, Distributed, Multi-Core Computing for
- *    Enterprise Grids & Clouds
+ * Copyright (c) 2007 - 2017 ActiveEon
+ * Contact: contact@activeeon.com
  *
- * Copyright (C) 1997-2012 INRIA/University of
- *                 Nice-Sophia Antipolis/ActiveEon
- * Contact: proactive@ow2.org or contact@activeeon.com
- *
- * This library is free software; you can redistribute it and/or
+ * This library is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License
- * as published by the Free Software Foundation; version 3 of
+ * as published by the Free Software Foundation: version 3 of
  * the License.
  *
- * This library is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Affero General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
- * USA
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  * If needed, contact us to obtain a release under GPL Version 2 or 3
  * or a different license than the AGPL.
- *
- *  Initial developer(s):               The ProActive Team
- *                        http://proactive.inria.fr/team_members.htm
- *  Contributor(s):
- *
- * ################################################################
- * $$PROACTIVE_INITIAL_DEV$$
  */
 package org.ow2.proactive.scheduler.ext.scilab.worker;
 
@@ -60,10 +49,13 @@ import org.ow2.proactive.scheduler.ext.scilab.common.exception.ScilabTaskExcepti
  */
 public class ScilabConnectionRImpl implements ScilabConnection {
     protected StringBuilder fullcommand = new StringBuilder();
+
     protected String nl = System.lineSeparator();
 
     protected String[] startUpOptions;
+
     protected String scilabLocation;
+
     protected File workingDirectory;
 
     protected int TIMEOUT_START = 6000;
@@ -79,6 +71,7 @@ public class ScilabConnectionRImpl implements ScilabConnection {
     private final String startPattern = "---- SCILAB START ----";
 
     private final PrintStream taskOut;
+
     private final PrintStream taskErr;
 
     PASolveScilabGlobalConfig paconfig;
@@ -86,10 +79,13 @@ public class ScilabConnectionRImpl implements ScilabConnection {
     PASolveScilabTaskConfig tconfig;
 
     IOTools.LoggingThread lt1;
+
     IOTools.LoggingThread lt2;
 
     private File ackFile;
+
     private Thread outputThread;
+
     private Thread errorThread;
 
     public ScilabConnectionRImpl(final PrintStream taskOut, final PrintStream taskErr) {
@@ -98,7 +94,7 @@ public class ScilabConnectionRImpl implements ScilabConnection {
     }
 
     public void acquire(String scilabExecutablePath, File workingDir, PASolveScilabGlobalConfig paconfig,
-                        PASolveScilabTaskConfig tconfig) throws ScilabInitException {
+            PASolveScilabTaskConfig tconfig) throws ScilabInitException {
         this.scilabLocation = scilabExecutablePath;
         this.workingDirectory = workingDir;
         this.ackFile = new File(workingDirectory, "scilab.ack");
@@ -151,11 +147,9 @@ public class ScilabConnectionRImpl implements ScilabConnection {
     }
 
     public void beforeLaunch() {
-        fullcommand
-                .append("catch" +
-                        nl +
-                        "[str2,n2,line2,func2]=lasterror(%t);printf('!-- error %i\\n%s\\n at line %i of function %s\\n',n2,str2,line2,func2)" +
-                        nl + "errclear();" + nl + "end" + nl + "exit();");
+        fullcommand.append("catch" + nl +
+                           "[str2,n2,line2,func2]=lasterror(%t);printf('!-- error %i\\n%s\\n at line %i of function %s\\n',n2,str2,line2,func2)" +
+                           nl + "errclear();" + nl + "end" + nl + "exit();");
     }
 
     public void launch() throws Exception {
@@ -183,7 +177,12 @@ public class ScilabConnectionRImpl implements ScilabConnection {
         process = createScilabProcess("PAMain.sce");
 
         // Logging threads creation & start
-        lt1 = new IOTools.LoggingThread(process.getInputStream(), "[SCILAB OUT]", this.taskOut, this.debug ? null : startPattern, null, null);
+        lt1 = new IOTools.LoggingThread(process.getInputStream(),
+                                        "[SCILAB OUT]",
+                                        this.taskOut,
+                                        this.debug ? null : startPattern,
+                                        null,
+                                        null);
         lt2 = new IOTools.LoggingThread(process.getErrorStream(), "[SCILAB ERR]", this.taskErr, null, null, null);
         outputThread = new Thread(lt1, "SCILAB OUT");
         errorThread = new Thread(lt2, "SCILAB ERR");
@@ -206,7 +205,7 @@ public class ScilabConnectionRImpl implements ScilabConnection {
     }
 
     private void interruptThreads() throws InterruptedException {
-        if( outputThread != null) {
+        if (outputThread != null) {
             outputThread.interrupt();
             outputThread.join();
         }
@@ -215,7 +214,6 @@ public class ScilabConnectionRImpl implements ScilabConnection {
             errorThread.join();
         }
     }
-
 
     protected Process createScilabProcess(String runArg) throws Exception {
         // Attempt to run SCILAB

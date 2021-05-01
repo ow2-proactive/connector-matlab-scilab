@@ -1,38 +1,27 @@
 /*
- * ################################################################
+ * ProActive Parallel Suite(TM):
+ * The Open Source library for parallel and distributed
+ * Workflows & Scheduling, Orchestration, Cloud Automation
+ * and Big Data Analysis on Enterprise Grids & Clouds.
  *
- * ProActive Parallel Suite(TM): The Java(TM) library for
- *    Parallel, Distributed, Multi-Core Computing for
- *    Enterprise Grids & Clouds
+ * Copyright (c) 2007 - 2017 ActiveEon
+ * Contact: contact@activeeon.com
  *
- * Copyright (C) 1997-2011 INRIA/University of
- *                 Nice-Sophia Antipolis/ActiveEon
- * Contact: proactive@ow2.org or contact@activeeon.com
- *
- * This library is free software; you can redistribute it and/or
+ * This library is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License
- * as published by the Free Software Foundation; version 3 of
+ * as published by the Free Software Foundation: version 3 of
  * the License.
  *
- * This library is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Affero General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
- * USA
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  * If needed, contact us to obtain a release under GPL Version 2 or 3
  * or a different license than the AGPL.
- *
- *  Initial developer(s):               The ActiveEon Team
- *                        http://www.activeeon.com/
- *  Contributor(s):
- *
- * ################################################################
- * $$ACTIVEEON_INITIAL_DEV$$
  */
 package org.ow2.proactive.scheduler.ext.matlab.worker;
 
@@ -243,8 +232,11 @@ public class MatlabExecutable extends JavaExecutable {
         MatlabEngineConfig conf = (MatlabEngineConfig) MatlabEngineConfig.getCurrentConfiguration();
         if (conf == null) {
             conf = (MatlabEngineConfig) new MatlabFinder(paconfig.isDebug()).findMatSci(paconfig.getVersionPref(),
-                    paconfig.getVersionRej(), paconfig.getVersionMin(), paconfig.getVersionMax(),
-                    paconfig.getVersionArch(), paconfig.isDebug());
+                                                                                        paconfig.getVersionRej(),
+                                                                                        paconfig.getVersionMin(),
+                                                                                        paconfig.getVersionMax(),
+                                                                                        paconfig.getVersionArch(),
+                                                                                        paconfig.isDebug());
             if (conf == null) {
                 throw new IllegalStateException("No valid Matlab configuration found, aborting...");
             }
@@ -261,19 +253,19 @@ public class MatlabExecutable extends JavaExecutable {
         logger.debug("Initializing the local space");
         final File localSpaceFile = new File(getLocalSpace());
         final URI localSpaceURI = localSpaceFile.toURI();
-        final String localSpaceURIstr = localSpaceURI .toString();
+        final String localSpaceURIstr = localSpaceURI.toString();
 
         if (!localSpaceFile.exists()) {
             throw new IllegalStateException("Unable to execute task, the local space " + localSpaceURIstr +
-                " doesn't exists");
+                                            " doesn't exists");
         }
         if (!localSpaceFile.canRead()) {
             throw new IllegalStateException("Unable to execute task, the local space " + localSpaceURIstr +
-                " is not readable");
+                                            " is not readable");
         }
         if (!localSpaceFile.canWrite()) {
             throw new IllegalStateException("Unable to execute task, the local space " + localSpaceURIstr +
-                " is not writable");
+                                            " is not writable");
         }
 
         // Create a temp dir in the root dir of the local space
@@ -303,8 +295,7 @@ public class MatlabExecutable extends JavaExecutable {
                 logger.debug("Unzipping source files from " + sourceZip);
                 if (!sourceZip.exists() || !sourceZip.canRead()) {
                     logger.error("Error, source zip file cannot be accessed at " + sourceZip);
-                    throw new IllegalStateException("Error, source zip file cannot be accessed at " +
-                        sourceZip);
+                    throw new IllegalStateException("Error, source zip file cannot be accessed at " + sourceZip);
                 }
 
                 // Uncompress the source files into the temp dir
@@ -366,8 +357,7 @@ public class MatlabExecutable extends JavaExecutable {
     }
 
     private void execCheckToolboxes() throws Exception {
-        StringBuilder checktoolboxesCommand = new StringBuilder(paconfig.getChecktoolboxesFunctionName() +
-            "( {");
+        StringBuilder checktoolboxesCommand = new StringBuilder(paconfig.getChecktoolboxesFunctionName() + "( {");
         String[] used = taskconfig.getToolboxesUsed();
         for (int i = 0; i < used.length; i++) {
             if (i < used.length - 1) {
@@ -386,9 +376,8 @@ public class MatlabExecutable extends JavaExecutable {
     private void execKeepAlive() throws Exception {
         logger.debug("Executing Keep-Alive timer");
 
-        StringBuilder keepAliveCommand = new StringBuilder(
-            "t = timer('Period', 300,'ExecutionMode','fixedRate');t.TimerFcn = { @" +
-                paconfig.getKeepaliveCallbackFunctionName() + ", {");
+        StringBuilder keepAliveCommand = new StringBuilder("t = timer('Period', 300,'ExecutionMode','fixedRate');t.TimerFcn = { @" +
+                                                           paconfig.getKeepaliveCallbackFunctionName() + ", {");
         String[] used = taskconfig.getToolboxesUsed();
         for (int i = 0; i < used.length; i++) {
             if (i < used.length - 1) {
@@ -459,8 +448,7 @@ public class MatlabExecutable extends JavaExecutable {
 
         logger.debug("Storing 'out' variable into " + outputFile);
         if (paconfig.getMatFileOptions() != null) {
-            matlabConnection.evalString("save('" + outputFile + "','out','" + paconfig.getMatFileOptions() +
-                "');");
+            matlabConnection.evalString("save('" + outputFile + "','out','" + paconfig.getMatFileOptions() + "');");
         } else {
             matlabConnection.evalString("save('" + outputFile + "','out');");
         }

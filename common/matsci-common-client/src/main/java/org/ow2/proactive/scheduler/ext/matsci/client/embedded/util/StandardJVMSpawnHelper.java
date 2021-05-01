@@ -1,38 +1,27 @@
 /*
- * ################################################################
+ * ProActive Parallel Suite(TM):
+ * The Open Source library for parallel and distributed
+ * Workflows & Scheduling, Orchestration, Cloud Automation
+ * and Big Data Analysis on Enterprise Grids & Clouds.
  *
- * ProActive Parallel Suite(TM): The Java(TM) library for
- *    Parallel, Distributed, Multi-Core Computing for
- *    Enterprise Grids & Clouds
+ * Copyright (c) 2007 - 2017 ActiveEon
+ * Contact: contact@activeeon.com
  *
- * Copyright (C) 1997-2012 INRIA/University of
- *                 Nice-Sophia Antipolis/ActiveEon
- * Contact: proactive@ow2.org or contact@activeeon.com
- *
- * This library is free software; you can redistribute it and/or
+ * This library is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License
- * as published by the Free Software Foundation; version 3 of
+ * as published by the Free Software Foundation: version 3 of
  * the License.
  *
- * This library is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Affero General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
- * USA
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  * If needed, contact us to obtain a release under GPL Version 2 or 3
  * or a different license than the AGPL.
- *
- *  Initial developer(s):               The ProActive Team
- *                        http://proactive.inria.fr/team_members.htm
- *  Contributor(s):
- *
- * ################################################################
- * $$PROACTIVE_INITIAL_DEV$$
  */
 package org.ow2.proactive.scheduler.ext.matsci.client.embedded.util;
 
@@ -67,7 +56,9 @@ import org.ow2.proactive.scheduler.ext.matsci.client.common.data.Pair;
 public abstract class StandardJVMSpawnHelper {
 
     protected final static String POLICY_OPTION = "-Djava.security.policy=";
+
     protected final static String LOG4J_OPTION = "-Dlog4j.configuration=file:";
+
     protected final static String PA_CONFIGURATION_OPTION = "-Dproactive.configuration=";
 
     private static final SimpleDateFormat ISO8601FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:sss");
@@ -80,8 +71,7 @@ public abstract class StandardJVMSpawnHelper {
     /**
      * Default classpath (classpath of the current JVM)
      */
-    protected final static String DEFAULT_CLASSPATH = convertClasspathToAbsolutePath(System
-            .getProperty("java.class.path"));
+    protected final static String DEFAULT_CLASSPATH = convertClasspathToAbsolutePath(System.getProperty("java.class.path"));
 
     /**
      * Default Java executable path (java path of the current JVM)
@@ -90,11 +80,9 @@ public abstract class StandardJVMSpawnHelper {
 
     static {
         if (System.getProperty("os.name").startsWith("Windows")) {
-            DEFAULT_JAVAPATH = System.getProperty("java.home") + File.separator + "bin" + File.separator +
-                "java.exe";
+            DEFAULT_JAVAPATH = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java.exe";
         } else {
-            DEFAULT_JAVAPATH = System.getProperty("java.home") + File.separator + "bin" + File.separator +
-                "java";
+            DEFAULT_JAVAPATH = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
         }
     }
 
@@ -202,8 +190,7 @@ public abstract class StandardJVMSpawnHelper {
 
     protected void printLog(String message) {
         Date d = new Date();
-        final String log2 = "[" + ISO8601FORMAT.format(d) + "][" + this.getClass().getSimpleName() + "] " +
-            message;
+        final String log2 = "[" + ISO8601FORMAT.format(d) + "][" + this.getClass().getSimpleName() + "] " + message;
         if (outDebug != null) {
             outDebug.println(log2);
             outDebug.flush();
@@ -214,7 +201,7 @@ public abstract class StandardJVMSpawnHelper {
     protected void printLog(Throwable ex) {
         Date d = new Date();
         final String log2 = "[" + ISO8601FORMAT.format(d) + "][" + this.getClass().getSimpleName() + "] " +
-            StackTraceUtil.getStackTrace(ex);
+                            StackTraceUtil.getStackTrace(ex);
         if (outDebug != null) {
             outDebug.println(log2);
             outDebug.flush();
@@ -375,9 +362,8 @@ public abstract class StandardJVMSpawnHelper {
             total_waited += (end_millis - begin_millis);
         } while (!stubsFound && keepTrying && total_waited < TIMEOUT);
         if (total_waited >= TIMEOUT) {
-            throw new RuntimeException(
-                "Timeout occured when trying to update stubs, errors have been written in file : " + logFile,
-                lasterr);
+            throw new RuntimeException("Timeout occured when trying to update stubs, errors have been written in file : " +
+                                       logFile, lasterr);
         }
     }
 
@@ -490,9 +476,9 @@ public abstract class StandardJVMSpawnHelper {
                     pb.directory(new File(this.matSciDir));
                 } else {
                     System.err.println("Warning : Can't find directory " + cd + ", using " +
-                        new File(".").getAbsolutePath() + " instead.");
-                    printLog("Warning : Can't find directory " + cd + ", using " +
-                        new File(".").getAbsolutePath() + " instead.");
+                                       new File(".").getAbsolutePath() + " instead.");
+                    printLog("Warning : Can't find directory " + cd + ", using " + new File(".").getAbsolutePath() +
+                             " instead.");
                 }
             }
 
