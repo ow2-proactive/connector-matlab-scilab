@@ -239,62 +239,86 @@
 Func: cosh
 Params:
 
-
-        (1)
-
     1.
+InputFiles: { }
+OutputFiles: { }
+Static: false
+ThresholdProximity: 0
 Compose: false
+
+(2,1):
+Func: cosh
+Params:
+InputFiles: { }
+OutputFiles: { }
+Static: false
+ThresholdProximity: 0
+Compose: true
+
 (1,2):
 Func: cosh
 Params:
 
-
-        (1)
-
     2.
+InputFiles: { }
+OutputFiles: { }
+Static: false
+ThresholdProximity: 0
 Compose: false
+
+(2,2):
+Func: cosh
+Params:
+InputFiles: { }
+OutputFiles: { }
+Static: false
+ThresholdProximity: 0
+Compose: true
+
 (1,3):
 Func: cosh
 Params:
 
-
-        (1)
-
     3.
+InputFiles: { }
+OutputFiles: { }
+Static: false
+ThresholdProximity: 0
 Compose: false
-(2,1):
-Func: cosh
-Params:
 
-     []
-Compose: true
-(2,2):
-Func: cosh
-Params:
-
-     []
-Compose: true
 (2,3):
 Func: cosh
 Params:
-
-     []
+InputFiles: { }
+OutputFiles: { }
+Static: false
+ThresholdProximity: 0
 Compose: true
+
 
 -->r=PAsolve(t)
 
- Job submitted : 15
+ Job submitted : 23
  r  =
 
 (1):
-Awaited (J:15)
+Awaited (J:23)
 (2):
-Awaited (J:15)
+Awaited (J:23)
 (3):
-Awaited (J:15)
+Awaited (J:23)
 
 -->r
  r  =
+
+Job 23: Task 0_1
+
+
+Job 23: Task 1_1
+
+
+Job 23: Task 2_1
+
 
 (1):
 
@@ -309,7 +333,8 @@ Awaited (J:15)
 -->r2=cosh(cosh(1:3))
  r2  =
 
-    2.446352    21.533032    11784.199  ]]></programlisting>
+    2.446352    21.533032    11784.199
+    ]]></programlisting>
     </refsection>
 
     <refsection>

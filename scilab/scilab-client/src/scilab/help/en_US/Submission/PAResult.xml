@@ -15,7 +15,7 @@
     <refsynopsisdiv>
         <title>Calling Sequence</title>
 
-        <synopsis>PATask(lin, col)</synopsis>
+        <synopsis>paresult=PAsolve(...)</synopsis>
     </refsynopsisdiv>
 
     <refsection>
@@ -72,19 +72,31 @@
         <programlisting role="example"><![CDATA[
 -->r=PAsolve('cosh',1,2,3,4)
 
- Job submitted : 8
+ Job submitted : 21
  r  =
 
 (1):
-Awaited (J:8)
+Awaited (J:21)
 (2):
-Awaited (J:8)
+Awaited (J:21)
 (3):
-Awaited (J:8)
+Awaited (J:21)
 (4):
-Awaited (J:8)
+Awaited (J:21)
 
 -->r.val
+Job 21: Task 0_0
+
+
+Job 21: Task 1_0
+
+
+Job 21: Task 2_0
+
+
+Job 21: Task 3_0
+
+
  ans  =
 
 
@@ -110,18 +122,22 @@ Awaited (J:8)
 
        ans(1)
 
+ Job 21: Task 0_0
 
 
        ans(2)
 
+ Job 21: Task 1_0
 
 
        ans(3)
 
+ Job 21: Task 2_0
 
 
        ans(4)
 
+ Job 21: Task 3_0
 
 
 -->r.iserror
@@ -150,19 +166,20 @@ Awaited (J:8)
 
        ans(1)
 
- 8
+ 21
 
        ans(2)
 
- 8
+ 21
 
        ans(3)
 
- 8
+ 21
 
        ans(4)
 
- 8
+ 21
+
    ]]></programlisting>
     </refsection>
 

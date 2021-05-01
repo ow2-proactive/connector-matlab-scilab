@@ -1,12 +1,16 @@
+import com.github.jk1.license.render.*
+
 apply plugin: 'base'
 
 buildscript {
     repositories {
-        if (project.hasProperty('local'))
+        if (project.hasProperty('local')){
             mavenLocal()
+	}
         mavenCentral()
         maven { url 'http://repository.activeeon.com/content/groups/proactive/' }
         maven { url 'http://dl.bintray.com/content/abashev/vfs-s3'}
+        maven { url "https://plugins.gradle.org/m2/" }
     }
 
     dependencies {
@@ -17,8 +21,18 @@ buildscript {
         }
         classpath 'org.ow2.proactive:documentation:1.0.0-SNAPSHOT'
         classpath 'org.ow2.proactive:gradle-serialver:2.2'
+	classpath 'com.github.jk1:gradle-license-report:1.9'
     }
 }
+
+apply plugin: 'com.github.jk1.dependency-license-report'
+
+licenseReport {
+        configurations = ['runtime']
+        excludeGroups = ['org.objectweb.proactive', 'org.ow2.proactive', 'org.ow2.proactive_grid_cloud_portal', 'jsr223']
+        renderers = [new InventoryHtmlReportRenderer()]
+}
+
 
 allprojects {
     apply plugin: 'maven'
@@ -52,22 +66,6 @@ subprojects {
     apply plugin: 'java'
     apply plugin: 'idea'
 
-    configurations {
-        provided
-
-        provided.extendsFrom(compile)
-    }
-
-    sourceSets {
-        main {compileClasspath += [configurations.provided] }
-    }
-
-    idea {
-        module {
-            scopes.PROVIDED.plus += [configurations.provided]
-        }
-    }
-
     dependencies {
         testCompile 'junit:junit:4.11'
     }
@@ -76,7 +74,7 @@ subprojects {
         serialver = rootProject.serialver
         overwrite = false
         forceUIDOnException = true
-        classpath += project.configurations.provided
+        classpath += project.configurations.compileOnly
     }
 
     sourceCompatibility = "1.7"
@@ -169,10 +167,10 @@ project(':common:matsci-common-worker') {
     dependencies {
         compile project(':common:matsci-common-data')
         compile 'jdom:jdom:1.0'
-        provided 'log4j:log4j:1.2.14'
-        provided "org.objectweb.proactive:programming-core:${programmingVersion}"
-        provided "org.ow2.proactive:scheduler-api:${schedulingVersion}"
-        provided 'org.slf4j:slf4j-log4j12:1.5.3'
+        compileOnly 'log4j:log4j:1.2.14'
+        compileOnly "org.objectweb.proactive:programming-core:${programmingVersion}"
+        compileOnly "org.ow2.proactive:scheduler-api:${schedulingVersion}"
+        compileOnly 'org.slf4j:slf4j-log4j12:1.5.3'
     }
 }
 
@@ -237,16 +235,16 @@ project(':matlab:matlab-middleman') {
 
 project(':matlab:matlab-worker') {
     dependencies {
-        compile 'com.activeeon.proactive:matlabcontrol:3.1.0'
-        compile 'com.activeeon.proactive:licensesaver-api:1.0.0'
-        provided "org.objectweb.proactive:programming-core:${programmingVersion}"
-        provided "org.objectweb.proactive:programming-extension-dataspaces:${programmingVersion}"
-        provided "org.ow2.proactive:scheduler-api:${schedulingVersion}"
-        provided "org.ow2.proactive:scheduler-node:${schedulingVersion}"
+        compileOnly 'com.activeeon.proactive:matlabcontrol:3.1.0'
+        compileOnly 'com.activeeon.proactive:licensesaver-api:1.0.0'
+        compileOnly "org.objectweb.proactive:programming-core:${programmingVersion}"
+        compileOnly "org.objectweb.proactive:programming-extension-dataspaces:${programmingVersion}"
+        compileOnly "org.ow2.proactive:scheduler-api:${schedulingVersion}"
+        compileOnly "org.ow2.proactive:scheduler-node:${schedulingVersion}"
 
-        compile project(':common:matsci-common-data')
-        compile project(':common:matsci-common-worker')
-        compile project(':matlab:matlab-data')
+        compileOnly project(':common:matsci-common-data')
+        compileOnly project(':common:matsci-common-worker')
+        compileOnly project(':matlab:matlab-data')
     }
 }
 
@@ -294,14 +292,14 @@ project(':scilab:scilab-middleman') {
 
 project(':scilab:scilab-worker') {
     dependencies {
-        provided "org.objectweb.proactive:programming-core:${programmingVersion}"
-        provided "org.objectweb.proactive:programming-extension-dataspaces:${programmingVersion}"
-        provided "org.ow2.proactive:scheduler-api:${schedulingVersion}"
-        provided "org.ow2.proactive:scheduler-node:${schedulingVersion}"
+        compileOnly "org.objectweb.proactive:programming-core:${programmingVersion}"
+        compileOnly "org.objectweb.proactive:programming-extension-dataspaces:${programmingVersion}"
+        compileOnly "org.ow2.proactive:scheduler-api:${schedulingVersion}"
+        compileOnly "org.ow2.proactive:scheduler-node:${schedulingVersion}"
 
-        compile project(':common:matsci-common-data')
-        compile project(':common:matsci-common-worker')
-        compile project(':scilab:scilab-data')
+        compileOnly project(':common:matsci-common-data')
+        compileOnly project(':common:matsci-common-worker')
+        compileOnly project(':scilab:scilab-data')
     }
 }
 

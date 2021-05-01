@@ -20,18 +20,18 @@ This will produce the following archives:
 
 2. Unzip the desired distribution archive. The path to this folder will be referred as `CONNECTOR_HOME` in the following.
 
-2. Copy the contents of folder `CONNECTOR_HOME/lib/worker` into `SCHEDULING_HOME/addons/` folder.
+3. Copy the contents of folder `CONNECTOR_HOME/lib/worker` into `SCHEDULING_HOME/addons/` folder.
 
-  1. If you use Matlab, edit the XML file `MatlabWorkerConfiguration.xml` inside the `SCHEDULING_HOME/addons/` folder according to your local Matlab installation. The `MachineGroup` tag allows to specify a range of host for which the given configuration applies. Several configurations for several machine groups can be written in a single `MatlabWorkerConfiguration.xml` file, but this makes sense only if the scheduler is installed in a shared folder and every worker Node will use the same scheduler installation when starting and registering to the ResourceManager.
+   3a. If you use Matlab, edit the XML file `MatlabWorkerConfiguration.xml` inside the `SCHEDULING_HOME/addons/` folder according to your local Matlab installation. The `MachineGroup` tag allows to specify a range of host for which the given configuration applies. Several configurations for several machine groups can be written in a single `MatlabWorkerConfiguration.xml` file, but this makes sense only if the scheduler is installed in a shared folder and every worker Node will use the same scheduler installation when starting and registering to the ResourceManager.
   When each machine uses a local scheduler worker installation, then the content of `CONNECTOR_HOME/lib/worker` folder must be copied into each addons folder of the scheduler worker installation, and the `MatlabWorkerConfiguration.xml` file must be edited on each machine.
- 
-  2. If you use Scilab, edit the `ScilabWorkerConfiguration.xml` file. The same remarks apply as with Matlab.
 
-3. Start a scheduler instance and note the url at which the scheduler is started, e.g. `rmi://localhost:1099`.
+   3b. If you use Scilab, edit the `ScilabWorkerConfiguration.xml` file, and do the same by considering Scilab.
 
-4. Load the connector from your scientific environment.
-  
-  1. If you use Matlab:
+4. Start a scheduler instance and note the url at which the scheduler is started, e.g. `pnp://localhost:64738`.
+
+5. Load the connector from your scientific environment and connect to the scheduler.
+
+   5a. If you use Matlab:
 
     - Open Matlab and add path to the ProActive Matlab toolbox which is located on `CONNECTOR_HOME`, e.g.:
 
@@ -40,7 +40,7 @@ This will produce the following archives:
     ```
     - Connect to the scheduler by using the function PAconnect, e.g.:
     ```matlab
-        PAconnect('rmi://localhost:1099')
+        PAconnect('pnp://localhost:64738')
     ```
 
     - Enter your Scheduler login information, e.g. `demo/demo`
@@ -52,11 +52,7 @@ This will produce the following archives:
         val = PAwaitFor(r)
     ```
 
-    - Read the documentation of Matlab Connector Toolbox from the Matlab help for more info on how to use the toolbox
-
-  2. If you use Scilab:
-
-    - Open Scilab and install JIMS (Java Interaction Mechanism in Scilab) from ATOMS.
+   5b. If you use Scilab:
 
     - build the ProActive Scilab toolbox located on `CONNECTOR_HOME`, e.g.:
     ```scilab
@@ -69,16 +65,15 @@ This will produce the following archives:
     ```
     - Connect to the scheduler by using the function PAconnect, e.g.:
     ```scilab
-        PAconnect('rmi://localhost:1099')
+        PAconnect('pnp://localhost:64738')
     ```
     - Enter your Scheduler login information, e.g. `demo/demo`
 
-    - do a small execution test:
+    - Do a small execution test:
     ```scilab
         r=PAsolve('cosh', 1)
         val = PAwaitFor(r)
     ```
-    - Read the documentation of Scilab Connector Toolbox from the Scilab help for more info on how to use the toolbox
 
 For further information, please refers to the Matlab toolbox and Scilab toolbox documentations available from within Matlab and Scilab.
 

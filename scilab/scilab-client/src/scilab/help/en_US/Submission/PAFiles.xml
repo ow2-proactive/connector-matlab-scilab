@@ -74,11 +74,11 @@
 -->t(1,1).Func='cosh';
 
 --> f = PAFiles(2);
---> f.Space = 'automatic'
+--> f.Space = 'automatic';
 --> f(1).Path = 'intputfile1.mat';
 --> f(2).Path = 'intputfile2.mat';
 
-t(1,1).InputFiles = f;
+--> t(1,1).InputFiles = f;
 
  ]]></programlisting>
     </refsection>

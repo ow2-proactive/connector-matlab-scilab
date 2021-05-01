@@ -68,37 +68,50 @@
 
     <refsection>
         <title>Examples</title>
-        <programlisting role="example"><![CDATA[-->r=PAsolve('cosh',1,2,3,4)
+        <programlisting role="example"><![CDATA[
 
- Job submitted : 19
+-->r=PAsolve('cosh',1,2,3,4)
+
+ Job submitted : 62
  r  =
 
 (1):
-Awaited (J:19)
+Awaited (J:62)
 (2):
-Awaited (J:19)
+Awaited (J:62)
 (3):
-Awaited (J:19)
+Awaited (J:62)
 (4):
-Awaited (J:19)
-
+Awaited (J:62)
 
 -->val=PAwaitAny(r)
+Job 62: Task 0_0
+
+
  val  =
 
     1.5430806
 
 -->val=PAwaitAny(r)
+Job 62: Task 1_0
+
+
  val  =
 
     3.7621957
 
 -->val=PAwaitAny(r)
+Job 62: Task 2_0
+
+
  val  =
 
     10.067662
 
 -->val=PAwaitAny(r)
+Job 62: Task 3_0
+
+
  val  =
 
     27.308233
@@ -106,7 +119,7 @@ Awaited (J:19)
 -->val=PAwaitAny(r)
  !--error 10000
 All results have already been accessed
-at line      16 of function PAwaitAny called by :
+at line      23 of function PAwaitAny called by :
 val=PAwaitAny(r)
 
  ]]></programlisting>
