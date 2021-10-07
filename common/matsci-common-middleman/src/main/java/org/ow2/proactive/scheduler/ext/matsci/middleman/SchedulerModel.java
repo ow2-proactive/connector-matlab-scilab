@@ -392,7 +392,14 @@ public class SchedulerModel {
         try {
             List<JobInfo> jobs = scheduler.getJobs(0,
                                                    -1,
-                                                   new JobFilterCriteria(false, true, true, true, true),
+                                                   new JobFilterCriteria(false,
+                                                                         true,
+                                                                         true,
+                                                                         true,
+                                                                         true,
+                                                                         null,
+                                                                         null,
+                                                                         null),
                                                    JOB_SORT_PARAMS)
                                           .getList();
 
