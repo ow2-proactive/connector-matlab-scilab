@@ -399,6 +399,7 @@ public class SchedulerModel {
                                                                          true,
                                                                          null,
                                                                          null,
+                                                                         null,
                                                                          null),
                                                    JOB_SORT_PARAMS)
                                           .getList();
