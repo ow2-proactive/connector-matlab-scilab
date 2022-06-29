@@ -8,8 +8,8 @@ buildscript {
             mavenLocal()
     }
         mavenCentral()
+        maven { url "https://repo.jenkins-ci.org/releases/" }
         maven { url 'http://repository.activeeon.com/content/groups/proactive/' }
-        maven { url 'http://dl.bintray.com/content/abashev/vfs-s3'}
         maven { url "https://plugins.gradle.org/m2/" }
     }
 
