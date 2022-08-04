@@ -211,6 +211,20 @@ project(':matlab:matlab-client') {
 
 }
 
+project(':matlab:matlab-worker') {
+    dependencies {
+        compile project(':common:matsci-common-data')
+        compile project(':common:matsci-common-worker')
+        compile project(':matlab:matlab-data')
+        compile 'com.activeeon.proactive:matlabcontrol:3.1.0'
+        compile 'com.activeeon.proactive:licensesaver-api:1.0.0'
+        compileOnly "org.objectweb.proactive:programming-core:${programmingVersion}"
+        compileOnly "org.objectweb.proactive:programming-extension-dataspaces:${programmingVersion}"
+        compileOnly "org.ow2.proactive:scheduler-api:${schedulingVersion}"
+        compileOnly "org.ow2.proactive:scheduler-node:${schedulingVersion}"
+    }
+}
+
 project(':matlab:matlab-middleman') {
     dependencies {
         compile 'commons-codec:commons-codec:1.6'
@@ -238,21 +252,6 @@ project(':matlab:matlab-middleman') {
     serialver.dependsOn stub
 }
 
-project(':matlab:matlab-worker') {
-    dependencies {
-        compileOnly 'com.activeeon.proactive:matlabcontrol:3.1.0'
-        compileOnly 'com.activeeon.proactive:licensesaver-api:1.0.0'
-        compileOnly "org.objectweb.proactive:programming-core:${programmingVersion}"
-        compileOnly "org.objectweb.proactive:programming-extension-dataspaces:${programmingVersion}"
-        compileOnly "org.ow2.proactive:scheduler-api:${schedulingVersion}"
-        compileOnly "org.ow2.proactive:scheduler-node:${schedulingVersion}"
-
-        compileOnly project(':common:matsci-common-data')
-        compileOnly project(':common:matsci-common-worker')
-        compileOnly project(':matlab:matlab-data')
-    }
-}
-
 project(':scilab:scilab-data') {
     dependencies {
         compile project(':common:matsci-common-data')
@@ -265,6 +264,18 @@ project(':scilab:scilab-client') {
         compile project(':common:matsci-common-data')
         compile project(':scilab:scilab-data')
         compile 'jdbm:jdbm2:2.4'
+    }
+}
+
+project(':scilab:scilab-worker') {
+    dependencies {
+        compile project(':common:matsci-common-data')
+        compile project(':common:matsci-common-worker')
+        compile project(':scilab:scilab-data')
+        compileOnly "org.objectweb.proactive:programming-core:${programmingVersion}"
+        compileOnly "org.objectweb.proactive:programming-extension-dataspaces:${programmingVersion}"
+        compileOnly "org.ow2.proactive:scheduler-api:${schedulingVersion}"
+        compileOnly "org.ow2.proactive:scheduler-node:${schedulingVersion}"
     }
 }
 
@@ -294,20 +305,6 @@ project(':scilab:scilab-middleman') {
     }
     serialver.dependsOn stub
 }
-
-project(':scilab:scilab-worker') {
-    dependencies {
-        compileOnly "org.objectweb.proactive:programming-core:${programmingVersion}"
-        compileOnly "org.objectweb.proactive:programming-extension-dataspaces:${programmingVersion}"
-        compileOnly "org.ow2.proactive:scheduler-api:${schedulingVersion}"
-        compileOnly "org.ow2.proactive:scheduler-node:${schedulingVersion}"
-
-        compileOnly project(':common:matsci-common-data')
-        compileOnly project(':common:matsci-common-worker')
-        compileOnly project(':scilab:scilab-data')
-    }
-}
-
 
 configurations {
     scilabclient
