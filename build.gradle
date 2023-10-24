@@ -171,7 +171,7 @@ project(':common:matsci-common-middleman') {
 project(':common:matsci-common-worker') {
     dependencies {
         compile project(':common:matsci-common-data')
-        compile 'jdom:jdom:1.0'
+        compile 'org.jdom:jdom2:2.0.6.1'
         compileOnly 'log4j:log4j:1.2.14'
         compileOnly "org.objectweb.proactive:programming-core:${programmingVersion}"
         compileOnly "org.ow2.proactive:scheduler-api:${schedulingVersion}"
@@ -222,6 +222,15 @@ project(':matlab:matlab-worker') {
         compileOnly "org.objectweb.proactive:programming-extension-dataspaces:${programmingVersion}"
         compileOnly "org.ow2.proactive:scheduler-api:${schedulingVersion}"
         compileOnly "org.ow2.proactive:scheduler-node:${schedulingVersion}"
+        testCompile "org.objectweb.proactive:programming-core:${programmingVersion}"
+        testCompile "org.objectweb.proactive:programming-extension-dataspaces:${programmingVersion}"
+        testCompile "org.ow2.proactive:scheduler-api:${schedulingVersion}"
+        testCompile "org.ow2.proactive:scheduler-node:${schedulingVersion}"
+    }
+
+    test {
+        systemProperties << ['java.security.policy': file("$rootDir/proactive.java.policy").absolutePath]
+        systemProperties << ['pa.matlab.config.worker' : file("$buildDir/resources/main/MatlabWorkerConfiguration.xml")]
     }
 }
 
