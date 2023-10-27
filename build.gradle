@@ -141,7 +141,7 @@ project(':common:matsci-common-middleman') {
     dependencies {
         compile 'commons-codec:commons-codec:1.6'
         compile 'jdbm:jdbm2:2.4'
-        compile 'log4j:log4j:1.2.14'
+        compile 'ch.qos.reload4j:reload4j:1.2.25'
         compile "org.objectweb.proactive:programming-core:${programmingVersion}"
         compile "org.objectweb.proactive:programming-extension-annotation:${programmingVersion}"
         compile "org.objectweb.proactive:programming-extension-vfsprovider:${programmingVersion}"
@@ -156,7 +156,7 @@ project(':common:matsci-common-middleman') {
         runtime "org.objectweb.proactive:programming-extension-pnpssl:${programmingVersion}"
         runtime "org.objectweb.proactive:programming-extension-amqp:${programmingVersion}"
         runtime "org.objectweb.proactive:programming-extension-pamr:${programmingVersion}"
-        runtime 'org.slf4j:slf4j-log4j12:1.5.3'
+        runtime 'org.slf4j:slf4j-reload4j:1.7.36'
 
     }
     task stub(type: StubTask) {
@@ -172,10 +172,10 @@ project(':common:matsci-common-worker') {
     dependencies {
         compile project(':common:matsci-common-data')
         compile 'org.jdom:jdom2:2.0.6.1'
-        compileOnly 'log4j:log4j:1.2.14'
+        compileOnly 'ch.qos.reload4j:reload4j:1.2.25'
         compileOnly "org.objectweb.proactive:programming-core:${programmingVersion}"
         compileOnly "org.ow2.proactive:scheduler-api:${schedulingVersion}"
-        compileOnly 'org.slf4j:slf4j-log4j12:1.5.3'
+        compileOnly 'org.slf4j:slf4j-reload4j:1.7.36'
     }
 }
 
