@@ -139,7 +139,7 @@
                 folder under the name ScilabWorkerConfiguration.xml
             </para>
             <para>This file must be edited and put inside the
-                <emphasis>addons</emphasis>
+                <emphasis>addons/client</emphasis>
                 directory of ProActive Scheduler on the server side and on
                 every hosts that will be used as Scilab workers for which the automatic configuration didn't work.
             </para>
@@ -210,7 +210,7 @@
         <refsection>
             <title>Manual Installation of ProActive Scilab Connector Libraries to the ProActive Scheduler</title>
             <para>The content of the directory <literal>Scilab_Connector/lib/worker</literal> (not the directory itself, only the content) must be copied
-                inside the <literal>addons</literal> directory of ProActive Scheduler and of every Scilab Worker which will be used as matlab workers.</para>
+                inside the <literal>addons/client</literal> directory of ProActive Scheduler and of every Scilab Worker which will be used as matlab workers.</para>
             <para>Manually installing the librairies used by Scilab Connector inside the scheduler reduces the overhead of transferring them each time through the network.</para>
 
         </refsection>

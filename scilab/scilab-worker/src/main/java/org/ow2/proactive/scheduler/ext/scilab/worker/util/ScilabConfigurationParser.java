@@ -54,7 +54,7 @@ public class ScilabConfigurationParser extends MatSciConfigurationParser {
 
             scilabConfigPaths = new ArrayList<String>();
             scilabConfigPaths.add(TMPDIR + FS + "ScilabWorkerConfiguration.xml");
-            scilabConfigPaths.add("addons/ScilabWorkerConfiguration.xml");
+            scilabConfigPaths.add("addons/client/ScilabWorkerConfiguration.xml");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

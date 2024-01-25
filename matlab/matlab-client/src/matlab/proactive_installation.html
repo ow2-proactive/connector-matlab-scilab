@@ -133,7 +133,7 @@
 <p>It may happen though that on some hosts, Matlab is not installed in a typical location and the automatic script doesn't
     manage to find it. In that case it will be necessary to write a Matlab configuration file manually.</p>
 <p>A sample configuration file is located inside the <b>Matlab_Connector/lib/worker</b> folder under the name MatlabWorkerConfiguration.xml</p>
-<p>This file must be edited and put inside the <b>addons</b> directory of ProActive Scheduler. This must be done on ProActive Scheduler Server and on
+<p>This file must be edited and put inside the <b>addons/client</b> directory of ProActive Scheduler. This must be done on ProActive Scheduler Server and on
     every hosts that will be used as Matlab workers for which the automatic configuration didn't work.</p>
 <p>If the scheduler is installed in a single directory shared by all workers (via NFS for example), then only one MatlabWorkerConfiguration.xml
     file needs to be edited. The syntax of the file allows to create a configuration for several machine groups via wildcards
@@ -166,7 +166,7 @@
 
 <h4 class="title">Manual Installation of ProActive Matlab Connector Libraries to the ProActive Scheduler</h4>
 <p>The content of the directory <b>Matlab_Connector/lib/worker</b> (not the directory itself, only the content) must be copied
-    inside the <b>addons</b> directory of ProActive Scheduler and of every Matlab Worker which will be used as matlab workers.</p>
+    inside the <b>addons/client</b> directory of ProActive Scheduler and of every Matlab Worker which will be used as matlab workers.</p>
 <p>Manually installing the librairies used by Matlab Connector inside the scheduler reduces the overhead of transferring them each time through the network.</p>
 
 <a name="bottom_of_page"></a>

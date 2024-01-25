@@ -54,7 +54,7 @@ public class MatlabConfigurationParser extends MatSciConfigurationParser {
 
             matlabConfigPaths = new ArrayList<String>();
             matlabConfigPaths.add(TMPDIR + FS + "MatlabWorkerConfiguration.xml");
-            matlabConfigPaths.add("addons/MatlabWorkerConfiguration.xml");
+            matlabConfigPaths.add("addons/client/MatlabWorkerConfiguration.xml");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

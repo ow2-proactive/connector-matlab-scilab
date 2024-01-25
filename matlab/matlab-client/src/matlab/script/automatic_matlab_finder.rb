@@ -93,7 +93,7 @@ class MatSciFinder
     @confFiles = Array.new
     @confFiles << JavaIO::File.new(tmpPath, "MatlabWorkerConfiguration.xml").getCanonicalFile()
     if schedPath != nil
-      @confFiles << JavaIO::File.new(schedPath, "addons/MatlabWorkerConfiguration.xml").getCanonicalFile()
+      @confFiles << JavaIO::File.new(schedPath, "addons/client/MatlabWorkerConfiguration.xml").getCanonicalFile()
     end
     @corruptedConfigFiles = Array.new(@confFiles.length)
   end
