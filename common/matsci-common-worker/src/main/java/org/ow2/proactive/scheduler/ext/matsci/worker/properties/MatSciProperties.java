@@ -66,7 +66,7 @@ public enum MatSciProperties {
     /**
      * Default properties file for the scheduler configuration
      */
-    private static final String DEFAULT_PROPERTIES_FILE = "addons/matlab_scilab_connector.ini";
+    private static final String DEFAULT_PROPERTIES_FILE = "addons/client/matlab_scilab_connector.ini";
 
     private static String properties_file = null;
 

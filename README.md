@@ -20,10 +20,10 @@ This will produce the following archives:
 
 2. Unzip the desired distribution archive. The path to this folder will be referred as `CONNECTOR_HOME` in the following.
 
-3. Copy the contents of folder `CONNECTOR_HOME/lib/worker` into `SCHEDULING_HOME/addons/` folder.
+3. Copy the contents of folder `CONNECTOR_HOME/lib/worker` into `SCHEDULING_HOME/addons/client/` folder.
 
-   3a. If you use Matlab, edit the XML file `MatlabWorkerConfiguration.xml` inside the `SCHEDULING_HOME/addons/` folder according to your local Matlab installation. The `MachineGroup` tag allows to specify a range of host for which the given configuration applies. Several configurations for several machine groups can be written in a single `MatlabWorkerConfiguration.xml` file, but this makes sense only if the scheduler is installed in a shared folder and every worker Node will use the same scheduler installation when starting and registering to the ResourceManager.
-  When each machine uses a local scheduler worker installation, then the content of `CONNECTOR_HOME/lib/worker` folder must be copied into each addons folder of the scheduler worker installation, and the `MatlabWorkerConfiguration.xml` file must be edited on each machine.
+   3a. If you use Matlab, edit the XML file `MatlabWorkerConfiguration.xml` inside the `SCHEDULING_HOME/addons/client/` folder according to your local Matlab installation. The `MachineGroup` tag allows to specify a range of host for which the given configuration applies. Several configurations for several machine groups can be written in a single `MatlabWorkerConfiguration.xml` file, but this makes sense only if the scheduler is installed in a shared folder and every worker Node will use the same scheduler installation when starting and registering to the ResourceManager.
+  When each machine uses a local scheduler worker installation, then the content of `CONNECTOR_HOME/lib/worker` folder must be copied into each `addons/client` folder of the scheduler worker installation, and the `MatlabWorkerConfiguration.xml` file must be edited on each machine.
 
    3b. If you use Scilab, edit the `ScilabWorkerConfiguration.xml` file, and do the same by considering Scilab.
 
