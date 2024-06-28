@@ -104,24 +104,24 @@ class MatSciFinder
     puts "#{Time.new()} : Finding Matlab on #@hostname"
 
     cpt = 0
-    if (defined?($args) && $args != nil)
-      while cpt < $args.size && cpt < 100
-        case $args[cpt]
+    if (defined?(args) && args != nil)
+      while cpt < args.size && cpt < 100
+        case args[cpt]
           when "forceSearch"
-            @forceSearch = ($args[cpt+1] == "true")
+            @forceSearch = (args[cpt+1] == "true")
           when "versionPref"
-            @version_pref = $args[cpt+1]
+            @version_pref = args[cpt+1]
           when "versionMin"
-            @min_version = $args[cpt+1]
+            @min_version = args[cpt+1]
           when "versionMax"
-            @max_version = $args[cpt+1]
+            @max_version = args[cpt+1]
           when "versionRej"
-            if $args[cpt+1] != nil && $args[cpt+1].length > 0
-              @versions_rejected = $args[cpt+1].split(/;| |,/)
+            if args[cpt+1] != nil && args[cpt+1].length > 0
+              @versions_rejected = args[cpt+1].split(/;| |,/)
 
             end
           when "versionArch"
-            @version_arch = $args[cpt+1]
+            @version_arch = args[cpt+1]
         end
         cpt += 2
       end
@@ -845,8 +845,8 @@ def findMatlabMacInLine(line)
 end
 
 
-$selected = false
-#$args=["forceSearch", "true"]
+selected = false
+#args=["forceSearch", "true"]
 
 mf = MatSciFinder.new
 begin
@@ -863,7 +863,7 @@ begin
 
   end
   if conffound
-    $selected = mf.chooseConfig()
+    selected = mf.chooseConfig()
   else
     puts "no Matlab installation found"
   end
