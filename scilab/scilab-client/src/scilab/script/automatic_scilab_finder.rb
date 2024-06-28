@@ -102,25 +102,25 @@ class MatSciFinder
   def parseParams()
 
     puts "#{Time.new()} : Finding Scilab on #@hostname"
-    if (defined?($args) && $args != nil)
+    if (defined?(args) && args != nil)
       cpt = 0
-      while cpt < $args.size && cpt < 100
-        case $args[cpt]
+      while cpt < args.size && cpt < 100
+        case args[cpt]
           when "forceSearch"
-            @forceSearch = ($args[cpt+1] == "true")
+            @forceSearch = (args[cpt+1] == "true")
           when "versionPref"
-            @version_pref = $args[cpt+1]
+            @version_pref = args[cpt+1]
           when "versionMin"
-            @min_version = $args[cpt+1]
+            @min_version = args[cpt+1]
           when "versionMax"
-            @max_version = $args[cpt+1]
+            @max_version = args[cpt+1]
           when "versionRej"
-            if $args[cpt+1] != nil && $args[cpt+1].length > 0
-              @versions_rejected = $args[cpt+1].split(/;| |,/)
+            if args[cpt+1] != nil && args[cpt+1].length > 0
+              @versions_rejected = args[cpt+1].split(/;| |,/)
 
             end
           when "versionArch"
-            @version_arch = $args[cpt+1]
+            @version_arch = args[cpt+1]
         end
         cpt += 2
       end
@@ -738,8 +738,8 @@ def findScilabMacInLine(line)
 end
 
 
-$selected = false
-#$args=["forceSearch","true", "versionPref", "5.4.0"]
+selected = false
+#args=["forceSearch","true", "versionPref", "5.4.0"]
 
 mf = MatSciFinder.new
 begin
@@ -756,7 +756,7 @@ begin
 
   end
   if conffound
-    $selected = mf.chooseConfig()
+    selected = mf.chooseConfig()
   else
     puts "no scilab installation found"
   end
